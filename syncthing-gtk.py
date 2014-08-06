@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from xml.dom import minidom
 import json, os, webbrowser, datetime, urlparse
-import sys, pprint
+import sys, time, pprint
 _ = lambda (a) : a
 
 COLOR_NODE				= "#9246B1"
@@ -156,6 +156,9 @@ class App(object):
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("connected", False)
 		box.add_hidden_value("completion", {})
+		box.add_hidden_value("bytes_in", 0)
+		box.add_hidden_value("bytes_out", 0)
+		box.add_hidden_value("time", 0)
 		box.set_color_hex(COLOR_NODE)
 		self["nodelist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
@@ -171,6 +174,7 @@ class App(object):
 		node = self.nodes[node_id]
 		total = 100.0 * len(node["completion"])
 		sync = sum(node["completion"].values())
+		node["sync"] = "%3.f%%" % (sync / total * 100.0)
 		if not node["connected"]:
 			node.set_color_hex(COLOR_NODE)
 			node.set_status(_("Disconnected"))
@@ -231,19 +235,42 @@ class App(object):
 			io.load_contents_async(None, self.syncthing_cb_rest_finished, uri, callback, error_callback, callback_data)
 	
 	def syncthing_cb_connections(self, connections):
+		current_time = time.time()
+		totals = {"dl.rate" : 0.0, "up.rate" : 0.0, "InBytesTotal" : 0.0, "OutBytesTotal" : 0.0} # Total up/down rate, total bytes transfered
 		for nid in connections:
 			if nid != "total":
 				try:
 					node = self.nodes[nid]
+					# Update easy stuff
 					node["address"] = connections[nid]["Address"]
 					node["version"] = connections[nid]["ClientVersion"]
+					# Compute transfer rate
+					for key, ui_key, data_key in ( ("bytes_in", "dl.rate", "InBytesTotal"), ("bytes_out", "up.rate", "OutBytesTotal") ):
+						if node[key] != 0:
+							time_delta = current_time - node["time"]
+							if time_delta > 0: # Don't divide by zero even if time wraps
+								bytes_delta = connections[nid][data_key] - node[key]
+								bps = float(bytes_delta) / time_delta  # B/s
+								node[ui_key] = "%sps (%s)" % (sizeof_fmt(bps), sizeof_fmt(connections[nid][data_key]))
+								totals[ui_key] += bps
+								totals[data_key] += connections[nid][data_key]
+						node[key] = connections[nid][data_key]
+					node["time"] = current_time
+					# Update color & header if node changed state just now
 					if not node["connected"]:
 						node.set_status(_("Connected"))
 						node["connected"] = True
 						node.set_color_hex(COLOR_NODE_SYNCING)
+					# Requeste additional data
 					self.request_completion(nid)
 				except KeyError: # Unknown node
 					print >>sys.stderr, "Warning: Unknown node recieved in connection list:", e["data"]["id"]
+		if self.my_id in self.nodes:
+			# If my node is already known, update down/upload rate
+			node = self.nodes[self.my_id]
+			for ui_key, data_key in ( ("dl.rate", "InBytesTotal"), ("up.rate", "OutBytesTotal") ):
+				node[ui_key] = "%sps (%s)" % (sizeof_fmt(totals[ui_key]), sizeof_fmt(totals[data_key]))
+			# TODO: Results differ from webui :(
 		GLib.timeout_add_seconds(self.refresh_rate * 5, self.rest_request, "connections", self.syncthing_cb_connections)
 	
 	def syncthing_cb_completion(self, data, (node_id, repo_id)):
