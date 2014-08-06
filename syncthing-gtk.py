@@ -230,7 +230,7 @@ class App(object):
 			else:
 				error_callback(error, uri)
 		else:
-			print >>sys.err, "Request '%s' failed (%s) Repeating" % (uri, error)
+			print >>sys.stderr, "Request '%s' failed (%s) Repeating" % (uri, error)
 			io = Gio.file_new_for_uri(uri)
 			io.load_contents_async(None, self.syncthing_cb_rest_finished, uri, callback, error_callback, callback_data)
 	
