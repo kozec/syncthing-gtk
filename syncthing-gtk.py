@@ -232,7 +232,7 @@ class App(object):
 		else:
 			print >>sys.stderr, "Request '%s' failed (%s) Repeating" % (uri, error)
 			io = Gio.file_new_for_uri(uri)
-			io.load_contents_async(None, self.syncthing_cb_rest_finished, uri, callback, error_callback, callback_data)
+			GLib.timeout_add_seconds(1, io.load_contents_async, None, self.syncthing_cb_rest_finished, uri, callback, error_callback, callback_data)
 	
 	def syncthing_cb_connections(self, connections):
 		current_time = time.time()
