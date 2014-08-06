@@ -293,6 +293,7 @@ class App(object):
 			node.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
 			node.invert_header(True)
 			node.set_color_hex(COLOR_OWN_NODE)
+			self["header"].set_subtitle(node.get_title())
 			# Modify values
 			node.clear_values()
 			node.add_value("ram",		"icons/ram.png",	_("RAM Utilization"), "")
@@ -304,6 +305,7 @@ class App(object):
 			node.show_all()
 			self.rest_request("version", self.syncthing_cb_version)
 		
+		# Update my node display
 		node = self.nodes[self.my_id]
 		node["ram"] = sizeof_fmt(data["sys"])
 		node["cpu"] = "%3.2f%%" % (data["cpuPercent"],)
