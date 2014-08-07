@@ -5,7 +5,7 @@
 <object class="GtkWindow" id="window">
 	<property name="default-width">900</property>
 	<property name="default-height">600</property>
-	<signal name="delete-event" handler="menu_cb_exit" swapped="no"/>
+	<signal name="delete-event" handler="cb_exit" swapped="no"/>
 	<property name="icon">icons/st-logo-128.png</property>
 	<!-- Title Bar -->
 	<child type="titlebar">
@@ -125,7 +125,7 @@
 			<property name="always_show_image">True</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
-			<signal name="activate" handler="menu_cb_exit" swapped="no"/>
+			<signal name="activate" handler="cb_exit" swapped="no"/>
 		</object>
 	</child>
 </object>
@@ -143,7 +143,7 @@
 			<property name="image">menu-add-repository-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="menu_cb_add_repo" swapped="no"/>
+			<signal name="activate" handler="cb_menu_add_repo" swapped="no"/>
 		</object>
 	</child>
 	

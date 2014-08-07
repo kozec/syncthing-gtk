@@ -18,8 +18,16 @@ DEBUG = False
 class App(object):
 	def __init__(self):
 		self.builder = None
-		self.refresh_rate = 1
+		self.refresh_rate = 1 # seconds
 		self.my_id = None
+		self.daemon_config = None
+		self.webui_url = None
+		# Epoch is incereased when restart() method is called; It is
+		# used to discard responses for old REST requests
+		self.epoch = 1	
+		# connect_dialog may be displayed durring initial communication
+		# or if daemon shuts down.
+		self.connect_dialog = None
 		self.widgets = {}
 		self.repos = {}
 		self.nodes = {}
@@ -71,18 +79,52 @@ class App(object):
 		Callback signatures:
 		if callback_data is set:
 			callback(json_data, callback_data)
-			error_callback(error, uri, callback_data)
+			error_callback(exception, command, callback_data)
 		if callback_data is null:
 			callback(json_data)
-			error_callback(error, uri)
+			error_callback(exception, command)
 		"""
 		uri = "%s/rest/%s" % (self.webui_url, command)
 		io = Gio.file_new_for_uri(uri)
-		io.load_contents_async(None, self.syncthing_cb_rest_finished, uri, callback, error_callback, callback_data)
+		io.load_contents_async(None, self.rest_response, command, self.epoch, callback, error_callback, callback_data)
+	
+	def rest_response(self, io, results, command, epoch, callback, error_callback, callback_data):
+		"""
+		Recieves and parses REST response. Calls callback if successfull.
+		See rest_request for more info.
+		"""
+		if epoch < self.epoch :
+			# Requested before restart() call; Data may be nonactual, discard it.
+			if DEBUG : print "Discarded old response for", command
+			return
+		try:
+			ok, contents, etag = io.load_contents_finish(results)
+		except Exception, e:
+			self.rest_error(e, command, epoch, callback, error_callback, callback_data)
+			return
+		if ok:
+			data = json.loads(contents) if "{" in contents else {'data' : contents}
+			if callback_data:
+				callback(data, callback_data)
+			else:
+				callback(data)
+		else:
+			self.rest_error(Exception("not ok"), command, epoch, callback, error_callback, callback_data)
+	
+	def rest_error(self, error, command, epoch, callback, error_callback, callback_data):
+		""" Error handler for rest_response method """
+		if error_callback:
+			if callback_data:
+				error_callback(error, command, callback_data)
+			else:
+				error_callback(error, command)
+		else:
+			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, error)
+			GLib.timeout_add_seconds(1, self.rest_request, command, callback, error_callback, callback_data)
 	
 	def request_config(self, *a):
 		""" Request settings from syncthing daemon """
-		self.rest_request("config", self.syncthing_cb_config)
+		self.rest_request("config", self.syncthing_cb_config, self.syncthing_cb_config_error)
 	
 	def request_repo_data(self, repo_id):
 		self.rest_request("model?repo=%s" % (repo_id,), self.syncthing_cb_repo_data, callback_data=repo_id)
@@ -99,7 +141,7 @@ class App(object):
 	
 	def request_events(self, *a):
 		""" Request new events from syncthing daemon """
-		self.rest_request("events?since=%s" % self.last_id, self.syncthing_cb_events)
+		self.rest_request("events?since=%s" % self.last_id, self.syncthing_cb_events, self.syncthing_cb_events_error)
 	
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
@@ -121,6 +163,36 @@ class App(object):
 	
 	def hide(self):
 		self["window"].hide()
+	
+	def display_connect_dialog(self, message):
+		"""
+		Displays 'Be patient, i'm trying to connect here' dialog, or updates
+		it's message if said dialog is already displayed.
+		"""
+		if self.connect_dialog == None:
+			self.connect_dialog = Gtk.MessageDialog(
+				self["window"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.INFO, 0, "-")
+			self.connect_dialog.add_button("gtk-quit", 1)
+			self.connect_dialog.connect("response", self.cb_exit) # Only one response available so far
+			self.connect_dialog.show_all()
+		def set_label(d, message):
+			""" Small, recursive helper function to set label somehwere deep in dialog """
+			for c in d.get_children():
+				if isinstance(c, Gtk.Container):
+					if set_label(c, message):
+						return True
+				elif isinstance(c, Gtk.Label):
+					c.set_markup(message)
+					return True
+			return False
+		set_label(self.connect_dialog.get_content_area(), message)
+	
+	def close_connect_dialog(self):
+		if self.connect_dialog != None:
+			self.connect_dialog.destroy()
+			self.connect_dialog = None
 	
 	def show_repo(self, id, name, path, is_master, ignore_perms, shared):
 		""" Shared is expected to be list """
@@ -166,9 +238,21 @@ class App(object):
 		self.nodes[id] = box
 		return box
 	
+	def clear(self):
+		""" Clears repo and node lists. """
+		for i in ('nodelist', 'repolist'):
+			for c in [] + self[i].get_children():
+				self[i].remove(c)
+				c.destroy()
+		self.nodes = {}
+		self.repos = {}
+	
 	def restart(self):
-		# TODO: this
-		pass
+		self.epoch += 1
+		self.my_id = None
+		self.daemon_config = None
+		self["edit-menu"].set_sensitive(False)
+		self.request_config()
 	
 	def update_completion(self, node_id):
 		node = self.nodes[node_id]
@@ -186,10 +270,10 @@ class App(object):
 			node.set_status(_("Up to Date"))
 	
 	# --- Callbacks ---
-	def menu_cb_exit(self, event, *a):
+	def cb_exit(self, event, *a):
 		Gtk.main_quit()
 	
-	def menu_cb_add_repo(self, event, *a):
+	def cb_menu_add_repo(self, event, *a):
 		pass
 	
 	def syncthing_cb_events(self, events):
@@ -204,35 +288,23 @@ class App(object):
 				self.rest_request("model?repo=%s" % (rid,), self.syncthing_cb_repo_data, callback_data=rid)
 		GLib.timeout_add_seconds(self.refresh_rate, self.request_events)
 	
-	def syncthing_cb_rest_finished(self, io, results, uri, callback, error_callback, callback_data):
+	def syncthing_cb_events_error(self, exception, command):
 		"""
-		Recieves and parses REST response. Calls callback if successfull.
-		See rest_request for more info.
+		As most frequent request, "event" request is used to detect when
+		daemon stops to respond. "Please wait" message is displayed in
+		that case, UI is restarted and waits until daemon respawns.
 		"""
-		try:
-			ok, contents, etag = io.load_contents_finish(results)
-		except Exception, e:
-			self.syncthing_cb_rest_error(str(e), uri, callback, error_callback, callback_data)
-			return
-		if ok:
-			data = json.loads(contents) if "{" in contents else {'data' : contents}
-			if callback_data:
-				callback(data, callback_data)
-			else:
-				callback(data)
-		else:
-			self.syncthing_cb_rest_error("not ok", uri, callback, error_callback, callback_data)
-	
-	def syncthing_cb_rest_error(self, error, uri, callback, error_callback, callback_data):
-		if error_callback:
-			if callback_data:
-				error_callback(error, uri, callback_data)
-			else:
-				error_callback(error, uri)
-		else:
-			print >>sys.stderr, "Request '%s' failed (%s) Repeating" % (uri, error)
-			io = Gio.file_new_for_uri(uri)
-			GLib.timeout_add_seconds(1, io.load_contents_async, None, self.syncthing_cb_rest_finished, uri, callback, error_callback, callback_data)
+		if isinstance(exception, GLib.GError):
+			print ">>>", exception.code, exception.message
+			if exception.code in (34, 39):	# Connection terminated unexpectedly, Connection Refused
+				self.display_connect_dialog("%s %s" % (
+					_("Connecting to Syncthing daemon lost."),
+					_("Syncthing is probably restarting or has been shut down.")
+					))
+				self.restart()
+				return
+		# Other errors are ignored and events are pulled again after prolonged delay
+		GLib.timeout_add_seconds(self.refresh_rate * 5, self.request_events)
 	
 	def syncthing_cb_connections(self, connections):
 		current_time = time.time()
@@ -343,6 +415,8 @@ class App(object):
 		Called when configuration is loaded from syncthing daemon.
 		After configuraion is sucessfully parsed, app starts quering for events
 		"""
+		self.clear()
+		self.daemon_config = config
 		# Parse nodes
 		for n in sorted(config["Nodes"], key=lambda x : x["Name"].lower()):
 			self.show_node(n["NodeID"], n["Name"], n["Compression"])
@@ -356,11 +430,37 @@ class App(object):
 				)
 			self.request_repo_data(rid)
 			
-		# request_completion
+		self.close_connect_dialog()
 		self["edit-menu"].set_sensitive(True)
 		self.rest_request("events?limit=1", self.syncthing_cb_events)	# Requests most recent event only
 		self.rest_request("connections", self.syncthing_cb_connections)
 		self.rest_request("system", self.syncthing_cb_system)
+	
+	def syncthing_cb_config_error(self, exception, command):
+		if isinstance(exception, GLib.GError):
+			if exception.code == 39:	# Connection Refused, I can't find constant for it in GLib
+				# Connection refused is only error code with good way to handle.
+				# It usualy means that daemon is not yet fully started or not running at all.
+				# For now, handler just displays dialog with "please wait" message tries it again
+				if self.connect_dialog == None:
+					self.display_connect_dialog("%s\n%s" % (
+						_("Connecting to Syncthing daemon at %s...") % (self.webui_url,),
+						_("If daemon is not running, it may be good idea to start it now.")
+						))
+				GLib.timeout_add_seconds(self.refresh_rate, self.rest_request, "config", self.syncthing_cb_config, self.syncthing_cb_config_error)
+				return
+		# All other errors are fatal for now. Error dialog is displayed and program exits.
+		d = Gtk.MessageDialog(
+				self["window"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+				"%s\n\n%s %s" % (
+					_("Connection to daemon failed. Check your configuration and try again."),
+					_("Error message:"), str(exception)
+					)
+				)
+		d.run()
+		Gtk.main_quit()
 	
 	def on_event(self, e):
 		eType = e["type"]
@@ -497,9 +597,10 @@ class InfoBox(Gtk.Container):
  
 	def do_forall(self, include_internals, callback, *callback_parameters):
 		if not callback is None:
-			for c in self.children:
-				if not c is None:
-					callback(c, *callback_parameters)
+			if hasattr(self, 'children'): # No idea why this happens...
+				for c in self.children:
+					if not c is None:
+						callback(c, *callback_parameters)
  
 	def do_get_request_mode(self):
 		return(Gtk.SizeRequestMode.CONSTANT_SIZE)
