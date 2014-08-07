@@ -903,14 +903,50 @@ class EditorDialog(object):
 		"""
 		if key == "KeepVersions":
 			# Number
-			return self.values["Versioning"]["Params"]["keep"] # oww...
+			try:
+				return self.values["Versioning"]["Params"]["keep"] # oww...
+			except (KeyError, TypeError):
+				# Node not found
+				return 0
 		elif key == "Versioning":
 			# Boool
-			return self.values["Versioning"]["Type"] != ""
+			try:
+				return self.values["Versioning"]["Type"] != ""
+			except (KeyError, TypeError):
+				# Node not found
+				return False
 		elif key in self.values:
 			return self.values[key]
 		else:
 			raise KeyError(key)
+	
+	def set_value(self, key, value):
+		""" Stores value to configuration, handling some special cases """
+		if key == "KeepVersions":
+			# Create structure if needed
+			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
+			self.values["Versioning"]["Params"]["keep"] = int(value)
+		elif key == "Versioning":
+			# Create structure if needed
+			self.create_dicts(self.values, ("Versioning", "Type"))
+			self.values["Versioning"]["Type"] = "simple" if value else ""
+		elif key in self.values:
+			self.values[key] = value
+		else:
+			raise KeyError(key)	
+	
+	def create_dicts(self, parent, keys):
+		"""
+		Creates structure of nested dicts, if they are not in place already.
+		"""
+		if not type(keys) == list: keys = list(keys)
+		if len(keys) == 0 : return	# Done
+		key, rest = keys[0], keys[1:]
+		if not key in parent :
+			parent[key] = {}
+		if parent[key] is None:
+			parent[key] = {}
+		self.create_dicts(parent[key], rest)
 	
 	def load_data(self):
 		self.app.rest_request("config", self.cb_data_loaded, self.cb_data_failed)
@@ -930,7 +966,7 @@ class EditorDialog(object):
 			w = self.find_widget_by_id(key)
 			if not key is None:
 				if isinstance(w, Gtk.Entry):
-					w.set_text(self.get_value(key.strip("v")))
+					w.set_text(str(self.get_value(key.strip("v"))))
 				elif isinstance(w, Gtk.CheckButton):
 					w.set_active(self.get_value(key.strip("v")))
 				elif key == "vNodes":
@@ -939,13 +975,18 @@ class EditorDialog(object):
 					for node in self.app.nodes.values():
 						if node["id"] != self.app.my_id:
 							b = Gtk.CheckButton(node.get_title(), False)
+							b.set_tooltip_text(node["id"])
 							self["vNodes"].pack_end(b, False, False, 0)
 							b.set_active(node["id"] in nids)
 					self["vNodes"].show_all()
 				else:
 					print w
-		# Disable ID editing if neede
-		self["vID"].set_sensitive(self.is_new)
+		# Update special widgets
+		if "vID" in self:
+			self["vID"].set_sensitive(self.is_new)
+		if "vVersioning" in self:
+			self.cb_vVersioning_toggled(self["vVersioning"])
+
 		# Enable dialog
 		self["editor"].set_sensitive(True)
 	
@@ -968,6 +1009,39 @@ class EditorDialog(object):
 				)
 		d.run()
 		self.close()
+	
+	def cb_vVersioning_toggled(self, cb, *a):
+		self["rvVersioning"].set_reveal_child(cb.get_active())
+	
+	def cb_btClose_clicked(self, *a):
+		self.close()
+	
+	def cb_btSave_clicked(self, *a):
+		# Saving data... Iterate over same values as load does and put
+		# stuff back to self.values dict
+		for key in self.VALUES[self.mode]:
+			w = self.find_widget_by_id(key)
+			if not key is None:
+				if isinstance(w, Gtk.Entry):
+					self.set_value(key.strip("v"), w.get_text())
+				elif isinstance(w, Gtk.CheckButton):
+					self.set_value(key.strip("v"), w.get_active())
+				elif key == "vNodes":
+					# Still very special case
+					nodes = [ {
+							   "Addresses" : None,
+							   "NodeID" : b.get_tooltip_text(),
+							   "Name" : "",
+							   "CertName" : "",
+							   "Compression" : False
+								}
+								for b in self["vNodes"].get_children()
+								if b.get_active()
+							]
+					self.set_value("Nodes", nodes)
+		# Post configuration back to daemon
+		self["editor"].set_sensitive(False)
+		
 
 def sizeof_fmt(size):
 	for x in ('B','kB','MB','GB','TB'):
