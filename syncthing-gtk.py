@@ -258,7 +258,7 @@ class App(object):
 		node = self.nodes[node_id]
 		total = 100.0 * len(node["completion"])
 		sync = sum(node["completion"].values())
-		node["sync"] = "%3.f%%" % (sync / total * 100.0)
+		node["sync"] = "%3.f%%" % (sync / total * 100.0) if total > 0 else "0%"
 		if not node["connected"]:
 			node.set_color_hex(COLOR_NODE)
 			node.set_status(_("Disconnected"))
@@ -346,9 +346,10 @@ class App(object):
 		GLib.timeout_add_seconds(self.refresh_rate * 5, self.rest_request, "connections", self.syncthing_cb_connections)
 	
 	def syncthing_cb_completion(self, data, (node_id, repo_id)):
-		if not node_id in self.nodes : return	# Shouldn't be possible
-		self.nodes[node_id]["completion"][repo_id] = float(data["completion"])
-		self.update_completion(node_id)
+		if node_id in self.nodes:	# Should be always
+			if "completion" in data:
+				self.nodes[node_id]["completion"][repo_id] = float(data["completion"])
+			self.update_completion(node_id)
 	
 	def syncthing_cb_system(self, data):
 		if self.my_id != data["myID"]:
