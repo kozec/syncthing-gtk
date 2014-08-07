@@ -20,8 +20,8 @@ class App(object):
 		self.builder = None
 		self.refresh_rate = 1 # seconds
 		self.my_id = None
-		self.daemon_config = None
 		self.webui_url = None
+		self.rightclick_box = None
 		# Epoch is incereased when restart() method is called; It is
 		# used to discard responses for old REST requests
 		self.epoch = 1	
@@ -194,10 +194,14 @@ class App(object):
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
+	def show_popup_menu(self, box, event):
+		self.rightclick_box = box
+		self["popup-menu"].popup(None, None, None, None, event.button, event.time)
+	
 	def show_repo(self, id, name, path, is_master, ignore_perms, shared):
 		""" Shared is expected to be list """
 		# title = name if len(name) < 20 else "...%s" % name[-20:]
-		box = InfoBox(name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
+		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("id",			"icons/version.png",	_("Repository ID"),			id)
 		box.add_value("folder",		"icons/folder.png",		_("Folder"),				path)
 		box.add_value("global",		"icons/global.png",		_("Global Repository"),		"? items, ?B")
@@ -218,7 +222,7 @@ class App(object):
 		return box
 	
 	def show_node(self, id, name, use_compression):
-		box = InfoBox(name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
+		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("address",	"icons/address.png",	_("Address"),			"?")
 		box.add_value("sync",		"icons/sync.png",		_("Synchronization"),	"0%")
 		box.add_value("compress",	"icons/compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
@@ -250,7 +254,6 @@ class App(object):
 	def restart(self):
 		self.epoch += 1
 		self.my_id = None
-		self.daemon_config = None
 		self["edit-menu"].set_sensitive(False)
 		self.request_config()
 	
@@ -275,6 +278,12 @@ class App(object):
 	
 	def cb_menu_add_repo(self, event, *a):
 		pass
+	
+	def cb_menu_popup_edit(self, *a):
+		if self.rightclick_box in self.repos.values():
+			# Editing repository
+			e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
+			e.show(self["window"])
 	
 	def syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
@@ -416,7 +425,6 @@ class App(object):
 		After configuraion is sucessfully parsed, app starts quering for events
 		"""
 		self.clear()
-		self.daemon_config = config
 		# Parse nodes
 		for n in sorted(config["Nodes"], key=lambda x : x["Name"].lower()):
 			self.show_node(n["NodeID"], n["Name"], n["Compression"])
@@ -507,11 +515,13 @@ class App(object):
 			print "Unhandled event type:", e
 
 class InfoBox(Gtk.Container):
+	""" Box with informations about node or repository """
 	__gtype_name__ = "InfoBox"
 	
 	### Initialization
-	def __init__(self, title, icon):
+	def __init__(self, app, title, icon):
 		# Variables
+		self.app = app
 		self.child = None
 		self.header = None
 		self.str_title = None
@@ -568,14 +578,18 @@ class InfoBox(Gtk.Container):
 		self.grid = Gtk.Grid()
 		self.rev = Gtk.Revealer()
 		align = Gtk.Alignment()
+		eb = Gtk.EventBox()
 		# Set values
 		self.grid.set_row_spacing(1)
 		self.grid.set_column_spacing(3)
 		self.rev.set_reveal_child(False)
 		align.set_padding(2, 2, 5, 5)
+		# Connect signals
+		eb.connect("button-release-event", self.on_grid_click)
 		# Pack together
 		align.add(self.grid)
-		self.rev.add(align)
+		eb.add(align)
+		self.rev.add(eb)
 		self.add(self.rev)
 	
 	### GtkWidget-related stuff
@@ -725,9 +739,20 @@ class InfoBox(Gtk.Container):
 		""" Sets cursor over top part of infobox to hand """
 		eb.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.HAND1))
 	
-	def on_header_click(self, *e):
-		""" Hides or reveals everything bellow header """
-		self.rev.set_reveal_child(not self.rev.get_reveal_child())
+	def on_header_click(self, eventbox, event):
+		"""
+		Hides or reveals everything bellow header
+		Displays popup menu on right click
+		"""
+		if event.button == 1:	# left
+			self.rev.set_reveal_child(not self.rev.get_reveal_child())
+		elif event.button == 3:	# right
+			self.app.show_popup_menu(self, event)
+	
+	def on_grid_click(self, eventbox, event):
+		""" Displays popup menu on right click """
+		if event.button == 3:	# right
+			self.app.show_popup_menu(self, event)
 	
 	### Methods
 	def set_title(self, t):
@@ -812,7 +837,137 @@ class InfoBox(Gtk.Container):
 	def __setitem__(self, key, value):
 		""" Shortcut to set_value. Creates new hidden_value if key doesn't exist """
 		self.set_value(key, value)
+
+class EditorDialog(object):
+	""" Universal handler for all Syncthing settings and editing """
+	VALUES = {
+		# Dict with lists of all editable values, indexed by editor mode
+		"repo-edit" : ["vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vVersioning", "vKeepVersions", "vNodes" ],
+	}
 	
+	def __init__(self, app, mode, is_new, id):
+		self.app = app
+		self.mode = mode
+		self.id = id
+		self.is_new = is_new
+		self.config = None
+		self.values = None
+		self.setup_widgets()
+		self.load_data()
+	
+	def __getitem__(self, name):
+		""" Convince method that allows widgets to be accessed via self["widget"] """
+		return self.builder.get_object(name)
+	
+	def __contains__(self, name):
+		""" Returns true if there is such widget """
+		return self.builder.get_object(name) != None
+	
+	def find_widget_by_id(self, id, parent=None):
+		""" Recursively searchs for widget with specified ID """
+		if parent == None:
+			if id in self: return self[id] # Do things fast if possible
+			parent = self["editor"]
+		for c in parent.get_children():
+			if c.get_id() == id:
+				return c
+			if isinstance(c, Gtk.Container):
+				r = self.find_widget_by_id(id, c)
+				if not r is None:
+					return r
+		return None
+	
+	def show(self, parent=None):
+		if not parent is None:
+			self["editor"].set_transient_for(parent)
+		self["editor"].show_all()
+	
+	def close(self):
+		self["editor"].hide()
+		self["editor"].destroy()
+	
+	def setup_widgets(self):
+		# Load glade file
+		self.builder = Gtk.Builder()
+		self.builder.add_from_file("%s.glade" % self.mode)
+		self.builder.connect_signals(self)
+		# Set title stored in glade file in "Edit Title|Save Title" format
+		self["editor"].set_title(self["editor"].get_title().split("|")[ 1 if self.is_new else 0 ])
+		# Disable everything until configuration is loaded
+		self["editor"].set_sensitive(False)
+	
+	def get_value(self, key):
+		"""
+		Returns value from configuration.
+		Usualy returns self.values[key], but can handle some special cases
+		"""
+		if key == "KeepVersions":
+			# Number
+			return self.values["Versioning"]["Params"]["keep"] # oww...
+		elif key == "Versioning":
+			# Boool
+			return self.values["Versioning"]["Type"] != ""
+		elif key in self.values:
+			return self.values[key]
+		else:
+			raise KeyError(key)
+	
+	def load_data(self):
+		self.app.rest_request("config", self.cb_data_loaded, self.cb_data_failed)
+	
+	def cb_data_loaded(self, config):
+		self.config = config
+		try:
+			if self.mode == "repo-edit":
+				self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+		except KeyError:
+			# ID not found in configuration. This is practicaly impossible,
+			# so it's handled only by self-closing dialog.
+			self.close()
+			return
+		# Iterate over all known configuration values and set UI elements using unholy method
+		for key in self.VALUES[self.mode]:
+			w = self.find_widget_by_id(key)
+			if not key is None:
+				if isinstance(w, Gtk.Entry):
+					w.set_text(self.get_value(key.strip("v")))
+				elif isinstance(w, Gtk.CheckButton):
+					w.set_active(self.get_value(key.strip("v")))
+				elif key == "vNodes":
+					# Very special case
+					nids = [ n["NodeID"] for n in self.get_value("Nodes") ]
+					for node in self.app.nodes.values():
+						if node["id"] != self.app.my_id:
+							b = Gtk.CheckButton(node.get_title(), False)
+							self["vNodes"].pack_end(b, False, False, 0)
+							b.set_active(node["id"] in nids)
+					self["vNodes"].show_all()
+				else:
+					print w
+		# Disable ID editing if neede
+		self["vID"].set_sensitive(self.is_new)
+		# Enable dialog
+		self["editor"].set_sensitive(True)
+	
+	def cb_data_failed(self, exception, *a):
+		"""
+		Failed to load configuration. This shouldn't happen unless daemon
+		dies exactly when user clicks to edit menu.
+		Handled by simple error message.
+		"""
+		# All other errors are fatal for now. Error dialog is displayed and program exits.
+		d = Gtk.MessageDialog(
+				self["editor"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+				"%s %s\n\n%s %s" % (
+					_("Failed to load configuration from daemon."),
+					_("Try again."),
+					_("Error message:"), str(exception)
+					)
+				)
+		d.run()
+		self.close()
 
 def sizeof_fmt(size):
 	for x in ('B','kB','MB','GB','TB'):

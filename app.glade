@@ -222,6 +222,23 @@
 	</child>
 </object>
 
+<!-- Popup menu for repo/node -->
+<object class="GtkMenu" id="popup-menu">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-edit">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">gtk-edit</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_edit" swapped="no"/>
+		</object>
+	</child>
+</object>
+
 <!-- Menu images -->
 <object class="GtkImage" id="menu-add-repository-image">
 	<property name="visible">True</property>
