@@ -381,6 +381,7 @@ class App(object):
 	def restart(self):
 		self.epoch += 1
 		self.my_id = None
+		self["info-revealer"].set_reveal_child(False)
 		self["edit-menu"].set_sensitive(False)
 		self.request_config()
 	
@@ -401,8 +402,7 @@ class App(object):
 	
 	def config_updated(self, *a):
 		""" Check if configuration is out of sync """
-		# TODO: this one
-		pass
+		self.rest_request("config/sync", self.syncthing_cb_config_in_sync)
 	
 	# --- Callbacks ---
 	def cb_exit(self, event, *a):
@@ -428,6 +428,9 @@ class App(object):
 	def cb_menu_shutdown(self, event, *a):
 		self.rest_post("shutdown", {}, self.syncthing_cb_shutdown, None,
 			_("Syncthing has been shut down."))
+	
+	def cb_infobar_close(self, *a):
+		self["info-revealer"].set_reveal_child(False)
 	
 	def syncthing_cb_shutdown(self, data, message):
 		""" Callback for 'shutdown' AND 'restart' request """
@@ -594,6 +597,7 @@ class App(object):
 		self.close_connect_dialog()
 		self["edit-menu"].set_sensitive(True)
 		self.rest_request("events?limit=1", self.syncthing_cb_events)	# Requests most recent event only
+		self.rest_request("config/sync", self.syncthing_cb_config_in_sync)
 		self.rest_request("connections", self.syncthing_cb_connections)
 		self.rest_request("system", self.syncthing_cb_system)
 	
@@ -622,6 +626,16 @@ class App(object):
 				)
 		d.run()
 		Gtk.main_quit()
+	
+	def syncthing_cb_config_in_sync(self, data):
+		"""
+		Handler for config/sync response. Displays infobox if
+		configuration is not in sync.
+		"""
+		if "configInSync" in data:
+			if not data["configInSync"]:
+				# Not in sync...
+				self["info-revealer"].set_reveal_child(True)
 	
 	def on_event(self, e):
 		eType = e["type"]
