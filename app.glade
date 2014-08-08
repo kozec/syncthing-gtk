@@ -218,6 +218,7 @@
 			<property name="image">menu-restart-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_restart" swapped="no"/>
 		</object>
 	</child>
 </object>
