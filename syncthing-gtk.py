@@ -13,7 +13,7 @@ COLOR_OWN_NODE			= "#C0C0C0"
 COLOR_REPO				= "#9246B1"
 COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
-DEBUG = False
+DEBUG = True
 
 class App(object):
 	def __init__(self):
@@ -285,6 +285,7 @@ class App(object):
 		it's message if said dialog is already displayed.
 		"""
 		if self.connect_dialog == None:
+			if DEBUG: print "Creating connect_dialog"
 			self.connect_dialog = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -302,6 +303,7 @@ class App(object):
 					c.set_markup(message)
 					return True
 			return False
+		if DEBUG: print "Settinig connect_dialog label", message[0:15]
 		set_label(self.connect_dialog.get_content_area(), message)
 	
 	def close_connect_dialog(self):
@@ -391,7 +393,22 @@ class App(object):
 		pass
 	
 	def cb_menu_restart(self, event, *a):
-		self.rest_post("restart", {}, lambda *a : a)
+		self.rest_post("restart",  {}, self.syncthing_cb_shutdown, None,
+			"%s %s..." % (_("Syncthing is restarting."), _("Please wait")))
+	
+	def cb_menu_shutdown(self, event, *a):
+		self.rest_post("shutdown", {}, self.syncthing_cb_shutdown, None,
+			_("Syncthing has been shut down."))
+	
+	def syncthing_cb_shutdown(self, data, message):
+		""" Callback for 'shutdown' AND 'restart' request """
+		print ">>>", data
+		if 'ok' in data:
+			self.display_connect_dialog(message)
+			self.restart()
+		else:
+			# TODO: display error message here
+			pass
 	
 	def syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
@@ -413,10 +430,11 @@ class App(object):
 		"""
 		if isinstance(exception, GLib.GError):
 			if exception.code in (34, 39):	# Connection terminated unexpectedly, Connection Refused
-				self.display_connect_dialog("%s %s" % (
-					_("Connecting to Syncthing daemon lost."),
-					_("Syncthing is probably restarting or has been shut down.")
-					))
+				if self.connect_dialog == None:
+					self.display_connect_dialog("%s %s" % (
+						_("Connection to Syncthing daemon lost."),
+						_("Syncthing is probably restarting or has been shut down.")
+						))
 				self.restart()
 				return
 		# Other errors are ignored and events are pulled again after prolonged delay

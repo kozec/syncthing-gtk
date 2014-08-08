@@ -206,6 +206,7 @@
 			<property name="image">menu-shutdown-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_shutdown" swapped="no"/>
 		</object>
 	</child>
 	
