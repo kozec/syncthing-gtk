@@ -389,6 +389,11 @@ class App(object):
 			node.set_color_hex(COLOR_NODE_CONNECTED)
 			node.set_status(_("Up to Date"))
 	
+	def config_updated(self, *a):
+		""" Check if configuration is out of sync """
+		# TODO: this one
+		pass
+	
 	# --- Callbacks ---
 	def cb_exit(self, event, *a):
 		Gtk.main_quit()
@@ -1061,7 +1066,7 @@ class EditorDialog(object):
 		if key == "KeepVersions":
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
-			self.values["Versioning"]["Params"]["keep"] = int(value)
+			self.values["Versioning"]["Params"]["keep"] = str(int(value))
 		elif key == "Versioning":
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Type"))
@@ -1101,7 +1106,9 @@ class EditorDialog(object):
 		for key in self.VALUES[self.mode]:
 			w = self.find_widget_by_id(key)
 			if not key is None:
-				if isinstance(w, Gtk.Entry):
+				if isinstance(w, Gtk.SpinButton):
+					w.get_adjustment().set_value(int(self.get_value(key.strip("v"))))
+				elif isinstance(w, Gtk.Entry):
 					w.set_text(str(self.get_value(key.strip("v"))))
 				elif isinstance(w, Gtk.CheckButton):
 					w.set_active(self.get_value(key.strip("v")))
@@ -1177,6 +1184,31 @@ class EditorDialog(object):
 					self.set_value("Nodes", nodes)
 		# Post configuration back to daemon
 		self["editor"].set_sensitive(False)
+		self.post_config()
+	
+	def post_config(self):
+		""" Posts edited configuration back to daemon """
+		self.app.rest_post("config", self.config, self.syncthing_cb_post_config, self.syncthing_cb_post_error)
+	
+	def syncthing_cb_post_config(self, *a):
+		# No return value for this call, let's hope for the best
+		print "Configuration (probably) saved"
+		self["editor"].set_sensitive(True)
+		self.app.config_updated()
+		self.close()
+	
+	def syncthing_cb_post_error(self, *a):
+		# TODO: Unified error message
+		print "syncthing_cb_post_error", a
+		d = Gtk.MessageDialog(
+			self["editor"],
+			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+			Gtk.MessageType.INFO, 0,
+			_("Failed to save configuration."))
+		d.run()
+		d.hide()
+		d.destroy()
+		self["editor"].set_sensitive(True)
 
 
 def sizeof_fmt(size):
