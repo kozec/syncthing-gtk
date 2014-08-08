@@ -206,6 +206,16 @@ class App(object):
 			# Repeat request with acqiured cookie
 			self.rest_post(command, data, callback, error_callback, callback_data)
 			return
+		# Extract response code
+		try:
+			code = response.split("\n")[0].strip("\r\n").split(" ")[1]
+			if int(code) != 200:
+				self.rest_post_error(Exception("HTTP error %s" % (code,)), command, data, callback, error_callback, callback_data)
+				return
+		except Exception:
+			# That probably wasn't HTTP
+			self.rest_post_error(Exception("Invalid HTTP response"), command, data, callback, error_callback, callback_data)
+			return
 		if "CSRF Error" in response:
 			# My cookie is too old; Throw it away and try again
 			if DEBUG: print "Throwing away my cookie :("
@@ -1216,11 +1226,10 @@ class EditorDialog(object):
 	
 	def syncthing_cb_post_error(self, *a):
 		# TODO: Unified error message
-		print "syncthing_cb_post_error", a
 		d = Gtk.MessageDialog(
 			self["editor"],
 			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-			Gtk.MessageType.INFO, 0,
+			Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE,
 			_("Failed to save configuration."))
 		d.run()
 		d.hide()
