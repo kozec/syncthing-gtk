@@ -2,4 +2,16 @@ syncthing-gui
 =============
 
 GTK3 &amp; python based GUI for Syncthing
-_Currently only displays data from Syncthing daemon - editing is not implemented yet._
+
+Currently supported:
+- Everything what WebUI can display
+- Editing nodes
+- Editing repositories
+- Restart / shutdown server
+
+TODO:
+- Adding new node or repository
+- 'Show ID' option
+- Server settings
+- GUI settings
+- Notification area icon
