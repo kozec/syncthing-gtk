@@ -406,6 +406,10 @@ class App(object):
 			# Editing repository
 			e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
 			e.show(self["window"])
+		elif self.rightclick_box in self.nodes.values():
+			# Editing node
+			e = EditorDialog(self, "node-edit", False, self.rightclick_box["id"])
+			e.show(self["window"])
 	
 	def cb_menu_restart(self, event, *a):
 		self.rest_post("restart",  {}, self.syncthing_cb_shutdown, None,
@@ -984,6 +988,7 @@ class EditorDialog(object):
 	VALUES = {
 		# Dict with lists of all editable values, indexed by editor mode
 		"repo-edit" : ["vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vVersioning", "vKeepVersions", "vNodes" ],
+		"node-edit" : ["vNodeID", "vName", "vAddresses", "vCompression" ],
 	}
 	
 	def __init__(self, app, mode, is_new, id):
@@ -1056,6 +1061,8 @@ class EditorDialog(object):
 			except (KeyError, TypeError):
 				# Node not found
 				return False
+		elif key == "Addresses":
+			return ",".join([ x.strip() for x in self.values["Addresses"]])
 		elif key in self.values:
 			return self.values[key]
 		else:
@@ -1071,6 +1078,8 @@ class EditorDialog(object):
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Type"))
 			self.values["Versioning"]["Type"] = "simple" if value else ""
+		elif key == "Addresses":
+			self.values["Addresses"] = [ x.strip() for x in value.split(",") ]
 		elif key in self.values:
 			self.values[key] = value
 		else:
@@ -1097,6 +1106,12 @@ class EditorDialog(object):
 		try:
 			if self.mode == "repo-edit":
 				self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+			elif self.mode == "node-edit":
+				self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
+			else:
+				# Invalid mode. Shouldn't be possible
+				self.close()
+				return
 		except KeyError:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
@@ -1127,6 +1142,8 @@ class EditorDialog(object):
 		# Update special widgets
 		if "vID" in self:
 			self["vID"].set_sensitive(self.is_new)
+		if "vNodeID" in self:
+			self["vNodeID"].set_sensitive(self.is_new)
 		if "vVersioning" in self:
 			self.cb_vVersioning_toggled(self["vVersioning"])
 
