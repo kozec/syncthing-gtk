@@ -102,7 +102,7 @@ class App(object):
 		try:
 			ok, contents, etag = io.load_contents_finish(results)
 		except Exception, e:
-			self.rest_error(e, command, epoch, callback, error_callback, callback_data)
+			self.rest_error(e, command, callback, error_callback, callback_data)
 			return
 		if ok:
 			try:
@@ -114,18 +114,128 @@ class App(object):
 			else:
 				callback(data)
 		else:
-			self.rest_error(Exception("not ok"), command, epoch, callback, error_callback, callback_data)
+			self.rest_error(Exception("not ok"), command, callback, error_callback, callback_data)
 	
-	def rest_error(self, error, command, epoch, callback, error_callback, callback_data):
+	def rest_error(self, exception, command, callback, error_callback, callback_data):
 		""" Error handler for rest_response method """
 		if error_callback:
 			if callback_data:
-				error_callback(error, command, callback_data)
+				error_callback(exception, command, callback_data)
 			else:
-				error_callback(error, command)
+				error_callback(exception, command)
 		else:
-			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, error)
+			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
 			GLib.timeout_add_seconds(1, self.rest_request, command, callback, error_callback, callback_data)
+	
+	def rest_post(self, command, data, callback, error_callback=None, callback_data=None):
+		""" POSTs data (formated with json) to daemon. Works like rest_request """
+		uri = "/rest/%s" % ( "restart",)
+		sc = Gio.SocketClient()
+		sc.connect_to_host_async(self.address, 0, None, self.rest_post_connected,
+			command, data, self.epoch, callback, error_callback, callback_data)
+	
+	def rest_post_connected(self, sc, results, command, data, epoch, callback, error_callback, callback_data):
+		""" Second part of rest_post, called after HTTP connection is initiated """
+		try:
+			con = sc.connect_to_service_finish(results)
+			if con == None:
+				raise Exception("Unknown error")
+		except Exception, e:
+			self.rest_post_error(e, command, data, callback, error_callback, callback_data)
+			return
+		post_str = None
+		if self.CSRFtoken == None:
+			# Request CSRF token first
+			if DEBUG: print "Requesting cookie"
+			post_str = "\r\n".join([
+				"GET / HTTP/1.0",
+				"Host: %s" % self.address,
+				"Connection: close",
+				"",
+				"",
+				]).encode("utf-8")
+		else:
+			# Build POST request
+			json_str = json.dumps(data)
+			post_str = "\r\n".join([
+				"POST /rest/%s HTTP/1.0" % command,
+				"Connection: close",
+				"Cookie: CSRF-Token=%s" % self.CSRFtoken,
+				"X-CSRF-Token: %s" % self.CSRFtoken,
+				"Content-Length: %s" % len(json_str),
+				"Content-Type: application/json",
+				"",
+				json_str
+				]).encode("utf-8")
+		# Send it out and wait for response
+		con.get_output_stream().write_all(post_str)
+		con.get_input_stream().read_bytes_async(102400, 1, None, self.rest_post_response,
+			sc, command, data, callback, error_callback, callback_data)
+	
+	def rest_post_response(self, con, results, sc, command, data, callback, error_callback, callback_data):
+		try:
+			response = con.read_bytes_finish(results)
+			if response == None:
+				raise Exception("No data recieved")
+		except Exception, e:
+			self.rest_post_error(e, command, data, callback, error_callback, callback_data)
+			return
+		response = response.get_data()
+		con.close()
+		if self.CSRFtoken == None:
+			# I wanna cookie!
+			response = response.split("\n")
+			for d in response:
+				if d.startswith("Set-Cookie:"):
+					for c in d.split(":", 1)[1].split(";"):
+						if c.strip().startswith("CSRF-Token="):
+							self.CSRFtoken = c.split("=", 1)[1].strip(" \r\n")
+							if DEBUG: print "Got new cookie:", self.CSRFtoken
+							break
+					if self.CSRFtoken != None:
+						break
+			if self.CSRFtoken == None:
+				# This is pretty fatal and likely to fail again,
+				# so request is not repeated automaticaly
+				if error_callback == None:
+					print >>sys.stderr, ""
+					print >>sys.stderr, "Error: Request '%s' failed: Error: failed to get CSRF cookie from daemon" % (command,)
+				else:
+					self.rest_post_error(Exception("Failed to get CSRF cookie"))
+				return
+			# Repeat request with acqiured cookie
+			self.rest_post(command, data, callback, error_callback, callback_data)
+			return
+		if "CSRF Error" in response:
+			# My cookie is too old; Throw it away and try again
+			if DEBUG: print "Throwing away my cookie :("
+			self.CSRFtoken = None
+			self.rest_post(command, data, callback, error_callback, callback_data)
+			return
+		
+		# Parse response and call callback
+		try:
+			response = response.split("\r\n\r\n", 1)[1]
+			rdata = json.loads(response)
+		except IndexError: # No data
+			rdata = { }
+		except ValueError: # Not a JSON
+			rdata = {'data' : response }
+		if callback_data:
+			callback(rdata, callback_data)
+		else:
+			callback(rdata)
+	
+	def rest_post_error(self, exception, command, data, callback, error_callback, callback_data):
+		""" Error handler for rest_post_response method """
+		if error_callback:
+			if callback_data:
+				error_callback(exception, command, data, callback_data)
+			else:
+				error_callback(exception, command, data)
+		else:
+			print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
+			GLib.timeout_add_seconds(1, self.rest_post, command, data, callback, error_callback, callback_data)
 	
 	def request_config(self, *a):
 		""" Request settings from syncthing daemon """
@@ -201,7 +311,6 @@ class App(object):
 	
 	def show_repo(self, id, name, path, is_master, ignore_perms, shared):
 		""" Shared is expected to be list """
-		# title = name if len(name) < 20 else "...%s" % name[-20:]
 		box = InfoBox(name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("id",			"icons/version.png",	_("Repository ID"),			id)
 		box.add_value("folder",		"icons/folder.png",		_("Folder"),				path)
@@ -283,92 +392,6 @@ class App(object):
 	
 	def cb_menu_restart(self, event, *a):
 		self.rest_post("restart", {}, lambda *a : a)
-	
-	def rest_post(self, command, data, callback, error_callback=None, callback_data=None):
-		""" POSTs data (formated with json) to daemon. Works like rest_request """
-		uri = "/rest/%s" % ( "restart",)
-		sc = Gio.SocketClient()
-		sc.connect_to_host_async(self.address, 0, None, self.rest_post_connected,
-			command, data, callback, error_callback, callback_data)
-	
-	def rest_post_connected(self, sc, results, command, data, callback, error_callback, callback_data):
-		""" Second part of rest_post, called after HTTP connection is initiated """
-		# TODO: errors
-		con = sc.connect_to_service_finish(results)
-		if con == None:
-			# TODO: errors
-			return
-		post_str = None
-		if self.CSRFtoken == None:
-			# Request CSRF token first
-			if DEBUG: print "Requesting cookie"
-			post_str = "\r\n".join([
-				"GET / HTTP/1.0",
-				"Host: %s" % self.address,
-				"Connection: close",
-				"",
-				"",
-				]).encode("utf-8")
-		else:
-			json_str = json.dumps(data)
-			post_str = "\r\n".join([
-				"POST /rest/%s HTTP/1.0" % command,
-				"Connection: close",
-				"Cookie: CSRF-Token=%s" % self.CSRFtoken,
-				"X-CSRF-Token: %s" % self.CSRFtoken,
-				"Content-Length: %s" % len(json_str),
-				"Content-Type: application/json",
-				"",
-				json_str
-				]).encode("utf-8")
-		con.get_output_stream().write_all(post_str)
-		con.get_input_stream().read_bytes_async(10240, 1, None, self.rest_post_response,
-			sc, command, data, callback, error_callback, callback_data)
-	
-	def rest_post_response(self, con, results, sc, command, data, callback, error_callback, callback_data):
-		# TODO: errors
-		response = con.read_bytes_finish(results)
-		if response == None:
-			# TODO: errors
-			return
-		response = response.get_data()
-		con.close()
-		if self.CSRFtoken == None:
-			# I wanna cookie!
-			response = response.split("\n")
-			for d in response:
-				if d.startswith("Set-Cookie:"):
-					for c in d.split(":", 1)[1].split(";"):
-						if c.strip().startswith("CSRF-Token="):
-							self.CSRFtoken = c.split("=", 1)[1].strip(" \r\n")
-							if DEBUG: print "Got new cookie:", self.CSRFtoken
-							break
-					if self.CSRFtoken != None:
-						break
-			if self.CSRFtoken == None:
-				# TODO: errors
-				return
-			# Repeat request with acqiured cookie
-			self.rest_post(command, data, callback, error_callback, callback_data)
-			return
-		if "CSRF Error" in response:
-			# My cookie is too old; Throw it away and try again
-			if DEBUG: print "Throwing away my cookie :("
-			self.CSRFtoken = None
-			self.rest_post(command, data, callback, error_callback, callback_data)
-			return
-		
-		try:
-			response = response.split("\r\n\r\n", 1)[1]
-			rdata = json.loads(response)
-		except IndexError: # No data
-			rdata = { }
-		except ValueError: # Not a JSON
-			rdata = {'data' : response }
-		if callback_data:
-			callback(rdata, callback_data)
-		else:
-			callback(rdata)
 	
 	def syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
