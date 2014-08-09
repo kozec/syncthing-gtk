@@ -409,7 +409,9 @@ class App(object):
 		Gtk.main_quit()
 	
 	def cb_menu_add_repo(self, event, *a):
-		pass
+		""" Handler for 'Add repository' menu item """
+		e = EditorDialog(self, "repo-edit", True)
+		e.show(self["window"])
 	
 	def cb_menu_popup_edit(self, *a):
 		if self.rightclick_box in self.repos.values():
@@ -1016,7 +1018,7 @@ class EditorDialog(object):
 		"node-edit" : ["vNodeID", "vName", "vAddresses", "vCompression" ],
 	}
 	
-	def __init__(self, app, mode, is_new, id):
+	def __init__(self, app, mode, is_new, id=None):
 		self.app = app
 		self.mode = mode
 		self.id = id
@@ -1095,6 +1097,7 @@ class EditorDialog(object):
 	
 	def set_value(self, key, value):
 		""" Stores value to configuration, handling some special cases """
+		print "set_value", self.values, key, value
 		if key == "KeepVersions":
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
@@ -1119,7 +1122,7 @@ class EditorDialog(object):
 		key, rest = keys[0], keys[1:]
 		if not key in parent :
 			parent[key] = {}
-		if parent[key] is None:
+		if parent[key] in ("", None ):
 			parent[key] = {}
 		self.create_dicts(parent[key], rest)
 	
@@ -1129,14 +1132,17 @@ class EditorDialog(object):
 	def cb_data_loaded(self, config):
 		self.config = config
 		try:
-			if self.mode == "repo-edit":
-				self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
-			elif self.mode == "node-edit":
-				self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
+			if self.is_new:
+				self.values = { x.lstrip("v") : "" for x in self.VALUES[self.mode] }
 			else:
-				# Invalid mode. Shouldn't be possible
-				self.close()
-				return
+				if self.mode == "repo-edit":
+					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+				elif self.mode == "node-edit":
+					self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
+				else:
+					# Invalid mode. Shouldn't be possible
+					self.close()
+					return
 		except KeyError:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
@@ -1147,7 +1153,7 @@ class EditorDialog(object):
 			w = self.find_widget_by_id(key)
 			if not key is None:
 				if isinstance(w, Gtk.SpinButton):
-					w.get_adjustment().set_value(int(self.get_value(key.strip("v"))))
+					w.get_adjustment().set_value(int(self.get_value(key.lstrip("v"))))
 				elif isinstance(w, Gtk.Entry):
 					w.set_text(str(self.get_value(key.strip("v"))))
 				elif isinstance(w, Gtk.CheckButton):
@@ -1224,6 +1230,12 @@ class EditorDialog(object):
 								if b.get_active()
 							]
 					self.set_value("Nodes", nodes)
+		# Add new dict to configuration (edited dict is already there)
+		if self.is_new:
+			if self.mode == "repo-edit":
+				self.config["Repositories"].append(self.values)
+			elif self.mode == "node-edit":
+				self.config["Nodes"].append(self.values)
 		# Post configuration back to daemon
 		self["editor"].set_sensitive(False)
 		self.post_config()
