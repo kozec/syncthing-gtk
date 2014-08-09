@@ -2,7 +2,8 @@
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from xml.dom import minidom
-import json, os, webbrowser, datetime, urlparse
+from base64 import b32decode
+import json, re, os, webbrowser, datetime, urlparse
 import sys, time, pprint
 _ = lambda (a) : a
 
@@ -13,6 +14,7 @@ COLOR_OWN_NODE			= "#C0C0C0"
 COLOR_REPO				= "#9246B1"
 COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
+LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 DEBUG = False
 
 class App(object):
@@ -1019,8 +1021,22 @@ class EditorDialog(object):
 	""" Universal handler for all Syncthing settings and editing """
 	VALUES = {
 		# Dict with lists of all editable values, indexed by editor mode
-		"repo-edit" : ["vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vVersioning", "vKeepVersions", "vNodes" ],
+		"repo-edit" : ["vID", "vDirectory", "vReadOnly", "vIgnorePerms",
+							"vVersioning", "vKeepVersions", "vNodes" ],
 		"node-edit" : ["vNodeID", "vName", "vAddresses", "vCompression" ],
+	}
+	# Regexp to check if repository id is valid
+	RE_REPO_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
+	# Invalid Value Messages.
+	# Messages displayed when value in field is invalid
+	IV_MESSAGES = {
+		"vNodeID" : _("The entered node ID does not look valid. It "
+			"should be a 52 character string consisting of letters and "
+			"numbers, with spaces and dashes being optional."),
+		"vID" : _("The repository ID must be a short identifier (64 "
+			"characters or less) consisting of letters, numbers and "
+			"the the dot (.), dash (-) and underscode (_) characters "
+			"only"),
 	}
 	
 	def __init__(self, app, mode, is_new, id=None):
@@ -1030,6 +1046,10 @@ class EditorDialog(object):
 		self.is_new = is_new
 		self.config = None
 		self.values = None
+		self.checks = {}
+		self.valid_ids = []		# Used as cache for repository ID checking
+		self.original_labels={}	# Stores original value while error message
+								# is displayed on label.
 		self.setup_widgets()
 		self.load_data()
 	
@@ -1133,17 +1153,47 @@ class EditorDialog(object):
 	def load_data(self):
 		self.app.rest_request("config", self.cb_data_loaded, self.cb_data_failed)
 	
+	def display_error_message(self, value_id):
+		""" Changes text on associated label to error message """
+		wid = "lbl%s" % (value_id,) # widget id
+		if value_id in self.original_labels:
+			# Already done
+			return
+		if not value_id in self.IV_MESSAGES:
+			# Nothing to show
+			return
+		self.original_labels[value_id] = self[wid].get_label()
+		self[wid].set_markup('<span color="red">%s</span>' % (self.IV_MESSAGES[value_id],))
+	
+	def hide_error_message(self, value_id):
+		""" Changes text on associated label back to normal text """
+		wid = "lbl%s" % (value_id,) # widget id
+		if value_id in self.original_labels:
+			self[wid].set_label(self.original_labels[value_id])
+			del self.original_labels[value_id]
+	
 	def cb_data_loaded(self, config):
 		self.config = config
 		try:
 			if self.is_new:
 				self.values = { x.lstrip("v") : "" for x in self.VALUES[self.mode] }
-				if self.mode == "node-edit":
+				if self.mode == "repo-edit":
+					self.checks = {
+						"vID" : self.check_repo_id,
+						"vDirectory" : self.check_path
+						}
+				elif self.mode == "node-edit":
 					self.set_value("Addresses", "dynamic")
 					self.set_value("Compression", True)
+					self.checks = {
+						"vNodeID" : self.check_node_id,
+						}
 			else:
 				if self.mode == "repo-edit":
 					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+					self.checks = {
+						"vDirectory" : self.check_path
+						}
 				elif self.mode == "node-edit":
 					self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
 				else:
@@ -1214,6 +1264,21 @@ class EditorDialog(object):
 	def cb_btClose_clicked(self, *a):
 		self.close()
 	
+	def cb_check_value(self, *a):
+		self["btSave"].set_sensitive(True)
+		for x in self.checks:
+			value = self[x].get_text().strip()
+			if len(value) == 0:
+				# Empty value in field
+				self["btSave"].set_sensitive(False)
+				self.hide_error_message(x)
+			elif not self.checks[x](value):
+				# Invalid value in any field
+				self["btSave"].set_sensitive(False)
+				self.display_error_message(x)
+			else:
+				self.hide_error_message(x)
+	
 	def cb_btSave_clicked(self, *a):
 		# Saving data... Iterate over same values as load does and put
 		# stuff back to self.values dict
@@ -1247,6 +1312,16 @@ class EditorDialog(object):
 		self["editor"].set_sensitive(False)
 		self.post_config()
 	
+	def check_node_id(self, value):
+		return check_node_id(value)
+	
+	def check_repo_id(self, value):
+		return not self.RE_REPO_ID.match(value) is None
+	
+	def check_path(self, value):
+		# Any non-empty path is OK
+		return True
+	
 	def post_config(self):
 		""" Posts edited configuration back to daemon """
 		self.app.rest_post("config", self.config, self.syncthing_cb_post_config, self.syncthing_cb_post_error)
@@ -1270,6 +1345,55 @@ class EditorDialog(object):
 		d.destroy()
 		self["editor"].set_sensitive(True)
 
+def luhn_b32generate(s):
+	"""
+	Returns a check digit for the string s which should be composed of
+	characters from LUHN_ALPHABET
+	"""
+	factor, sum, n = 1, 0, len(LUHN_ALPHABET)
+	for c in s:
+		try:
+			codepoint = LUHN_ALPHABET.index(c)
+		except ValueError:
+			raise ValueError("Digit %s is not valid" % (c,))
+		addend = factor * codepoint
+		factor = 1 if factor == 2 else 2
+		addend = (addend / n) + (addend % n)
+		sum += addend
+	remainder = sum % n
+	checkcodepoint = (n - remainder) % n
+	return LUHN_ALPHABET[checkcodepoint]
+
+def check_node_id(nid):
+	""" Returns True if node id is valid """
+	# Based on nodeid.go
+	nid = nid.strip("== \t").upper() \
+		.replace("0", "O") \
+		.replace("1", "I") \
+		.replace("8", "B") \
+		.replace("-", "") \
+		.replace(" ", "")
+	if len(nid) == 56:
+		for i in xrange(0, 4):
+			p = nid[i*14:((i+1)*14)-1]
+			try:
+				l = luhn_b32generate(p)
+			except Exception, e:
+				print e
+				return False
+			g = "%s%s" % (p, l)
+			if g != nid[i*14:(i+1)*14]:
+				return False
+		return True
+	elif len(nid) == 52:
+		try:
+			b32decode("%s====" % (nid,))
+			return True
+		except Exception:
+			return False
+	else:
+		# Wrong length
+		return False
 
 def sizeof_fmt(size):
 	for x in ('B','kB','MB','GB','TB'):
