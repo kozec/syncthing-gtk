@@ -35,6 +35,7 @@ class App(object):
 		self.widgets = {}
 		self.repos = {}
 		self.nodes = {}
+		self.timers = {}	# see timer() method
 		self.open_boxes = set([])
 		self.setup_widgets()
 		self.setup_connection()
@@ -130,7 +131,7 @@ class App(object):
 				error_callback(exception, command)
 		else:
 			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
-			GLib.timeout_add_seconds(1, self.rest_request, command, callback, error_callback, callback_data)
+			self.timer(None, 1, self.rest_request, command, callback, error_callback, callback_data)
 	
 	def rest_post(self, command, data, callback, error_callback=None, callback_data=None):
 		""" POSTs data (formated with json) to daemon. Works like rest_request """
@@ -252,7 +253,7 @@ class App(object):
 				error_callback(exception, command, data)
 		else:
 			print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
-			GLib.timeout_add_seconds(1, self.rest_post, command, data, callback, error_callback, callback_data)
+			self.timer(None, 1, self.rest_post, command, data, callback, error_callback, callback_data)
 	
 	def request_config(self, *a):
 		""" Request settings from syncthing daemon """
@@ -395,7 +396,24 @@ class App(object):
 		self.my_id = None
 		self["info-revealer"].set_reveal_child(False)
 		self["edit-menu"].set_sensitive(False)
+		for x in self.timers:
+			GLib.source_remove(self.timers[x])
+		self.timers = {}
 		self.request_config()
+	
+	def timer(self, name, delay, callback, *data):
+		"""
+		Runs callback after specified number of seconds. Uses
+		GLib.timeout_add_seconds with small wrapping to allow named
+		timers to be canceled by reset() call
+		"""
+		if name is None:
+			# No wrapping is needed, call GLib directly
+			GLib.timeout_add_seconds(delay, callback, *data)
+		elif name in self.timers:
+			# Cancel old timer
+			GLib.source_remove(self.timers[name])
+		self.timers[name] = GLib.timeout_add_seconds(delay, self.cb_timer, name, callback, *data)
 	
 	def update_completion(self, node_id):
 		node = self.nodes[node_id]
@@ -456,11 +474,22 @@ class App(object):
 		self["info-revealer"].set_reveal_child(False)
 	
 	def cb_open_closed(self, box):
+		"""
+		Called from InfoBox when user opens or closes bottom part
+		"""
 		if box.is_open():
 			self.open_boxes.add(box["id"])
 		else:
 			if box["id"] in self.open_boxes :
 				self.open_boxes.remove(box["id"])
+	
+	def cb_timer(self, name, callback, *data):
+		"""
+		Removes name from list of active timers and calls real callback.
+		"""
+		del self.timers[name]
+		callback(*data)
+		return False
 	
 	def syncthing_cb_shutdown(self, data, message):
 		""" Callback for 'shutdown' AND 'restart' request """
@@ -481,7 +510,7 @@ class App(object):
 			if self.repos[rid]["needs_update"]:
 				self.repos[rid]["needs_update"] = False
 				self.rest_request("model?repo=%s" % (rid,), self.syncthing_cb_repo_data, callback_data=rid)
-		GLib.timeout_add_seconds(self.refresh_rate, self.request_events)
+		self.timer("event", self.refresh_rate, self.request_events)
 	
 	def syncthing_cb_events_error(self, exception, command):
 		"""
@@ -499,7 +528,7 @@ class App(object):
 				self.restart()
 				return
 		# Other errors are ignored and events are pulled again after prolonged delay
-		GLib.timeout_add_seconds(self.refresh_rate * 5, self.request_events)
+		self.timer("event", self.refresh_rate * 5, self.request_events)
 	
 	def syncthing_cb_connections(self, connections):
 		current_time = time.time()
@@ -538,7 +567,7 @@ class App(object):
 			for ui_key, data_key in ( ("dl.rate", "InBytesTotal"), ("up.rate", "OutBytesTotal") ):
 				node[ui_key] = "%sps (%s)" % (sizeof_fmt(totals[ui_key]), sizeof_fmt(totals[data_key]))
 			# TODO: Results differ from webui :(
-		GLib.timeout_add_seconds(self.refresh_rate * 5, self.rest_request, "connections", self.syncthing_cb_connections)
+		self.timer("conns", self.refresh_rate * 5, self.rest_request, "connections", self.syncthing_cb_connections)
 	
 	def syncthing_cb_completion(self, data, (node_id, repo_id)):
 		if node_id in self.nodes:	# Should be always
@@ -550,6 +579,7 @@ class App(object):
 		if self.my_id != data["myID"]:
 			if self.my_id != None:
 				# Can myID be ever changed? Do full restart in that case
+				print >>sys.stderr, "Warning: My ID was changed"
 				self.restart()
 				return
 			self.my_id = data["myID"]
@@ -584,7 +614,7 @@ class App(object):
 		else:
 			node["announce"] = _("offline")
 		
-		GLib.timeout_add_seconds(self.refresh_rate * 5, self.rest_request, "system", self.syncthing_cb_system)
+		self.timer("system", self.refresh_rate * 5, self.rest_request, "system", self.syncthing_cb_system)
 	
 	def syncthing_cb_version(self, data):
 		node = self.nodes[self.my_id]
@@ -603,7 +633,7 @@ class App(object):
 			repo.set_color_hex(COLOR_REPO_IDLE)
 		else:
 			# Repo is being synchronized, request data again to keep UI updated
-			GLib.timeout_add_seconds(self.refresh_rate, self.request_repo_data, repo_id)
+			self.timer("repo_%s" % repo_id, self.refresh_rate, self.request_repo_data, repo_id)
 			repo.set_color_hex(COLOR_REPO_SYNCING)
 	
 	def syncthing_cb_config(self, config):
@@ -643,7 +673,7 @@ class App(object):
 						_("Connecting to Syncthing daemon at %s...") % (self.webui_url,),
 						_("If daemon is not running, it may be good idea to start it now.")
 						))
-				GLib.timeout_add_seconds(self.refresh_rate, self.rest_request, "config", self.syncthing_cb_config, self.syncthing_cb_config_error)
+				self.timer("config", self.refresh_rate, self.rest_request, "config", self.syncthing_cb_config, self.syncthing_cb_config_error)
 				return
 		# All other errors are fatal for now. Error dialog is displayed and program exits.
 		d = Gtk.MessageDialog(
