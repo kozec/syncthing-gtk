@@ -10,7 +10,6 @@ Currently supported:
 - Restart / shutdown server
 
 TODO:
-- 'Show ID' option
 - Server settings
 - GUI settings
 - Notification area icon
