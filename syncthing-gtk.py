@@ -38,6 +38,7 @@ class App(object):
 		self.timers = {}	# see timer() method
 		self.open_boxes = set([])
 		self.setup_widgets()
+		self.setup_statusicon()
 		self.setup_connection()
 		GLib.idle_add(self.request_config)
 	
@@ -49,6 +50,12 @@ class App(object):
 		# Setup window
 		self["window"].set_title(_("Syncthing GTK"))
 		self["edit-menu"].set_sensitive(False)
+	
+	def setup_statusicon(self):
+		self.statusicon = Gtk.StatusIcon.new_from_file("icons/st-logo-24.png")
+		self.statusicon.set_title(_("Syncthing GTK"))
+		self.statusicon.connect("activate", self.cb_statusicon_click)
+		self.statusicon.connect("popup-menu", self.cb_statusicon_popup)
 	
 	def setup_connection(self):
 		# Read syncthing config to get connection url
@@ -469,6 +476,18 @@ class App(object):
 	def cb_menu_shutdown(self, event, *a):
 		self.rest_post("shutdown", {}, self.syncthing_cb_shutdown, None,
 			_("Syncthing has been shut down."))
+	
+	def cb_statusicon_click(self, *a):
+		""" Called when user clicks on status icon """
+		# Hide / show main window
+		if self["window"].is_visible():
+			self["window"].hide()
+		else:
+			self["window"].show()
+	
+	def cb_statusicon_popup(self, si, button, time):
+		""" Called when user right-clicks on status icon """
+		self["si-menu"].popup(None, None, None, None, button, time)
 	
 	def cb_infobar_close(self, *a):
 		self["info-revealer"].set_reveal_child(False)

@@ -346,6 +346,87 @@
 	</child>
 </object>
 
+<!-- Popup menu for status icon -->
+<object class="GtkMenu" id="si-menu"> <!-- 'si' for Status Icon -->
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-status">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">- status goes here -</property>
+			<property name="use_underline">False</property>
+			<property name="sensitive">False</property>
+		</object>
+	</child>
+
+	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-si-separator1">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-show-id">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Show _ID</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-si-show-id-image</property>
+			<property name="use_stock">False</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_show_id" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-shutdown">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Sh_utdown Daemon</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-si-shutdown-image</property>
+			<property name="use_stock">False</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_shutdown" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-restart">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">_Restart Daemon</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-si-restart-image</property>
+			<property name="use_stock">False</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_restart" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-si-separator2">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-exit">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label">gtk-quit</property>
+			<property name="always_show_image">True</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<signal name="activate" handler="cb_exit" swapped="no"/>
+		</object>
+	</child>
+	
+</object>
+
 <!-- Menu images -->
 <object class="GtkImage" id="menu-add-repository-image">
 	<property name="visible">True</property>
@@ -375,6 +456,13 @@
 	<property name="pixbuf">icons/show_id.png</property>
 </object>
 
+<object class="GtkImage" id="menu-si-show-id-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="pixbuf">icons/show_id.png</property>
+</object>
+
 <object class="GtkImage" id="menu-shutdown-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
@@ -382,7 +470,21 @@
 	<property name="icon_name">system-shutdown</property>
 </object>
 
+<object class="GtkImage" id="menu-si-shutdown-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">system-shutdown</property>
+</object>
+
 <object class="GtkImage" id="menu-restart-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">view-refresh</property>
+</object>
+
+<object class="GtkImage" id="menu-si-restart-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
