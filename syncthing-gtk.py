@@ -413,6 +413,11 @@ class App(object):
 		e = EditorDialog(self, "repo-edit", True)
 		e.show(self["window"])
 	
+	def cb_menu_add_node(self, event, *a):
+		""" Handler for 'Add node' menu item """
+		e = EditorDialog(self, "node-edit", True)
+		e.show(self["window"])
+	
 	def cb_menu_popup_edit(self, *a):
 		if self.rightclick_box in self.repos.values():
 			# Editing repository
@@ -1097,7 +1102,6 @@ class EditorDialog(object):
 	
 	def set_value(self, key, value):
 		""" Stores value to configuration, handling some special cases """
-		print "set_value", self.values, key, value
 		if key == "KeepVersions":
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
@@ -1134,6 +1138,9 @@ class EditorDialog(object):
 		try:
 			if self.is_new:
 				self.values = { x.lstrip("v") : "" for x in self.VALUES[self.mode] }
+				if self.mode == "node-edit":
+					self.set_value("Addresses", "dynamic")
+					self.set_value("Compression", True)
 			else:
 				if self.mode == "repo-edit":
 					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
