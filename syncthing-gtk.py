@@ -355,6 +355,9 @@ class App(object):
 		return box
 	
 	def show_node(self, id, name, use_compression):
+		if name in (None, ""):
+			# Show first block from ID if name is unset
+			name = id.split("-")[0]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("address",	"icons/address.png",	_("Address"),			"?")
 		box.add_value("sync",		"icons/sync.png",		_("Synchronization"),	"0%")
