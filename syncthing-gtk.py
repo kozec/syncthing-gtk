@@ -771,8 +771,7 @@ class App(Gtk.Application):
 	
 	def syncthing_cb_config_error(self, exception, command):
 		if isinstance(exception, GLib.GError):
-			if exception.code == 39:	# Connection Refused, I can't find constant for it in GLib
-				# Connection refused is only error code with good way to handle.
+			if exception.code in (39, 4):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
 				# For now, handler just displays dialog with "please wait" message tries it again
 				if self.connect_dialog == None:
@@ -783,6 +782,7 @@ class App(Gtk.Application):
 				self.set_status(False)
 				self.timer("config", self.refresh_rate, self.rest_request, "config", self.syncthing_cb_config, self.syncthing_cb_config_error)
 				return
+		print exception.code, exception.message
 		# All other errors are fatal for now. Error dialog is displayed and program exits.
 		d = Gtk.MessageDialog(
 				self["window"],
@@ -928,6 +928,7 @@ class InfoBox(Gtk.Container):
 		self.grid.set_column_spacing(3)
 		self.rev.set_reveal_child(False)
 		align.set_padding(2, 2, 5, 5)
+		eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
 		# Connect signals
 		eb.connect("button-release-event", self.on_grid_click)
 		# Pack together
@@ -1135,6 +1136,7 @@ class InfoBox(Gtk.Container):
 	def set_color(self, r, g, b, a):
 		""" Expects floats """
 		self.color = (r, g, b, a)
+		self.header.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(r, g, b, a))
 		self.queue_draw()
 	
 	def set_border(self, width):
