@@ -104,6 +104,8 @@ class App(object):
 		except Exception, e:
 			self.rest_error(e, command, callback, error_callback, callback_data)
 			return
+		finally:
+			del io	# Prevents leaking fd's in gvfsd-http daemon if program crashes
 		if ok:
 			try:
 				data = json.loads(contents)
@@ -180,8 +182,10 @@ class App(object):
 		except Exception, e:
 			self.rest_post_error(e, command, data, callback, error_callback, callback_data)
 			return
+		finally:
+			con.close()
+			del con
 		response = response.get_data()
-		con.close()
 		if self.CSRFtoken == None:
 			# I wanna cookie!
 			response = response.split("\n")
