@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from xml.dom import minidom
 from base64 import b32decode
-import json, re, os, webbrowser, datetime, urlparse
+import json, re, os, webbrowser, datetime, urlparse, tempfile
 import sys, time, pprint
 _ = lambda (a) : a
 
@@ -416,6 +416,10 @@ class App(object):
 	# --- Callbacks ---
 	def cb_exit(self, event, *a):
 		Gtk.main_quit()
+	
+	def cb_menu_show_id(self, *a):
+		d = MyIDDialog(self)
+		d.show(self["window"])
 	
 	def cb_menu_add_repo(self, event, *a):
 		""" Handler for 'Add repository' menu item """
@@ -1024,6 +1028,63 @@ class InfoBox(Gtk.Container):
 		self.set_value(key, value)
 
 
+class MyIDDialog(object):
+	""" Display ID of this node """
+	def __init__(self, app):
+		self.app = app
+		self.setup_widgets()
+		self.load_data()
+	
+	def __getitem__(self, name):
+		""" Convince method that allows widgets to be accessed via self["widget"] """
+		return self.builder.get_object(name)
+	
+	def show(self, parent=None):
+		if not parent is None:
+			self["dialog"].set_transient_for(parent)
+		self["dialog"].show_all()
+	
+	def close(self):
+		self["dialog"].hide()
+		self["dialog"].destroy()
+	
+	def setup_widgets(self):
+		# Load glade file
+		self.builder = Gtk.Builder()
+		self.builder.add_from_file("node-id.glade")
+		self.builder.connect_signals(self)
+		self["vID"].set_text(self.app.my_id)
+
+	def load_data(self):
+		""" Loads QR code from Syncthing daemon """
+		uri = "%s/qr/%s" % (self.app.webui_url, self.app.my_id)
+		io = Gio.file_new_for_uri(uri)
+		io.load_contents_async(None, self.cb_syncthing_qr)
+	
+	def cb_btClose_clicked(self, *a):
+		self.close()
+	
+	def cb_syncthing_qr(self, io, results):
+		"""
+		Called when QR code is loaded or operation fails. Image is then
+		displayed in dialog, failure is silently ignored.
+		"""
+		try:
+			ok, contents, etag = io.load_contents_finish(results)
+			if ok:
+				# QR is loaded, save it to temp file and let GTK to handle
+				# rest
+				tf = tempfile.NamedTemporaryFile("wb", suffix=".png", delete=False)
+				tf.write(contents)
+				tf.close()
+				self["vQR"].set_from_file(tf.name)
+				os.unlink(tf.name)
+		except Exception, e:
+			return
+		finally:
+			del io
+
+
 class EditorDialog(object):
 	""" Universal handler for all Syncthing settings and editing """
 	VALUES = {
@@ -1413,4 +1474,3 @@ def sizeof_fmt(size):
 if __name__ == "__main__":
 	App().show()
 	Gtk.main()
-

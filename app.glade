@@ -291,6 +291,7 @@
 			<property name="image">menu-show-id-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_show_id" swapped="no"/>
 		</object>
 	</child>
 
