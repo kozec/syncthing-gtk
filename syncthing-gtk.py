@@ -35,6 +35,7 @@ class App(object):
 		self.widgets = {}
 		self.repos = {}
 		self.nodes = {}
+		self.open_boxes = set([])
 		self.setup_widgets()
 		self.setup_connection()
 		GLib.idle_add(self.request_config)
@@ -350,6 +351,7 @@ class App(object):
 		box.set_color_hex(COLOR_REPO)
 		self["repolist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
+		box.set_open(id in self.open_boxes)
 		self["repolist"].show_all()
 		self.repos[id] = box
 		return box
@@ -374,6 +376,7 @@ class App(object):
 		box.set_color_hex(COLOR_NODE)
 		self["nodelist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
+		box.set_open(id in self.open_boxes)
 		self["nodelist"].show_all()
 		self.nodes[id] = box
 		return box
@@ -451,6 +454,13 @@ class App(object):
 	
 	def cb_infobar_close(self, *a):
 		self["info-revealer"].set_reveal_child(False)
+	
+	def cb_open_closed(self, box):
+		if box.is_open():
+			self.open_boxes.add(box["id"])
+		else:
+			if box["id"] in self.open_boxes :
+				self.open_boxes.remove(box["id"])
 	
 	def syncthing_cb_shutdown(self, data, message):
 		""" Callback for 'shutdown' AND 'restart' request """
@@ -935,6 +945,7 @@ class InfoBox(Gtk.Container):
 		"""
 		if event.button == 1:	# left
 			self.rev.set_reveal_child(not self.rev.get_reveal_child())
+			self.app.cb_open_closed(self)
 		elif event.button == 3:	# right
 			self.app.show_popup_menu(self, event)
 	
@@ -984,6 +995,13 @@ class InfoBox(Gtk.Container):
 	def set_border(self, width):
 		self.border_width = width
 		self.queue_resize()
+	
+	def set_open(self, b):
+		self.rev.set_reveal_child(b)
+	
+	def is_open(self):
+		""" Returns True if box is open """
+		return self.rev.get_reveal_child()
 	
 	def add_value(self, key, icon, title, value):
 		""" Adds new line with provided properties """
