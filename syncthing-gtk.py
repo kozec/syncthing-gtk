@@ -14,6 +14,7 @@ COLOR_OWN_NODE			= "#C0C0C0"
 COLOR_REPO				= "#9246B1"
 COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
+SI_FRAMES				= 4 # Number of animation frames for status icon
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 DEBUG = False
 
@@ -35,9 +36,12 @@ class App(object):
 		self.widgets = {}
 		self.repos = {}
 		self.nodes = {}
-		self.timers = {}	# see timer() method
-		self.open_boxes = set([])
+		self.timers = {}			# see timer() method
+		self.open_boxes = set([])	# Holds set of expanded node/repo boxes
+		self.syncing_repos = set([])# Holds set of repos that are being synchronized
+		self.sync_animation = 0
 		self.setup_widgets()
+		self.setup_statusicon()
 		self.setup_connection()
 		GLib.idle_add(self.request_config)
 	
@@ -49,6 +53,13 @@ class App(object):
 		# Setup window
 		self["window"].set_title(_("Syncthing GTK"))
 		self["edit-menu"].set_sensitive(False)
+	
+	def setup_statusicon(self):
+		self.statusicon = Gtk.StatusIcon.new_from_file("icons/si-unknown.png")
+		self.statusicon.set_title(_("Syncthing GTK"))
+		self.statusicon.connect("activate", self.cb_statusicon_click)
+		self.statusicon.connect("popup-menu", self.cb_statusicon_popup)
+		self.set_status(False)
 	
 	def setup_connection(self):
 		# Read syncthing config to get connection url
@@ -74,6 +85,35 @@ class App(object):
 			# TODO: https
 		except Exception, e:
 			self.fatal_error("Required configuration node not found in daemon config file")
+	
+	def set_status(self, is_connected):
+		""" Sets icon and text on first line of popup menu """
+		if is_connected:
+			if len(self.syncing_repos) == 0:
+				self.statusicon.set_from_file("icons/si-idle.png")
+				self["menu-si-status"].set_label(_("Idle"))
+				self.timer_cancel("icon")
+			else:
+				if len(self.syncing_repos) == 1:
+					self["menu-si-status"].set_label(_("Synchronizing '%s'") % (list(self.syncing_repos)[0]["id"],))
+				else:
+					self["menu-si-status"].set_label(_("Synchronizing %s repos") % (len(self.syncing_repos),))
+				self.animate_status()
+		else:
+			self.statusicon.set_from_file("icons/si-unknown.png")
+			self["menu-si-status"].set_label(_("Connecting to daemon..."))
+			self.timer_cancel("icon")
+	
+	def animate_status(self):
+		""" Handles icon animation """
+		if "icon" in self.timers:
+			# Already animating
+			return
+		self.statusicon.set_from_file("icons/si-syncing-%s.png" % (self.sync_animation,))
+		self.sync_animation += 1
+		if self.sync_animation >= SI_FRAMES:
+			self.sync_animation = 0
+		self.timer("icon", 1, self.animate_status)
 	
 	def rest_request(self, command, callback, error_callback=None, callback_data=None):
 		"""
@@ -310,7 +350,8 @@ class App(object):
 				Gtk.MessageType.INFO, 0, "-")
 			self.connect_dialog.add_button("gtk-quit", 1)
 			self.connect_dialog.connect("response", self.cb_exit) # Only one response available so far
-			self.connect_dialog.show_all()
+			if self["window"].is_visible():
+				self.connect_dialog.show_all()
 		def set_label(d, message):
 			""" Small, recursive helper function to set label somehwere deep in dialog """
 			for c in d.get_children():
@@ -326,6 +367,7 @@ class App(object):
 	
 	def close_connect_dialog(self):
 		if self.connect_dialog != None:
+			self.connect_dialog.hide()
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
@@ -396,6 +438,9 @@ class App(object):
 		self.my_id = None
 		self["info-revealer"].set_reveal_child(False)
 		self["edit-menu"].set_sensitive(False)
+		self["menu-si-shutdown"].set_sensitive(False)
+		self["menu-si-show-id"].set_sensitive(False)
+		self["menu-si-restart"].set_sensitive(False)
 		for x in self.timers:
 			GLib.source_remove(self.timers[x])
 		self.timers = {}
@@ -410,10 +455,18 @@ class App(object):
 		if name is None:
 			# No wrapping is needed, call GLib directly
 			GLib.timeout_add_seconds(delay, callback, *data)
-		elif name in self.timers:
-			# Cancel old timer
+		else:
+			if name in self.timers:
+				# Cancel old timer
+				GLib.source_remove(self.timers[name])
+			# Create new one
+			self.timers[name] = GLib.timeout_add_seconds(delay, self.cb_timer, name, callback, *data)
+	
+	def timer_cancel(self, name):
+		""" Cancels named timer """
+		if name in self.timers:
 			GLib.source_remove(self.timers[name])
-		self.timers[name] = GLib.timeout_add_seconds(delay, self.cb_timer, name, callback, *data)
+			del self.timers[name]
 	
 	def update_completion(self, node_id):
 		node = self.nodes[node_id]
@@ -470,6 +523,26 @@ class App(object):
 		self.rest_post("shutdown", {}, self.syncthing_cb_shutdown, None,
 			_("Syncthing has been shut down."))
 	
+	def cb_menu_webui(self, *a):
+		print "Opening '%s' in browser" % (self.webui_url,)
+		webbrowser.open(self.webui_url)
+	
+	def cb_statusicon_click(self, *a):
+		""" Called when user clicks on status icon """
+		# Hide / show main window
+		if self["window"].is_visible():
+			if self.connect_dialog != None:
+				self.connect_dialog.hide()
+			self["window"].hide()
+		else:
+			self["window"].show()
+			if self.connect_dialog != None:
+				self.connect_dialog.show()
+	
+	def cb_statusicon_popup(self, si, button, time):
+		""" Called when user right-clicks on status icon """
+		self["si-menu"].popup(None, None, None, None, button, time)
+	
 	def cb_infobar_close(self, *a):
 		self["info-revealer"].set_reveal_child(False)
 	
@@ -480,8 +553,7 @@ class App(object):
 		if box.is_open():
 			self.open_boxes.add(box["id"])
 		else:
-			if box["id"] in self.open_boxes :
-				self.open_boxes.remove(box["id"])
+			self.open_boxes.discard(box["id"])
 	
 	def cb_timer(self, name, callback, *data):
 		"""
@@ -494,6 +566,7 @@ class App(object):
 	def syncthing_cb_shutdown(self, data, message):
 		""" Callback for 'shutdown' AND 'restart' request """
 		if 'ok' in data:
+			self.set_status(False)
 			self.display_connect_dialog(message)
 			self.restart()
 		else:
@@ -525,6 +598,7 @@ class App(object):
 						_("Connection to Syncthing daemon lost."),
 						_("Syncthing is probably restarting or has been shut down.")
 						))
+				self.set_status(False)
 				self.restart()
 				return
 		# Other errors are ignored and events are pulled again after prolonged delay
@@ -631,10 +705,14 @@ class App(object):
 		
 		if data['state'] == 'idle':
 			repo.set_color_hex(COLOR_REPO_IDLE)
+			self.syncing_repos.discard(repo)
+			self.set_status(True)
 		else:
 			# Repo is being synchronized, request data again to keep UI updated
 			self.timer("repo_%s" % repo_id, self.refresh_rate, self.request_repo_data, repo_id)
 			repo.set_color_hex(COLOR_REPO_SYNCING)
+			self.syncing_repos.add(repo)
+			self.set_status(True)
 	
 	def syncthing_cb_config(self, config):
 		"""
@@ -656,7 +734,11 @@ class App(object):
 			self.request_repo_data(rid)
 			
 		self.close_connect_dialog()
+		self.set_status(True)
 		self["edit-menu"].set_sensitive(True)
+		self["menu-si-shutdown"].set_sensitive(True)
+		self["menu-si-show-id"].set_sensitive(True)
+		self["menu-si-restart"].set_sensitive(True)
 		self.rest_request("events?limit=1", self.syncthing_cb_events)	# Requests most recent event only
 		self.rest_request("config/sync", self.syncthing_cb_config_in_sync)
 		self.rest_request("connections", self.syncthing_cb_connections)
@@ -673,6 +755,7 @@ class App(object):
 						_("Connecting to Syncthing daemon at %s...") % (self.webui_url,),
 						_("If daemon is not running, it may be good idea to start it now.")
 						))
+				self.set_status(False)
 				self.timer("config", self.refresh_rate, self.rest_request, "config", self.syncthing_cb_config, self.syncthing_cb_config_error)
 				return
 		# All other errors are fatal for now. Error dialog is displayed and program exits.
@@ -705,12 +788,19 @@ class App(object):
 			pass
 		elif eType == "StateChanged":
 			try:
+				to = e["data"]["to"]
 				box = self.repos[e["data"]["repo"]]
 				box.set_status(_(e["data"]["to"].capitalize()))
-				if e["data"]["to"] == "idle":
+				if to == "idle":
 					box.set_color_hex(COLOR_REPO_IDLE)
+					self.syncing_repos.discard(box)
+				elif to == "syncing":
+					box.set_color_hex(COLOR_REPO_SYNCING)
+					self.syncing_repos.add(box)
 				else:
 					box.set_color_hex(COLOR_REPO_SYNCING)
+					self.syncing_repos.discard(box)
+				self.set_status(True)
 				box["needs_update"] = True
 			except KeyError: # Unknown repo
 				print >>sys.stderr, "Warning: Unknown repo recieved for StateChanged event:", e["data"]["repo"]
@@ -1520,5 +1610,5 @@ def sizeof_fmt(size):
 		size /= 1024.0
 
 if __name__ == "__main__":
-	App().show()
+	App()
 	Gtk.main()
