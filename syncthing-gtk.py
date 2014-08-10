@@ -350,7 +350,8 @@ class App(object):
 				Gtk.MessageType.INFO, 0, "-")
 			self.connect_dialog.add_button("gtk-quit", 1)
 			self.connect_dialog.connect("response", self.cb_exit) # Only one response available so far
-			self.connect_dialog.show_all()
+			if self["window"].is_visible():
+				self.connect_dialog.show_all()
 		def set_label(d, message):
 			""" Small, recursive helper function to set label somehwere deep in dialog """
 			for c in d.get_children():
@@ -366,6 +367,7 @@ class App(object):
 	
 	def close_connect_dialog(self):
 		if self.connect_dialog != None:
+			self.connect_dialog.hide()
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
@@ -529,9 +531,13 @@ class App(object):
 		""" Called when user clicks on status icon """
 		# Hide / show main window
 		if self["window"].is_visible():
+			if self.connect_dialog != None:
+				self.connect_dialog.hide()
 			self["window"].hide()
 		else:
 			self["window"].show()
+			if self.connect_dialog != None:
+				self.connect_dialog.show()
 	
 	def cb_statusicon_popup(self, si, button, time):
 		""" Called when user right-clicks on status icon """
