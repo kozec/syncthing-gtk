@@ -362,6 +362,7 @@
 <object class="GtkMenu" id="si-menu"> <!-- 'si' for Status Icon -->
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
+	
 	<child>
 		<object class="GtkImageMenuItem" id="menu-si-status">
 			<property name="visible">True</property>
@@ -371,7 +372,18 @@
 			<property name="sensitive">False</property>
 		</object>
 	</child>
-
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-show">
+			<property name="visible">False</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Show Window</property>
+			<property name="use_underline">False</property>
+			<property name="sensitive">True</property>
+			<signal name="activate" handler="do_activate" swapped="no"/>
+		</object>
+	</child>
+	
 	<child>
 		<object class="GtkSeparatorMenuItem" id="menu-si-separator1">
 			<property name="visible">True</property>

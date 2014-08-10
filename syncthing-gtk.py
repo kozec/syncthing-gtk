@@ -5,6 +5,15 @@ from xml.dom import minidom
 from base64 import b32decode
 import json, re, os, webbrowser, datetime, urlparse, tempfile
 import sys, time, pprint
+# Why the hell does ubuntu use own notifications system?
+THE_HELL, HAS_INDICATOR = False, False
+if "XDG_CURRENT_DESKTOP" in os.environ and os.environ["XDG_CURRENT_DESKTOP"] == "Unity":
+	THE_HELL = True
+	try:
+		from gi.repository import AppIndicator3 as appindicator
+		HAS_INDICATOR = True
+	except ImportError: pass
+
 _ = lambda (a) : a
 
 COLOR_NODE				= "#9246B1"
@@ -50,17 +59,17 @@ class App(Gtk.Application):
 		self.setup_widgets()
 		self.setup_statusicon()
 		self.setup_connection()
-		self.add_window(self["window"])
 		GLib.idle_add(self.request_config)
 	
 	def do_activate(self, *a):
-		Gtk.Application.do_activate(self, *a)
-		if not self.first_activation:
+		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
 			# Show main window
 			if not self["window"].is_visible():
 				self["window"].show()
 				if self.connect_dialog != None:
 					self.connect_dialog.show()
+			else:
+				self["window"].present()
 		self.first_activation = False
 	
 	def setup_widgets(self):
@@ -71,13 +80,27 @@ class App(Gtk.Application):
 		# Setup window
 		self["window"].set_title(_("Syncthing GTK"))
 		self["edit-menu"].set_sensitive(False)
+		self["window"].connect("delete-event", self.cb_delete_event)
+		self.add_window(self["window"])
+
 	
 	def setup_statusicon(self):
-		self.statusicon = Gtk.StatusIcon.new_from_file("icons/si-unknown.png")
-		self.statusicon.set_title(_("Syncthing GTK"))
-		self.statusicon.connect("activate", self.cb_statusicon_click)
-		self.statusicon.connect("popup-menu", self.cb_statusicon_popup)
-		self.set_status(False)
+		if THE_HELL and HAS_INDICATOR:
+			path = os.path.normpath(os.path.abspath("./icons"))
+			self.statusicon = appindicator.Indicator.new_with_path(
+								"syncthing-gtk",
+								"si-unknown",
+								appindicator.IndicatorCategory.APPLICATION_STATUS,
+								path
+								)
+			self.statusicon.set_status(appindicator.IndicatorStatus.ACTIVE)
+			self.statusicon.set_menu(self["si-menu"])
+		else:
+			self.statusicon = Gtk.StatusIcon.new_from_file("icons/si-unknown.png")
+			self.statusicon.set_title(_("Syncthing GTK"))
+			self.statusicon.connect("activate", self.cb_statusicon_click)
+			self.statusicon.connect("popup-menu", self.cb_statusicon_popup)
+			self.set_status(False)
 	
 	def setup_connection(self):
 		# Read syncthing config to get connection url
@@ -108,7 +131,7 @@ class App(Gtk.Application):
 		""" Sets icon and text on first line of popup menu """
 		if is_connected:
 			if len(self.syncing_repos) == 0:
-				self.statusicon.set_from_file("icons/si-idle.png")
+				self.set_statusicon("si-idle")
 				self["menu-si-status"].set_label(_("Idle"))
 				self.timer_cancel("icon")
 			else:
@@ -118,9 +141,16 @@ class App(Gtk.Application):
 					self["menu-si-status"].set_label(_("Synchronizing %s repos") % (len(self.syncing_repos),))
 				self.animate_status()
 		else:
-			self.statusicon.set_from_file("icons/si-unknown.png")
+			self.set_statusicon("si-unknown")
 			self["menu-si-status"].set_label(_("Connecting to daemon..."))
 			self.timer_cancel("icon")
+	
+	def set_statusicon(self, icon):
+		if THE_HELL and HAS_INDICATOR:
+			self.statusicon.set_icon(os.path.normpath(os.path.abspath("./icons/%s.png" % (icon,))))
+			self["menu-si-show"].set_visible(True)
+		else:
+			self.statusicon.set_from_file("icons/%s.png" % (icon,))
 	
 	def animate_status(self):
 		""" Handles icon animation """
