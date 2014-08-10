@@ -18,14 +18,21 @@ SI_FRAMES				= 4 # Number of animation frames for status icon
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 DEBUG = False
 
-class App(object):
+class App(Gtk.Application):
 	def __init__(self):
+		Gtk.Application.__init__(self,
+				application_id="me.kozec.syncthinggtk",
+				flags=Gio.ApplicationFlags.FLAGS_NONE)
+	
+	def do_startup(self, *a):
+		Gtk.Application.do_startup(self, *a)
 		self.builder = None
 		self.refresh_rate = 1 # seconds
 		self.my_id = None
 		self.webui_url = None
 		self.rightclick_box = None
 		self.address = None
+		self.first_activation = True
 		self.CSRFtoken = None
 		# Epoch is incereased when restart() method is called; It is
 		# used to discard responses for old REST requests
@@ -43,7 +50,18 @@ class App(object):
 		self.setup_widgets()
 		self.setup_statusicon()
 		self.setup_connection()
+		self.add_window(self["window"])
 		GLib.idle_add(self.request_config)
+	
+	def do_activate(self, *a):
+		Gtk.Application.do_activate(self, *a)
+		if not self.first_activation:
+			# Show main window
+			if not self["window"].is_visible():
+				self["window"].show()
+				if self.connect_dialog != None:
+					self.connect_dialog.show()
+		self.first_activation = False
 	
 	def setup_widgets(self):
 		# Load glade file
@@ -489,7 +507,14 @@ class App(object):
 	
 	# --- Callbacks ---
 	def cb_exit(self, event, *a):
-		Gtk.main_quit()
+		self.quit()
+	
+	def cb_delete_event(self, *e):
+		# Hide main window
+		if self.connect_dialog != None:
+			self.connect_dialog.hide()
+		self["window"].hide()
+		return True
 	
 	def cb_menu_show_id(self, *a):
 		d = MyIDDialog(self)
@@ -1610,5 +1635,4 @@ def sizeof_fmt(size):
 		size /= 1024.0
 
 if __name__ == "__main__":
-	App()
-	Gtk.main()
+	App().run()
