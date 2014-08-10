@@ -62,7 +62,7 @@ class App(Gtk.Application):
 		GLib.idle_add(self.request_config)
 	
 	def do_activate(self, *a):
-		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
+		if not self.first_activation or True : # (THE_HELL and not HAS_INDICATOR):
 			# Show main window
 			if not self["window"].is_visible():
 				self["window"].show()
@@ -78,11 +78,52 @@ class App(Gtk.Application):
 		self.builder.add_from_file("app.glade")
 		self.builder.connect_signals(self)
 		# Setup window
-		self["window"].set_title(_("Syncthing GTK"))
 		self["edit-menu"].set_sensitive(False)
 		self["window"].connect("delete-event", self.cb_delete_event)
+		if THE_HELL:
+			# Modify window if running under Ubuntu; Ubuntu default GTK
+			# engine handles windows with header in... weird way.
+			
+			# Unparent some stuff
+			for u in ("content", "window-menu-icon"):
+				self[u].get_parent().remove(self[u])
+			
+			# Create window
+			w = Gtk.Window()
+			w.set_size_request(*self["window"].get_size_request())
+			w.set_default_size(*self["window"].get_default_size())
+			w.set_icon(self["window"].get_icon())
+			w.set_has_resize_grip(True)
+			w.set_resizable(True)
+			
+			# Create toolbar
+			bar = Gtk.Toolbar()
+			bar.get_style_context().add_class(Gtk.STYLE_CLASS_PRIMARY_TOOLBAR)
+			window_menu = Gtk.ToolButton()
+			window_menu.set_icon_widget(self["window-menu-icon"])
+			window_menu.connect("clicked", self.cb_menu_popup, self["window-menu-menu"])
+			middle_item = Gtk.ToolItem()
+			middle_label = Gtk.Label()
+			middle_item.set_expand(True)
+			middle_label.set_label("Ahoj")
+			middle_item.add(middle_label)
+			edit_menu = Gtk.ToolButton.new_from_stock(Gtk.STOCK_EDIT)
+			edit_menu.connect("clicked", self.cb_menu_popup, self["edit-menu-menu"])
+			self["server-name"] = middle_label
+			
+			# Pack & set
+			bar.add(window_menu)
+			bar.add(middle_item)
+			bar.add(edit_menu)
+			self["content"].pack_start(bar, False, False, 0)
+			self["content"].reorder_child(bar, 0)
+			self["content"].show_all()
+			w.add(self["content"])			
+			self["window"].destroy()
+			self["window"] = w
+			
+		self["window"].set_title(_("Syncthing GTK"))
 		self.add_window(self["window"])
-
 	
 	def setup_statusicon(self):
 		if THE_HELL and HAS_INDICATOR:
@@ -379,6 +420,11 @@ class App(Gtk.Application):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
 		self.widgets[name] = item
 	
+	def __contains__(self, name):
+		""" Returns true if there is such widget """
+		if name in self.widgets: return True
+		return self.builder.get_object(name) != None
+	
 	def show(self):
 		self["window"].show_all()
 	
@@ -541,9 +587,12 @@ class App(Gtk.Application):
 	
 	def cb_delete_event(self, *e):
 		# Hide main window
+		"""
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
 		self["window"].hide()
+		"""
+		print "delete"
 		return True
 	
 	def cb_menu_show_id(self, *a):
@@ -559,6 +608,9 @@ class App(Gtk.Application):
 		""" Handler for 'Add node' menu item """
 		e = EditorDialog(self, "node-edit", True)
 		e.show(self["window"])
+	
+	def cb_menu_popup(self, source, menu):
+		menu.popup(None, None, None, None, 0, 0)
 	
 	def cb_menu_popup_edit(self, *a):
 		if self.rightclick_box in self.repos.values():
@@ -721,6 +773,8 @@ class App(Gtk.Application):
 			node.invert_header(True)
 			node.set_color_hex(COLOR_OWN_NODE)
 			self["header"].set_subtitle(node.get_title())
+			if "server-name" in self:
+				self["server-name"].set_markup("<b>%s</b>" % (node.get_title(),))
 			# Modify values
 			node.clear_values()
 			node.add_value("ram",		"icons/ram.png",	_("RAM Utilization"), "")
