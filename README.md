@@ -1,7 +1,7 @@
 syncthing-gui
 =============
 
-GTK3 &amp; python based GUI for Syncthing
+GTK3 &amp; python based GUI and notification area icon for Syncthing
 
 Currently supported:
 - Everything what WebUI can display
@@ -12,4 +12,3 @@ Currently supported:
 TODO:
 - Server settings
 - GUI settings
-- Notification area icon
