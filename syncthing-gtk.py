@@ -1610,5 +1610,5 @@ def sizeof_fmt(size):
 		size /= 1024.0
 
 if __name__ == "__main__":
-	App().show()
+	App()
 	Gtk.main()
