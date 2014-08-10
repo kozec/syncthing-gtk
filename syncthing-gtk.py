@@ -521,6 +521,10 @@ class App(object):
 		self.rest_post("shutdown", {}, self.syncthing_cb_shutdown, None,
 			_("Syncthing has been shut down."))
 	
+	def cb_menu_webui(self, *a):
+		print "Opening '%s' in browser" % (self.webui_url,)
+		webbrowser.open(self.webui_url)
+	
 	def cb_statusicon_click(self, *a):
 		""" Called when user clicks on status icon """
 		# Hide / show main window
