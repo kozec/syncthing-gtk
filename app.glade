@@ -5,7 +5,7 @@
 <object class="GtkWindow" id="window">
 	<property name="default-width">900</property>
 	<property name="default-height">600</property>
-	<signal name="delete-event" handler="cb_exit" swapped="no"/>
+	<signal name="delete-event" handler="cb_delete_event" swapped="no"/>
 	<property name="icon">icons/st-logo-128.png</property>
 	<!-- Title Bar -->
 	<child type="titlebar">

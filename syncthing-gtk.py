@@ -123,8 +123,8 @@ class App(Gtk.Application):
 			w.add(self["content"])			
 			self["window"].destroy()
 			self["window"] = w
-			
-		self["window"].connect("delete-event", self.cb_delete_event)
+			self["window"].connect("delete-event", self.cb_delete_event)
+		
 		self["window"].set_title(_("Syncthing GTK"))
 		self.add_window(self["window"])
 	
