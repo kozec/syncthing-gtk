@@ -62,7 +62,7 @@ class App(Gtk.Application):
 		GLib.idle_add(self.request_config)
 	
 	def do_activate(self, *a):
-		if not self.first_activation or True : # (THE_HELL and not HAS_INDICATOR):
+		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
 			# Show main window
 			if not self["window"].is_visible():
 				self["window"].show()
@@ -70,6 +70,9 @@ class App(Gtk.Application):
 					self.connect_dialog.show()
 			else:
 				self["window"].present()
+		elif self.first_activation:
+			print
+			print _("Syncthing-GTK started and running in notification area")
 		self.first_activation = False
 	
 	def setup_widgets(self):
@@ -79,7 +82,6 @@ class App(Gtk.Application):
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu"].set_sensitive(False)
-		self["window"].connect("delete-event", self.cb_delete_event)
 		if THE_HELL:
 			# Modify window if running under Ubuntu; Ubuntu default GTK
 			# engine handles windows with header in... weird way.
@@ -122,6 +124,7 @@ class App(Gtk.Application):
 			self["window"].destroy()
 			self["window"] = w
 			
+		self["window"].connect("delete-event", self.cb_delete_event)
 		self["window"].set_title(_("Syncthing GTK"))
 		self.add_window(self["window"])
 	
@@ -587,12 +590,9 @@ class App(Gtk.Application):
 	
 	def cb_delete_event(self, *e):
 		# Hide main window
-		"""
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
 		self["window"].hide()
-		"""
-		print "delete"
 		return True
 	
 	def cb_menu_show_id(self, *a):
