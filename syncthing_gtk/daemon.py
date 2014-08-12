@@ -1,0 +1,804 @@
+#!/usr/bin/env python2
+"""
+Syncthing-GTK - Daemon
+
+Class interfacing with syncthing daemon
+"""
+
+from __future__ import unicode_literals
+from gi.repository import Gio, GLib, GObject
+from syncthing_gtk import TimerManager, DEBUG
+from xml.dom import minidom
+import json, os, sys, time
+
+class Daemon(GObject.GObject, TimerManager):
+	"""
+	Object for interacting with syncthing daemon.
+	
+	List of signals:
+		config-out-of-sync ()
+			Emited when daemon synchronization gets out of sync and
+			daemon needs to be restarted.
+		
+		connected ()
+			Emited when connection to daemon is initiated, before
+			configuration is loaded and parsed.
+		
+		disconnected (reason, message)
+			Emited after connection to daemon is lost. Connection can
+			be reinitiated by calling reconnect()
+				reason :	Daemon.SHUTDOWN if connection is closed
+							after calling shutdown()
+							Daemon.RESTART if connection is closed
+							after calling restart()
+							Daemon.UNEXPECTED for all other cases
+				message:	generated error message
+		
+		connection-error (reason, message)
+			Emited if connection to daemon fails.
+				reason:		Daemon.REFUSED if connection is refused and
+							daemon probably offline. Connection will be
+							retried automaticaly.
+							Daemon.UNKNOWN for all other problems.
+							Connection can be reinitiated by calling
+							reconnect() in this case.
+				message:	generated error message
+		
+		my-id-changed (my_id, replaced)
+			Emited when ID is retrieved from node or when ID changes
+			after client connects to another node
+				my_id:		ID of node that is instance connected to.
+		
+		system-data-updated (ram_ussage, cpu_ussage, announce)
+			Emited every time when system informations are recieved
+			from daemon.
+				ram_ussage:	memory ussage in bytes
+				cpu_ussage:	CPU ussage in percent (0.0 to 100.0)
+				announce:	Daemon.CONNECTED if daemon is connected to annoucnce server
+							Daemon.OFFLINE if is not
+							Daemon.DISABLED if announce server is disabled
+		
+		node-added (id, name, data)
+			Emited when new node is loaded from configuration
+				id:		id of loaded node
+				name:	name of loaded node (may be None)
+				data:	dict with rest of node data
+		
+		node-connected (id)
+			Emited when daemon connects to remote node
+				id:			id of node
+		
+		node-disconnected (id)
+			Emited when daemon losts connection to remote node
+				id:			id of node
+		
+		node-discovered (id)
+			# TODO: What this event does?
+				id:			id of node
+		
+		node-data-changed (id, address, version, dl_rate, up_rate, bytes_in, bytes_out)
+			Emited when node data changes
+				id:			id of node
+				address:	address of remote node
+				version:	daemon version of remote node
+				dl_rate:	download rate
+				up_rate:	upload rate
+				bytes_in:	total number of bytes downloaded
+				bytes_out:	total number of bytes uploaded
+		
+		node-sync-started (id, progress):
+			Emited after node synchronization is started
+				id:			id of repo
+				progress:	synchronization progress (0.0 to 1.0)
+		
+		node-sync-progress (id, progress):
+			Emited repeatedly while node is being synchronized
+				id:			id of repo
+				progress:	synchronization progress (0.0 to 1.0)
+	
+		node-sync-finished (id):
+			Emited after node synchronization is finished
+				id:		id of repo
+		
+		repo-added (id, data)
+			Emited when new repository is loaded from configuration
+				id:		id of loaded repo
+				data:	dict with rest of repo data
+		
+		repo-data-changed (id, data):
+			Emited when change in repository data (/rest/model call)
+			is detected and sucesfully loaded.
+				id:		id of repo
+				data:	dict with loaded data
+		
+		repo-sync-started (id):
+			Emited after repository synchronization is started
+				id:		id of repo
+		
+		repo-sync-progress (id, progress):
+			Emited repeatedly while repo is being synchronized
+				id:			id of repo
+				progress:	synchronization progress (0.0 to 1.0)
+	
+		repo-sync-finished (id):
+			Emited after repository synchronization is finished
+				id:		id of repo
+		
+		repo-scan-started (id):
+			Emited after repository scan is started
+				id:		id of repo
+		
+		repo-scan-finished (id):
+			Emited after repository scan is finished
+				id:		id of repo
+	"""
+	
+	
+	__gsignals__ = {
+			b"config-out-of-sync"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
+			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
+			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
+			b"node-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
+			b"node-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"node-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"node-discovered"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"node-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
+			b"node-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+			b"node-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+			b"node-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"repo-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"repo-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+			b"repo-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+		}
+	
+	# Constants for 'announce' parameter of system-data-updated event
+	CONNECTED	= 1
+	OFFLINE		= 0
+	DISABLED	= -1
+	
+	# Constants for 'reason' parameter of disconnected event
+	UNEXPECTED	= 0 # connection closed by daemon
+	SHUTDOWN	= 1
+	RESTART		= 2
+	
+	# Constants for 'reason' parameter of connection-error event
+	REFUSED		= 1
+	UNKNOWN		= 2
+	
+	def __init__(self):
+		GObject.GObject.__init__(self)
+		TimerManager.__init__(self)
+		self._CSRFtoken = None
+		self._address = None
+		self._connected = False
+		self._refresh_rate = 1 # seconds
+		# syncing_repos holds set of repos that are being synchronized
+		self._syncing_repos = set()
+		# syncing_nodes does same thing, only for nodes
+		self._syncing_nodes = set()
+		# and once again, for repos in 'Scanning' state
+		self._scanning_repos = set()
+		# needs_update holds set of repos whose state was recently
+		# changed and needs to be fetched from server
+		self._needs_update = set()
+		# node_data stores data needed to compute transfer speeds
+		# and synchronization state
+		self._node_data = {}
+		# repo_nodes stores list of nodes assigned to repository
+		self._repo_nodes = {}
+		# Epoch is incereased when reconnect() method is called; It is
+		# used to discard responses for old REST requests
+		self._epoch = 1
+		self._my_id = None
+		self._read_config()
+	
+	### Internal stuff ###
+	
+	def _read_config(self):
+		# Read syncthing config to get connection url
+		confdir = GLib.get_user_config_dir()
+		if confdir is None:
+			confdir = os.path.expanduser("~/.config")
+		configxml = os.path.join(confdir, "syncthing", "config.xml")
+		try:
+			config = file(configxml, "r").read()
+		except Exception, e:
+			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
+		try:
+			xml = minidom.parseString(config)
+		except Exception, e:
+			raise InvalidConfigurationException("Failed to parse daemon configuration: %s" % e)
+		try:
+			self._address = xml.getElementsByTagName("configuration")[0] \
+							.getElementsByTagName("gui")[0] \
+							.getElementsByTagName("address")[0] \
+							.firstChild.nodeValue
+			self._last_id = 0
+			# TODO: https?
+		except Exception, e:
+			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
+	
+	def _get_node_data(self, nid):
+		""" Returns dict with node data, creating it if needed """
+		if not nid in self._node_data:
+			self._node_data[nid] = {
+					"bytes_in" : 0, "bytes_out" : 0, "time" : time.time(),
+					"dl_rate" : 0, "up_rate" : 0 , "version" : "?",
+					"completion" : {}, "connected" : False,
+				}
+		return self._node_data[nid]
+	
+	def _rest_request(self, command, callback, error_callback=None, *callback_data):
+		"""
+		Requests response from server. After response is recieved,
+		callback with parsed json data is called.
+		If requests fails and error_callback is set, error_callback is
+		called. If error_callback is None, request is repeated.
+		
+		Callback signatures:
+		if callback_data is set:
+			callback(json_data, callback_data)
+			error_callback(exception, command, callback_data)
+		if callback_data is null:
+			callback(json_data)
+			error_callback(exception, command)
+		"""
+		uri = "%s/rest/%s" % (self.get_webui_url(), command)
+		io = Gio.file_new_for_uri(uri)
+		io.load_contents_async(None, self._rest_response, command, self._epoch, callback, error_callback, callback_data)
+	
+	def _rest_response(self, io, results, command, epoch, callback, error_callback, callback_data):
+		"""
+		Recieves and parses REST response. Calls callback if successfull.
+		See _rest_request for more info.
+		"""
+		if epoch < self._epoch :
+			# Requested before restart() call; Data may be nonactual, discard it.
+			if DEBUG : print "Discarded old response for", command
+			return
+		try:
+			ok, contents, etag = io.load_contents_finish(results)
+		except Exception, e:
+			self._rest_error(e, command, callback, error_callback, callback_data)
+			return
+		finally:
+			del io	# Prevents leaking fd's in gvfsd-http daemon if program crashes
+		if ok:
+			try:
+				data = json.loads(contents)
+			except ValueError: # Not a JSON
+				data = {'data' : contents }
+			if callback_data:
+				callback(data, *callback_data)
+			else:
+				callback(data)
+		else:
+			self._rest_error(Exception("not ok"), command, callback, error_callback, callback_data)
+	
+	def _rest_error(self, exception, command, callback, error_callback, callback_data):
+		""" Error handler for _rest_response method """
+		if error_callback:
+			if callback_data:
+				error_callback(exception, command, *callback_data)
+			else:
+				error_callback(exception, command)
+		else:
+			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
+			self.timer(None, 1, self._rest_request, command, callback, error_callback, *callback_data)
+	
+	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
+		""" POSTs data (formated with json) to daemon. Works like _rest_request """
+		sc = Gio.SocketClient()
+		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
+			command, data, self._epoch, callback, error_callback, callback_data)
+	
+	def _rest_post_connected(self, sc, results, command, data, epoch, callback, error_callback, callback_data):
+		""" Second part of _rest_post, called after HTTP connection is initiated """
+		try:
+			con = sc.connect_to_service_finish(results)
+			if con == None:
+				raise Exception("Unknown error")
+		except Exception, e:
+			if epoch >= self._epoch :
+				self._rest_post_error(e, command, data, callback, error_callback, *callback_data)
+			return
+		if epoch < self._epoch :
+			# Too late, throw it away
+			con.close()
+			del con
+			if DEBUG : print "Discarded old connection for POST ", command
+		post_str = None
+		if self._CSRFtoken == None:
+			# Request CSRF token first
+			if DEBUG: print "Requesting cookie"
+			post_str = "\r\n".join([
+				"GET / HTTP/1.0",
+				"Host: %s" % self._address,
+				"Connection: close",
+				"",
+				"",
+				]).encode("utf-8")
+		else:
+			# Build POST request
+			json_str = json.dumps(data)
+			post_str = "\r\n".join([
+				"POST /rest/%s HTTP/1.0" % command,
+				"Connection: close",
+				"Cookie: CSRF-Token=%s" % self._CSRFtoken,
+				"X-CSRF-Token: %s" % self._CSRFtoken,
+				"Content-Length: %s" % len(json_str),
+				"Content-Type: application/json",
+				"",
+				json_str
+				]).encode("utf-8")
+		# Send it out and wait for response
+		con.get_output_stream().write_all(post_str)
+		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
+			sc, command, data, epoch, callback, error_callback, callback_data)
+	
+	def _rest_post_response(self, con, results, sc, command, data, epoch, callback, error_callback, callback_data):
+		try:
+			response = con.read_bytes_finish(results)
+			if response == None:
+				raise Exception("No data recieved")
+		except Exception, e:
+			self._rest_post_error(e, command, data, callback, error_callback, callback_data)
+			return
+		finally:
+			con.close()
+			del con
+		if epoch < self._epoch :
+			# Too late, throw it away
+			if DEBUG : print "Discarded old response for POST ", command
+		response = response.get_data()
+		if self._CSRFtoken == None:
+			# I wanna cookie!
+			response = response.split("\n")
+			for d in response:
+				if d.startswith("Set-Cookie:"):
+					for c in d.split(":", 1)[1].split(";"):
+						if c.strip().startswith("CSRF-Token="):
+							self._CSRFtoken = c.split("=", 1)[1].strip(" \r\n")
+							if DEBUG: print "Got new cookie:", self._CSRFtoken
+							break
+					if self._CSRFtoken != None:
+						break
+			if self._CSRFtoken == None:
+				# This is pretty fatal and likely to fail again,
+				# so request is not repeated automaticaly
+				if error_callback == None:
+					print >>sys.stderr, ""
+					print >>sys.stderr, "Error: Request '%s' failed: Error: failed to get CSRF cookie from daemon" % (command,)
+				else:
+					self._rest_post_error(Exception("Failed to get CSRF cookie"))
+				return
+			# Repeat request with acqiured cookie
+			self._rest_post(command, data, callback, error_callback, *callback_data)
+			return
+		# Extract response code
+		try:
+			code = response.split("\n")[0].strip("\r\n").split(" ")[1]
+			if int(code) != 200:
+				self._rest_post_error(Exception("HTTP error %s" % (code,)), command, data, callback, error_callback, callback_data)
+				return
+		except Exception:
+			# That probably wasn't HTTP
+			self._rest_post_error(Exception("Invalid HTTP response"), command, data, callback, error_callback, callback_data)
+			return
+		if "CSRF Error" in response:
+			# My cookie is too old; Throw it away and try again
+			if DEBUG: print "Throwing away my cookie :("
+			self._CSRFtoken = None
+			self._rest_post(command, data, callback, error_callback, *callback_data)
+			return
+		
+		# Parse response and call callback
+		try:
+			response = response.split("\r\n\r\n", 1)[1]
+			rdata = json.loads(response)
+		except IndexError: # No data
+			rdata = { }
+		except ValueError: # Not a JSON
+			rdata = {'data' : response }
+		if callback_data:
+			callback(rdata, *callback_data)
+		else:
+			callback(rdata)
+	
+	def _rest_post_error(self, exception, command, data, callback, error_callback, callback_data):
+		""" Error handler for _rest_post_response method """
+		if error_callback:
+			if callback_data:
+				error_callback(exception, command, data, *callback_data)
+			else:
+				error_callback(exception, command, data)
+		else:
+			print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
+			self.timer(None, 1, self._rest_post, command, data, callback, error_callback, callback_data)
+	
+	def _request_config(self, *a):
+		""" Request settings from syncthing daemon """
+		self._rest_request("config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+	
+	def _request_repo_data(self, rid):
+		self._rest_request("model?repo=%s" % (rid,), self._syncthing_cb_repo_data, None, rid)
+	
+	def _request_completion(self, nid, rid=None):
+		"""
+		Requests completion data for specified node and repo.
+		If rid is None, requests completion data for specified node and
+		ALL repos.
+		"""
+		if rid is None:
+			for rid in self._repo_nodes:
+				if nid in self._repo_nodes[rid]:
+					self._request_completion(nid, rid)
+			return
+		self._rest_request("completion?node=%s&repo=%s" % (nid, rid), self._syncthing_cb_completion, None, nid, rid)
+	
+	def _request_events(self, *a):
+		""" Request new events from syncthing daemon """
+		self._rest_request("events?since=%s" % self.last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
+	
+	### Callbacks ###
+	
+	def _syncthing_cb_shutdown(self, data, reason):
+		""" Callback for 'shutdown' AND 'restart' request """
+		if 'ok' in data:
+			if self._connected:
+				self._connected = False
+				self.emit("disconnected", reason, None)
+			self.cancel_all()
+	
+	def _syncthing_cb_events(self, events):
+		""" Called when event list is pulled from syncthing daemon """
+		if len(events) > 0:
+			for e in events:
+				self._on_event(e)
+			self.last_id = events[-1]["id"]
+		
+		for rid in self._needs_update:
+			self._request_repo_data(rid)
+		self._needs_update.clear()
+		
+		self.timer("event", self._refresh_rate, self._request_events)
+	
+	def _syncthing_cb_events_error(self, exception, command):
+		"""
+		As most frequent request, "event" request is used to detect when
+		daemon stops to respond. "Please wait" message is displayed in
+		that case, UI is restarted and waits until daemon respawns.
+		"""
+		if isinstance(exception, GLib.GError):
+			if exception.code in (34, 39):	# Connection terminated unexpectedly, Connection Refused
+				if self._connected:
+					self._connected = False
+					self.emit("disconnected", Daemon.UNEXPECTED, exception.message)
+				self.cancel_all()
+				return
+		# Other errors are ignored and events are pulled again after prolonged delay
+		self.timer("event", self._refresh_rate * 5, self._request_events)
+	
+	def _syncthing_cb_connections(self, connections):
+		totals = {"dl_rate" : 0.0, "up_rate" : 0.0 }	# Total up/down rate
+		current_time = time.time()
+		for nid in connections:
+			if nid != "total":
+				# Grab / create cached data
+				node = self._get_node_data(nid)
+				time_delta = current_time - node["time"]
+				# Compute transfer rate
+				for key, ui_key, data_key in ( ("bytes_in", "dl_rate", "InBytesTotal"), ("bytes_out", "up_rate", "OutBytesTotal") ):
+					if node[key] != 0:
+						if time_delta > 0: # Don't divide by zero
+							bytes_delta = connections[nid][data_key] - node[key]
+							bps = float(bytes_delta) / time_delta  # B/s
+							node[ui_key] = bps
+							totals[ui_key] += bps
+					node[key] = connections[nid][data_key]
+				node["time"] = current_time
+				if not node["connected"]:
+					node["connected"] = True
+					self.emit("node-connected", nid)
+				node["version"] = connections[nid]["ClientVersion"]
+				self.emit("node-data-changed", nid, 
+					connections[nid]["Address"],
+					node["version"],
+					node["dl_rate"], node["up_rate"],
+					node["bytes_in"], node["bytes_out"])
+				self._request_completion(nid)
+		
+		if self._my_id != None:
+			node = self._get_node_data(self._my_id)
+			node["dl_rate"] =	totals["dl_rate"]
+			node["up_rate"] =	totals["dl_rate"]
+			node["bytes_in"] =	connections["total"]["InBytesTotal"]
+			node["bytes_out"] =	connections["total"]["OutBytesTotal"]
+			self.emit("node-data-changed", self._my_id, 
+				None,
+				node["version"],
+				node["dl_rate"], node["up_rate"],
+				node["bytes_in"], node["bytes_out"])
+	
+		self.timer("conns", self._refresh_rate * 5, self._rest_request, "connections", self._syncthing_cb_connections)
+		
+	def _syncthing_cb_completion(self, data, nid, rid):
+		if "completion" in data:
+			# Store acquired value
+			node = self._get_node_data(nid)
+			node["completion"][rid] = float(data["completion"])
+			
+			# Recompute stuff
+			total = 100.0 * len(node["completion"])
+			sync = 0.0
+			if total > 0.0:
+				sync = sum(node["completion"].values()) / total
+			if sync <= 0 or sync >= 100:
+				# Not syncing
+				if nid in self._syncing_nodes:
+					self._syncing_nodes.discard(nid)
+					self.emit("node-sync-finished", nid)
+			else:
+				# Syncing
+				if not nid in self._syncing_nodes:
+					self._syncing_nodes.add(nid)
+					self.emit("node-sync-started", nid, sync)
+				else:
+					self.emit("node-sync-progress", nid, sync)
+
+	
+	def _syncthing_cb_system(self, data):
+		if self._my_id != data["myID"]:
+			if self._my_id != None:
+				# Can myID be ever changed?
+				print >>sys.stderr, "Warning: My ID was changed on the fly"
+			self._my_id = data["myID"]
+			self.emit('my-id-changed', self._my_id)
+			self._rest_request("version", self._syncthing_cb_version)
+		
+		announce = Daemon.DISABLED
+		if "extAnnounceOK" in data:
+			announce = Daemon.CONNECTED if data["extAnnounceOK"] else Daemon.OFFLINE
+		
+		self.emit('system-data-updated',
+			data["sys"], float(data["cpuPercent"]),
+			announce)
+		
+		self.timer("system", self._refresh_rate * 5, self._rest_request, "system", self._syncthing_cb_system)
+	
+	def _syncthing_cb_version(self, data):
+		version = data["data"]
+		if self._my_id != None:
+			node = self._get_node_data(self._my_id)
+			if version != node["version"]:
+				node["version"] = version
+				self.emit("node-data-changed", self._my_id, 
+					None,
+					node["version"],
+					node["dl_rate"], node["up_rate"],
+					node["bytes_in"], node["bytes_out"])
+	
+	def _syncthing_cb_repo_data(self, data, rid):
+		state = data['state']
+		self.emit('repo-data-changed', rid, data)
+		if state == "syncing":
+			p = 0.0
+			if float(data["globalBytes"]) > 0.0:
+				p = float(data["inSyncBytes"]) / float(data["globalBytes"])
+			if self._repo_state_changed(rid, state, p):
+				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+		else:
+			if self._repo_state_changed(rid, state, 0):
+				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+	
+	def _syncthing_cb_config(self, config):
+		"""
+		Called when configuration is loaded from syncthing daemon.
+		After configuraion is sucessfully parsed, app starts quering for events
+		"""
+		if not self._connected:
+			self._connected = True
+			self.emit('connected')
+			# Parse nodes
+			for n in sorted(config["Nodes"], key=lambda x : x["Name"].lower()):
+				nid = n["NodeID"]
+				self._get_node_data(nid)	# Creates dict with node data
+				self.emit("node-added", nid, n["Name"], n)
+				
+			# Parse repos
+			for r in config["Repositories"]:
+				rid = r["ID"]
+				self._syncing_repos.add(rid)
+				self._repo_nodes[rid] = [ n["NodeID"] for n in r["Nodes"] ]
+				self.emit("repo-added", rid, r)
+				self._request_repo_data(rid)
+			
+			self._rest_request("events?limit=1", self._syncthing_cb_events)	# Requests most recent event only
+			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
+			self._rest_request("connections", self._syncthing_cb_connections)
+			self._rest_request("system", self._syncthing_cb_system)
+			self.check_config()
+	
+	def _syncthing_cb_config_error(self, exception, command):
+		self.cancel_all()
+		if isinstance(exception, GLib.GError):
+			if exception.code in (39, 4):	# Connection Refused / Cannot connect to destination
+				# It usualy means that daemon is not yet fully started or not running at all.
+				self.emit("connection-error", Daemon.REFUSED, exception.message)
+				self.timer("config", self._refresh_rate, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+				return
+		self.emit("connection-error", Daemon.UNKNOWN, exception.message)
+	
+	def _syncthing_cb_config_in_sync(self, data):
+		"""
+		Handler for config/sync response. Emits 'config-out-of-sync' if
+		configuration is not in sync.
+		"""
+		if "configInSync" in data:
+			if not data["configInSync"]:
+				# Not in sync...
+				self.emit("config-out-of-sync")
+	
+	def _syncthing_cb_config_written(self, data, callback, errorcallback, calbackdata):
+		self.check_config()
+		if calbackdata == None:
+			callback()
+		else:
+			callback(*calbackdata)
+	
+	def __syncthing_cb_config_write_failed(self, exception, command, data, callback, errorcallback, calbackdata):
+		if errorcallback == None:
+			errorcallback(exception)
+		else:
+			errorcallback(exception, *calbackdata)
+	
+	def _repo_state_changed(self, rid, state, progress):
+		"""
+		Emits event according to last known and new state.
+		Returns False or True to indicate that repo status should be
+		re-checked after short time.
+		"""
+		recheck = False
+		if state != "syncing" and rid in self._syncing_repos:
+			self._syncing_repos.discard(rid)
+			self.emit("repo-sync-finished", rid)
+		if state != "scanning" and rid in self._scanning_repos:
+			self._scanning_repos.discard(rid)
+			self.emit("repo-scan-finished", rid)
+		if state == "syncing":
+			if rid in self._syncing_repos:
+				self.emit("repo-sync-progress", rid, progress)
+			else:
+				self._syncing_repos.add(rid)
+				self.emit("repo-sync-started", rid)
+			recheck = True
+		elif state == "scanning":
+			if rid in self._scanning_repos:
+				self.emit("repo-scan-progress", rid)
+			else:
+				self._scanning_repos.add(rid)
+				self.emit("repo-scan-started", rid)
+			recheck = True
+		return recheck
+	
+	def _on_event(self, e):
+		eType = e["type"]
+		if eType in ("Ping", "Starting", "StartupComplete"):
+			# Just ignore ignore those
+			pass
+		elif eType == "StateChanged":
+			state = e["data"]["to"]
+			rid = e["data"]["repo"]
+			if self._repo_state_changed(rid, state, 0):
+				self._needs_update.add(rid)
+		elif eType in ("LocalIndexUpdated", "RemoteIndexUpdated"):
+			rid = e["data"]["repo"]
+			if (not rid in self._syncing_nodes) and (not rid in self._scanning_repos):
+				self._needs_update.add(rid)
+		elif eType == "NodeConnected":
+			nid = e["data"]["id"]
+			self.emit("node-connected", nid)
+			self._request_completion(nid)
+		elif eType == "NodeDisconnected":
+			nid = e["data"]["id"]
+			self.emit("node-disconnected", nid)
+		elif eType == "NodeDiscovered":
+			print e
+			#nid = e["data"]["id"]
+			#self.emit("node-discovered", nid)
+		else:
+			print "Unhandled event type:", e
+	
+	### External stuff ###
+	
+	def reconnect(self):
+		"""
+		Cancel all pending requests, throw away all data and (re)connect.
+		Should be called from glib loop
+		"""
+		self._my_id = None
+		self._connected = False
+		self._syncing_repos = set()
+		self._syncing_nodes = set()
+		self._scanning_repos = set()
+		self._needs_update = set()
+		self._node_data = {}
+		self._repo_nodes = {}
+		self.cancel_all()
+		self._epoch += 1
+		GLib.idle_add(self._request_config)		
+	
+	def check_config(self):
+		"""
+		Check if configuration is in sync.
+		Should cause 'config-out-of-sync' event to be raised ASAP.
+		"""
+		self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
+	
+	def read_config(self, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously reads last configuration version from daemon
+		(even if this version is not currently used). Calls
+		callback(config) with data decoded from json on success,
+		error_callback(exception) on failure
+		"""
+		self._rest_request("config", callback, error_callback, *calbackdata)
+	
+	def write_config(self, config, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously POSTs new configuration to daemon. Calls
+		callback() with data decoded from json on success,
+		error_callback(exception) on failure.
+		Should cause 'config-out-of-sync' event to be raised ASAP.
+		"""
+		self._rest_post("config", config, self._syncthing_cb_config_written, self.__syncthing_cb_config_write_failed, callback, error_callback, calbackdata)
+	
+	def restart(self):
+		"""
+		Asks daemon to restart. If sucesfull, call will cause
+		'disconnected' event with Daemon.RESTART reason to be fired
+		"""
+		self._rest_post("restart",  {}, self._syncthing_cb_shutdown, None, Daemon.RESTART)
+	
+	def shutdown(self):
+		"""
+		Asks daemon to shutdown. If sucesfull, call will cause
+		'disconnected' event with Daemon.SHUTDOWN reason to be fired
+		"""
+		self._rest_post("shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN)
+	
+	def syncing(self):
+		""" Returns true if any repo is being synchronized right now  """
+		return len(self._syncing_repos) > 0
+	
+	def get_syncing_list(self):
+		"""
+		Returns list of ids of repositories that are being
+		synchronized right now.
+		"""
+		return list(self._syncing_repos)
+	
+	def get_my_id(self):
+		"""
+		Returns ID of node that is instance connected to.
+		May return None to indicate that ID is not yet known
+		"""
+		return self._my_id
+	
+	def get_webui_url(self):
+		""" Returns webiu url in http://127.0.0.1:8080 format """
+		return "http://%s" % self._address
+	
+	def get_address(self):
+		""" Returns tuple address on which daemon listens on. """
+		return self._address
+	
+class InvalidConfigurationException(RuntimeError): pass
