@@ -8,7 +8,7 @@ Dialog with Node ID and generated QR code
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from syncthing_gtk import DEBUG
-import tempfile
+import os, tempfile
 _ = lambda (a) : a
 
 class IDDialog(object):
@@ -35,7 +35,7 @@ class IDDialog(object):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file("node-id.glade")
+		self.builder.add_from_file(os.path.join(self.app.gladepath, "node-id.glade"))
 		self.builder.connect_signals(self)
 		self["vID"].set_text(self.node_id)
 

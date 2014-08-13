@@ -8,8 +8,6 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, GObject
 import os, sys
 
-SI_FRAMES				= 4 # Number of animation frames for status icon
-
 # Why the hell does ubuntu use own notifications system?
 THE_HELL, HAS_INDICATOR = False, False
 if "XDG_CURRENT_DESKTOP" in os.environ and os.environ["XDG_CURRENT_DESKTOP"] == "Unity":
@@ -77,5 +75,5 @@ class StatusIcon(GObject.GObject):
 			if THE_HELL and HAS_INDICATOR:
 				self._si.set_icon(icon)
 			else:
-				self._si.set_from_file("icons/%s.png" % (icon,))
+				self._si.set_from_file(os.path.join(self._icon_path, "%s.png" % (icon,)))
 				self._si.set_title(text)

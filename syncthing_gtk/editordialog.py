@@ -8,7 +8,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from syncthing_gtk.tools import check_node_id, ints
-import re
+import os, re
 _ = lambda (a) : a
 
 class EditorDialog(object):
@@ -102,7 +102,7 @@ class EditorDialog(object):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file("%s.glade" % self.mode)
+		self.builder.add_from_file(os.path.join(self.app.gladepath, "%s.glade" % self.mode))
 		self.builder.connect_signals(self)
 		# Set title stored in glade file in "Edit Title|Save Title" format
 		if "|" in self["editor"].get_title():

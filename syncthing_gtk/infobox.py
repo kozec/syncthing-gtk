@@ -7,6 +7,7 @@ Colorfull, expandlable widget displaying node/repo data
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject, Pango
 from syncthing_gtk import DEBUG
+import os
 _ = lambda (a) : a
 
 class InfoBox(Gtk.Container):
@@ -253,7 +254,7 @@ class InfoBox(Gtk.Container):
 	def on_grid_click(self, eventbox, event):
 		""" Displays popup menu on right click """
 		if event.button == 3:	# right
-			self.app.show_popup_menu(self, event)
+			self.emit('right-click', event.button, event.time)
 	
 	### Methods
 	def set_title(self, t):
@@ -307,7 +308,8 @@ class InfoBox(Gtk.Container):
 	
 	def add_value(self, key, icon, title, value):
 		""" Adds new line with provided properties """
-		wIcon, wTitle, wValue = Gtk.Image.new_from_file(icon), Gtk.Label(), Gtk.Label()
+		wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
+		wTitle, wValue = Gtk.Label(), Gtk.Label()
 		self.value_widgets[key] = wValue
 		self.set_value(key, value)
 		wTitle.set_text(title)

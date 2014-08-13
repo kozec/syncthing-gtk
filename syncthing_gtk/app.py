@@ -31,11 +31,13 @@ class App(Gtk.Application, TimerManager):
 	Hide parameter controlls if app should be minimized to status icon
 	after start.
 	"""
-	def __init__(self, hide=True):
+	def __init__(self, hide, gladepath="/usr/share/syncthing-gtk", iconpath="/usr/share/syncthing-gtk/icons"):
 		Gtk.Application.__init__(self,
-				application_id="me.kozec.syncthinggtk",
+				application_id="me.kozec.syncthingtk",
 				flags=Gio.ApplicationFlags.FLAGS_NONE)
 		TimerManager.__init__(self)
+		self.gladepath = gladepath
+		self.iconpath = iconpath
 		self.builder = None
 		self.rightclick_box = None
 		self.first_activation = hide
@@ -72,7 +74,7 @@ class App(Gtk.Application, TimerManager):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file("app.glade")
+		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu"].set_sensitive(False)
@@ -123,7 +125,7 @@ class App(Gtk.Application, TimerManager):
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):
-		self.statusicon = StatusIcon("./icons", self["si-menu"])
+		self.statusicon = StatusIcon(self.iconpath, self["si-menu"])
 		self.statusicon.connect("clicked", self.cb_statusicon_click)
 		if THE_HELL and HAS_INDICATOR:
 			self["menu-si-show"].set_visible(True)
@@ -221,12 +223,12 @@ class App(Gtk.Application, TimerManager):
 				self["server-name"].set_markup("<b>%s</b>" % (node.get_title(),))
 			# Modify values
 			node.clear_values()
-			node.add_value("ram",		"icons/ram.png",		_("RAM Utilization"),	"")
-			node.add_value("cpu",		"icons/cpu.png",		_("CPU Utilization"),	"")
-			node.add_value("dl_rate",	"icons/dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
-			node.add_value("up_rate",	"icons/up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
-			node.add_value("announce",	"icons/announce.png",	_("Announce Server"),	"")
-			node.add_value("version",	"icons/version.png",	_("Version"),			"?")
+			node.add_value("ram",		"ram.png",		_("RAM Utilization"),	"")
+			node.add_value("cpu",		"cpu.png",		_("CPU Utilization"),	"")
+			node.add_value("dl_rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
+			node.add_value("up_rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
+			node.add_value("announce",	"announce.png",	_("Announce Server"),	"")
+			node.add_value("version",	"version.png",	_("Version"),			"?")
 			node.show_all()
 	
 	def cb_syncthing_system_data(self, daemon, mem, cpu, announce):
@@ -406,14 +408,14 @@ class App(Gtk.Application, TimerManager):
 		""" Shared is expected to be list """
 		# title = name if len(name) < 20 else "...%s" % name[-20:]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
-		box.add_value("id",			"icons/version.png",	_("Repository ID"),			id)
-		box.add_value("folder",		"icons/folder.png",		_("Folder"),				path)
-		box.add_value("global",		"icons/global.png",		_("Global Repository"),		"? items, ?B")
-		box.add_value("local",		"icons/home.png",		_("Local Repository"),		"? items, ?B")
-		box.add_value("oos",		"icons/dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
-		box.add_value("master",		"icons/lock.png",		_("Master Repo"),			_("Yes") if is_master else _("No"))
-		box.add_value("ignore",		"icons/ignore.png",		_("Ignore Permissions"),	_("Yes") if ignore_perms else _("No"))
-		box.add_value("shared",		"icons/shared.png",		_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
+		box.add_value("id",			"version.png",	_("Repository ID"),			id)
+		box.add_value("folder",		"folder.png",	_("Folder"),				path)
+		box.add_value("global",		"global.png",	_("Global Repository"),		"? items, ?B")
+		box.add_value("local",		"home.png",		_("Local Repository"),		"? items, ?B")
+		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
+		box.add_value("master",		"lock.png",		_("Master Repo"),			_("Yes") if is_master else _("No"))
+		box.add_value("ignore",		"ignore.png",	_("Ignore Permissions"),	_("Yes") if ignore_perms else _("No"))
+		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("nodes", shared)
 		box.set_status("Unknown")
@@ -431,12 +433,12 @@ class App(Gtk.Application, TimerManager):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
-		box.add_value("address",	"icons/address.png",	_("Address"),			"?")
-		box.add_value("sync",		"icons/sync.png",		_("Synchronization"),	"0%")
-		box.add_value("compress",	"icons/compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
-		box.add_value("dl.rate",	"icons/dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
-		box.add_value("up.rate",	"icons/up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
-		box.add_value("version",	"icons/version.png",	_("Version"),			"?")
+		box.add_value("address",	"address.png",	_("Address"),			"?")
+		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%")
+		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
+		box.add_value("dl.rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
+		box.add_value("up.rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
+		box.add_value("version",	"version.png",	_("Version"),			"?")
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("connected", False)
 		box.add_hidden_value("completion", {})
