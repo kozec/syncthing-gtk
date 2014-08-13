@@ -31,7 +31,8 @@ class App(Gtk.Application, TimerManager):
 	Hide parameter controlls if app should be minimized to status icon
 	after start.
 	"""
-	def __init__(self, hide, gladepath="/usr/share/syncthing-gtk", iconpath="/usr/share/syncthing-gtk/icons"):
+	def __init__(self, hide=True, gladepath="/usr/share/syncthing-gtk",
+						iconpath="/usr/share/syncthing-gtk/icons"):
 		Gtk.Application.__init__(self,
 				application_id="me.kozec.syncthingtk",
 				flags=Gio.ApplicationFlags.FLAGS_NONE)
@@ -199,7 +200,7 @@ class App(Gtk.Application, TimerManager):
 					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
 					"%s\n\n%s %s" % (
 						_("Connection to daemon failed. Check your configuration and try again."),
-						_("Error message:"), str(exception)
+						_("Error message:"), str(message)
 						)
 					)
 			d.run()

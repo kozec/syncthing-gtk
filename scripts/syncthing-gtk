@@ -1,6 +1,13 @@
 #!/usr/bin/env python2
-import sys
+import sys, os
 
 if __name__ == "__main__":
 	from syncthing_gtk import App
-	App("-w" not in sys.argv).run()
+	path = "/usr/share/syncthing-gtk"
+	if os.path.exists("/usr/local/share/syncthing-gtk"):
+		path = "/usr/local/share/syncthing-gtk"
+	App(
+		"-w" not in sys.argv,
+		path,
+		os.path.join(path, "icons")
+		).run()
