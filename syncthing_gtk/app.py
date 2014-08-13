@@ -26,14 +26,19 @@ SI_FRAMES				= 4 # Number of animation frames for status icon
 DEBUG = False
 
 class App(Gtk.Application, TimerManager):
-	def __init__(self):
+	"""
+	Main application / window.
+	Hide parameter controlls if app should be minimized to status icon
+	after start.
+	"""
+	def __init__(self, hide=True):
 		Gtk.Application.__init__(self,
 				application_id="me.kozec.syncthinggtk",
 				flags=Gio.ApplicationFlags.FLAGS_NONE)
 		TimerManager.__init__(self)
 		self.builder = None
 		self.rightclick_box = None
-		self.first_activation = True
+		self.first_activation = hide
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -216,12 +221,12 @@ class App(Gtk.Application, TimerManager):
 				self["server-name"].set_markup("<b>%s</b>" % (node.get_title(),))
 			# Modify values
 			node.clear_values()
-			node.add_value("ram",		"icons/ram.png",	_("RAM Utilization"), "")
-			node.add_value("cpu",		"icons/cpu.png",	_("CPU Utilization"), "")
-			node.add_value("dl_rate",	"icons/dl_rate.png",	_("Download Rate"),			"0 bps (0 B)")
-			node.add_value("up_rate",	"icons/up_rate.png",	_("Upload Rate"),			"0 bps (0 B)")
-			node.add_value("announce",	"icons/announce.png",	_("Announce Server"),		"")
-			node.add_value("version",	"icons/version.png",	_("Version"),				"?")
+			node.add_value("ram",		"icons/ram.png",		_("RAM Utilization"),	"")
+			node.add_value("cpu",		"icons/cpu.png",		_("CPU Utilization"),	"")
+			node.add_value("dl_rate",	"icons/dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
+			node.add_value("up_rate",	"icons/up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
+			node.add_value("announce",	"icons/announce.png",	_("Announce Server"),	"")
+			node.add_value("version",	"icons/version.png",	_("Version"),			"?")
 			node.show_all()
 	
 	def cb_syncthing_system_data(self, daemon, mem, cpu, announce):
