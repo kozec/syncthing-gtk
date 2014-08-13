@@ -8,7 +8,7 @@ Currently supported:
 - Adding / editing nodes
 - Adding / editing repositories
 - Restart / shutdown server
+- Syncthing daemon settings
 
 TODO:
-- Server settings
 - GUI settings
