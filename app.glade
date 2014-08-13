@@ -342,19 +342,48 @@
 	</child>
 </object>
 
-<!-- Popup menu for repo/node -->
-<object class="GtkMenu" id="popup-menu">
+<!-- Popup menu for repo -->
+<object class="GtkMenu" id="popup-menu-repo">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-edit">
+		<object class="GtkImageMenuItem" id="menu-popup-edit-repo">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">gtk-edit</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_popup_edit" swapped="no"/>
+			<signal name="activate" handler="cb_menu_popup_edit_repo" swapped="no"/>
+		</object>
+	</child>
+</object>
+
+<!-- Popup menu for node -->
+<object class="GtkMenu" id="popup-menu-node">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-edit-node">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">gtk-edit</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_edit_node" swapped="no"/>
+		</object>
+	</child>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-show-id">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Show _ID</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_show_id" swapped="no"/>
+			<property name="image">menu-popup-show-id-image</property>
 		</object>
 	</child>
 </object>
@@ -554,6 +583,13 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="stock">gtk-refresh</property>
+</object>
+
+<object class="GtkImage" id="menu-popup-show-id-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="pixbuf">icons/show_id.png</property>
 </object>
 
 </interface>

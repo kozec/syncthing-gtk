@@ -278,6 +278,7 @@ class EditorDialog(object):
 			self["rvVersioning"].set_reveal_child(self.get_value("Versioning"))
 		elif self.mode == "node-edit":
 			self["vNodeID"].set_sensitive(self.is_new)
+			self["vAddresses"].set_sensitive(self.id != self.app.daemon.get_my_id())
 		elif self.mode == "daemon-settings":
 			self["vMaxSendKbps"].set_sensitive(self.get_value("MaxSendKbpsEnabled"))
 			self["lblvLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))

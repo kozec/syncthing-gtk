@@ -13,8 +13,9 @@ _ = lambda (a) : a
 
 class IDDialog(object):
 	""" Dialog with Node ID and generated QR code """
-	def __init__(self, app):
+	def __init__(self, app, node_id):
 		self.app = app
+		self.node_id = node_id
 		self.setup_widgets()
 		self.load_data()
 	
@@ -36,11 +37,11 @@ class IDDialog(object):
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file("node-id.glade")
 		self.builder.connect_signals(self)
-		self["vID"].set_text(self.app.daemon.get_my_id())
+		self["vID"].set_text(self.node_id)
 
 	def load_data(self):
 		""" Loads QR code from Syncthing daemon """
-		uri = "%s/qr/%s" % (self.app.daemon.get_webui_url(), self.app.daemon.get_my_id())
+		uri = "%s/qr/%s" % (self.app.daemon.get_webui_url(), self.node_id)
 		io = Gio.file_new_for_uri(uri)
 		io.load_contents_async(None, self.cb_syncthing_qr)
 	

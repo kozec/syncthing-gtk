@@ -6,7 +6,7 @@ Main window of application
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GLib
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
 from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
@@ -402,10 +402,6 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
-	def show_popup_menu(self, box, event):
-		self.rightclick_box = box
-		self["popup-menu"].popup(None, None, None, None, event.button, event.time)
-	
 	def show_repo(self, id, name, path, is_master, ignore_perms, shared):
 		""" Shared is expected to be list """
 		# title = name if len(name) < 20 else "...%s" % name[-20:]
@@ -422,6 +418,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("nodes", shared)
 		box.set_status("Unknown")
 		box.set_color_hex(COLOR_REPO)
+		box.connect('right-click', self.cb_popup_menu_repo)
 		self["repolist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
@@ -447,6 +444,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("bytes_out", 0)
 		box.add_hidden_value("time", 0)
 		box.set_color_hex(COLOR_NODE)
+		box.connect('right-click', self.cb_popup_menu_node)
 		self["nodelist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
@@ -484,7 +482,7 @@ class App(Gtk.Application, TimerManager):
 		return True
 	
 	def cb_menu_show_id(self, *a):
-		d = IDDialog(self)
+		d = IDDialog(self, self.daemon.get_my_id())
 		d.show(self["window"])
 	
 	def cb_menu_add_repo(self, event, *a):
@@ -501,22 +499,36 @@ class App(Gtk.Application, TimerManager):
 		""" Handler for 'Daemon Settings' menu item """
 		e = EditorDialog(self, "daemon-settings", False)
 		e.show(self["window"])
-		
+	
+	def cb_popup_menu_repo(self, box, button, time):
+		self.rightclick_box = box
+		self["popup-menu-repo"].popup(None, None, None, None, button, time)
+	
+	def cb_popup_menu_node(self, box, button, time):
+		self.rightclick_box = box
+		self["popup-menu-node"].popup(None, None, None, None, button, time)
 	
 	def cb_menu_popup(self, source, menu):
 		""" Handler for ubuntu-only toolbar buttons """
 		menu.popup(None, None, None, None, 0, 0)
 	
-	def cb_menu_popup_edit(self, *a):
-		""" Handler for right-click on repo/node box """
-		if self.rightclick_box in self.repos.values():
-			# Editing repository
-			e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
-			e.show(self["window"])
-		elif self.rightclick_box in self.nodes.values():
-			# Editing node
-			e = EditorDialog(self, "node-edit", False, self.rightclick_box["id"])
-			e.show(self["window"])
+	def cb_menu_popup_edit_repo(self, *a):
+		""" Handler for 'edit' context menu item """
+		# Editing repository
+		e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
+		e.show(self["window"])
+	
+	def cb_menu_popup_edit_node(self, *a):
+		""" Handler for other 'edit' context menu item """
+		# Editing node
+		e = EditorDialog(self, "node-edit", False, self.rightclick_box["id"])
+		e.show(self["window"])
+	
+	def cb_menu_popup_show_id(self, *a):
+		""" Handler for 'show id' context menu item """
+		# Available only for nodes
+		d = IDDialog(self, self.rightclick_box["id"])
+		d.show(self["window"])
 	
 	def cb_menu_restart(self, event, *a):
 		""" Handler for 'Restart' menu item """

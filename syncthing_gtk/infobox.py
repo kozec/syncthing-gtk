@@ -5,13 +5,17 @@ Syncthing-GTK - InfoBox
 Colorfull, expandlable widget displaying node/repo data
 """
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, Pango
+from gi.repository import Gtk, Gdk, Gio, GObject, Pango
 from syncthing_gtk import DEBUG
 _ = lambda (a) : a
 
 class InfoBox(Gtk.Container):
 	""" Expandlable widget displaying node/repo data """
 	__gtype_name__ = "InfoBox"
+	__gsignals__ = {
+			# right-click(button, time)
+			b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
+		}
 	
 	### Initialization
 	def __init__(self, app, title, icon):
@@ -244,7 +248,7 @@ class InfoBox(Gtk.Container):
 			self.rev.set_reveal_child(not self.rev.get_reveal_child())
 			self.app.cb_open_closed(self)
 		elif event.button == 3:	# right
-			self.app.show_popup_menu(self, event)
+			self.emit('right-click', event.button, event.time)
 	
 	def on_grid_click(self, eventbox, event):
 		""" Displays popup menu on right click """
