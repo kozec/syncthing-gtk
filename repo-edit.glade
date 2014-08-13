@@ -233,7 +233,7 @@
                 <property name="use_underline">True</property>
                 <property name="xalign">0.039999999105930328</property>
                 <property name="draw_indicator">True</property>
-                <signal name="toggled" handler="cb_vVersioning_toggled" swapped="no"/>
+                <signal name="toggled" handler="ui_value_changed" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">1</property>

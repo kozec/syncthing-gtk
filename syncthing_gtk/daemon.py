@@ -72,9 +72,10 @@ class Daemon(GObject.GObject, TimerManager):
 			Emited when daemon losts connection to remote node
 				id:			id of node
 		
-		node-discovered (id)
+		node-discovered (id, addresses)
 			# TODO: What this event does?
 				id:			id of node
+				addresses:	list of node addresses
 		
 		node-data-changed (id, address, version, dl_rate, up_rate, bytes_in, bytes_out)
 			Emited when node data changes
@@ -144,7 +145,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"node-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
 			b"node-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"node-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"node-discovered"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"node-discovered"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
 			b"node-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
 			b"node-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"node-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
@@ -711,9 +712,9 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["id"]
 			self.emit("node-disconnected", nid)
 		elif eType == "NodeDiscovered":
-			print e
-			#nid = e["data"]["id"]
-			#self.emit("node-discovered", nid)
+			nid = e["data"]["node"]
+			addresses = e["data"]["addrs"]
+			self.emit("node-discovered", nid, addresses)
 		else:
 			print "Unhandled event type:", e
 	

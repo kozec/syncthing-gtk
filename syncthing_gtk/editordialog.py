@@ -7,7 +7,7 @@ Universal dialog handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
-from syncthing_gtk.tools import check_node_id
+from syncthing_gtk.tools import check_node_id, ints
 import re
 _ = lambda (a) : a
 
@@ -15,10 +15,21 @@ class EditorDialog(object):
 	""" Universal dialog handler for all Syncthing settings and editing """
 	VALUES = {
 		# Dict with lists of all editable values, indexed by editor mode
-		"repo-edit" : ["vID", "vDirectory", "vReadOnly", "vIgnorePerms",
-							"vVersioning", "vKeepVersions", "vNodes" ],
-		"node-edit" : ["vNodeID", "vName", "vAddresses", "vCompression" ],
+		"repo-edit" : [
+			"vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vNodes",
+			"vVersioning", "vKeepVersions"
+			],
+		"node-edit" : [
+			"vNodeID", "vName", "vAddresses", "vCompression"
+			],
+		"daemon-settings" : [
+			"vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
+			"vStartBrowser", "vMaxSendKbpsEnabled", "vMaxSendKbps",
+			"vRescanIntervalS", "vURAccepted", "vLocalAnnPort",
+			"vGlobalAnnEnabled", "vGlobalAnnServer"
+			]
 	}
+	
 	# Regexp to check if repository id is valid
 	RE_REPO_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
 	# Invalid Value Messages.
@@ -41,9 +52,10 @@ class EditorDialog(object):
 		self.config = None
 		self.values = None
 		self.checks = {}
-		self.valid_ids = []		# Used as cache for repository ID checking
-		self.original_labels={}	# Stores original value while error message
-								# is displayed on label.
+		# Stores original label  value while error message is displayed.
+		self.original_labels={}
+		# Used by get_widget_id
+		self.widget_to_id = {}
 		self.setup_widgets()
 		self.load_data()
 	
@@ -54,6 +66,15 @@ class EditorDialog(object):
 	def __contains__(self, name):
 		""" Returns true if there is such widget """
 		return self.builder.get_object(name) != None
+	
+	def get_widget_id(self, w):
+		"""
+		Returns glade file ID for specified widget or None, if widget
+		is not known.
+		"""
+		if not w in self.widget_to_id:
+			return None
+		return self.widget_to_id[w]
 	
 	def find_widget_by_id(self, id, parent=None):
 		""" Recursively searchs for widget with specified ID """
@@ -84,7 +105,8 @@ class EditorDialog(object):
 		self.builder.add_from_file("%s.glade" % self.mode)
 		self.builder.connect_signals(self)
 		# Set title stored in glade file in "Edit Title|Save Title" format
-		self["editor"].set_title(self["editor"].get_title().split("|")[ 1 if self.is_new else 0 ])
+		if "|" in self["editor"].get_title():
+			self["editor"].set_title(self["editor"].get_title().split("|")[ 1 if self.is_new else 0 ])
 		# Disable everything until configuration is loaded
 		self["editor"].set_sensitive(False)
 	
@@ -107,8 +129,10 @@ class EditorDialog(object):
 			except (KeyError, TypeError):
 				# Node not found
 				return False
-		elif key == "Addresses":
-			return ",".join([ x.strip() for x in self.values["Addresses"]])
+		elif key in ("Addresses", "ListenAddress"):
+			return ",".join([ x.strip() for x in self.values[key]])
+		elif key == "MaxSendKbpsEnabled":
+			return (self.values["MaxSendKbps"] != 0)
 		elif key in self.values:
 			return self.values[key]
 		else:
@@ -124,8 +148,19 @@ class EditorDialog(object):
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Type"))
 			self.values["Versioning"]["Type"] = "simple" if value else ""
-		elif key == "Addresses":
-			self.values["Addresses"] = [ x.strip() for x in value.split(",") ]
+		#elif key  in ("LocalAnnPort", "RescanIntervalS"):
+		#	self.values[key] = ints(value)
+		elif key == "URAccepted":
+			self.values[key] = 1 if value else 0
+		elif key in ("Addresses", "ListenAddress"):
+			self.values[key] = [ x.strip() for x in value.split(",") ]
+		elif key == "MaxSendKbpsEnabled":
+			if value:
+				if self.values["MaxSendKbps"] <= 0:
+					self.values["MaxSendKbps"] = 1
+			else:
+				self.values["MaxSendKbps"] = 0
+			self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
 		elif key in self.values:
 			self.values[key] = value
 		else:
@@ -190,6 +225,9 @@ class EditorDialog(object):
 						}
 				elif self.mode == "node-edit":
 					self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
+				elif self.mode == "daemon-settings":
+					self.values = self.config["Options"]
+					self.checks = {}
 				else:
 					# Invalid mode. Shouldn't be possible
 					self.close()
@@ -202,13 +240,14 @@ class EditorDialog(object):
 		# Iterate over all known configuration values and set UI elements using unholy method
 		for key in self.VALUES[self.mode]:
 			w = self.find_widget_by_id(key)
+			self.widget_to_id[w] = key
 			if not key is None:
 				if isinstance(w, Gtk.SpinButton):
-					w.get_adjustment().set_value(int(self.get_value(key.lstrip("v"))))
+					w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
 				elif isinstance(w, Gtk.Entry):
-					w.set_text(str(self.get_value(key.strip("v"))))
+					w.set_text(str(self.get_value(key.lstrip("v"))))
 				elif isinstance(w, Gtk.CheckButton):
-					w.set_active(self.get_value(key.strip("v")))
+					w.set_active(self.get_value(key.lstrip("v")))
 				elif key == "vNodes":
 					# Very special case
 					nids = [ n["NodeID"] for n in self.get_value("Nodes") ]
@@ -221,16 +260,31 @@ class EditorDialog(object):
 					self["vNodes"].show_all()
 				else:
 					print w
-		# Update special widgets
-		if "vID" in self:
-			self["vID"].set_sensitive(self.is_new)
-		if "vNodeID" in self:
-			self["vNodeID"].set_sensitive(self.is_new)
-		if "vVersioning" in self:
-			self.cb_vVersioning_toggled(self["vVersioning"])
-
+		self.update_special_widgets()
 		# Enable dialog
 		self["editor"].set_sensitive(True)
+	
+	def ui_value_changed(self, w, *a):
+		key = self.get_widget_id(w)
+		if key != None:
+			if isinstance(w, Gtk.CheckButton):
+				self.set_value(key.lstrip("v"), w.get_active())
+				self.update_special_widgets()
+	
+	def update_special_widgets(self, *a):
+		""" Enables/disables some widgets """
+		if self.mode == "repo-edit":
+			self["vID"].set_sensitive(self.is_new)
+			self["rvVersioning"].set_reveal_child(self.get_value("Versioning"))
+		elif self.mode == "node-edit":
+			self["vNodeID"].set_sensitive(self.is_new)
+		elif self.mode == "daemon-settings":
+			self["vMaxSendKbps"].set_sensitive(self.get_value("MaxSendKbpsEnabled"))
+			self["lblvLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
+			self["vLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
+			self["lblvGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))
+			self["vGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))
+
 	
 	def cb_data_failed(self, exception, *a):
 		"""
@@ -251,9 +305,6 @@ class EditorDialog(object):
 				)
 		d.run()
 		self.close()
-	
-	def cb_vVersioning_toggled(self, cb, *a):
-		self["rvVersioning"].set_reveal_child(cb.get_active())
 	
 	def cb_btClose_clicked(self, *a):
 		self.close()
@@ -279,7 +330,9 @@ class EditorDialog(object):
 		for key in self.VALUES[self.mode]:
 			w = self.find_widget_by_id(key)
 			if not key is None:
-				if isinstance(w, Gtk.Entry):
+				if isinstance(w, Gtk.SpinButton):
+					self.set_value(key.strip("v"), int(w.get_adjustment().get_value()))
+				elif isinstance(w, Gtk.Entry):
 					self.set_value(key.strip("v"), w.get_text())
 				elif isinstance(w, Gtk.CheckButton):
 					self.set_value(key.strip("v"), w.get_active())

@@ -66,3 +66,12 @@ def sizeof_fmt(size):
 				return "%3.0f %s" % (size, x)
 			return "%3.2f %s" % (size, x)
 		size /= 1024.0
+
+def ints(s):
+	""" Works as int(), but returns 0 for None, False and empty string """
+	if s is None : return 0
+	if s == False: return 0
+	if hasattr(s, "__len__"):
+		if len(s) == 0 : return 0
+	return int(s)
+

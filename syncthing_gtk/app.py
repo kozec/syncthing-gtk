@@ -497,10 +497,18 @@ class App(Gtk.Application, TimerManager):
 		e = EditorDialog(self, "node-edit", True)
 		e.show(self["window"])
 	
+	def cb_menu_daemon_settings(self, event, *a):
+		""" Handler for 'Daemon Settings' menu item """
+		e = EditorDialog(self, "daemon-settings", False)
+		e.show(self["window"])
+		
+	
 	def cb_menu_popup(self, source, menu):
+		""" Handler for ubuntu-only toolbar buttons """
 		menu.popup(None, None, None, None, 0, 0)
 	
 	def cb_menu_popup_edit(self, *a):
+		""" Handler for right-click on repo/node box """
 		if self.rightclick_box in self.repos.values():
 			# Editing repository
 			e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
@@ -511,12 +519,15 @@ class App(Gtk.Application, TimerManager):
 			e.show(self["window"])
 	
 	def cb_menu_restart(self, event, *a):
+		""" Handler for 'Restart' menu item """
 		self.daemon.restart()
 	
 	def cb_menu_shutdown(self, event, *a):
+		""" Handler for 'Shutdown' menu item """
 		self.daemon.shutdown()
 	
 	def cb_menu_webui(self, *a):
+		""" Handler for 'Open WebUI' menu item """
 		print "Opening '%s' in browser" % (self.daemon.get_webui_url(),)
 		webbrowser.open(self.daemon.get_webui_url())
 	
