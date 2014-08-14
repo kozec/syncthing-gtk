@@ -8,7 +8,9 @@ Class interfacing with syncthing daemon
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager, DEBUG
+from syncthing_gtk.tools import parsetime
 from xml.dom import minidom
+from datetime import datetime
 import json, os, sys, time
 
 class Daemon(GObject.GObject, TimerManager):
@@ -49,14 +51,10 @@ class Daemon(GObject.GObject, TimerManager):
 			after client connects to another node
 				my_id:		ID of node that is instance connected to.
 		
-		system-data-updated (ram_ussage, cpu_ussage, announce)
-			Emited every time when system informations are recieved
-			from daemon.
-				ram_ussage:	memory ussage in bytes
-				cpu_ussage:	CPU ussage in percent (0.0 to 100.0)
-				announce:	Daemon.CONNECTED if daemon is connected to annoucnce server
-							Daemon.OFFLINE if is not
-							Daemon.DISABLED if announce server is disabled
+		error (message)
+			Emited every time when daemon generates error readable by
+			WebUI (/rest/errors call)
+				message:	Error message sent by daemon
 		
 		node-added (id, name, data)
 			Emited when new node is loaded from configuration
@@ -132,6 +130,15 @@ class Daemon(GObject.GObject, TimerManager):
 		repo-scan-finished (id):
 			Emited after repository scan is finished
 				id:		id of repo
+		
+		system-data-updated (ram_ussage, cpu_ussage, announce)
+			Emited every time when system informations are recieved
+			from daemon.
+				ram_ussage:	memory ussage in bytes
+				cpu_ussage:	CPU ussage in percent (0.0 to 100.0)
+				announce:	Daemon.CONNECTED if daemon is connected to annoucnce server
+							Daemon.OFFLINE if is not
+							Daemon.DISABLED if announce server is disabled
 	"""
 	
 	
@@ -140,8 +147,8 @@ class Daemon(GObject.GObject, TimerManager):
 			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
+			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
 			b"node-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
 			b"node-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"node-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -158,6 +165,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"repo-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
 		}
 	
 	# Constants for 'announce' parameter of system-data-updated event
@@ -195,6 +203,8 @@ class Daemon(GObject.GObject, TimerManager):
 		self._node_data = {}
 		# repo_nodes stores list of nodes assigned to repository
 		self._repo_nodes = {}
+		# last_error_time is used to discard repeating errors
+		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1)
 		# Epoch is incereased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
 		self._epoch = 1
@@ -472,6 +482,14 @@ class Daemon(GObject.GObject, TimerManager):
 		
 		self.timer("event", self._refresh_rate, self._request_events)
 	
+	def _syncthing_cb_errors(self, errors):
+		for e in errors:
+			t = parsetime(e["Time"])
+			if t > self._last_error_time:
+				self.emit("error", e["Error"])
+				self._last_error_time = t
+		self.timer("errors", self._refresh_rate * 5, self._rest_request, "errors", self._syncthing_cb_errors)
+	
 	def _syncthing_cb_events_error(self, exception, command):
 		"""
 		As most frequent request, "event" request is used to detect when
@@ -623,6 +641,7 @@ class Daemon(GObject.GObject, TimerManager):
 				self._request_repo_data(rid)
 			
 			self._rest_request("events?limit=1", self._syncthing_cb_events)	# Requests most recent event only
+			self._rest_request("errors", self._syncthing_cb_errors)
 			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
 			self._rest_request("connections", self._syncthing_cb_connections)
 			self._rest_request("system", self._syncthing_cb_system)

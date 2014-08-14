@@ -22,9 +22,7 @@ class RIBar(Gtk.Revealer):
 			Emitted when an action widget (button) is clicked
 	"""
 	__gsignals__ = {
-			# response(response_id), emited when action button is pressed
-			b"response"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			# close(), emited 'X' button is pressed
+			b"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
 			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 		}
 	
@@ -37,6 +35,8 @@ class RIBar(Gtk.Revealer):
 		# Init
 		Gtk.Revealer.__init__(self)
 		self._infobar = Gtk.InfoBar()
+		self._values = {}
+		self._label = None
 		# Icon
 		icon_name = "dialog-information"
 		if message_type == Gtk.MessageType.ERROR:
@@ -49,13 +49,18 @@ class RIBar(Gtk.Revealer):
 		# Label
 		if isinstance(label, Gtk.Widget):
 			self._infobar.get_content_area().pack_start(label, True, True, 0)
+			self._label = label
 		else:
-			l = Gtk.Label()
-			l.set_markup(label)
-			self._infobar.get_content_area().add(l)
+			self._label = Gtk.Label()
+			self._label.set_line_wrap(True)
+			self._label.set_markup(label)
+			self._infobar.get_content_area().add(self._label)
 		# Buttons
 		for button, response_id in buttons:
 			self.add_button(button, response_id)
+		# Signals
+		self._infobar.connect("close", self._cb_close)
+		self._infobar.connect("response", self._cb_response)
 		# Settings
 		self._infobar.set_message_type(message_type)
 		self._infobar.set_show_close_button(True)
@@ -64,15 +69,27 @@ class RIBar(Gtk.Revealer):
 		self.add(self._infobar)
 		self.show_all()
 	
-	def connect(self, signal, *data):
-		if signal in ("close", "response"):
-			return self._infobar.connect(signal, *data)
-		# else:
-		return Gtk.Revealer.connect(self, signal, *data)
+	def _cb_close(self, ib):
+		self.emit("close")
+	
+	def _cb_response(self, ib, response_id):
+		self.emit("response", response_id)
 	
 	def add_button(self, button, response_id):
 		self._infobar.add_action_widget(button, response_id)
 		self._infobar.show_all()
+	
+	def get_label(self):
+		""" Returns label widget """
+		return self._label
+	
+	def close_on_close(self):
+		"""
+		Setups revealer so it will be automaticaly closed, removed and
+		destroyed when user clicks to any button, including 'X'
+		"""
+		self.connect("close", self.close)
+		self.connect("response", self.close)
 	
 	def close(self, *a):
 		"""
@@ -87,6 +104,22 @@ class RIBar(Gtk.Revealer):
 		if not self.get_parent() is None:
 			self.get_parent().remove(self)
 		self.destroy()
+	
+	def set_value(self, key, value):
+		""" Stores some metadata """
+		self._values[key] = value
+	
+	def get_value(self, key):
+		""" Retrieves some metadata """
+		return self._values[key]
+	
+	def __getitem__(self, key):
+		""" Shortcut to get_value """
+		return self._values[key]
+	
+	def __setitem__(self, key, value):
+		""" Shortcut to set_value """
+		self.set_value(key, value)
 	
 	@staticmethod
 	def build_button(label, icon_name=None, icon_widget=None):

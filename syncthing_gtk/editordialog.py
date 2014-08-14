@@ -6,13 +6,26 @@ Universal dialog handler for all Syncthing settings and editing
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GLib, Pango
+from gi.repository import Gtk, Gdk, Gio, GLib, GObject, Pango
 from syncthing_gtk.tools import check_node_id, ints
 import os, re
 _ = lambda (a) : a
 
-class EditorDialog(object):
-	""" Universal dialog handler for all Syncthing settings and editing """
+class EditorDialog(GObject.GObject):
+	"""
+	Universal dialog handler for all Syncthing settings and editing
+	
+	Signals:
+		close()
+			emitted after dialog is closed
+		loaded()
+			Emitted after dialog loads and parses configurationdata
+	"""
+	__gsignals__ = {
+			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+		}
+	
 	VALUES = {
 		# Dict with lists of all editable values, indexed by editor mode
 		"repo-edit" : [
@@ -45,6 +58,7 @@ class EditorDialog(object):
 	}
 	
 	def __init__(self, app, mode, is_new, id=None):
+		GObject.GObject.__init__(self)
 		self.app = app
 		self.mode = mode
 		self.id = id
@@ -57,6 +71,9 @@ class EditorDialog(object):
 		# Used by get_widget_id
 		self.widget_to_id = {}
 		self.setup_widgets()
+	
+	def load(self):
+		""" Loads configuration data and pre-fills values to fields """
 		self.load_data()
 	
 	def __getitem__(self, name):
@@ -93,9 +110,11 @@ class EditorDialog(object):
 	def show(self, parent=None):
 		if not parent is None:
 			self["editor"].set_transient_for(parent)
+		self["editor"].set_modal(True)
 		self["editor"].show_all()
 	
 	def close(self):
+		self.emit("close")
 		self["editor"].hide()
 		self["editor"].destroy()
 	
@@ -211,6 +230,13 @@ class EditorDialog(object):
 						"vID" : self.check_repo_id,
 						"vDirectory" : self.check_path
 						}
+					if self.id != None:
+						try:
+							v = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+							self.values = v
+							self.is_new = False
+						except IndexError:
+							pass
 				elif self.mode == "node-edit":
 					self.set_value("Addresses", "dynamic")
 					self.set_value("Compression", True)
@@ -263,6 +289,8 @@ class EditorDialog(object):
 		self.update_special_widgets()
 		# Enable dialog
 		self["editor"].set_sensitive(True)
+		# Brag
+		self.emit("loaded")
 	
 	def ui_value_changed(self, w, *a):
 		key = self.get_widget_id(w)
@@ -274,7 +302,7 @@ class EditorDialog(object):
 	def update_special_widgets(self, *a):
 		""" Enables/disables some widgets """
 		if self.mode == "repo-edit":
-			self["vID"].set_sensitive(self.is_new)
+			self["vID"].set_sensitive(self.id is None)
 			self["rvVersioning"].set_reveal_child(self.get_value("Versioning"))
 		elif self.mode == "node-edit":
 			self["vNodeID"].set_sensitive(self.is_new)
@@ -397,4 +425,27 @@ class EditorDialog(object):
 		d.hide()
 		d.destroy()
 		self["editor"].set_sensitive(True)
-
+	
+	def call_after_loaded(self, callback, *data):
+		""" Calls callback whem 'loaded' event is emited """
+		self.connect("loaded",
+			# lambda bellow throws 'event_source' argument and
+			# calls callback with rest of arguments
+			lambda obj, callback, *a : callback(*a),
+			callback, *data
+			)
+	
+	def fill_repo_id(self, rid):
+		""" Pre-fills repository Id for new-repo dialog """
+		self["vID"].set_text(rid)
+		self.id = rid
+		self.update_special_widgets()
+	
+	def mark_node(self, nid):
+		""" Marks (checks) checkbox for specified node """
+		if "vNodes" in self:	# ... only if there are checkboxes here
+			for child in self["vNodes"].get_children():
+				if child.get_tooltip_text() == nid:
+					l = child.get_children()[0]	# Label in checkbox
+					l.set_markup("<b>%s</b>" % (l.get_label()))
+					child.set_active(True)

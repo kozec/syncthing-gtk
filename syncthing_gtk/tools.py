@@ -7,6 +7,9 @@ Various stuff that I don't care to fit anywhere else.
 
 from __future__ import unicode_literals
 from base64 import b32decode
+from datetime import datetime
+import re
+
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 
 def luhn_b32generate(s):
@@ -75,3 +78,13 @@ def ints(s):
 		if len(s) == 0 : return 0
 	return int(s)
 
+PARSER = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)\.([0-9]+)\+([0-9]+):([0-9]+)")
+FORMAT = "%Y-%m-%d %H:%M:%S %f"
+
+def parsetime(m):
+	""" Parses time recieved from Syncthing daemon, ignoring timezone info """
+	match = PARSER.match(m)
+	times = list(match.groups()[0:3])
+	times[2] = times[2][0:6]
+	reformat = "%s %s %s" % tuple(times)
+	return datetime.strptime(reformat, FORMAT)

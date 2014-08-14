@@ -10,7 +10,7 @@ from gi.repository import Gtk, Gio
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
 from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
-import os, webbrowser, sys, pprint
+import os, webbrowser, sys, pprint, re
 
 _ = lambda (a) : a
 
@@ -23,7 +23,13 @@ COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_SCANNING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
 SI_FRAMES				= 4 # Number of animation frames for status icon
-DEBUG = False
+
+# Regexps used to extract meaningfull data from error messages
+FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-Z0-9]+)".*')
+
+# Response IDs for info bar on top
+IBAR_RESPONSE_RESTART		= 256
+IBAR_RESPONSE_FIX_REPOID	= 257
 
 class App(Gtk.Application, TimerManager):
 	"""
@@ -46,6 +52,7 @@ class App(Gtk.Application, TimerManager):
 		# or if daemon shuts down.
 		self.connect_dialog = None
 		self.widgets = {}
+		self.error_boxes = []
 		self.repos = {}
 		self.nodes = {}
 		self.open_boxes = set([])	# Holds set of expanded node/repo boxes
@@ -139,12 +146,12 @@ class App(Gtk.Application, TimerManager):
 			print >>sys.stderr, e
 			sys.exit(1)
 		# Connect signals
+		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("connected", self.cb_syncthing_connected)
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
 		self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
+		self.daemon.connect("error", self.cb_syncthing_error)
 		self.daemon.connect("my-id-changed", self.cb_syncthing_my_id_changed)
-		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
-		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		self.daemon.connect("node-added", self.cb_syncthing_node_added)
 		self.daemon.connect("node-data-changed", self.cb_syncthing_node_data_changed)
 		self.daemon.connect("node-connected", self.cb_syncthing_node_state_changed, True)
@@ -159,6 +166,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("repo-sync-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
 		self.daemon.connect("repo-scan-started", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_SCANNING, _("Scanning"))
 		self.daemon.connect("repo-scan-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
+		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 	
 	def cb_syncthing_connected(self, *a):
 		self.clear()
@@ -211,7 +219,7 @@ class App(Gtk.Application, TimerManager):
 			r = RIBar(
 				_("The configuration has been saved but not activated.\nSyncthing must restart to activate the new configuration."),
 				Gtk.MessageType.WARNING,
-				( RIBar.build_button(_("_Restart"), "view-refresh"), 1)
+				( RIBar.build_button(_("_Restart"), "view-refresh"), IBAR_RESPONSE_RESTART)
 				)
 			self["infobar"] = r
 			self["content"].pack_start(r, False, False, 1)
@@ -220,6 +228,32 @@ class App(Gtk.Application, TimerManager):
 			r.connect("response", self.cb_infobar_response)
 			r.show()
 			r.set_reveal_child(True)
+	
+	def cb_syncthing_error(self, daemon, message):
+		print >>sys.stderr, message
+		r = RIBar(
+			message, Gtk.MessageType.WARNING,
+			)
+		self["content"].pack_start(r, False, False, 1)
+		self["content"].reorder_child(r, 0)
+		r.connect("close", self.cb_infobar_close)
+		r.connect("response", self.cb_infobar_response)
+		r.show()
+		r.set_reveal_child(True)
+		if "Unexpected repository ID" in message:
+			match = FIX_EXTRACT_REPOID.match(message)
+			if len(match.groups()) == 2:
+				r["rid"], r["nid"] = match.groups()
+				if r["nid"] in self.nodes:
+					r.add_button(RIBar.build_button(_("_Fix")), IBAR_RESPONSE_FIX_REPOID)
+					l = r.get_label()
+					# Replace that nasty looking, long node id with label assigned by user
+					# and make important things bold
+					l.set_markup(l.get_text(). \
+						replace('"%s"' % (r["nid"],), '<b>"%s"</b>' % (self.nodes[r["nid"]].get_title(),)). \
+						replace('"%s"' % (r["rid"],), '<b>"%s"</b>' % (r["rid"],))
+					)
+		self.error_boxes.append(r)
 	
 	def cb_syncthing_my_id_changed(self, daemon, node_id):
 		if node_id in self.nodes:
@@ -477,11 +511,16 @@ class App(Gtk.Application, TimerManager):
 		self.repos = {}
 	
 	def restart(self):
-		self.cb_infobar_close()
 		self["edit-menu"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
 		self["menu-si-restart"].set_sensitive(False)
+		if not self["infobar"] is None:
+			self.cb_infobar_close(self["infobar"])
+		for r in self.error_boxes:
+			r.get_parent().remove(r)
+			r.destroy()
+		self.error_boxes = []
 		self.cancel_all() # timers
 		self.daemon.reconnect()
 	
@@ -503,16 +542,19 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_add_repo(self, event, *a):
 		""" Handler for 'Add repository' menu item """
 		e = EditorDialog(self, "repo-edit", True)
+		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_add_node(self, event, *a):
 		""" Handler for 'Add node' menu item """
 		e = EditorDialog(self, "node-edit", True)
+		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_daemon_settings(self, event, *a):
 		""" Handler for 'Daemon Settings' menu item """
 		e = EditorDialog(self, "daemon-settings", False)
+		e.load()
 		e.show(self["window"])
 	
 	def cb_popup_menu_repo(self, box, button, time):
@@ -531,12 +573,14 @@ class App(Gtk.Application, TimerManager):
 		""" Handler for 'edit' context menu item """
 		# Editing repository
 		e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
+		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_popup_edit_node(self, *a):
 		""" Handler for other 'edit' context menu item """
 		# Editing node
 		e = EditorDialog(self, "node-edit", False, self.rightclick_box["id"])
+		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_popup_show_id(self, *a):
@@ -570,16 +614,37 @@ class App(Gtk.Application, TimerManager):
 			if self.connect_dialog != None:
 				self.connect_dialog.show()
 	
-	def cb_infobar_close(self, *a):
-		if not self["infobar"] is None:
-			self["infobar"].close()
+	def cb_infobar_close(self, bar):
+		if bar == self["infobar"]:
 			self["infobar"] = None
+		bar.close()
+		if bar in self.error_boxes:
+			self.error_boxes.remove(bar)
 	
 	def cb_infobar_response(self, bar, response_id):
-		if response_id == 1:
+		if response_id == IBAR_RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
-		self["infobar"].close()
+		if response_id == IBAR_RESPONSE_FIX_REPOID:
+			# Give up if there is no node with matching ID
+			if bar["nid"] in self.nodes:
+				# Find repository with matching ID ...
+				if bar["rid"] in self.repos:
+					# ... if found, show edit dialog and pre-select
+					# matching node
+					e = EditorDialog(self, "repo-edit", False, bar["rid"])
+					e.call_after_loaded(e.mark_node, bar["nid"])
+					e.load()
+					e.show(self["window"])
+				else:
+					# If there is no matching repository, prefill 'new repo'
+					# dialog and let user to save it
+					e = EditorDialog(self, "repo-edit", True, bar["rid"])
+					e.call_after_loaded(e.mark_node, bar["nid"])
+					e.call_after_loaded(e.fill_repo_id, bar["rid"])
+					e.load()
+					e.show(self["window"])
+		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):
 		"""
