@@ -307,7 +307,6 @@ class Daemon(GObject.GObject, TimerManager):
 		try:
 			headers, response = response.split("\r\n\r\n", 1)
 			headers = headers.split("\r\n")
-			print headers
 			code = headers[0].split(" ")[1]
 			if int(code) != 200:
 				self._rest_error(Exception("HTTP error %s" % (code,)), command, callback, error_callback, callback_data)
