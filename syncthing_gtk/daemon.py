@@ -255,44 +255,78 @@ class Daemon(GObject.GObject, TimerManager):
 		called. If error_callback is None, request is repeated.
 		
 		Callback signatures:
-		if callback_data is set:
-			callback(json_data, callback_data)
-			error_callback(exception, command, callback_data)
-		if callback_data is null:
-			callback(json_data)
-			error_callback(exception, command)
+			callback(json_data, callback_data... )
+			error_callback(exception, command, callback_data... )
 		"""
-		uri = "%s/rest/%s" % (self.get_webui_url(), command)
-		io = Gio.file_new_for_uri(uri)
-		io.load_contents_async(None, self._rest_response, command, self._epoch, callback, error_callback, callback_data)
+		sc = Gio.SocketClient()
+		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
+			command, self._epoch, callback, error_callback, callback_data)
 	
-	def _rest_response(self, io, results, command, epoch, callback, error_callback, callback_data):
-		"""
-		Recieves and parses REST response. Calls callback if successfull.
-		See _rest_request for more info.
-		"""
-		if epoch < self._epoch :
-			# Requested before restart() call; Data may be nonactual, discard it.
-			if DEBUG : print "Discarded old response for", command
-			return
+	def _rest_connected(self, sc, results, command, epoch, callback, error_callback, callback_data):
+		""" Second part of _rest_request, called after HTTP connection is initiated """
 		try:
-			ok, contents, etag = io.load_contents_finish(results)
+			con = sc.connect_to_service_finish(results)
+			if con == None:
+				raise Exception("Unknown error")
+		except Exception, e:
+			if epoch >= self._epoch :
+				self._rest_error(e, command, callback, error_callback, callback_data)
+			return
+		if epoch < self._epoch :
+			# Too late, throw it away
+			con.close()
+			del con
+			if DEBUG : print "Discarded old connection for", command
+		# Build GET request
+		get_str = "\r\n".join([
+			"GET /rest/%s HTTP/1.0" % command,
+			"Connection: close",
+			"", ""
+			]).encode("utf-8")
+		# Send it out and wait for response
+		con.get_output_stream().write_all(get_str)
+		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
+			command, epoch, callback, error_callback, callback_data)
+	
+	def _rest_response(self, con, results, command, epoch, callback, error_callback, callback_data):
+		try:
+			response = con.read_bytes_finish(results)
+			if response == None:
+				raise Exception("No data recieved")
 		except Exception, e:
 			self._rest_error(e, command, callback, error_callback, callback_data)
 			return
 		finally:
-			del io	# Prevents leaking fd's in gvfsd-http daemon if program crashes
-		if ok:
-			try:
-				data = json.loads(contents)
-			except ValueError: # Not a JSON
-				data = {'data' : contents }
-			if callback_data:
-				callback(data, *callback_data)
-			else:
-				callback(data)
+			con.close()
+			del con
+		if epoch < self._epoch :
+			# Too late, throw it away
+			if DEBUG : print "Discarded old response for", command
+		response = response.get_data()
+		# Split headers from response
+		try:
+			headers, response = response.split("\r\n\r\n", 1)
+			headers = headers.split("\r\n")
+			print headers
+			code = headers[0].split(" ")[1]
+			if int(code) != 200:
+				self._rest_error(Exception("HTTP error %s" % (code,)), command, callback, error_callback, callback_data)
+				return
+		except Exception:
+			# That probably wasn't HTTP
+			self._rest_error(Exception("Invalid HTTP response"), command, callback, error_callback, callback_data)
+			return
+		# Parse response and call callback
+		try:
+			rdata = json.loads(response)
+		except IndexError: # No data
+			rdata = { }
+		except ValueError: # Not a JSON
+			rdata = {'data' : response }
+		if callback_data:
+			callback(rdata, *callback_data)
 		else:
-			self._rest_error(Exception("not ok"), command, callback, error_callback, callback_data)
+			callback(rdata)
 	
 	def _rest_error(self, exception, command, callback, error_callback, callback_data):
 		""" Error handler for _rest_response method """
