@@ -48,6 +48,7 @@ class App(Gtk.Application, TimerManager):
 		self.builder = None
 		self.rightclick_box = None
 		self.first_activation = hide
+		self.process = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -57,12 +58,15 @@ class App(Gtk.Application, TimerManager):
 		self.nodes = {}
 		self.open_boxes = set([])	# Holds set of expanded node/repo boxes
 		self.sync_animation = 0
+		
+		self.timer("b", 1, self.cb_menu_daemon_output)
 	
 	def do_startup(self, *a):
 		Gtk.Application.do_startup(self, *a)
 		self.setup_widgets()
 		self.setup_statusicon()
 		self.setup_connection()
+		self.process = DaemonProcess(["syncthing"])
 		self.daemon.reconnect()
 	
 	def do_activate(self, *a):
@@ -526,6 +530,8 @@ class App(Gtk.Application, TimerManager):
 	
 	# --- Callbacks ---
 	def cb_exit(self, event, *a):
+		if self.process != None:
+			self.process.terminate()
 		self.quit()
 	
 	def cb_delete_event(self, *e):
@@ -601,6 +607,11 @@ class App(Gtk.Application, TimerManager):
 		""" Handler for 'Open WebUI' menu item """
 		print "Opening '%s' in browser" % (self.daemon.get_webui_url(),)
 		webbrowser.open(self.daemon.get_webui_url())
+	
+	def cb_menu_daemon_output(self, *a):
+		if self.process != None:
+			d = DaemonOutputDialog(self, self.process)
+			d.show(self["window"])
 	
 	def cb_statusicon_click(self, *a):
 		""" Called when user clicks on status icon """
