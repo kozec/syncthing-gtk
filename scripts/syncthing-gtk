@@ -1,8 +1,13 @@
 #!/usr/bin/env python2
-import sys, os
+import sys, os, signal
+
+def sigint(*a):
+	print("\n*break*")
+	sys.exit(0)
 
 if __name__ == "__main__":
 	from syncthing_gtk import App
+	signal.signal(signal.SIGINT, sigint)
 	path = "/usr/share/syncthing-gtk"
 	if os.path.exists("/usr/local/share/syncthing-gtk"):
 		path = "/usr/local/share/syncthing-gtk"
