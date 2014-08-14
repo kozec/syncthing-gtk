@@ -6,7 +6,7 @@ Main window of application
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gio, GLib
+from gi.repository import Gtk, Gio
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
 from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
@@ -207,7 +207,19 @@ class App(Gtk.Application, TimerManager):
 			Gtk.main_quit()
 	
 	def cb_syncthing_config_oos(self, *a):
-		self["info-revealer"].set_reveal_child(True)
+		if self["infobar"] == None:
+			r = RIBar(
+				_("The configuration has been saved but not activated.\nSyncthing must restart to activate the new configuration."),
+				Gtk.MessageType.WARNING,
+				( RIBar.build_button(_("_Restart"), "view-refresh"), 1)
+				)
+			self["infobar"] = r
+			self["content"].pack_start(r, False, False, 1)
+			self["content"].reorder_child(r, 0)
+			r.connect("close", self.cb_infobar_close)
+			r.connect("response", self.cb_infobar_response)
+			r.show()
+			r.set_reveal_child(True)
 	
 	def cb_syncthing_my_id_changed(self, daemon, node_id):
 		if node_id in self.nodes:
@@ -465,7 +477,7 @@ class App(Gtk.Application, TimerManager):
 		self.repos = {}
 	
 	def restart(self):
-		self["info-revealer"].set_reveal_child(False)
+		self.cb_infobar_close()
 		self["edit-menu"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
@@ -559,7 +571,15 @@ class App(Gtk.Application, TimerManager):
 				self.connect_dialog.show()
 	
 	def cb_infobar_close(self, *a):
-		self["info-revealer"].set_reveal_child(False)
+		if not self["infobar"] is None:
+			self["infobar"].close()
+			self["infobar"] = None
+	
+	def cb_infobar_response(self, bar, response_id):
+		if response_id == 1:
+			# Restart
+			self.daemon.restart()
+		self["infobar"].close()
 	
 	def cb_open_closed(self, box):
 		"""

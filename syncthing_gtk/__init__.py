@@ -5,6 +5,7 @@ import tools
 from infobox		import InfoBox
 from editordialog	import EditorDialog
 from iddialog		import IDDialog
+from ribar			import RIBar
 from timermgr		import TimerManager
 from statusicon		import StatusIcon
 from daemon			import Daemon, InvalidConfigurationException
