@@ -275,7 +275,6 @@ class Daemon(GObject.GObject, TimerManager):
 		if epoch < self._epoch :
 			# Too late, throw it away
 			con.close()
-			del con
 			if DEBUG : print "Discarded old connection for", command
 		# Build GET request
 		get_str = "\r\n".join([
@@ -286,23 +285,29 @@ class Daemon(GObject.GObject, TimerManager):
 		# Send it out and wait for response
 		con.get_output_stream().write_all(get_str)
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-			command, epoch, callback, error_callback, callback_data)
+			con, command, epoch, callback, error_callback, callback_data, [])
 	
-	def _rest_response(self, con, results, command, epoch, callback, error_callback, callback_data):
+	def _rest_response(self, sc, results, con, command, epoch, callback, error_callback, callback_data, buffer):
 		try:
-			response = con.read_bytes_finish(results)
+			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception, e:
+			con.close()
 			self._rest_error(e, command, callback, error_callback, callback_data)
 			return
-		finally:
-			con.close()
-			del con
 		if epoch < self._epoch :
 			# Too late, throw it away
+			con.close()
 			if DEBUG : print "Discarded old response for", command
-		response = response.get_data()
+		# Repeat read_bytes_async until entire response is readed in buffer
+		buffer.append(response.get_data())
+		if response.get_size() > 0:
+			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
+				con, command, epoch, callback, error_callback, callback_data, buffer)
+			return
+		con.close()
+		response = "".join(buffer)
 		# Split headers from response
 		try:
 			headers, response = response.split("\r\n\r\n", 1)
@@ -357,7 +362,6 @@ class Daemon(GObject.GObject, TimerManager):
 		if epoch < self._epoch :
 			# Too late, throw it away
 			con.close()
-			del con
 			if DEBUG : print "Discarded old connection for POST ", command
 		post_str = None
 		if self._CSRFtoken == None:
@@ -386,23 +390,30 @@ class Daemon(GObject.GObject, TimerManager):
 		# Send it out and wait for response
 		con.get_output_stream().write_all(post_str)
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-			sc, command, data, epoch, callback, error_callback, callback_data)
+			con, command, data, epoch, callback, error_callback, callback_data, [])
 	
-	def _rest_post_response(self, con, results, sc, command, data, epoch, callback, error_callback, callback_data):
+	def _rest_post_response(self, sc, results, con, command, data, epoch, callback, error_callback, callback_data, buffer):
 		try:
-			response = con.read_bytes_finish(results)
+			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception, e:
+			con.close()
 			self._rest_post_error(e, command, data, callback, error_callback, callback_data)
 			return
-		finally:
-			con.close()
-			del con
 		if epoch < self._epoch :
 			# Too late, throw it away
+			con.close()
 			if DEBUG : print "Discarded old response for POST ", command
-		response = response.get_data()
+		# Repeat _rest_post_response until entire response is readed in buffer
+		buffer.append(response.get_data())
+		if response.get_size() > 0:
+			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
+				con, command, data, epoch, callback, error_callback, callback_data, buffer)
+			return
+		con.close()
+		response = "".join(buffer)
+		# Parse response
 		if self._CSRFtoken == None:
 			# I wanna cookie!
 			response = response.split("\n")
@@ -422,7 +433,7 @@ class Daemon(GObject.GObject, TimerManager):
 					print >>sys.stderr, ""
 					print >>sys.stderr, "Error: Request '%s' failed: Error: failed to get CSRF cookie from daemon" % (command,)
 				else:
-					self._rest_post_error(Exception("Failed to get CSRF cookie"))
+					self._rest_post_error(Exception("Failed to get CSRF cookie"), command, data, callback, error_callback, callback_data)
 				return
 			# Repeat request with acqiured cookie
 			self._rest_post(command, data, callback, error_callback, *callback_data)
