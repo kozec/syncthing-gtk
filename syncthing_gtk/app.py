@@ -646,6 +646,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_shutdown(self, event, *a):
 		""" Handler for 'Shutdown' menu item """
+		self.process = None	# Prevent app from restarting daemon
 		self.daemon.shutdown()
 	
 	def cb_menu_webui(self, *a):
@@ -715,6 +716,7 @@ class App(Gtk.Application, TimerManager):
 		if response == RESPONSE_START_DAEMON:
 			if self.process == None:
 				self.process = DaemonProcess(["syncthing"])
+				self.process.connect('exit', self.cb_daemon_exit)
 				self["menu-daemon-output"].set_sensitive(True)
 			self.close_connect_dialog()
 			self.display_connect_dialog(_("Starting Syncthing daemon"))
@@ -727,4 +729,10 @@ class App(Gtk.Application, TimerManager):
 				self.process.terminate()
 		self.process = None
 		self.cb_exit()
-		
+	
+	def cb_daemon_exit(self, proc, error_code):
+		if not self.process is None:
+			# Whatever happens, if daemon dies while it shouldn't,
+			# restart it
+			self.process = DaemonProcess(["syncthing"])
+			self.process.connect('exit', self.cb_daemon_exit)

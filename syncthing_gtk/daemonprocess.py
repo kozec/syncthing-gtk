@@ -13,7 +13,10 @@ import os, sys
 
 class DaemonProcess(GObject.GObject):
 	__gsignals__ = {
+		# line(text)	- emited when process outputs full line
 		b"line"			: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+		# exit(code)	- emited when process exits
+		b"exit"			: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
 	}
 	SCROLLBACK_SIZE = 500	# Maximum number of output lines stored in memory
 	
@@ -22,6 +25,7 @@ class DaemonProcess(GObject.GObject):
 		GObject.GObject.__init__(self)
 		flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
 		self._cancel = Gio.Cancellable()
+		os.environ["STNORESTART"] = "1"	# see syncthing --help
 		self._proc = Gio.Subprocess.new(commandline, flags)
 		self._proc.wait_check_async(None, self._cb_finished)
 		self._lines = deque([], DaemonProcess.SCROLLBACK_SIZE)
@@ -47,6 +51,7 @@ class DaemonProcess(GObject.GObject):
 		except GLib.GError:
 			# Exited with exit code
 			print "Subprocess exited", proc.get_exit_status()
+		self.emit('exit', proc.get_exit_status())
 		self._cancel.cancel()
 	
 	def terminate(self):
