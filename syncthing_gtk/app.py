@@ -689,7 +689,7 @@ class App(Gtk.Application, TimerManager):
 		else:
 			self["window"].show()
 			if self.connect_dialog != None:
-				self.connect_dialog.show()
+				self.connect_dialog.show_all()
 	
 	def cb_infobar_close(self, bar):
 		if bar == self["infobar"]:
