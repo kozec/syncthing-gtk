@@ -17,6 +17,12 @@ class Configuration(object):
 	Use like dict to save / access values
 	"""
 	
+	REQUIRED_KEYS = {
+		# key : (type, default)
+		"autostart_daemon" : (bool, False),
+		"autokill_daemon" : (int, 0),	# 0 - no, 1 - yes, anything else - don't ask
+	}
+	
 	def __init__(self):
 		self._load()
 	
@@ -35,21 +41,45 @@ class Configuration(object):
 		self._conffile = os.path.join(confdir, "config.json")
 		try:
 			self._values = json.loads(file(self._conffile, "r").read())
+			if self._check_values():
+				self._save()
 		except Exception, e:
 			print >>sys.stderr, "Warning: Failed to load configuration; Creating new one"
 			print >>sys.stderr, "  exception was:", e
 			self._create()
 	
 	def _create(self):
-		""" Creates new, empty configuration with default values """
-		self._values = {
-			# Nothing so far...
-			}
+		""" Creates new, empty configuration """
+		self._values = {}
+		self._check_values()
 		self._save()
+	
+	def _check_values(self):
+		"""
+		Check if all required values are in place and fill by default
+		whatever is missing.
+		
+		Returns True if anything gets changed.
+		"""
+		needs_to_save = False
+		for key in Configuration.REQUIRED_KEYS:
+			tp, default = Configuration.REQUIRED_KEYS[key]
+			if not self._check_type(key, tp):
+				self._values[key] = default
+				needs_to_save = True
+		return needs_to_save
+	
+	def _check_type(self, key, tp):
+		""" Returns True if value is set and type match """
+		if not key in self._values:
+			return False
+		return type(self._values[key]) == tp
 	
 	def _save(self):
 		""" Saves configuration file """
-		file(self._conffile, "w").write(json.dumps(self._values))
+		file(self._conffile, "w").write(json.dumps(
+			self._values, sort_keys=True, indent=4, separators=(',', ': ')
+			))
 	
 	def __getitem__(self, key):
 		return self._values[key]

@@ -63,8 +63,6 @@ class App(Gtk.Application, TimerManager):
 		self.nodes = {}
 		self.open_boxes = set([])	# Holds set of expanded node/repo boxes
 		self.sync_animation = 0
-		
-		self.timer("b", 1, self.cb_menu_daemon_output)
 	
 	def do_startup(self, *a):
 		Gtk.Application.do_startup(self, *a)
@@ -176,6 +174,12 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("repo-scan-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 	
+	def start_deamon(self):
+		if self.process == None:
+			self.process = DaemonProcess(["syncthing"])
+			self.process.connect('exit', self.cb_daemon_exit)
+			self["menu-daemon-output"].set_sensitive(True)
+	
 	def cb_syncthing_connected(self, *a):
 		self.clear()
 		self.close_connect_dialog()
@@ -208,7 +212,12 @@ class App(Gtk.Application, TimerManager):
 					self.display_connect_dialog(_("Connecting to Syncthing daemon at %s...") % (self.daemon.get_webui_url(),))
 				else:
 					# Daemon is probably not there, give user option to start it
-					self.display_run_daemon_dialog()
+					if self.config["autostart_daemon"]:
+						# ... unless he already decided once forever
+						self.display_connect_dialog(_("Starting Syncthing daemon"))
+						self.start_deamon()
+					else:
+						self.display_run_daemon_dialog()
 			self.set_status(False)
 		else: # Daemon.UNKNOWN
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
@@ -475,10 +484,12 @@ class App(Gtk.Application, TimerManager):
 					_("Start it now?")
 					)
 				)
+			cb = Gtk.CheckButton(_("Always start daemon automaticaly"))
+			self.connect_dialog.get_content_area().pack_end(cb, False, False, 2)
 			self.connect_dialog.add_button("_Start",   RESPONSE_START_DAEMON)
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
-			self.connect_dialog.connect("response", self.cb_run_daemon_response)
+			self.connect_dialog.connect("response", self.cb_run_daemon_response, cb)
 			if self["window"].is_visible():
 				self.connect_dialog.show_all()
 	
@@ -564,20 +575,25 @@ class App(Gtk.Application, TimerManager):
 	# --- Callbacks ---
 	def cb_exit(self, *a):
 		if self.process != None:
-			d = Gtk.MessageDialog(
-				self["window"],
-				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-				Gtk.MessageType.INFO, 0,
-				"%s\n%s" % (
-					_("Exiting."),
-					_("Shutdown Syncthing daemon as well?")
+			if self.config["autokill_daemon"] == 0:
+				d = Gtk.MessageDialog(
+					self["window"],
+					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+					Gtk.MessageType.INFO, 0,
+					"%s\n%s" % (
+						_("Exiting."),
+						_("Shutdown Syncthing daemon as well?")
+						)
 					)
-				)
-			d.add_button("gtk-yes",	RESPONSE_SLAIN_DAEMON)
-			d.add_button("gtk-no",	RESPONSE_SPARE_DAEMON)
-			d.connect("response", self.cb_kill_daemon_response)
-			d.show_all()
-			return
+				d.add_button("gtk-yes",	RESPONSE_SLAIN_DAEMON)
+				d.add_button("gtk-no",	RESPONSE_SPARE_DAEMON)
+				cb = Gtk.CheckButton(_("Always do same; Don't show this window again"))
+				d.get_content_area().pack_end(cb, False, False, 2)
+				d.connect("response", self.cb_kill_daemon_response, cb)
+				d.show_all()
+				return
+			elif self.config["autokill_daemon"] == 1:
+				self.process.kill()
 		self.quit()
 	
 	def cb_delete_event(self, *e):
@@ -713,21 +729,22 @@ class App(Gtk.Application, TimerManager):
 		else:
 			self.open_boxes.discard(box["id"])
 	
-	def cb_run_daemon_response(self, dialog, response):
+	def cb_run_daemon_response(self, dialog, response, checkbox):
 		if response == RESPONSE_START_DAEMON:
-			if self.process == None:
-				self.process = DaemonProcess(["syncthing"])
-				self.process.connect('exit', self.cb_daemon_exit)
-				self["menu-daemon-output"].set_sensitive(True)
+			self.start_deamon()
 			self.close_connect_dialog()
 			self.display_connect_dialog(_("Starting Syncthing daemon"))
+			if checkbox.get_active():
+				self.config["autostart_daemon"] = True
 		else: # if response <= 0 or response == RESPONSE_QUIT:
 			self.cb_exit()
 	
-	def cb_kill_daemon_response(self, dialog, response):
+	def cb_kill_daemon_response(self, dialog, response, checkbox):
 		if response == RESPONSE_SLAIN_DAEMON:
 			if not self.process is None:
 				self.process.terminate()
+		if checkbox.get_active():
+			self.config["autokill_daemon"] = (1 if response == RESPONSE_SLAIN_DAEMON else -1)
 		self.process = None
 		self.cb_exit()
 	
