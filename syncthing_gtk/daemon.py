@@ -504,14 +504,15 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
-		if len(events) > 0:
-			for e in events:
-				self._on_event(e)
-			self.last_id = events[-1]["id"]
-		
-		for rid in self._needs_update:
-			self._request_repo_data(rid)
-		self._needs_update.clear()
+		if type(events) == list:	# Ignore invalid data
+			if len(events) > 0:
+				for e in events:
+					self._on_event(e)
+				self.last_id = events[-1]["id"]
+				
+				for rid in self._needs_update:
+					self._request_repo_data(rid)
+				self._needs_update.clear()
 		
 		self.timer("event", self._refresh_rate, self._request_events)
 	
@@ -743,12 +744,7 @@ class Daemon(GObject.GObject, TimerManager):
 		return recheck
 	
 	def _on_event(self, e):
-		try:
-			eType = e["type"]
-		except Exception:
-			# Mangled event data
-			print >>sys.stderr, "Warning: Mangled event:", e
-			return
+		eType = e["type"]
 		if eType in ("Ping", "Starting", "StartupComplete"):
 			# Just ignore ignore those
 			pass
