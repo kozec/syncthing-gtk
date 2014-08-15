@@ -144,6 +144,7 @@
 		<object class="GtkImageMenuItem" id="menu-daemon-output">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
+			<property name="sensitive">False</property>
 			<property name="label" translatable="yes">Display _Daemon Ouput</property>
 			<property name="use_underline">True</property>
 			<property name="always_show_image">True</property>

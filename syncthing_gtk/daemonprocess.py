@@ -31,7 +31,7 @@ class DaemonProcess(GObject.GObject):
 	
 	def _cb_read(self, proc, results):
 		response = proc.read_bytes_finish(results)
-		response = response.get_data()
+		response = response.get_data().decode('utf-8')
 		self._buffer = "%s%s" % (self._buffer, response)
 		while "\n" in self._buffer:
 			line, self._buffer = self._buffer.split("\n", 1)
@@ -41,9 +41,13 @@ class DaemonProcess(GObject.GObject):
 			GLib.idle_add(self._stdout.read_bytes_async, 256, 1, None, self._cb_read)
 	
 	def _cb_finished(self, proc, results):
-		r = proc.wait_check_finish(results)
+		try:
+			r = proc.wait_check_finish(results)
+			print "Subprocess finished", proc.get_exit_status()
+		except GLib.GError:
+			# Exited with exit code
+			print "Subprocess exited", proc.get_exit_status()
 		self._cancel.cancel()
-		print "Subprocess finished", proc.get_exit_status()
 	
 	def terminate(self):
 		""" Terminates process (sends SIGTERM) """

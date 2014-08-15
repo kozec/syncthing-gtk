@@ -27,9 +27,13 @@ SI_FRAMES				= 4 # Number of animation frames for status icon
 # Regexps used to extract meaningfull data from error messages
 FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-Z0-9]+)".*')
 
-# Response IDs for info bar on top
-IBAR_RESPONSE_RESTART		= 256
-IBAR_RESPONSE_FIX_REPOID	= 257
+# Response IDs
+RESPONSE_RESTART		= 256
+RESPONSE_FIX_REPOID		= 257
+RESPONSE_QUIT			= 258
+RESPONSE_START_DAEMON	= 259
+RESPONSE_SLAIN_DAEMON	= 260
+RESPONSE_SPARE_DAEMON	= 261
 
 class App(Gtk.Application, TimerManager):
 	"""
@@ -66,7 +70,6 @@ class App(Gtk.Application, TimerManager):
 		self.setup_widgets()
 		self.setup_statusicon()
 		self.setup_connection()
-		self.process = DaemonProcess(["syncthing"])
 		self.daemon.reconnect()
 	
 	def do_activate(self, *a):
@@ -199,10 +202,12 @@ class App(Gtk.Application, TimerManager):
 			# If connection is refused, handler just displays dialog with "please wait" message
 			# and lets Daemon object to retry connection
 			if self.connect_dialog == None:
-				self.display_connect_dialog("%s\n%s" % (
-					_("Connecting to Syncthing daemon at %s...") % (self.daemon.get_webui_url(),),
-					_("If daemon is not running, it may be good idea to start it now.")
-					))
+				if check_daemon_running():
+					# Daemon is running, wait for it
+					self.display_connect_dialog(_("Connecting to Syncthing daemon at %s...") % (self.daemon.get_webui_url(),))
+				else:
+					# Daemon is probably not there, give user option to start it
+					self.display_run_daemon_dialog()
 			self.set_status(False)
 		else: # Daemon.UNKNOWN
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
@@ -223,7 +228,7 @@ class App(Gtk.Application, TimerManager):
 			r = RIBar(
 				_("The configuration has been saved but not activated.\nSyncthing must restart to activate the new configuration."),
 				Gtk.MessageType.WARNING,
-				( RIBar.build_button(_("_Restart"), "view-refresh"), IBAR_RESPONSE_RESTART)
+				( RIBar.build_button(_("_Restart"), "view-refresh"), RESPONSE_RESTART)
 				)
 			self["infobar"] = r
 			self["content"].pack_start(r, False, False, 1)
@@ -249,7 +254,7 @@ class App(Gtk.Application, TimerManager):
 			if len(match.groups()) == 2:
 				r["rid"], r["nid"] = match.groups()
 				if r["nid"] in self.nodes:
-					r.add_button(RIBar.build_button(_("_Fix")), IBAR_RESPONSE_FIX_REPOID)
+					r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_REPOID)
 					l = r.get_label()
 					# Replace that nasty looking, long node id with label assigned by user
 					# and make important things bold
@@ -432,12 +437,16 @@ class App(Gtk.Application, TimerManager):
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 				Gtk.MessageType.INFO, 0, "-")
-			self.connect_dialog.add_button("gtk-quit", 1)
-			self.connect_dialog.connect("response", self.cb_exit) # Only one response available so far
+			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
+			# There is only one response available on this dialog
+			self.connect_dialog.connect("response", self.cb_exit)
 			if self["window"].is_visible():
 				self.connect_dialog.show_all()
 		def set_label(d, message):
-			""" Small, recursive helper function to set label somehwere deep in dialog """
+			"""
+			Small, recursive helper function to set label somehwere
+			deep in dialog
+			"""
 			for c in d.get_children():
 				if isinstance(c, Gtk.Container):
 					if set_label(c, message):
@@ -448,6 +457,29 @@ class App(Gtk.Application, TimerManager):
 			return False
 		if DEBUG: print "Settinig connect_dialog label", message[0:15]
 		set_label(self.connect_dialog.get_content_area(), message)
+	
+	def display_run_daemon_dialog(self):
+		"""
+		Displays 'Syncthing is not running, should I start it for you?'
+		dialog.
+		"""
+		if self.connect_dialog == None: # Don't override already existing dialog
+			if DEBUG: print "Creating run_daemon_dialog"
+			self.connect_dialog = Gtk.MessageDialog(
+				self["window"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.INFO, 0,
+				"%s\n%s" % (
+					_("Syncthing daemon doesn't appear to be running."),
+					_("Start it now?")
+					)
+				)
+			self.connect_dialog.add_button("_Start",   RESPONSE_START_DAEMON)
+			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
+			# There is only one response available on this dialog
+			self.connect_dialog.connect("response", self.cb_run_daemon_response)
+			if self["window"].is_visible():
+				self.connect_dialog.show_all()
 	
 	def close_connect_dialog(self):
 		if self.connect_dialog != None:
@@ -529,9 +561,22 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.reconnect()
 	
 	# --- Callbacks ---
-	def cb_exit(self, event, *a):
+	def cb_exit(self, *a):
 		if self.process != None:
-			self.process.terminate()
+			d = Gtk.MessageDialog(
+				self["window"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.INFO, 0,
+				"%s\n%s" % (
+					_("Exiting."),
+					_("Shutdown Syncthing daemon as well?")
+					)
+				)
+			d.add_button("gtk-yes",	RESPONSE_SLAIN_DAEMON)
+			d.add_button("gtk-no",	RESPONSE_SPARE_DAEMON)
+			d.connect("response", self.cb_kill_daemon_response)
+			d.show_all()
+			return
 		self.quit()
 	
 	def cb_delete_event(self, *e):
@@ -633,10 +678,10 @@ class App(Gtk.Application, TimerManager):
 			self.error_boxes.remove(bar)
 	
 	def cb_infobar_response(self, bar, response_id):
-		if response_id == IBAR_RESPONSE_RESTART:
+		if response_id == RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
-		if response_id == IBAR_RESPONSE_FIX_REPOID:
+		if response_id == RESPONSE_FIX_REPOID:
 			# Give up if there is no node with matching ID
 			if bar["nid"] in self.nodes:
 				# Find repository with matching ID ...
@@ -665,3 +710,21 @@ class App(Gtk.Application, TimerManager):
 			self.open_boxes.add(box["id"])
 		else:
 			self.open_boxes.discard(box["id"])
+	
+	def cb_run_daemon_response(self, dialog, response):
+		if response == RESPONSE_START_DAEMON:
+			if self.process == None:
+				self.process = DaemonProcess(["syncthing"])
+				self["menu-daemon-output"].set_sensitive(True)
+			self.close_connect_dialog()
+			self.display_connect_dialog(_("Starting Syncthing daemon"))
+		else: # if response <= 0 or response == RESPONSE_QUIT:
+			self.cb_exit()
+	
+	def cb_kill_daemon_response(self, dialog, response):
+		if response == RESPONSE_SLAIN_DAEMON:
+			if not self.process is None:
+				self.process.terminate()
+		self.process = None
+		self.cb_exit()
+		
