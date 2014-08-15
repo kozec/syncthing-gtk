@@ -24,6 +24,9 @@ COLOR_REPO_SCANNING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
+# Infobar position
+RIBAR_POSITION = 0 if not THE_HELL else 1
+
 # Regexps used to extract meaningfull data from error messages
 FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-Z0-9]+)".*')
 
@@ -117,7 +120,7 @@ class App(Gtk.Application, TimerManager):
 			middle_item = Gtk.ToolItem()
 			middle_label = Gtk.Label()
 			middle_item.set_expand(True)
-			middle_label.set_label("Ahoj")
+			middle_label.set_label("")
 			middle_item.add(middle_label)
 			edit_menu = Gtk.ToolButton.new_from_stock(Gtk.STOCK_EDIT)
 			edit_menu.connect("clicked", self.cb_menu_popup, self["edit-menu-menu"])
@@ -241,8 +244,8 @@ class App(Gtk.Application, TimerManager):
 				( RIBar.build_button(_("_Restart"), "view-refresh"), RESPONSE_RESTART)
 				)
 			self["infobar"] = r
-			self["content"].pack_start(r, False, False, 1)
-			self["content"].reorder_child(r, 0)
+			self["content"].pack_start(r, False, False, 0)
+			self["content"].reorder_child(r, RIBAR_POSITION)
 			r.connect("close", self.cb_infobar_close)
 			r.connect("response", self.cb_infobar_response)
 			r.show()
@@ -253,8 +256,8 @@ class App(Gtk.Application, TimerManager):
 		r = RIBar(
 			message, Gtk.MessageType.WARNING,
 			)
-		self["content"].pack_start(r, False, False, 1)
-		self["content"].reorder_child(r, 0)
+		self["content"].pack_start(r, False, False, 0)
+		self["content"].reorder_child(r, RIBAR_POSITION)
 		r.connect("close", self.cb_infobar_close)
 		r.connect("response", self.cb_infobar_response)
 		r.show()
