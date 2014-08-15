@@ -8,7 +8,8 @@ Various stuff that I don't care to fit anywhere else.
 from __future__ import unicode_literals
 from base64 import b32decode
 from datetime import datetime
-import re
+from subprocess import Popen
+import re, os
 
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 
@@ -88,3 +89,14 @@ def parsetime(m):
 	times[2] = times[2][0:6]
 	reformat = "%s %s %s" % tuple(times)
 	return datetime.strptime(reformat, FORMAT)
+
+def check_daemon_running():
+	""" Returns True if syncthing daemon is running """
+	if not "USER" in os.environ:
+		# Unlikely
+		return False
+	# killall -s 0 doesn't kill anything, but exits with 1 if named
+	# process is not found
+	p = Popen(["killall", "-u", os.environ["USER"], "-q", "-s", "0", "syncthing"])
+	p.communicate()
+	return p.returncode == 0
