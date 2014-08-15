@@ -743,7 +743,12 @@ class Daemon(GObject.GObject, TimerManager):
 		return recheck
 	
 	def _on_event(self, e):
-		eType = e["type"]
+		try:
+			eType = e["type"]
+		except Exception:
+			# Mangled event data
+			print >>sys.stderr, "Warning: Mangled event:", e
+			return
 		if eType in ("Ping", "Starting", "StartupComplete"):
 			# Just ignore ignore those
 			pass
