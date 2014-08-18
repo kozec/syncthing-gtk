@@ -690,8 +690,12 @@ class App(Gtk.Application, TimerManager):
 		"""
 		if mode == "repo":
 			config["Repositories"] = [ x for x in config["Repositories"] if x["ID"] != id ]
+			if id in self.repos:
+				self.repos[id].get_parent().remove(self.repos[id])
 		else: # node
 			config["Nodes"] = [ x for x in config["Nodes"] if x["NodeID"] != id ]
+			if id in self.nodes:
+				self.nodes[id].get_parent().remove(self.nodes[id])
 		self.daemon.write_config(config, lambda *a: a)
 	
 	def open_editor(self, mode, id):
