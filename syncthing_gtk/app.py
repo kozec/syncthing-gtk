@@ -643,14 +643,59 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_edit_repo(self, *a):
 		""" Handler for 'edit' context menu item """
 		# Editing repository
-		e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
-		e.load()
-		e.show(self["window"])
+		self.open_editor("repo-edit", self.rightclick_box["id"])
 	
 	def cb_menu_popup_edit_node(self, *a):
 		""" Handler for other 'edit' context menu item """
 		# Editing node
-		e = EditorDialog(self, "node-edit", False, self.rightclick_box["id"])
+		self.open_editor("node-edit", self.rightclick_box["id"])
+	
+	def cb_menu_popup_delete_repo(self, *a):
+		""" Handler for 'edit' context menu item """
+		# Editing repository
+		self.check_delete("repo", self.rightclick_box["id"], self.rightclick_box.get_title())
+	
+	def cb_menu_popup_delete_node(self, *a):
+		""" Handler for other 'edit' context menu item """
+		# Editing node
+		self.check_delete("node", self.rightclick_box["id"], self.rightclick_box.get_title())
+	
+	def check_delete(self, mode, id, name):
+		"""
+		Asks user if he really wants to do what he just asked to do
+		"""
+		print mode, id
+		d = Gtk.MessageDialog(
+				self["window"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.QUESTION,
+				Gtk.ButtonsType.YES_NO,
+				"%s %s\n'%s'?" % (
+					_("Do you really want do delete"),
+					_("repository") if mode == "repo" else _("node"),
+					name
+					)
+				)
+		r = d.run()
+		d.hide()
+		d.destroy()
+		if r == Gtk.ResponseType.YES:
+			# Load config from server (to have something to delete from)
+			self.daemon.read_config(self.cb_delete_config_loaded, None, mode, id)
+	
+	def cb_delete_config_loaded(self, config, mode, id):
+		"""
+		Callback called when user decides to _really_ delete something and
+		configuration is loaded from server.
+		"""
+		if mode == "repo":
+			config["Repositories"] = [ x for x in config["Repositories"] if x["ID"] != id ]
+		else: # node
+			config["Nodes"] = [ x for x in config["Nodes"] if x["NodeID"] != id ]
+		self.daemon.write_config(config, lambda *a: a)
+	
+	def open_editor(self, mode, id):
+		e = EditorDialog(self, mode, False, id)
 		e.load()
 		e.show(self["window"])
 	

@@ -416,6 +416,7 @@ class EditorDialog(GObject.GObject):
 	
 	def syncthing_cb_post_error(self, *a):
 		# TODO: Unified error message
+		print a
 		d = Gtk.MessageDialog(
 			self["editor"],
 			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
