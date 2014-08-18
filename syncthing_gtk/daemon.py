@@ -301,7 +301,7 @@ class Daemon(GObject.GObject, TimerManager):
 			con.close()
 			if DEBUG : print "Discarded old response for", command
 		# Repeat read_bytes_async until entire response is readed in buffer
-		buffer.append(response.get_data())
+		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
 				con, command, epoch, callback, error_callback, callback_data, buffer)
@@ -406,7 +406,7 @@ class Daemon(GObject.GObject, TimerManager):
 			con.close()
 			if DEBUG : print "Discarded old response for POST ", command
 		# Repeat _rest_post_response until entire response is readed in buffer
-		buffer.append(response.get_data())
+		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
 				con, command, data, epoch, callback, error_callback, callback_data, buffer)
