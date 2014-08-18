@@ -151,8 +151,14 @@ class App(Gtk.Application, TimerManager):
 		# Create Daemon instance (loads and parses config)
 		try:
 			self.daemon = Daemon()
+		except TLSUnsupportedException, e:
+			self.fatal_error("%s\n%s" % (
+				_("Sorry, connecting to HTTPS is not supported."),
+				_("Disable HTTPS in WebUI and try again.")
+				))
+			sys.exit(1)
 		except InvalidConfigurationException, e:
-			print >>sys.stderr, e
+			self.fatal_error(str(e))
 			sys.exit(1)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
@@ -222,19 +228,25 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		else: # Daemon.UNKNOWN
+		else: # Daemon.UNKNOWN, Daemon.NOT_AUTHORIZED
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
+			if reason == Daemon.NOT_AUTHORIZED:
+				message = _("Cannot authorize with daemon failed. Please, use WebUI to generate API key or disable password authentication.")
+			else: # Daemon.UNKNOWN
+				message = "%s\n\n%s %s" % (
+						_("Connection to daemon failed. Check your configuration and try again."),
+						_("Error message:"), str(message)
+						)
 			d = Gtk.MessageDialog(
 					self["window"],
 					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
-					"%s\n\n%s %s" % (
-						_("Connection to daemon failed. Check your configuration and try again."),
-						_("Error message:"), str(message)
-						)
+					message
 					)
 			d.run()
-			Gtk.main_quit()
+			d.hide()
+			d.destroy()
+			self.quit()
 	
 	def cb_syncthing_config_oos(self, *a):
 		if self["infobar"] == None:
@@ -416,7 +428,16 @@ class App(Gtk.Application, TimerManager):
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
 		print >>sys.stderr, text
-		sys.exit(1)
+		d = Gtk.MessageDialog(
+				None,
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+				text
+				)
+		d.run()
+		d.hide()
+		d.destroy()
+		self.quit()
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
