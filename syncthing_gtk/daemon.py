@@ -566,7 +566,7 @@ class Daemon(GObject.GObject, TimerManager):
 		that case, UI is restarted and waits until daemon respawns.
 		"""
 		if isinstance(exception, GLib.GError):
-			if exception.code in (34, 39):	# Connection terminated unexpectedly, Connection Refused
+			if exception.code in (0, 39, 34):	# Connection terminated unexpectedly, Connection Refused
 				if self._connected:
 					self._connected = False
 					self.emit("disconnected", Daemon.UNEXPECTED, exception.message)
@@ -719,7 +719,7 @@ class Daemon(GObject.GObject, TimerManager):
 	def _syncthing_cb_config_error(self, exception, command):
 		self.cancel_all()
 		if isinstance(exception, GLib.GError):
-			if exception.code in (39, 4):	# Connection Refused / Cannot connect to destination
+			if exception.code in (0, 39, 34):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
 				self.emit("connection-error", Daemon.REFUSED, exception.message)
 				self.timer("config", self._refresh_rate, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)

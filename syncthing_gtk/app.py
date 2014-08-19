@@ -267,7 +267,11 @@ class App(Gtk.Application, TimerManager):
 			r.set_reveal_child(True)
 	
 	def cb_syncthing_error(self, daemon, message):
-		print >>sys.stderr, message
+		try:
+			print >>sys.stderr, message
+		except UnicodeEncodeError:
+			# Happens on windows
+			pass
 		r = RIBar(
 			message, Gtk.MessageType.WARNING,
 			)
