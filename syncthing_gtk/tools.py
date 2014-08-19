@@ -9,9 +9,11 @@ from __future__ import unicode_literals
 from base64 import b32decode
 from datetime import datetime
 from subprocess import Popen
-import re, os
+import re, os, sys
 
-LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
+IS_WINDOWS	= sys.platform in ('win32', 'win64')
+IS_UNITY	= "XDG_CURRENT_DESKTOP" in os.environ and os.environ["XDG_CURRENT_DESKTOP"] == "Unity"
+LUHN_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 
 def luhn_b32generate(s):
 	"""

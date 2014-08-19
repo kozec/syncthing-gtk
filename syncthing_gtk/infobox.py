@@ -336,7 +336,7 @@ class InfoBox(Gtk.Container):
 		""" Updates already existing value """
 		self.values[key] = value
 		if key in self.value_widgets:
-			self.value_widgets[key].set_text(value)
+			self.value_widgets[key].set_text(value if not value is None else "")
 	
 	def get_value(self, key):
 		return self.values[key]

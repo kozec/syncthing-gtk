@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gio
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
-from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
+from syncthing_gtk.statusicon import HAS_INDICATOR
 import os, webbrowser, sys, pprint, re
 
 _ = lambda (a) : a
@@ -25,7 +25,7 @@ COLOR_REPO_IDLE			= "#2AAB61"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
 # Infobar position
-RIBAR_POSITION = 0 if not THE_HELL else 1
+RIBAR_POSITION = 1 if (IS_UNITY or IS_WINDOWS) else 0
 
 # Regexps used to extract meaningfull data from error messages
 FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-Z0-9]+)".*')
@@ -75,7 +75,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.reconnect()
 	
 	def do_activate(self, *a):
-		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
+		if not self.first_activation or (IS_UNITY and not HAS_INDICATOR):
 			# Show main window
 			if not self["window"].is_visible():
 				self["window"].show()
@@ -91,11 +91,14 @@ class App(Gtk.Application, TimerManager):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
+		if IS_WINDOWS:
+			self.builder.add_from_file(os.path.join(self.gladepath, "app_simple.glade"))
+		else:
+			self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu"].set_sensitive(False)
-		if THE_HELL:
+		if IS_UNITY:
 			# Modify window if running under Ubuntu; Ubuntu default GTK
 			# engine handles windows with header in... weird way.
 			
@@ -116,14 +119,14 @@ class App(Gtk.Application, TimerManager):
 			bar.get_style_context().add_class(Gtk.STYLE_CLASS_PRIMARY_TOOLBAR)
 			window_menu = Gtk.ToolButton()
 			window_menu.set_icon_widget(self["window-menu-icon"])
-			window_menu.connect("clicked", self.cb_menu_popup, self["window-menu-menu"])
+			window_menu.connect("clicked", self.cb_window_menu_popup)
 			middle_item = Gtk.ToolItem()
 			middle_label = Gtk.Label()
 			middle_item.set_expand(True)
 			middle_label.set_label("")
 			middle_item.add(middle_label)
 			edit_menu = Gtk.ToolButton.new_from_stock(Gtk.STOCK_EDIT)
-			edit_menu.connect("clicked", self.cb_menu_popup, self["edit-menu-menu"])
+			edit_menu.connect("clicked", self.cb_edit_menu_popup)
 			self["server-name"] = middle_label
 			
 			# Pack & set
@@ -144,7 +147,7 @@ class App(Gtk.Application, TimerManager):
 	def setup_statusicon(self):
 		self.statusicon = StatusIcon(self.iconpath, self["si-menu"])
 		self.statusicon.connect("clicked", self.cb_statusicon_click)
-		if THE_HELL and HAS_INDICATOR:
+		if IS_UNITY and HAS_INDICATOR:
 			self["menu-si-show"].set_visible(True)
 	
 	def setup_connection(self):
@@ -230,7 +233,7 @@ class App(Gtk.Application, TimerManager):
 					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
 					"%s\n\n%s %s" % (
 						_("Connection to daemon failed. Check your configuration and try again."),
-						_("Error message:"), str(message)
+						_("Error message:"), message.decode("utf-8")
 						)
 					)
 			d.run()
@@ -287,9 +290,10 @@ class App(Gtk.Application, TimerManager):
 			node.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
 			node.invert_header(True)
 			node.set_color_hex(COLOR_OWN_NODE)
-			self["header"].set_subtitle(node.get_title())
 			if "server-name" in self:
 				self["server-name"].set_markup("<b>%s</b>" % (node.get_title(),))
+			else:
+				self["header"].set_subtitle(node.get_title())
 			# Modify values
 			node.clear_values()
 			node.add_value("ram",		"ram.png",		_("RAM Utilization"),	"")
@@ -636,10 +640,14 @@ class App(Gtk.Application, TimerManager):
 		self.rightclick_box = box
 		self["popup-menu-node"].popup(None, None, None, None, button, time)
 	
-	def cb_menu_popup(self, source, menu):
-		""" Handler for ubuntu-only toolbar buttons """
-		menu.popup(None, None, None, None, 0, 0)
+	def cb_window_menu_popup(self, *a):
+		""" Handler for 'syncthing' toolbar button """
+		self["window-menu-menu"].popup(None, None, None, None, 0, 0)
 	
+	def cb_edit_menu_popup(self, *a):
+		""" Handler for 'edit' toolbar button """
+		self["edit-menu-menu"].popup(None, None, None, None, 0, 0)
+
 	def cb_menu_popup_edit_repo(self, *a):
 		""" Handler for 'edit' context menu item """
 		# Editing repository
