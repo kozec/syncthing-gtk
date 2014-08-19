@@ -179,14 +179,16 @@ class Daemon(GObject.GObject, TimerManager):
 	RESTART		= 2
 	
 	# Constants for 'reason' parameter of connection-error event
-	REFUSED		= 1
-	UNKNOWN		= 2
+	REFUSED			= 1
+	NOT_AUTHORIZED	= 2
+	UNKNOWN			= 255
 	
 	def __init__(self):
 		GObject.GObject.__init__(self)
 		TimerManager.__init__(self)
 		self._CSRFtoken = None
 		self._address = None
+		self._api_key = None
 		self._connected = False
 		self._refresh_rate = 1 # seconds
 		# syncing_repos holds set of repos that are being synchronized
@@ -227,6 +229,14 @@ class Daemon(GObject.GObject, TimerManager):
 			xml = minidom.parseString(config)
 		except Exception, e:
 			raise InvalidConfigurationException("Failed to parse daemon configuration: %s" % e)
+		tls = "false"
+		try:
+			tls = xml.getElementsByTagName("configuration")[0] \
+				.getElementsByTagName("gui")[0].getAttribute("tls")
+		except Exception, e:
+			pass
+		if tls.lower() == "true":
+			raise TLSUnsupportedException("TLS Unsupported")
 		try:
 			self._address = xml.getElementsByTagName("configuration")[0] \
 							.getElementsByTagName("gui")[0] \
@@ -236,6 +246,14 @@ class Daemon(GObject.GObject, TimerManager):
 			# TODO: https?
 		except Exception, e:
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
+		try:
+			self._api_key = xml.getElementsByTagName("configuration")[0] \
+							.getElementsByTagName("gui")[0] \
+							.getElementsByTagName("apikey")[0] \
+							.firstChild.nodeValue
+		except Exception, e:
+			# API key can be none
+			pass
 	
 	def _get_node_data(self, nid):
 		""" Returns dict with node data, creating it if needed """
@@ -279,6 +297,7 @@ class Daemon(GObject.GObject, TimerManager):
 		# Build GET request
 		get_str = "\r\n".join([
 			"GET /rest/%s HTTP/1.0" % command,
+			(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
 			"Connection: close",
 			"", ""
 			]).encode("utf-8")
@@ -301,7 +320,7 @@ class Daemon(GObject.GObject, TimerManager):
 			con.close()
 			if DEBUG : print "Discarded old response for", command
 		# Repeat read_bytes_async until entire response is readed in buffer
-		buffer.append(response.get_data().decode('utf-8'))
+		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
 				con, command, epoch, callback, error_callback, callback_data, buffer)
@@ -312,13 +331,16 @@ class Daemon(GObject.GObject, TimerManager):
 		try:
 			headers, response = response.split("\r\n\r\n", 1)
 			headers = headers.split("\r\n")
-			code = headers[0].split(" ")[1]
-			if int(code) != 200:
-				self._rest_error(Exception("HTTP error %s" % (code,)), command, callback, error_callback, callback_data)
+			code = int(headers[0].split(" ")[1])
+			if code == 401:
+				self._rest_error(HTTPAuthException("Not Authorized"), command, callback, error_callback, callback_data)
 				return
-		except Exception:
+			elif code != 200:
+				self._rest_error(HTTPException("HTTP error %s" % (code,)), command, callback, error_callback, callback_data)
+				return
+		except Exception, e:
 			# That probably wasn't HTTP
-			self._rest_error(Exception("Invalid HTTP response"), command, callback, error_callback, callback_data)
+			self._rest_error(HTTPException("Invalid HTTP response"), command, callback, error_callback, callback_data)
 			return
 		# Parse response and call callback
 		try:
@@ -364,12 +386,13 @@ class Daemon(GObject.GObject, TimerManager):
 			con.close()
 			if DEBUG : print "Discarded old connection for POST ", command
 		post_str = None
-		if self._CSRFtoken == None:
+		if self._CSRFtoken is None and self._api_key is None:
 			# Request CSRF token first
 			if DEBUG: print "Requesting cookie"
 			post_str = "\r\n".join([
 				"GET / HTTP/1.0",
 				"Host: %s" % self._address,
+				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
 				"Connection: close",
 				"",
 				"",
@@ -382,6 +405,7 @@ class Daemon(GObject.GObject, TimerManager):
 				"Connection: close",
 				"Cookie: CSRF-Token=%s" % self._CSRFtoken,
 				"X-CSRF-Token: %s" % self._CSRFtoken,
+				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
 				"Content-Length: %s" % len(json_str),
 				"Content-Type: application/json",
 				"",
@@ -406,7 +430,7 @@ class Daemon(GObject.GObject, TimerManager):
 			con.close()
 			if DEBUG : print "Discarded old response for POST ", command
 		# Repeat _rest_post_response until entire response is readed in buffer
-		buffer.append(response.get_data().decode('utf-8'))
+		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
 				con, command, data, epoch, callback, error_callback, callback_data, buffer)
@@ -414,7 +438,7 @@ class Daemon(GObject.GObject, TimerManager):
 		con.close()
 		response = "".join(buffer)
 		# Parse response
-		if self._CSRFtoken == None:
+		if self._CSRFtoken is None and self._api_key is None:
 			# I wanna cookie!
 			response = response.split("\n")
 			for d in response:
@@ -440,13 +464,13 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		# Extract response code
 		try:
-			code = response.split("\n")[0].strip("\r\n").split(" ")[1]
-			if int(code) != 200:
-				self._rest_post_error(Exception("HTTP error %s" % (code,)), command, data, callback, error_callback, callback_data)
+			code = int(response.split("\n")[0].strip("\r\n").split(" ")[1])
+			if code != 200:
+				self._rest_post_error(HTTPException("HTTP error %s" % (code,)), command, data, callback, error_callback, callback_data)
 				return
 		except Exception:
 			# That probably wasn't HTTP
-			self._rest_post_error(Exception("Invalid HTTP response"), command, data, callback, error_callback, callback_data)
+			self._rest_post_error(HTTPException("Invalid HTTP response"), command, data, callback, error_callback, callback_data)
 			return
 		if "CSRF Error" in response:
 			# My cookie is too old; Throw it away and try again
@@ -700,6 +724,9 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("connection-error", Daemon.REFUSED, exception.message)
 				self.timer("config", self._refresh_rate, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 				return
+		elif isinstance(exception, HTTPAuthException):
+			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
+			return
 		self.emit("connection-error", Daemon.UNKNOWN, exception.message)
 	
 	def _syncthing_cb_config_in_sync(self, data):
@@ -867,3 +894,6 @@ class Daemon(GObject.GObject, TimerManager):
 		return self._address
 	
 class InvalidConfigurationException(RuntimeError): pass
+class TLSUnsupportedException(InvalidConfigurationException): pass
+class HTTPException(RuntimeError): pass
+class HTTPAuthException(HTTPException): pass

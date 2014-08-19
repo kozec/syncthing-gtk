@@ -154,8 +154,14 @@ class App(Gtk.Application, TimerManager):
 		# Create Daemon instance (loads and parses config)
 		try:
 			self.daemon = Daemon()
+		except TLSUnsupportedException, e:
+			self.fatal_error("%s\n%s" % (
+				_("Sorry, connecting to HTTPS is not supported."),
+				_("Disable HTTPS in WebUI and try again.")
+				))
+			sys.exit(1)
 		except InvalidConfigurationException, e:
-			print >>sys.stderr, e
+			self.fatal_error(str(e))
 			sys.exit(1)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
@@ -225,19 +231,25 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		else: # Daemon.UNKNOWN
+		else: # Daemon.UNKNOWN, Daemon.NOT_AUTHORIZED
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
+			if reason == Daemon.NOT_AUTHORIZED:
+				message = _("Cannot authorize with daemon failed. Please, use WebUI to generate API key or disable password authentication.")
+			else: # Daemon.UNKNOWN
+				message = "%s\n\n%s %s" % (
+						_("Connection to daemon failed. Check your configuration and try again."),
+						_("Error message:"), message.decode("utf-8")
+						)
 			d = Gtk.MessageDialog(
 					self["window"],
 					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
-					"%s\n\n%s %s" % (
-						_("Connection to daemon failed. Check your configuration and try again."),
-						_("Error message:"), message.decode("utf-8")
-						)
+					message
 					)
 			d.run()
-			Gtk.main_quit()
+			d.hide()
+			d.destroy()
+			self.quit()
 	
 	def cb_syncthing_config_oos(self, *a):
 		if self["infobar"] == None:
@@ -420,7 +432,16 @@ class App(Gtk.Application, TimerManager):
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
 		print >>sys.stderr, text
-		sys.exit(1)
+		d = Gtk.MessageDialog(
+				None,
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+				text
+				)
+		d.run()
+		d.hide()
+		d.destroy()
+		self.quit()
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
@@ -651,14 +672,63 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_edit_repo(self, *a):
 		""" Handler for 'edit' context menu item """
 		# Editing repository
-		e = EditorDialog(self, "repo-edit", False, self.rightclick_box["id"])
-		e.load()
-		e.show(self["window"])
+		self.open_editor("repo-edit", self.rightclick_box["id"])
 	
 	def cb_menu_popup_edit_node(self, *a):
 		""" Handler for other 'edit' context menu item """
 		# Editing node
-		e = EditorDialog(self, "node-edit", False, self.rightclick_box["id"])
+		self.open_editor("node-edit", self.rightclick_box["id"])
+	
+	def cb_menu_popup_delete_repo(self, *a):
+		""" Handler for 'edit' context menu item """
+		# Editing repository
+		self.check_delete("repo", self.rightclick_box["id"], self.rightclick_box.get_title())
+	
+	def cb_menu_popup_delete_node(self, *a):
+		""" Handler for other 'edit' context menu item """
+		# Editing node
+		self.check_delete("node", self.rightclick_box["id"], self.rightclick_box.get_title())
+	
+	def check_delete(self, mode, id, name):
+		"""
+		Asks user if he really wants to do what he just asked to do
+		"""
+		print mode, id
+		d = Gtk.MessageDialog(
+				self["window"],
+				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+				Gtk.MessageType.QUESTION,
+				Gtk.ButtonsType.YES_NO,
+				"%s %s\n'%s'?" % (
+					_("Do you really want do delete"),
+					_("repository") if mode == "repo" else _("node"),
+					name
+					)
+				)
+		r = d.run()
+		d.hide()
+		d.destroy()
+		if r == Gtk.ResponseType.YES:
+			# Load config from server (to have something to delete from)
+			self.daemon.read_config(self.cb_delete_config_loaded, None, mode, id)
+	
+	def cb_delete_config_loaded(self, config, mode, id):
+		"""
+		Callback called when user decides to _really_ delete something and
+		configuration is loaded from server.
+		"""
+		if mode == "repo":
+			config["Repositories"] = [ x for x in config["Repositories"] if x["ID"] != id ]
+			if id in self.repos:
+				self.repos[id].get_parent().remove(self.repos[id])
+		else: # node
+			config["Nodes"] = [ x for x in config["Nodes"] if x["NodeID"] != id ]
+			if id in self.nodes:
+				self.nodes[id].get_parent().remove(self.nodes[id])
+		self.daemon.write_config(config, lambda *a: a)
+	
+	def open_editor(self, mode, id):
+		e = EditorDialog(self, mode, False, id)
 		e.load()
 		e.show(self["window"])
 	

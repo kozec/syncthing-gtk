@@ -278,6 +278,17 @@
 			<signal name="activate" handler="cb_menu_popup_edit_repo" swapped="no"/>
 		</object>
 	</child>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-delete-repo">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">gtk-delete</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_delete_repo" swapped="no"/>
+		</object>
+	</child>
 </object>
 
 <!-- Popup menu for node -->
@@ -305,6 +316,17 @@
 			<property name="always_show_image">True</property>
 			<signal name="activate" handler="cb_menu_popup_show_id" swapped="no"/>
 			<property name="image">menu-popup-show-id-image</property>
+		</object>
+	</child>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-delete-node">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">gtk-delete</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_delete_node" swapped="no"/>
 		</object>
 	</child>
 </object>

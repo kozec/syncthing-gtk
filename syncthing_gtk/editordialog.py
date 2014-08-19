@@ -11,6 +11,8 @@ from syncthing_gtk.tools import check_node_id, ints
 import os, re
 _ = lambda (a) : a
 
+COLOR_NEW				= "#A0A0A0"
+
 class EditorDialog(GObject.GObject):
 	"""
 	Universal dialog handler for all Syncthing settings and editing
@@ -51,10 +53,10 @@ class EditorDialog(GObject.GObject):
 		"vNodeID" : _("The entered node ID does not look valid. It "
 			"should be a 52 character string consisting of letters and "
 			"numbers, with spaces and dashes being optional."),
-		"vID" : _("The repository ID must be a short identifier (64 "
-			"characters or less) consisting of letters, numbers and "
-			"the the dot (.), dash (-) and underscode (_) characters "
-			"only"),
+		"vID" : _("The repository ID must be a short, unique identifier"
+			" (64 characters or less) consisting of letters, numbers "
+			"and the the dot (.), dash (-) and underscode (_) "
+			"characters only"),
 	}
 	
 	def __init__(self, app, mode, is_new, id=None):
@@ -398,7 +400,13 @@ class EditorDialog(GObject.GObject):
 			node.set_value("compress", _("Yes") if self.values["Compression"] else _("No"))
 	
 	def check_repo_id(self, value):
-		return not self.RE_REPO_ID.match(value) is None
+		if value in self.app.repos:
+			# Duplicate repo id
+			return False
+		if self.RE_REPO_ID.match(value) is None:
+			# Invalid string
+			return False
+		return True
 	
 	def check_path(self, value):
 		# Any non-empty path is OK
@@ -411,11 +419,31 @@ class EditorDialog(GObject.GObject):
 	def syncthing_cb_post_config(self, *a):
 		# No return value for this call, let's hope for the best
 		print "Configuration (probably) saved"
+		# Close editor
 		self["editor"].set_sensitive(True)
 		self.close()
+		# If new repo/node was added, show dummy item UI, so user will
+		# see that something happen even before daemon gets restarted
+		if self.is_new:
+			box = None
+			if self.mode == "repo-edit":
+				box = self.app.show_repo(
+					self.get_value("ID"), self.get_value("Directory"), self.get_value("Directory"),
+					self.get_value("ReadOnly"), self.get_value("IgnorePerms"),
+					sorted(
+						[ self.app.nodes[n["NodeID"]] for n in self.get_value("Nodes") ],
+						key=lambda x : x.get_title().lower()
+					))
+			elif self.mode == "node-edit":
+				box = self.app.show_node(self.get_value("NodeID"), self.get_value("Name"),
+					self.get_value("Compression"))
+			# Gray background for new stuff
+			if not box is None:
+				box.set_color_hex(COLOR_NEW)
 	
 	def syncthing_cb_post_error(self, *a):
 		# TODO: Unified error message
+		print a
 		d = Gtk.MessageDialog(
 			self["editor"],
 			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
