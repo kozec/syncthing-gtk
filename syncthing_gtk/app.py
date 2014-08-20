@@ -704,10 +704,15 @@ class App(Gtk.Application, TimerManager):
 					name
 					)
 				)
-		r = d.run()
+		d.connect('response', self.cb_check_delete_response, mode, id, name)
+		d.show_all()
+	
+	def cb_check_delete_response(self, d, response, mode, id, name):
+		print d
 		d.hide()
 		d.destroy()
-		if r == Gtk.ResponseType.YES:
+		
+		if response == Gtk.ResponseType.YES:
 			# Load config from server (to have something to delete from)
 			self.daemon.read_config(self.cb_delete_config_loaded, None, mode, id)
 	

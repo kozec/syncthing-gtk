@@ -683,6 +683,7 @@ class Daemon(GObject.GObject, TimerManager):
 				p = float(data["inSyncBytes"]) / float(data["globalBytes"])
 			if self._repo_state_changed(rid, state, p):
 				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
 		else:
 			if self._repo_state_changed(rid, state, 0):
 				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
@@ -785,6 +786,9 @@ class Daemon(GObject.GObject, TimerManager):
 		eType = e["type"]
 		if eType in ("Ping", "Starting", "StartupComplete"):
 			# Just ignore ignore those
+			pass
+		elif eType == "ItemStarted":
+			# This is TODO
 			pass
 		elif eType == "StateChanged":
 			state = e["data"]["to"]
