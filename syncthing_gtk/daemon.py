@@ -362,7 +362,7 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				error_callback(exception, command)
 		else:
-			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
+			print >>sys.stderr, ("Request '%s' failed (%s) Repeating..." % (command, exception)).encode("utf-8")
 			self.timer(None, 1, self._rest_request, command, callback, error_callback, *callback_data)
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
@@ -500,7 +500,7 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				error_callback(exception, command, data)
 		else:
-			print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
+			print >>sys.stderr, ("Post '%s' failed (%s) Repeating..." % (command, exception)).encode("utf-8")
 			self.timer(None, 1, self._rest_post, command, data, callback, error_callback, callback_data)
 	
 	def _request_config(self, *a):

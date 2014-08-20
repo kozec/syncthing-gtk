@@ -267,11 +267,7 @@ class App(Gtk.Application, TimerManager):
 			r.set_reveal_child(True)
 	
 	def cb_syncthing_error(self, daemon, message):
-		try:
-			print >>sys.stderr, message
-		except UnicodeEncodeError:
-			# Happens on windows
-			pass
+		print >>sys.stderr, ("%s" % message).encode("utf-8")
 		r = RIBar(
 			message, Gtk.MessageType.WARNING,
 			)
@@ -435,7 +431,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
-		print >>sys.stderr, text
+		print >>sys.stderr, text.encode("utf-8")
 		d = Gtk.MessageDialog(
 				None,
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -697,7 +693,6 @@ class App(Gtk.Application, TimerManager):
 		"""
 		Asks user if he really wants to do what he just asked to do
 		"""
-		print mode, id
 		d = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -753,7 +748,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_webui(self, *a):
 		""" Handler for 'Open WebUI' menu item """
-		print "Opening '%s' in browser" % (self.daemon.get_webui_url(),)
+		print ("Opening '%s' in browser" % (self.daemon.get_webui_url(),)).encode("utf-8")
 		webbrowser.open(self.daemon.get_webui_url())
 	
 	def cb_menu_daemon_output(self, *a):
