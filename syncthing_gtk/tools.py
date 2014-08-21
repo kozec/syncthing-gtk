@@ -15,6 +15,10 @@ IS_WINDOWS	= sys.platform in ('win32', 'win64')
 IS_UNITY	= "XDG_CURRENT_DESKTOP" in os.environ and os.environ["XDG_CURRENT_DESKTOP"] == "Unity"
 LUHN_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 
+if IS_WINDOWS:
+	# On Windows, WMI and pywin32 libraries are reqired
+	import wmi
+
 def luhn_b32generate(s):
 	"""
 	Returns a check digit for the string s which should be composed of
@@ -94,11 +98,29 @@ def parsetime(m):
 
 def check_daemon_running():
 	""" Returns True if syncthing daemon is running """
-	if not "USER" in os.environ:
-		# Unlikely
+	if not IS_WINDOWS:
+		# Unix
+		if not "USER" in os.environ:
+			# Unlikely
+			return False
+		# signal 0 doesn't kill anything, but killall exits with 1 if
+		# named process is not found
+		p = Popen(["killall", "-u", os.environ["USER"], "-q", "-s", "0", "syncthing"])
+		p.communicate()
+		return p.returncode == 0
+	else:
+		# Windows
+		if not "USERNAME" in os.environ:
+			# Much more likely
+			os.environ["USERNAME"] = ""
+		proclist = wmi.WMI().ExecQuery('select * from Win32_Process where Name LIKE "syncthing.exe"')
+		try:
+			proclist = list(proclist)
+			for p in proclist:
+				p_user = p.ExecMethod_('GetOwner').Properties_('User').Value
+				if p_user == os.environ["USERNAME"]:
+					return True
+		except Exception, e:
+			# Can't get or parse list, something is horribly broken here
+			return False
 		return False
-	# killall -s 0 doesn't kill anything, but exits with 1 if named
-	# process is not found
-	p = Popen(["killall", "-u", os.environ["USER"], "-q", "-s", "0", "syncthing"])
-	p.communicate()
-	return p.returncode == 0
