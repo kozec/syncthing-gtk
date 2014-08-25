@@ -464,9 +464,11 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		# Extract response code
 		try:
-			code = int(response.split("\n")[0].strip("\r\n").split(" ")[1])
+			headers, response = response.split("\r\n\r\n", 1)
+			headers = headers.split("\r\n")
+			code = int(headers[0].split(" ")[1])
 			if code != 200:
-				self._rest_post_error(HTTPException("HTTP error %s" % (code,)), command, data, callback, error_callback, callback_data)
+				self._rest_post_error(HTTPException("HTTP error %s" % (code,), response), command, data, callback, error_callback, callback_data)
 				return
 		except Exception:
 			# That probably wasn't HTTP
@@ -746,11 +748,15 @@ class Daemon(GObject.GObject, TimerManager):
 		else:
 			callback(*calbackdata)
 	
-	def __syncthing_cb_config_write_failed(self, exception, command, data, callback, errorcallback, calbackdata):
+	def _syncthing_cb_config_write_failed(self, exception, command, data, callback, errorcallback, calbackdata):
 		if errorcallback == None:
 			errorcallback(exception)
 		else:
 			errorcallback(exception, *calbackdata)
+	
+	def _syncthing_cb_rescan_error(self, exception, command, data, repo_id):
+		print >>sys.stderr, "Warning: Failed to rescan repository %s: %s" % (repo_id, exception.response)
+		self.emit("error", "Warning: Failed to rescan repository %s: %s" % (repo_id, exception.response))
 	
 	def _repo_state_changed(self, rid, state, progress):
 		"""
@@ -851,7 +857,7 @@ class Daemon(GObject.GObject, TimerManager):
 		error_callback(exception) on failure.
 		Should cause 'config-out-of-sync' event to be raised ASAP.
 		"""
-		self._rest_post("config", config, self._syncthing_cb_config_written, self.__syncthing_cb_config_write_failed, callback, error_callback, calbackdata)
+		self._rest_post("config", config, self._syncthing_cb_config_written, self._syncthing_cb_config_write_failed, callback, error_callback, calbackdata)
 	
 	def restart(self):
 		"""
@@ -893,7 +899,14 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns tuple address on which daemon listens on. """
 		return self._address
 	
+	def rescan(self, repo_id):
+		""" Asks daemon to rescan repository """
+		self._rest_post("scan?repo=%s" % (repo_id,), {}, lambda *a: a, self._syncthing_cb_rescan_error, repo_id)
+	
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(InvalidConfigurationException): pass
-class HTTPException(RuntimeError): pass
+class HTTPException(RuntimeError):
+	def __init__(self, message, response=None):
+		RuntimeError.__init__(self, message)
+		self.response = response
 class HTTPAuthException(HTTPException): pass

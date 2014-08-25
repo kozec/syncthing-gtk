@@ -679,9 +679,14 @@ class App(Gtk.Application, TimerManager):
 		self.open_editor("node-edit", self.rightclick_box["id"])
 	
 	def cb_menu_popup_delete_repo(self, *a):
-		""" Handler for 'edit' context menu item """
+		""" Handler for 'delete' repo context menu item """
 		# Editing repository
 		self.check_delete("repo", self.rightclick_box["id"], self.rightclick_box.get_title())
+
+	def cb_menu_popup_rescan_repo(self, *a):
+		""" Handler for 'rescan' context menu item """
+		# Editing repository
+		self.daemon.rescan(self.rightclick_box["id"])
 	
 	def cb_menu_popup_delete_node(self, *a):
 		""" Handler for other 'edit' context menu item """
