@@ -62,9 +62,10 @@ class App(Gtk.Application, TimerManager):
 		self.connect_dialog = None
 		self.widgets = {}
 		self.error_boxes = []
+		self.error_messages = set([])	# Holds set of already displayed error messages
 		self.repos = {}
 		self.nodes = {}
-		self.open_boxes = set([])	# Holds set of expanded node/repo boxes
+		self.open_boxes = set([])		# Holds set of expanded node/repo boxes
 		self.sync_animation = 0
 	
 	def do_startup(self, *a):
@@ -264,7 +265,12 @@ class App(Gtk.Application, TimerManager):
 			r.set_reveal_child(True)
 	
 	def cb_syncthing_error(self, daemon, message):
+		if message in self.error_messages:
+			# Same error is already displayed
+			print >>sys.stderr, "(repeated)", message
+			return
 		print >>sys.stderr, message
+		self.error_messages.add(message)
 		r = RIBar(
 			message, Gtk.MessageType.WARNING,
 			)
@@ -593,6 +599,7 @@ class App(Gtk.Application, TimerManager):
 			r.get_parent().remove(r)
 			r.destroy()
 		self.error_boxes = []
+		self.error_messages = set([])
 		self.cancel_all() # timers
 		self.daemon.reconnect()
 	
