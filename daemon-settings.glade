@@ -21,13 +21,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adjRescan">
-    <property name="lower">1</property>
-    <property name="upper">9999</property>
-    <property name="value">50</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Syncthing Daemon Settings</property>
@@ -138,24 +131,6 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">6</property>
-                <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Rescan _Interval (s)</property>
-                <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vRescanIntervalS</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
                 <property name="top_attach">4</property>
                 <property name="width">2</property>
               </packing>
@@ -172,7 +147,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">12</property>
+                <property name="top_attach">10</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -190,7 +165,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">7</property>
+                <property name="top_attach">5</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -236,19 +211,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="vRescanIntervalS">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="margin_bottom">15</property>
-                <property name="adjustment">adjRescan</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">5</property>
-                <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkCheckButton" id="vStartBrowser">
                 <property name="label" translatable="yes">Open browser with _WebUI when daemon is starting</property>
                 <property name="visible">True</property>
@@ -261,7 +223,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">14</property>
+                <property name="top_attach">12</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -277,7 +239,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">13</property>
+                <property name="top_attach">11</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -294,7 +256,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">9</property>
+                <property name="top_attach">7</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -312,7 +274,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">10</property>
+                <property name="top_attach">8</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -324,7 +286,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">11</property>
+                <property name="top_attach">9</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -339,7 +301,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">8</property>
+                <property name="top_attach">6</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -353,5 +315,12 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkAdjustment" id="adjRescan">
+    <property name="lower">1</property>
+    <property name="upper">9999</property>
+    <property name="value">50</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
   </object>
 </interface>

@@ -41,8 +41,8 @@ class EditorDialog(GObject.GObject):
 		"daemon-settings" : [
 			"vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
 			"vStartBrowser", "vMaxSendKbpsEnabled", "vMaxSendKbps",
-			"vRescanIntervalS", "vURAccepted", "vLocalAnnPort",
-			"vGlobalAnnEnabled", "vGlobalAnnServer"
+			"vURAccepted", "vLocalAnnPort", "vGlobalAnnEnabled",
+			"vGlobalAnnServer"
 			]
 	}
 	
@@ -169,6 +169,7 @@ class EditorDialog(GObject.GObject):
 		elif key in self.values:
 			return self.values[key]
 		else:
+			print self.values
 			raise KeyError(key)
 	
 	def set_value(self, key, value):
