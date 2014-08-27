@@ -376,6 +376,7 @@ class App(Gtk.Application, TimerManager):
 		self.show_repo(
 			rid, r["Directory"], r["Directory"],
 			r["ReadOnly"], r["IgnorePerms"], 
+			r["RescanIntervalS"],
 			sorted(
 				[ self.nodes[n["NodeID"]] for n in r["Nodes"] ],
 				key=lambda x : x.get_title().lower()
@@ -529,7 +530,7 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
-	def show_repo(self, id, name, path, is_master, ignore_perms, shared):
+	def show_repo(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
 		# title = name if len(name) < 20 else "...%s" % name[-20:]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
@@ -540,6 +541,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
 		box.add_value("master",		"lock.png",		_("Master Repo"),			_("Yes") if is_master else _("No"))
 		box.add_value("ignore",		"ignore.png",	_("Ignore Permissions"),	_("Yes") if ignore_perms else _("No"))
+		box.add_value("rescan",		"restart.png",	_("Rescan Interval"),		"%s s" % (rescan_interval,))
 		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("nodes", shared)

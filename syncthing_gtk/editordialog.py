@@ -32,7 +32,7 @@ class EditorDialog(GObject.GObject):
 		# Dict with lists of all editable values, indexed by editor mode
 		"repo-edit" : [
 			"vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vNodes",
-			"vVersioning", "vKeepVersions"
+			"vVersioning", "vKeepVersions", "vRescanIntervalS",
 			],
 		"node-edit" : [
 			"vNodeID", "vName", "vAddresses", "vCompression"
@@ -399,6 +399,11 @@ class EditorDialog(GObject.GObject):
 			node.set_title(name)
 			node.set_value("compress", _("Yes") if self.values["Compression"] else _("No"))
 	
+	def cb_format_value_s(self, spinner):
+		""" Formats spinner value  """
+		spinner.get_buffer().set_text("%s s" % (int(spinner.get_adjustment().get_value()),), -1);
+		return True
+	
 	def check_repo_id(self, value):
 		if value in self.app.repos:
 			# Duplicate repo id
@@ -430,6 +435,7 @@ class EditorDialog(GObject.GObject):
 				box = self.app.show_repo(
 					self.get_value("ID"), self.get_value("Directory"), self.get_value("Directory"),
 					self.get_value("ReadOnly"), self.get_value("IgnorePerms"),
+					self.get_value("RescanIntervalS"),
 					sorted(
 						[ self.app.nodes[n["NodeID"]] for n in self.get_value("Nodes") ],
 						key=lambda x : x.get_title().lower()
