@@ -56,6 +56,12 @@ class Daemon(GObject.GObject, TimerManager):
 			WebUI (/rest/errors call)
 				message:	Error message sent by daemon
 		
+		repo-rejected(node_id, repo_id)
+			Emited when daemon detects unexpected repository from known
+			node.
+				node_id:	id of node that send unexpected repository id
+				repo_id:	id of unexpected repository
+		
 		node-added (id, name, data)
 			Emited when new node is loaded from configuration
 				id:		id of loaded node
@@ -148,6 +154,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"node-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
 			b"node-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -811,6 +818,10 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["node"]
 			addresses = e["data"]["addrs"]
 			self.emit("node-discovered", nid, addresses)
+		elif eType == "RepoRejected":
+			nid = e["data"]["node"]
+			rid = e["data"]["repo"]
+			self.emit("repo-rejected", nid, rid)
 		else:
 			print "Unhandled event type:", e
 	

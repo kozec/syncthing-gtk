@@ -167,6 +167,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
 		self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
 		self.daemon.connect("error", self.cb_syncthing_error)
+		self.daemon.connect("repo-rejected", self.cb_syncthing_repo_rejected)
 		self.daemon.connect("my-id-changed", self.cb_syncthing_my_id_changed)
 		self.daemon.connect("node-added", self.cb_syncthing_node_added)
 		self.daemon.connect("node-data-changed", self.cb_syncthing_node_data_changed)
@@ -270,30 +271,29 @@ class App(Gtk.Application, TimerManager):
 			print >>sys.stderr, "(repeated)", message
 			return
 		print >>sys.stderr, message
-		self.error_messages.add(message)
-		r = RIBar(
-			message, Gtk.MessageType.WARNING,
-			)
-		self["content"].pack_start(r, False, False, 0)
-		self["content"].reorder_child(r, RIBAR_POSITION)
-		r.connect("close", self.cb_infobar_close)
-		r.connect("response", self.cb_infobar_response)
-		r.show()
-		r.set_reveal_child(True)
 		if "Unexpected repository ID" in message:
-			match = FIX_EXTRACT_REPOID.match(message)
-			if len(match.groups()) == 2:
-				r["rid"], r["nid"] = match.groups()
-				if r["nid"] in self.nodes:
-					r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_REPOID)
-					l = r.get_label()
-					# Replace that nasty looking, long node id with label assigned by user
-					# and make important things bold
-					l.set_markup(l.get_text(). \
-						replace('"%s"' % (r["nid"],), '<b>"%s"</b>' % (self.nodes[r["nid"]].get_title(),)). \
-						replace('"%s"' % (r["rid"],), '<b>"%s"</b>' % (r["rid"],))
-					)
-		self.error_boxes.append(r)
+			# Handled by event, don't display twice
+			return
+		self.error_messages.add(message)
+		self.show_error_box(RIBar(message, Gtk.MessageType.WARNING))
+	
+	def cb_syncthing_repo_rejected(self, daemon, nid, rid):
+		if (nid, rid) in self.error_messages:
+			# Store as error message and don't display twice
+			return
+		self.error_messages.add((nid, rid))
+		node, can_fix = nid, False
+		if nid in self.nodes:
+			node = self.nodes[nid].get_title()
+			can_fix = True
+		markup = _('Unexpected repository ID "<b>%s</b>" sent from node "<b>%s</b>"; ensure that the '
+					'repository exists and that  this node is selected under "Share With" in the '
+					'repository configuration.') % (rid, node)
+		r = RIBar("", Gtk.MessageType.WARNING,)
+		r.get_label().set_markup(markup)
+		if can_fix:
+			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_REPOID)
+		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, node_id):
 		if node_id in self.nodes:
@@ -420,6 +420,15 @@ class App(Gtk.Application, TimerManager):
 			self.statusicon.set("si-unknown", _("Connecting to Syncthing daemon..."))
 			self["menu-si-status"].set_label(_("Connecting to Syncthing daemon..."))
 			self.cancel_timer("icon")
+	
+	def show_error_box(self, ribar, additional_data={}):
+		self["content"].pack_start(ribar, False, False, 0)
+		self["content"].reorder_child(ribar, RIBAR_POSITION)
+		ribar.connect("close", self.cb_infobar_close)
+		ribar.connect("response", self.cb_infobar_response, additional_data)
+		ribar.show()
+		ribar.set_reveal_child(True)
+		self.error_boxes.append(ribar)
 	
 	def animate_status(self):
 		""" Handles icon animation """
@@ -782,27 +791,27 @@ class App(Gtk.Application, TimerManager):
 		if bar in self.error_boxes:
 			self.error_boxes.remove(bar)
 	
-	def cb_infobar_response(self, bar, response_id):
+	def cb_infobar_response(self, bar, response_id, additional_data):
 		if response_id == RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
 		if response_id == RESPONSE_FIX_REPOID:
 			# Give up if there is no node with matching ID
-			if bar["nid"] in self.nodes:
+			if additional_data["nid"] in self.nodes:
 				# Find repository with matching ID ...
-				if bar["rid"] in self.repos:
+				if additional_data["rid"] in self.repos:
 					# ... if found, show edit dialog and pre-select
 					# matching node
-					e = EditorDialog(self, "repo-edit", False, bar["rid"])
-					e.call_after_loaded(e.mark_node, bar["nid"])
+					e = EditorDialog(self, "repo-edit", False, additional_data["rid"])
+					e.call_after_loaded(e.mark_node, additional_data["nid"])
 					e.load()
 					e.show(self["window"])
 				else:
 					# If there is no matching repository, prefill 'new repo'
 					# dialog and let user to save it
-					e = EditorDialog(self, "repo-edit", True, bar["rid"])
-					e.call_after_loaded(e.mark_node, bar["nid"])
-					e.call_after_loaded(e.fill_repo_id, bar["rid"])
+					e = EditorDialog(self, "repo-edit", True, additional_data["rid"])
+					e.call_after_loaded(e.mark_node, additional_data["nid"])
+					e.call_after_loaded(e.fill_repo_id, additional_data["rid"])
 					e.load()
 					e.show(self["window"])
 		self.cb_infobar_close(bar)
