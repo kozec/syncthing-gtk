@@ -483,7 +483,6 @@ class Daemon(GObject.GObject, TimerManager):
 		
 		# Parse response and call callback
 		try:
-			response = response.split("\r\n\r\n", 1)[1]
 			rdata = json.loads(response)
 		except IndexError: # No data
 			rdata = { }
