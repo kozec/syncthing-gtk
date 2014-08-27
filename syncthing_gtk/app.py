@@ -33,10 +33,11 @@ FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-
 # Response IDs
 RESPONSE_RESTART		= 256
 RESPONSE_FIX_REPOID		= 257
-RESPONSE_QUIT			= 258
-RESPONSE_START_DAEMON	= 259
-RESPONSE_SLAIN_DAEMON	= 260
-RESPONSE_SPARE_DAEMON	= 261
+RESPONSE_FIX_NEW_NODE	= 258
+RESPONSE_QUIT			= 260
+RESPONSE_START_DAEMON	= 271
+RESPONSE_SLAIN_DAEMON	= 272
+RESPONSE_SPARE_DAEMON	= 273
 
 class App(Gtk.Application, TimerManager):
 	"""
@@ -168,6 +169,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
 		self.daemon.connect("error", self.cb_syncthing_error)
 		self.daemon.connect("repo-rejected", self.cb_syncthing_repo_rejected)
+		self.daemon.connect("node-rejected", self.cb_syncthing_node_rejected)
 		self.daemon.connect("my-id-changed", self.cb_syncthing_my_id_changed)
 		self.daemon.connect("node-added", self.cb_syncthing_node_added)
 		self.daemon.connect("node-data-changed", self.cb_syncthing_node_data_changed)
@@ -294,6 +296,20 @@ class App(Gtk.Application, TimerManager):
 		if can_fix:
 			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_REPOID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
+	
+	def cb_syncthing_node_rejected(self, daemon, nid, address):
+		address = address.split(":")[0]	# Remove port from address, it's random by default anyway
+		if (nid, address) in self.error_messages:
+			# Store as error message and don't display twice
+			return
+		self.error_messages.add((nid, address))
+		markup = _('Unknown node "<b>%s</b>" is trying to connect from IP "<b>%s</b>"; '
+					'If you just configured this remote node, you can click \'fix\' '
+					'to open Add node dialog.') % (nid, address)
+		r = RIBar("", Gtk.MessageType.WARNING,)
+		r.get_label().set_markup(markup)
+		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_NODE)
+		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, node_id):
 		if node_id in self.nodes:
@@ -791,11 +807,11 @@ class App(Gtk.Application, TimerManager):
 		if bar in self.error_boxes:
 			self.error_boxes.remove(bar)
 	
-	def cb_infobar_response(self, bar, response_id, additional_data):
+	def cb_infobar_response(self, bar, response_id, additional_data={}):
 		if response_id == RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
-		if response_id == RESPONSE_FIX_REPOID:
+		elif response_id == RESPONSE_FIX_REPOID:
 			# Give up if there is no node with matching ID
 			if additional_data["nid"] in self.nodes:
 				# Find repository with matching ID ...
@@ -814,6 +830,10 @@ class App(Gtk.Application, TimerManager):
 					e.call_after_loaded(e.fill_repo_id, additional_data["rid"])
 					e.load()
 					e.show(self["window"])
+		elif response_id == RESPONSE_FIX_NEW_NODE:
+			e = EditorDialog(self, "node-edit", True, additional_data["nid"])
+			e.load()
+			e.show(self["window"])
 		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):

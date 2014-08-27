@@ -264,6 +264,9 @@ class EditorDialog(GObject.GObject):
 					self.checks = {
 						"vNodeID" : check_node_id,
 						}
+					if self.id != None:
+						# Pre-fill node id, if provided
+						self.set_value("NodeID", self.id)
 			else:
 				if self.mode == "repo-edit":
 					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]

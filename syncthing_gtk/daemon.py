@@ -62,6 +62,11 @@ class Daemon(GObject.GObject, TimerManager):
 				node_id:	id of node that send unexpected repository id
 				repo_id:	id of unexpected repository
 		
+		node-rejected(node_id, address)
+			Emited when daemon detects connection from unknown node
+				node_id:	node id
+				address:	address which connection come from
+		
 		node-added (id, name, data)
 			Emited when new node is loaded from configuration
 				id:		id of loaded node
@@ -155,6 +160,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"node-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"node-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
 			b"node-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -822,6 +828,10 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["node"]
 			rid = e["data"]["repo"]
 			self.emit("repo-rejected", nid, rid)
+		elif eType == "NodeRejected":
+			nid = e["data"]["node"]
+			address = e["data"]["address"]
+			self.emit("node-rejected", nid, address)
 		else:
 			print "Unhandled event type:", e
 	
