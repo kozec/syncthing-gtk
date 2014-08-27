@@ -33,6 +33,7 @@ class EditorDialog(GObject.GObject):
 		"repo-edit" : [
 			"vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vNodes",
 			"vVersioning", "vKeepVersions", "vRescanIntervalS",
+			"vMaxAge", "vVersionsPath"
 			],
 		"node-edit" : [
 			"vNodeID", "vName", "vAddresses", "vCompression"
@@ -131,25 +132,36 @@ class EditorDialog(GObject.GObject):
 		# Disable everything until configuration is loaded
 		self["editor"].set_sensitive(False)
 	
+	def get_burried_value(self, key, vals, default, convert=lambda a:a):
+		"""
+		Returns value stored deeper in element tree.
+		Method is called recursively for every tree level. If value is
+		not found, default is returned.
+		"""
+		if type(key) != list:
+			# Parse key, split by '/'
+			return self.get_burried_value(key.split("/"), vals, default, convert)
+		try:
+			if len(key) > 1:
+				tkey, key = key[0], key[1:]
+				return self.get_burried_value(key, vals[tkey], default, convert)
+			return convert(vals[key[0]])
+		except Exception:
+			return default
+	
 	def get_value(self, key):
 		"""
 		Returns value from configuration.
 		Usualy returns self.values[key], but can handle some special cases
 		"""
 		if key == "KeepVersions":
-			# Number
-			try:
-				return self.values["Versioning"]["Params"]["keep"] # oww...
-			except (KeyError, TypeError):
-				# Node not found
-				return 0
+			return self.get_burried_value("Versioning/Params/keep", self.values, 0, int)
+		elif key == "MaxAge":
+			return self.get_burried_value("Versioning/Params/maxAge", self.values, 0, int) / 86400 # seconds to days
+		elif key == "VersionsPath":
+			return self.get_burried_value("Versioning/Params/versionsPath", self.values, "")
 		elif key == "Versioning":
-			# Boool
-			try:
-				return self.values["Versioning"]["Type"] != ""
-			except (KeyError, TypeError):
-				# Node not found
-				return False
+			return self.get_burried_value("Versioning/Type", self.values, "")
 		elif key in ("Addresses", "ListenAddress"):
 			return ",".join([ x.strip() for x in self.values[key]])
 		elif key == "MaxSendKbpsEnabled":
@@ -161,16 +173,22 @@ class EditorDialog(GObject.GObject):
 	
 	def set_value(self, key, value):
 		""" Stores value to configuration, handling some special cases """
-		if key == "KeepVersions":
+		if key == "Versioning":
+			# Create structure if needed
+			self.create_dicts(self.values, ("Versioning", "Type"))
+			self.values["Versioning"]["Type"] = value
+		elif key == "KeepVersions":
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
 			self.values["Versioning"]["Params"]["keep"] = str(int(value))
-		elif key == "Versioning":
+		elif key == "MaxAge":
 			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Type"))
-			self.values["Versioning"]["Type"] = "simple" if value else ""
-		#elif key  in ("LocalAnnPort", "RescanIntervalS"):
-		#	self.values[key] = ints(value)
+			self.create_dicts(self.values, ("Versioning", "Params", "maxAge"))
+			self.values["Versioning"]["Params"]["maxAge"] = str(int(value) * 86400) # days to seconds
+		elif key == "VersionsPath":
+			# Create structure if needed
+			self.create_dicts(self.values, ("Versioning", "Params", "versionsPath"))
+			self.values["Versioning"]["Params"]["versionsPath"] = value
 		elif key == "URAccepted":
 			self.values[key] = 1 if value else 0
 		elif key in ("Addresses", "ListenAddress"):
@@ -274,6 +292,13 @@ class EditorDialog(GObject.GObject):
 					w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
 				elif isinstance(w, Gtk.Entry):
 					w.set_text(str(self.get_value(key.lstrip("v"))))
+				elif isinstance(w, Gtk.ComboBox):
+					val = self.get_value(key.lstrip("v"))
+					m = w.get_model()
+					for i in xrange(0, len(m)):
+						if val == str(m[i][0]).strip():
+							w.set_active(i)
+							break
 				elif isinstance(w, Gtk.CheckButton):
 					w.set_active(self.get_value(key.lstrip("v")))
 				elif key == "vNodes":
@@ -295,17 +320,31 @@ class EditorDialog(GObject.GObject):
 		self.emit("loaded")
 	
 	def ui_value_changed(self, w, *a):
+		"""
+		Handler for widget that controls state of other widgets
+		"""
 		key = self.get_widget_id(w)
 		if key != None:
 			if isinstance(w, Gtk.CheckButton):
 				self.set_value(key.lstrip("v"), w.get_active())
+				self.update_special_widgets()
+			if isinstance(w, Gtk.ComboBox):
+				self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
 				self.update_special_widgets()
 	
 	def update_special_widgets(self, *a):
 		""" Enables/disables some widgets """
 		if self.mode == "repo-edit":
 			self["vID"].set_sensitive(self.id is None)
-			self["rvVersioning"].set_reveal_child(self.get_value("Versioning"))
+			v = self.get_value("Versioning")
+			if v == "":
+				if self["rvVersioning"].get_reveal_child():
+					self["rvVersioning"].set_reveal_child(False)
+			else:
+				self["bxVersioningSimple"].set_visible(self.get_value("Versioning") == "simple")
+				self["bxVersioningStaggered"].set_visible(self.get_value("Versioning") == "staggered")
+				if not self["rvVersioning"].get_reveal_child():
+					self["rvVersioning"].set_reveal_child(True)
 		elif self.mode == "node-edit":
 			self["vNodeID"].set_sensitive(self.is_new)
 			self["vAddresses"].set_sensitive(self.id != self.app.daemon.get_my_id())
@@ -367,6 +406,8 @@ class EditorDialog(GObject.GObject):
 					self.set_value(key.strip("v"), w.get_text())
 				elif isinstance(w, Gtk.CheckButton):
 					self.set_value(key.strip("v"), w.get_active())
+				elif isinstance(w, Gtk.ComboBox):
+					self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
 				elif key == "vNodes":
 					# Still very special case
 					nodes = [ {
@@ -401,7 +442,18 @@ class EditorDialog(GObject.GObject):
 	
 	def cb_format_value_s(self, spinner):
 		""" Formats spinner value  """
-		spinner.get_buffer().set_text("%s s" % (int(spinner.get_adjustment().get_value()),), -1);
+		spinner.get_buffer().set_text(_("%ss") % (int(spinner.get_adjustment().get_value()),), -1);
+		return True
+	
+	def cb_format_value_days(self, spinner):
+		""" Formats spinner value  """
+		v = int(spinner.get_adjustment().get_value())
+		if v == 0:
+			spinner.get_buffer().set_text(_("never delete"), -1)
+		elif v == 1:
+			spinner.get_buffer().set_text(_("%s day") % (v,), -1);
+		else:
+			spinner.get_buffer().set_text(_("%s days") % (v,), -1);
 		return True
 	
 	def check_repo_id(self, value):
