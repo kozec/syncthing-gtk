@@ -65,6 +65,7 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide
 		self.process = None
+		self.watcher = Watcher(self)	# TODO: Turn off by configuration
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -437,6 +438,8 @@ class App(Gtk.Application, TimerManager):
 				key=lambda x : x.get_title().lower()
 				)
 			)
+		if not self.watcher is None:
+			self.watcher.add_root(r["Directory"])
 	
 	def cb_syncthing_repo_data_changed(self, daemon, rid, data):
 		if rid in self.repos:	# Should be always

@@ -14,4 +14,5 @@ from statusicon			import StatusIcon
 from daemonoutputdialog	import DaemonOutputDialog
 from daemonprocess		import DaemonProcess
 from daemon				import Daemon, InvalidConfigurationException, TLSUnsupportedException
+from watcher			import Watcher
 from app				import App
