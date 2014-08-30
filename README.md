@@ -12,3 +12,6 @@ Currently supported:
 
 TODO:
 - GUI settings
+
+RELATED LINKS
+- https://discourse.syncthing.net/t/syncthing-gtk-gui-for-syncthing/709
