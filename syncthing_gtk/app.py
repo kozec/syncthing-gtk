@@ -705,6 +705,15 @@ class App(Gtk.Application, TimerManager):
 		# Editing node
 		self.open_editor("node-edit", self.rightclick_box["id"])
 	
+	def cb_menu_popup_browse_repo(self, *a):
+		""" Handler for 'browse' repo context menu item """
+		path = os.path.expanduser(self.rightclick_box["folder"])
+		# Try to use any of following, known commands to display directory contents
+		for x in ('xdg-open', 'gnome-open', 'kde-open'):
+			if os.path.exists("/usr/bin/%s" % x):
+				os.system("/usr/bin/%s '%s' &" % (x, path))
+				break
+	
 	def cb_menu_popup_delete_repo(self, *a):
 		""" Handler for 'delete' repo context menu item """
 		# Editing repository

@@ -291,6 +291,24 @@
 		</object>
 	</child>
 	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-browse-repo">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">_Browse</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<property name="image">menu-popup-browse-image</property>
+			<signal name="activate" handler="cb_menu_popup_browse_repo" swapped="no"/>
+		</object>
+	</child>
+	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-separator7">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+	<child>
 		<object class="GtkImageMenuItem" id="menu-popup-delete-repo">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -558,6 +576,12 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="stock">gtk-refresh</property>
+</object>
+
+<object class="GtkImage" id="menu-popup-browse-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="stock">gtk-open</property>
 </object>
 
 </interface>
