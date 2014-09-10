@@ -3,15 +3,16 @@ syncthing-gui
 
 GTK3 &amp; python based GUI and notification area icon for Syncthing
 
-Currently supported:
+Supported syncthing features:
 - Everything what WebUI can display
 - Adding / editing / deleting nodes
 - Adding / editing / deleting repositories
 - Restart / shutdown server
-- Daemon settings
+- Editing daemon settings
 
-TODO:
-- GUI settings
+Additional features:
+- Running Syncthing daemon in background
+- Half-automatic setup for new nodes and repositories
 
-RELATED LINKS
+Related links:
 - https://discourse.syncthing.net/t/syncthing-gtk-gui-for-syncthing/709
