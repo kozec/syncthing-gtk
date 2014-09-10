@@ -7,10 +7,11 @@ Various stuff that I don't care to fit anywhere else.
 
 from __future__ import unicode_literals
 from base64 import b32decode
-from datetime import datetime
+from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 import re, os
 
+_ = lambda (a) : a
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
 
 def luhn_b32generate(s):
@@ -79,16 +80,66 @@ def ints(s):
 		if len(s) == 0 : return 0
 	return int(s)
 
-PARSER = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)\.([0-9]+)\+([0-9]+):([0-9]+)")
+class Timezone(tzinfo):
+	def __init__(self, hours, minutes):
+		if hours >= 0:
+			self.name = "+%s:%s" % (hours, minutes)
+		else:
+			self.name = "+%s:%s" % (hours, minutes)
+		self.delta = timedelta(minutes=minutes, hours=hours)
+	
+	def __str__(self):
+		return "<Timezone %s>" % (self.name,)
+	
+	def utcoffset(self, dt):
+		return self.delta
+	
+	def tzname(self, dt):
+		return self.name
+	
+	def dst(self, dt):
+		return timedelta(0)
+
+PARSER = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)\.([0-9]+)([\-\+][0-9]+):([0-9]+)")
 FORMAT = "%Y-%m-%d %H:%M:%S %f"
 
 def parsetime(m):
-	""" Parses time recieved from Syncthing daemon, ignoring timezone info """
+	""" Parses time recieved from Syncthing daemon """
 	match = PARSER.match(m)
 	times = list(match.groups()[0:3])
 	times[2] = times[2][0:6]
 	reformat = "%s %s %s" % tuple(times)
-	return datetime.strptime(reformat, FORMAT)
+	tz = Timezone(int(match.group(4)), int(match.group(5)))
+	return datetime.strptime(reformat, FORMAT).replace(tzinfo=tz)
+
+def delta_to_string(d):
+	"""
+	Returns aproximate, human-readable and potentialy localized
+	string from specified timedelta object
+	"""
+	# Negative time, 'some time ago'
+	if d.days == -1:
+		d = - d
+		if d.seconds > 3600:
+			return _("~%s hours ago") % (int(d.seconds / 3600),)
+		if d.seconds > 60:
+			return _("%s minutes ago") % (int(d.seconds / 60),)
+		if d.seconds > 5:
+			return _("%s seconds ago") % (d.seconds,)
+		return _("just now")
+	if d.days < -1:
+		return _("%s days ago") % (-d.days,)
+
+	# Positive time, 'in XY minutes'
+	if d.days > 0:
+		return _("in %s days") % (d.days,)
+	if d.seconds > 3600:
+		return _("~%s hours from now") % (int(d.seconds / 3600),)
+	if d.seconds > 60:
+		return _("%s minutes from now") % (int(d.seconds / 60),)
+	if d.seconds > 5:
+		return _("%s seconds from now") % (d.seconds,)
+	return _("in a moment")
 
 def check_daemon_running():
 	""" Returns True if syncthing daemon is running """
