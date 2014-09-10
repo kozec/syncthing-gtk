@@ -142,6 +142,18 @@ class Daemon(GObject.GObject, TimerManager):
 			Emited after repository scan is finished
 				id:		id of repo
 		
+		item-started (repo_id, filename, time):
+			Emited when synchronization of file starts
+				repo_id:	id of repo that contains file
+				filename:	synchronized file
+				time:		event timestamp
+		
+		item-updated (repo_id, filename, mtime):
+			Emited when change in local file is detected (LocalIndexUpdated event)
+				repo_id:	id of repo that contains file
+				filename:	updated file
+				mtime:		last modification time of updated file
+		
 		system-data-updated (ram_ussage, cpu_ussage, announce)
 			Emited every time when system informations are recieved
 			from daemon.
@@ -178,6 +190,8 @@ class Daemon(GObject.GObject, TimerManager):
 			b"repo-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
 		}
 	
@@ -809,7 +823,7 @@ class Daemon(GObject.GObject, TimerManager):
 			rid = e["data"]["repo"]
 			if self._repo_state_changed(rid, state, 0):
 				self._needs_update.add(rid)
-		elif eType in ("LocalIndexUpdated", "RemoteIndexUpdated"):
+		elif eType in ("RemoteIndexUpdated"):
 			rid = e["data"]["repo"]
 			if (not rid in self._syncing_nodes) and (not rid in self._scanning_repos):
 				self._needs_update.add(rid)
@@ -832,6 +846,18 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["node"]
 			address = e["data"]["address"]
 			self.emit("node-rejected", nid, address)
+		elif eType == "ItemStarted":
+			rid = e["data"]["repo"]
+			filename = e["data"]["item"]
+			t = parsetime(e["time"])
+			self.emit("item-started", rid, filename, t)
+		elif eType == "LocalIndexUpdated":
+			rid = e["data"]["repo"]
+			filename = e["data"]["name"]
+			mtime = parsetime(e["data"]["modified"])
+			if (not rid in self._syncing_nodes) and (not rid in self._scanning_repos):
+				self._needs_update.add(rid)
+			self.emit("item-updated", rid, filename, mtime)
 		else:
 			print "Unhandled event type:", e
 	

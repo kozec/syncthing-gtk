@@ -101,15 +101,23 @@ class Timezone(tzinfo):
 		return timedelta(0)
 
 PARSER = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)\.([0-9]+)([\-\+][0-9]+):([0-9]+)")
+PARSER_NODOT = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)([\-\+][0-9]+):([0-9]+)")
 FORMAT = "%Y-%m-%d %H:%M:%S %f"
 
 def parsetime(m):
 	""" Parses time recieved from Syncthing daemon """
-	match = PARSER.match(m)
-	times = list(match.groups()[0:3])
-	times[2] = times[2][0:6]
-	reformat = "%s %s %s" % tuple(times)
-	tz = Timezone(int(match.group(4)), int(match.group(5)))
+	reformat, tz = None, None
+	if "." in m:
+		match = PARSER.match(m)
+		times = list(match.groups()[0:3])
+		times[2] = times[2][0:6]
+		reformat = "%s %s %s" % tuple(times)
+		tz = Timezone(int(match.group(4)), int(match.group(5)))
+	else:
+		match = PARSER_NODOT.match(m)
+		times = list(match.groups()[0:2])
+		reformat = "%s %s 00" % tuple(times)
+		tz = Timezone(int(match.group(3)), int(match.group(4)))
 	return datetime.strptime(reformat, FORMAT).replace(tzinfo=tz)
 
 def delta_to_string(d):
