@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager, DEBUG
 from syncthing_gtk.tools import parsetime
+from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
 import json, os, sys, time
@@ -233,7 +234,7 @@ class Daemon(GObject.GObject, TimerManager):
 		# repo_nodes stores list of nodes assigned to repository
 		self._repo_nodes = {}
 		# last_error_time is used to discard repeating errors
-		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1)
+		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1, tzinfo=tz.tzlocal())
 		# Epoch is incereased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
 		self._epoch = 1
