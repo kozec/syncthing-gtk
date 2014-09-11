@@ -14,5 +14,10 @@ Additional features:
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
 
+Dependencies:  
+&nbsp;&nbsp;&nbsp;python 2.7, gtk3, <a href=https://live.gnome.org/PyGObject>PyGObject</a>,
+<a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version)
+and, obviously, <a href="http://syncthing.net">syncthing</a>
+
 Related links:
 - https://discourse.syncthing.net/t/syncthing-gtk-gui-for-syncthing/709
