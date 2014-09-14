@@ -36,7 +36,7 @@ class EditorDialog(GObject.GObject):
 			"vMaxAge", "vVersionsPath"
 			],
 		"node-edit" : [
-			"vNodeID", "vName", "vAddresses", "vCompression"
+			"vNodeID", "vName", "vAddresses", "vCompression", "vRepos",
 			],
 		"daemon-settings" : [
 			"vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
@@ -315,6 +315,21 @@ class EditorDialog(GObject.GObject):
 							self["vNodes"].pack_end(b, False, False, 0)
 							b.set_active(node["id"] in nids)
 					self["vNodes"].show_all()
+				elif key == "vRepos":
+					# Even more special case
+					rids = [ ]
+					# Get list of repos that share this node
+					for r in self.config["Repositories"]:
+						for n in r["Nodes"]:
+							if n["NodeID"] == self.id:
+								rids.append(r["ID"])
+					# Create CheckButtons
+					for repo in self.app.repos.values():
+						b = Gtk.CheckButton(repo["folder"], False)
+						b.set_tooltip_text(repo["id"])
+						self["vRepos"].pack_end(b, False, False, 0)
+						b.set_active(repo["id"] in rids)
+					self["vRepos"].show_all()
 				else:
 					print w
 		self.update_special_widgets()
