@@ -324,7 +324,7 @@ class EditorDialog(GObject.GObject):
 							if n["NodeID"] == self.id:
 								rids.append(r["ID"])
 					# Create CheckButtons
-					for repo in self.app.repos.values():
+					for repo in reversed(sorted(self.app.repos.values(), key=lambda x : x["id"])):
 						b = Gtk.CheckButton(repo["folder"], False)
 						b.set_tooltip_text(repo["id"])
 						self["vRepos"].pack_end(b, False, False, 0)
@@ -427,8 +427,7 @@ class EditorDialog(GObject.GObject):
 					self.set_value(key.strip("v"), w.get_active())
 				elif isinstance(w, Gtk.ComboBox):
 					self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
-				elif key == "vNodes":
-					# Still very special case
+				elif key == "vNodes":	# Still very special case
 					nodes = [ {
 							   "Addresses" : None,
 							   "NodeID" : b.get_tooltip_text(),
@@ -440,6 +439,34 @@ class EditorDialog(GObject.GObject):
 								if b.get_active()
 							]
 					self.set_value("Nodes", nodes)
+				elif key == "vRepos":	# And this one is special too
+					# Generate dict of { repo_id : bool } where bool is True if
+					# repo should be shared with this node
+					repos = {}
+					for b in self["vRepos"].get_children():
+						repos[b.get_tooltip_text()] = b.get_active()
+					# Go over all Repositories/<repo>/Nodes/<node> keys in config
+					# and set them as needed
+					nid = self.get_value("NodeID")
+					for r in self.config["Repositories"]:
+						rid = r["ID"]
+						found = False
+						for n in r["Nodes"]:
+							if n["NodeID"] == nid:
+								if not rid in repos or not repos[rid]:
+									# Remove this /<node> key (unshare repo with node)
+									r["Nodes"].remove(n)
+									break
+								found = True
+						if not found and rid in repos and repos[rid]:
+							# Add new /<node> key (share repo with node)
+							r["Nodes"].append({
+							   "Addresses" : None,
+							   "NodeID" : nid,
+							   "Name" : "",
+							   "CertName" : "",
+							   "Compression" : False
+								})
 		# Add new dict to configuration (edited dict is already there)
 		if self.is_new:
 			if self.mode == "repo-edit":
