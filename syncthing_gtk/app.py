@@ -124,7 +124,7 @@ class App(Gtk.Application, TimerManager):
 			middle_item.set_expand(True)
 			middle_label.set_label("")
 			middle_item.add(middle_label)
-			edit_menu = Gtk.ToolButton.new_from_stock(Gtk.STOCK_EDIT)
+			edit_menu = Gtk.ToolButton.new(Gtk.Image.new_from_icon_name("emblem-system-symbolic", 1))
 			edit_menu.connect("clicked", self.cb_menu_popup, self["edit-menu-menu"])
 			self["server-name"] = middle_label
 			

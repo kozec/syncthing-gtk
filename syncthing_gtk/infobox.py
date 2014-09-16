@@ -66,6 +66,7 @@ class InfoBox(Gtk.Container):
 		hbox.pack_start(self.icon, False, False, 0)
 		hbox.pack_start(self.title, True, True, 0)
 		hbox.pack_start(self.status, False, False, 0)
+		hbox.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
 		eb.add(hbox)
 		# Update stuff
 		self.header_box = hbox
@@ -85,6 +86,7 @@ class InfoBox(Gtk.Container):
 		self.rev.set_reveal_child(False)
 		align.set_padding(2, 2, 5, 5)
 		eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
+		self.grid.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
 		# Connect signals
 		eb.connect("button-release-event", self.on_grid_click)
 		# Pack together
@@ -293,6 +295,7 @@ class InfoBox(Gtk.Container):
 		""" Expects floats """
 		self.color = (r, g, b, a)
 		self.header.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(r, g, b, a))
+		self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
 		self.queue_draw()
 	
 	def set_border(self, width):
