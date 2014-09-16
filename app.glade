@@ -52,8 +52,8 @@
 					<child>
 						<object class="GtkImage" id="edit-menu-icon">
 							<property name="visible">True</property>
-							<property name="stock">gtk-edit</property>
-							<property name="icon-size">1</property>
+							<property name="icon_size">1</property>
+							<property name="icon_name">emblem-system-symbolic</property>
 						</object>
 					</child>
 				</object>
