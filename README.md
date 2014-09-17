@@ -21,7 +21,7 @@ Dependencies:
 Packages:
 - Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
 - Arch Linux: <a href="https://aur.archlinux.org/packages/syncthing-gtk/">AUR</a>
-- Or, in worst case scenario, download <a href="https://github.com/kozec/syncthing-gui/releases/latest"latest tarball</a>, extract it and run syncthing-gtk.py.
+- Or, in worst case scenario, download <a href="https://github.com/kozec/syncthing-gui/releases/latest">latest tarball</a>, extract it and run syncthing-gtk.py.
 
 Related links:
 - http://syncthing.net
