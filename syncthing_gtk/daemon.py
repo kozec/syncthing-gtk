@@ -231,7 +231,6 @@ class Daemon(GObject.GObject, TimerManager):
 		self._address = None
 		self._api_key = None
 		self._connected = False
-		# Version from 'X-Syncthing-Version', if daemon sends it
 		self._refresh_interval = 1 # seconds
 		# syncing_repos holds set of repos that are being synchronized
 		self._syncing_repos = set()
@@ -707,7 +706,6 @@ class Daemon(GObject.GObject, TimerManager):
 			print data[HTTP_HEADERS]
 			version = get_header(data[HTTP_HEADERS], "X-Syncthing-Version")
 			if version:
-				print "VERSION FROM HTTP", version
 				self._syncthing_cb_version_known(version)
 			else:
 				self._rest_request("version", self._syncthing_cb_version)
