@@ -218,7 +218,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._address = None
 		self._api_key = None
 		self._connected = False
-		self._refresh_rate = 1 # seconds
+		self._refresh_interval = 1 # seconds
 		# syncing_repos holds set of repos that are being synchronized
 		self._syncing_repos = set()
 		# syncing_nodes does same thing, only for nodes
@@ -578,7 +578,7 @@ class Daemon(GObject.GObject, TimerManager):
 					self._request_repo_data(rid)
 				self._needs_update.clear()
 		
-		self.timer("event", self._refresh_rate, self._request_events)
+		self.timer("event", self._refresh_interval, self._request_events)
 	
 	def _syncthing_cb_errors(self, errors):
 		for e in errors:
@@ -586,7 +586,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if t > self._last_error_time:
 				self.emit("error", e["Error"])
 				self._last_error_time = t
-		self.timer("errors", self._refresh_rate * 5, self._rest_request, "errors", self._syncthing_cb_errors)
+		self.timer("errors", self._refresh_interval * 5, self._rest_request, "errors", self._syncthing_cb_errors)
 	
 	def _syncthing_cb_events_error(self, exception, command):
 		"""
@@ -602,7 +602,7 @@ class Daemon(GObject.GObject, TimerManager):
 				self.cancel_all()
 				return
 		# Other errors are ignored and events are pulled again after prolonged delay
-		self.timer("event", self._refresh_rate * 5, self._request_events)
+		self.timer("event", self._refresh_interval * 5, self._request_events)
 	
 	def _syncthing_cb_connections(self, connections):
 		totals = {"dl_rate" : 0.0, "up_rate" : 0.0 }	# Total up/down rate
@@ -645,7 +645,7 @@ class Daemon(GObject.GObject, TimerManager):
 				node["dl_rate"], node["up_rate"],
 				node["bytes_in"], node["bytes_out"])
 	
-		self.timer("conns", self._refresh_rate * 5, self._rest_request, "connections", self._syncthing_cb_connections)
+		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections)
 		
 	def _syncthing_cb_completion(self, data, nid, rid):
 		if "completion" in data:
@@ -689,7 +689,7 @@ class Daemon(GObject.GObject, TimerManager):
 			data["sys"], float(data["cpuPercent"]),
 			announce)
 		
-		self.timer("system", self._refresh_rate * 5, self._rest_request, "system", self._syncthing_cb_system)
+		self.timer("system", self._refresh_interval * 5, self._rest_request, "system", self._syncthing_cb_system)
 	
 	def _syncthing_cb_version(self, data):
 		version = data["data"]
@@ -711,10 +711,10 @@ class Daemon(GObject.GObject, TimerManager):
 			if float(data["globalBytes"]) > 0.0:
 				p = float(data["inSyncBytes"]) / float(data["globalBytes"])
 			if self._repo_state_changed(rid, state, p):
-				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+				self.timer("repo_%s" % rid, self._refresh_interval, self._request_repo_data, rid)
 		else:
 			if self._repo_state_changed(rid, state, 0):
-				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+				self.timer("repo_%s" % rid, self._refresh_interval, self._request_repo_data, rid)
 	
 	def _syncthing_cb_config(self, config):
 		"""
@@ -751,7 +751,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if exception.code in (39, 4):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
 				self.emit("connection-error", Daemon.REFUSED, exception.message)
-				self.timer("config", self._refresh_rate, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+				self.timer("config", self._refresh_interval, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 				return
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
@@ -949,6 +949,21 @@ class Daemon(GObject.GObject, TimerManager):
 	def rescan(self, repo_id):
 		""" Asks daemon to rescan repository """
 		self._rest_post("scan?repo=%s" % (repo_id,), {}, lambda *a: a, self._syncthing_cb_rescan_error, repo_id)
+	
+	def request_events(self):
+		"""
+		Requests event directly, without waiting for timer to fire.
+		May fail silently if instance is not connected to daemon or is
+		already waiting for events.
+		"""
+		if self.cancel_timer("event"):
+			self._request_events()
+			if DEBUG: print "Forced to request events"
+	
+	def set_refresh_interval(self, i):
+		""" Sets interval used mainly by event quering timer """
+		self._refresh_interval = i
+		if DEBUG: print "Set refresh interval to", i
 	
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(InvalidConfigurationException): pass

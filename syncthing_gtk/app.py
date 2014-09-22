@@ -39,6 +39,10 @@ RESPONSE_START_DAEMON	= 271
 RESPONSE_SLAIN_DAEMON	= 272
 RESPONSE_SPARE_DAEMON	= 273
 
+# RI's
+REFRESH_INTERVAL_DEFAULT	= 1
+REFRESH_INTERVAL_TRAY		= 5
+
 class App(Gtk.Application, TimerManager):
 	"""
 	Main application / window.
@@ -79,15 +83,11 @@ class App(Gtk.Application, TimerManager):
 	def do_activate(self, *a):
 		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
 			# Show main window
-			if not self["window"].is_visible():
-				self["window"].show()
-				if self.connect_dialog != None:
-					self.connect_dialog.show()
-			else:
-				self["window"].present()
+			self.show()
 		elif self.first_activation:
 			print
 			print _("Syncthing-GTK started and running in notification area")
+			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 		self.first_activation = False
 	
 	def setup_widgets(self):
@@ -482,15 +482,37 @@ class App(Gtk.Application, TimerManager):
 		self.widgets[name] = item
 	
 	def __contains__(self, name):
-		""" Returns true if there is such widget """
+		""" Returns True if there is such widget """
 		if name in self.widgets: return True
 		return self.builder.get_object(name) != None
 	
+	def is_visible(self):
+		""" Returns True if main window is visible """
+		return self["window"].is_visible()
+	
 	def show(self):
-		self["window"].show_all()
+		"""
+		Shows main window or brings it to front, if is already visible.
+		If connection to daemon is not established, shows 'Connecting'
+		dialog as well.
+		"""
+		
+		self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
+		self.daemon.request_events()
+		if not self["window"].is_visible():
+			# self["window"].show_all()
+			self["window"].show()
+			if self.connect_dialog != None:
+				self.connect_dialog.show()
+		else:
+			self["window"].present()
 	
 	def hide(self):
+		""" Hides main windows and 'Connecting' dialog, if displayed """
+		if self.connect_dialog != None:
+			self.connect_dialog.hide()
 		self["window"].hide()
+		self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
 	def display_connect_dialog(self, message):
 		"""
@@ -506,7 +528,7 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
 			self.connect_dialog.connect("response", self.cb_exit)
-			if self["window"].is_visible():
+			if self.is_visible():
 				self.connect_dialog.show_all()
 		def set_label(d, message):
 			"""
@@ -546,7 +568,7 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
 			self.connect_dialog.connect("response", self.cb_run_daemon_response, cb)
-			if self["window"].is_visible():
+			if self.is_visible():
 				self.connect_dialog.show_all()
 	
 	def close_connect_dialog(self):
@@ -656,9 +678,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_delete_event(self, *e):
 		# Hide main window
-		if self.connect_dialog != None:
-			self.connect_dialog.hide()
-		self["window"].hide()
+		self.hide()
 		return True
 	
 	def cb_menu_show_id(self, *a):
@@ -800,14 +820,10 @@ class App(Gtk.Application, TimerManager):
 	def cb_statusicon_click(self, *a):
 		""" Called when user clicks on status icon """
 		# Hide / show main window
-		if self["window"].is_visible():
-			if self.connect_dialog != None:
-				self.connect_dialog.hide()
-			self["window"].hide()
+		if self.is_visible():
+			self.hide()
 		else:
-			self["window"].show()
-			if self.connect_dialog != None:
-				self.connect_dialog.show_all()
+			self.show()
 	
 	def cb_infobar_close(self, bar):
 		if bar == self["infobar"]:
