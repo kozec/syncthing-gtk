@@ -80,6 +80,17 @@ def ints(s):
 		if len(s) == 0 : return 0
 	return int(s)
 
+def get_header(headers, key):
+	"""
+	Returns value of single header parsed from headers array or None
+	if header is not found
+	"""
+	if not key.endswith(":"): key = "%s:" % (key,)
+	for h in headers:
+		if h.startswith(key):
+			return h.split(" ", 1)[-1]
+	return None
+
 class Timezone(tzinfo):
 	def __init__(self, hours, minutes):
 		if hours >= 0:

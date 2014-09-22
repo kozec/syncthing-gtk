@@ -8,11 +8,15 @@ Class interfacing with syncthing daemon
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager, DEBUG
-from syncthing_gtk.tools import parsetime
+from syncthing_gtk.tools import parsetime, get_header
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
 import json, os, sys, time
+
+# Random constant used as key when adding headers to returned data in
+# REST requests; Anything goes, as long as it isn't string
+HTTP_HEADERS = int(65513)
 
 class Daemon(GObject.GObject, TimerManager):
 	"""
@@ -227,6 +231,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._address = None
 		self._api_key = None
 		self._connected = False
+		# Version from 'X-Syncthing-Version', if daemon sends it
 		self._refresh_interval = 1 # seconds
 		# syncing_repos holds set of repos that are being synchronized
 		self._syncing_repos = set()
@@ -390,6 +395,8 @@ class Daemon(GObject.GObject, TimerManager):
 			rdata = { }
 		except ValueError: # Not a JSON
 			rdata = {'data' : response }
+		if type(rdata) == dict:
+			rdata[HTTP_HEADERS] = headers
 		if callback_data:
 			callback(rdata, *callback_data)
 		else:
@@ -529,6 +536,8 @@ class Daemon(GObject.GObject, TimerManager):
 			rdata = { }
 		except ValueError: # Not a JSON
 			rdata = {'data' : response }
+		if type(rdata) == dict:
+			rdata[HTTP_HEADERS] = headers
 		if callback_data:
 			callback(rdata, *callback_data)
 		else:
@@ -594,6 +603,9 @@ class Daemon(GObject.GObject, TimerManager):
 		self.timer("event", self._refresh_interval, self._request_events)
 	
 	def _syncthing_cb_errors(self, errors):
+		if "errors" in errors:
+			# New since https://github.com/syncthing/syncthing/commit/37a473e7d6532951e2617a91338a6f1b114cb4de
+			errors = errors["errors"]
 		for e in errors:
 			t = parsetime(e["Time"])
 			if t > self._last_error_time:
@@ -621,7 +633,7 @@ class Daemon(GObject.GObject, TimerManager):
 		totals = {"dl_rate" : 0.0, "up_rate" : 0.0 }	# Total up/down rate
 		current_time = time.time()
 		for nid in connections:
-			if nid != "total":
+			if nid != "total" and nid != HTTP_HEADERS:
 				# Grab / create cached data
 				node = self._get_node_data(nid)
 				time_delta = current_time - node["time"]
@@ -692,7 +704,13 @@ class Daemon(GObject.GObject, TimerManager):
 				print >>sys.stderr, "Warning: My ID was changed on the fly"
 			self._my_id = data["myID"]
 			self.emit('my-id-changed', self._my_id)
-			self._rest_request("version", self._syncthing_cb_version)
+			print data[HTTP_HEADERS]
+			version = get_header(data[HTTP_HEADERS], "X-Syncthing-Version")
+			if version:
+				print "VERSION FROM HTTP", version
+				self._syncthing_cb_version_known(version)
+			else:
+				self._rest_request("version", self._syncthing_cb_version)
 		
 		announce = Daemon.DISABLED
 		if "extAnnounceOK" in data:
@@ -705,7 +723,18 @@ class Daemon(GObject.GObject, TimerManager):
 		self.timer("system", self._refresh_interval * 5, self._rest_request, "system", self._syncthing_cb_system)
 	
 	def _syncthing_cb_version(self, data):
-		version = data["data"]
+		if "version" in data:
+			# New since https://github.com/syncthing/syncthing/commit/d7956dd4957fa6eee5971c072fd7181015fa876c
+			version = data["version"]
+		else:
+			version = data["data"]
+		self._syncthing_cb_version_known(version)
+	
+	def _syncthing_cb_version_known(self, version):
+		"""
+		Called when version is recieved from daemon, either by
+		calling /rest/version or from X-Syncthing-Version header.
+		"""
 		if self._my_id != None:
 			node = self._get_node_data(self._my_id)
 			if version != node["version"]:
