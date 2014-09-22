@@ -703,7 +703,6 @@ class Daemon(GObject.GObject, TimerManager):
 				print >>sys.stderr, "Warning: My ID was changed on the fly"
 			self._my_id = data["myID"]
 			self.emit('my-id-changed', self._my_id)
-			print data[HTTP_HEADERS]
 			version = get_header(data[HTTP_HEADERS], "X-Syncthing-Version")
 			if version:
 				self._syncthing_cb_version_known(version)

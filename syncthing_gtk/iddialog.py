@@ -41,7 +41,7 @@ class IDDialog(object):
 
 	def load_data(self):
 		""" Loads QR code from Syncthing daemon """
-		uri = "%s/qr/%s" % (self.app.daemon.get_webui_url(), self.node_id)
+		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.node_id)
 		io = Gio.file_new_for_uri(uri)
 		io.load_contents_async(None, self.cb_syncthing_qr)
 	
