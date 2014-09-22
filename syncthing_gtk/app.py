@@ -22,6 +22,7 @@ COLOR_REPO				= "#9246B1"
 COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_SCANNING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
+COLOR_REPO_STOPPED		= "#87000B"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
 # Infobar position
@@ -185,6 +186,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("repo-sync-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
 		self.daemon.connect("repo-scan-started", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_SCANNING, _("Scanning"))
 		self.daemon.connect("repo-scan-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
+		self.daemon.connect("repo-stopped", self.cb_syncthing_repo_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 	
 	def start_deamon(self):
@@ -276,8 +278,11 @@ class App(Gtk.Application, TimerManager):
 		if "Unexpected repository ID" in message:
 			# Handled by event, don't display twice
 			return
+		severity = Gtk.MessageType.WARNING
+		if "Stopping repo" in message:
+			severity = Gtk.MessageType.ERROR
 		self.error_messages.add(message)
-		self.show_error_box(RIBar(message, Gtk.MessageType.WARNING))
+		self.show_error_box(RIBar(message, severity))
 	
 	def cb_syncthing_repo_rejected(self, daemon, nid, rid):
 		if (nid, rid) in self.error_messages:
@@ -417,6 +422,17 @@ class App(Gtk.Application, TimerManager):
 			repo.set_color_hex(color)
 			repo.set_status(text, percentage)
 			self.set_status(True)
+	
+	def cb_syncthing_repo_stopped(self, daemon, rid, message):
+		if rid in self.repos:	# Should be always
+			repo = self.repos[rid]
+			repo.set_color_hex(COLOR_REPO_STOPPED)
+			repo.set_status(_("Stopped"), 0)
+			# Color, theme-based icon is used here. It's intentional and
+			# supposed to draw attention
+			repo.add_value("error", "dialog-error", _("Error"), message)
+			self["repolist"].show_all()
+
 	
 	def set_status(self, is_connected):
 		""" Sets icon and text on first line of popup menu """

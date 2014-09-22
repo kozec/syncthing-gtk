@@ -311,7 +311,12 @@ class InfoBox(Gtk.Container):
 	
 	def add_value(self, key, icon, title, value):
 		""" Adds new line with provided properties """
-		wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
+		if "." in icon:
+			# Icon is filename
+			wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
+		else:
+			# Icon is theme icon name
+			wIcon = Gtk.Image.new_from_icon_name(icon, 1)
 		wTitle, wValue = Gtk.Label(), Gtk.Label()
 		self.value_widgets[key] = wValue
 		self.set_value(key, value)

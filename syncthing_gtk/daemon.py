@@ -143,6 +143,14 @@ class Daemon(GObject.GObject, TimerManager):
 			Emited after repository scan is finished
 				id:		id of repo
 		
+		repo-stopped (id, message):
+			Emited when repository enters 'stopped' state.
+			No 'repo-sync', 'repo-sync-progress' and 'repo-scan-started'
+			events are emitted after repo enters this state, until
+			reconnect() is called.
+				id:			id of repo
+				message:	error message
+		
 		item-started (repo_id, filename, time):
 			Emited when synchronization of file starts
 				repo_id:	id of repo that contains file
@@ -191,6 +199,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"repo-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"repo-stopped"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
@@ -221,6 +230,10 @@ class Daemon(GObject.GObject, TimerManager):
 		self._refresh_interval = 1 # seconds
 		# syncing_repos holds set of repos that are being synchronized
 		self._syncing_repos = set()
+		# stopped_repos holds set of repos in 'stopped' state
+		# No 'repo-sync', 'repo-sync-progress' and 'repo-scan-started'
+		# events are emitted after repo enters this state
+		self._stopped_repos = set()
 		# syncing_nodes does same thing, only for nodes
 		self._syncing_nodes = set()
 		# and once again, for repos in 'Scanning' state
@@ -705,6 +718,10 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _syncthing_cb_repo_data(self, data, rid):
 		state = data['state']
+		if len(data['invalid'].strip()) > 0:
+			if not rid in self._stopped_repos:
+				self._stopped_repos.add(rid)
+				self.emit("repo-stopped", rid, data["invalid"])
 		self.emit('repo-data-changed', rid, data)
 		if state == "syncing":
 			p = 0.0
@@ -794,24 +811,28 @@ class Daemon(GObject.GObject, TimerManager):
 		recheck = False
 		if state != "syncing" and rid in self._syncing_repos:
 			self._syncing_repos.discard(rid)
-			self.emit("repo-sync-finished", rid)
+			if not rid in self._stopped_repos:
+				self.emit("repo-sync-finished", rid)
 		if state != "scanning" and rid in self._scanning_repos:
 			self._scanning_repos.discard(rid)
-			self.emit("repo-scan-finished", rid)
+			if not rid in self._stopped_repos:
+				self.emit("repo-scan-finished", rid)
 		if state == "syncing":
-			if rid in self._syncing_repos:
-				self.emit("repo-sync-progress", rid, progress)
-			else:
-				self._syncing_repos.add(rid)
-				self.emit("repo-sync-started", rid)
-			recheck = True
+			if not rid in self._stopped_repos:
+				if rid in self._syncing_repos:
+					self.emit("repo-sync-progress", rid, progress)
+				else:
+					self._syncing_repos.add(rid)
+					self.emit("repo-sync-started", rid)
+				recheck = True
 		elif state == "scanning":
-			if rid in self._scanning_repos:
-				self.emit("repo-scan-progress", rid)
-			else:
-				self._scanning_repos.add(rid)
-				self.emit("repo-scan-started", rid)
-			recheck = True
+			if not rid in self._stopped_repos:
+				if rid in self._scanning_repos:
+					self.emit("repo-scan-progress", rid)
+				else:
+					self._scanning_repos.add(rid)
+					self.emit("repo-scan-started", rid)
+				recheck = True
 		return recheck
 	
 	def _on_event(self, e):
@@ -872,6 +893,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._my_id = None
 		self._connected = False
 		self._syncing_repos = set()
+		self._stopped_repos = set()
 		self._syncing_nodes = set()
 		self._scanning_repos = set()
 		self._needs_update = set()
