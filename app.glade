@@ -154,6 +154,18 @@
 	</child>
 	
 	<child>
+		<object class="GtkImageMenuItem" id="menu-about">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label">gtk-about</property>
+			<property name="always_show_image">True</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<signal name="activate" handler="cb_about" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
 		<object class="GtkImageMenuItem" id="menu-exit">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -451,6 +463,18 @@
 			<property name="use_underline">True</property>
 			<property name="image">menu-si-webui-image</property>
 			<signal name="activate" handler="cb_menu_webui" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-about">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label">gtk-about</property>
+			<property name="always_show_image">True</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<signal name="activate" handler="cb_about" swapped="no"/>
 		</object>
 	</child>
 	

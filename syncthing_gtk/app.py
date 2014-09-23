@@ -709,6 +709,9 @@ class App(Gtk.Application, TimerManager):
 				self.process.kill()
 		self.quit()
 	
+	def cb_about(self, *a):
+		AboutDialog(self).show(self["window"])
+	
 	def cb_delete_event(self, *e):
 		# Hide main window
 		self.hide()
