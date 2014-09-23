@@ -174,6 +174,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("my-id-changed", self.cb_syncthing_my_id_changed)
 		self.daemon.connect("node-added", self.cb_syncthing_node_added)
 		self.daemon.connect("node-data-changed", self.cb_syncthing_node_data_changed)
+		self.daemon.connect("last-seen-changed", self.cb_syncthing_last_seen_changed)
 		self.daemon.connect("node-connected", self.cb_syncthing_node_state_changed, True)
 		self.daemon.connect("node-disconnected", self.cb_syncthing_node_state_changed, False)
 		self.daemon.connect("node-sync-started", self.cb_syncthing_node_sync_progress)
@@ -366,18 +367,34 @@ class App(Gtk.Application, TimerManager):
 			node['dl_rate'] = "%sps (%s)" % (sizeof_fmt(dl_rate), sizeof_fmt(bytes_in))
 			node['up_rate'] = "%sps (%s)" % (sizeof_fmt(up_rate), sizeof_fmt(bytes_out))
 	
+	def cb_syncthing_last_seen_changed(self, daemon, nid, dt):
+		if nid in self.nodes:	# Should be always
+			node = self.nodes[nid]
+			if dt is None:
+				node['last-seen'] = _("Never")
+			else:
+				dtf = dt.strftime("%Y-%m-%d %H:%M")
+				node['last-seen'] = str(dtf)
+	
 	def cb_syncthing_node_state_changed(self, daemon, nid, connected):
-		# Update color & header
 		if nid in self.nodes:	# Should be always
 			node = self.nodes[nid]
 			if node["connected"] != connected:
 				node["connected"] = connected
 				if connected:
+					# Update color & header
 					node.set_status(_("Connected"))
 					node.set_color_hex(COLOR_NODE_CONNECTED)
+					# Update visible values
+					node.show_values("sync", "dl.rate", "up.rate", "version")
+					node.hide_values("last-seen")
 				else:
+					# Update color & header
 					node.set_status(_("Disconnected"))
 					node.set_color_hex(COLOR_NODE)
+					# Update visible values
+					node.hide_values("sync", "dl.rate", "up.rate", "version")
+					node.show_values("last-seen")
 	
 	def cb_syncthing_node_sync_progress(self, daemon, node_id, sync):
 		if node_id in self.nodes:
@@ -431,8 +448,7 @@ class App(Gtk.Application, TimerManager):
 			# Color, theme-based icon is used here. It's intentional and
 			# supposed to draw attention
 			repo.add_value("error", "dialog-error", _("Error"), message)
-			self["repolist"].show_all()
-
+			repo.show_value('error')
 	
 	def set_status(self, is_connected):
 		""" Sets icon and text on first line of popup menu """
@@ -624,11 +640,12 @@ class App(Gtk.Application, TimerManager):
 			name = id.split("-")[0]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("address",	"address.png",	_("Address"),			"?")
-		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%")
+		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
 		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
-		box.add_value("dl.rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
-		box.add_value("up.rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
-		box.add_value("version",	"version.png",	_("Version"),			"?")
+		box.add_value("dl.rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)", visible=False)
+		box.add_value("up.rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)", visible=False)
+		box.add_value("version",	"version.png",	_("Version"),			"?", visible=False)
+		box.add_value('last-seen',	"clock.png",	_("Last Seen"),			_("Never"))
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("connected", False)
 		box.add_hidden_value("completion", {})

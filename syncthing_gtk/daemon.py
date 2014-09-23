@@ -18,6 +18,9 @@ import json, os, sys, time
 # REST requests; Anything goes, as long as it isn't string
 HTTP_HEADERS = int(65513)
 
+# Last-seen values before this date are translated to never
+NEVER = datetime(1971, 1, 1, 1, 1, 1, tzinfo=tz.tzlocal())
+
 class Daemon(GObject.GObject, TimerManager):
 	"""
 	Object for interacting with syncthing daemon.
@@ -100,6 +103,12 @@ class Daemon(GObject.GObject, TimerManager):
 				up_rate:	upload rate
 				bytes_in:	total number of bytes downloaded
 				bytes_out:	total number of bytes uploaded
+		
+		last-seen-changed (id, last_seen)
+			Emited when daemon reported 'last seen' value for node changes
+			or when is this value recieved for first time
+				id:			id of node
+				last_seen:	datetime object or None, if node was never seen
 		
 		node-sync-started (id, progress):
 			Emited after node synchronization is started
@@ -192,6 +201,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"node-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"node-discovered"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
 			b"node-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
+			b"last-seen-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"node-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"node-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"node-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -250,6 +260,9 @@ class Daemon(GObject.GObject, TimerManager):
 		self._node_data = {}
 		# repo_nodes stores list of nodes assigned to repository
 		self._repo_nodes = {}
+		# last_seen holds last_seen value for each repo, preventing firing
+		# last-seen-changed event with same values twice
+		self._last_seen = {}
 		# last_error_time is used to discard repeating errors
 		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1, tzinfo=tz.tzlocal())
 		# Epoch is incereased when reconnect() method is called; It is
@@ -577,6 +590,10 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Request new events from syncthing daemon """
 		self._rest_request("events?since=%s" % self.last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
 	
+	def _request_last_seen(self, *a):
+		""" Request 'last seen' values for all nodes """
+		self._rest_request("stats/node", self._syncthing_cb_last_seen, lambda *a: True)
+	
 	### Callbacks ###
 	
 	def _syncthing_cb_shutdown(self, data, reason):
@@ -670,7 +687,16 @@ class Daemon(GObject.GObject, TimerManager):
 				node["bytes_in"], node["bytes_out"])
 	
 		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections)
-		
+	
+	def _syncthing_cb_last_seen(self, data):
+		for nid in data:
+			if nid != HTTP_HEADERS:
+				t = parsetime(data[nid]["LastSeen"])
+				if t < NEVER: t = None
+				if not nid in self._last_seen or self._last_seen[nid] != t:
+					self._last_seen[nid] = t
+					self.emit('last-seen-changed', nid, t)
+	
 	def _syncthing_cb_completion(self, data, nid, rid):
 		if "completion" in data:
 			# Store acquired value
@@ -786,6 +812,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
 			self._rest_request("connections", self._syncthing_cb_connections)
 			self._rest_request("system", self._syncthing_cb_system)
+			self._request_last_seen()
 			self.check_config()
 	
 	def _syncthing_cb_config_error(self, exception, command):
@@ -882,6 +909,7 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "NodeDisconnected":
 			nid = e["data"]["id"]
 			self.emit("node-disconnected", nid)
+			self._request_last_seen()
 		elif eType == "NodeDiscovered":
 			nid = e["data"]["node"]
 			addresses = e["data"]["addrs"]
@@ -925,6 +953,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._needs_update = set()
 		self._node_data = {}
 		self._repo_nodes = {}
+		self._last_seen = {}
 		self.cancel_all()
 		self._epoch += 1
 		GLib.idle_add(self._request_config)		
