@@ -30,3 +30,6 @@ class AboutDialog(object):
 		self.builder.add_from_file(os.path.join(self.app.gladepath, "about.glade"))
 		self.builder.connect_signals(self)
 		self.dialog = self.builder.get_object("dialog")
+	
+	def on_dialog_response(self, *a):
+		self.close()
