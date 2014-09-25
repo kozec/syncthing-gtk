@@ -271,9 +271,8 @@ class EditorDialog(GObject.GObject):
 			else:
 				if self.mode == "repo-edit":
 					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
-					self.checks = {
-						"vDirectory" : self.check_path
-						}
+					self.checks = {}
+					self["vDirectory"].set_sensitive(False)
 				elif self.mode == "node-edit":
 					self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
 				elif self.mode == "daemon-settings":
