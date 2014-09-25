@@ -21,7 +21,7 @@ class AboutDialog(object):
 		self.dialog.show_all()
 	
 	def close(self):
-		self.dialog.hide()
+		self.dialog.set_visible(False)
 		self.dialog.destroy()
 	
 	def setup_widgets(self):
