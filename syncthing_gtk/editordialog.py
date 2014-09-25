@@ -37,6 +37,7 @@ class EditorDialog(GObject.GObject):
 			],
 		"node-edit" : [
 			"vNodeID", "vName", "vAddresses", "vCompression", "vRepos",
+			"vIntroducer",
 			],
 		"daemon-settings" : [
 			"vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
@@ -531,7 +532,7 @@ class EditorDialog(GObject.GObject):
 					))
 			elif self.mode == "node-edit":
 				box = self.app.show_node(self.get_value("NodeID"), self.get_value("Name"),
-					self.get_value("Compression"))
+					self.get_value("Compression"), self.get_value("Introducer"))
 			# Gray background for new stuff
 			if not box is None:
 				box.set_color_hex(COLOR_NEW)

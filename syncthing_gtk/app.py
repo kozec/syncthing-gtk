@@ -360,7 +360,7 @@ class App(Gtk.Application, TimerManager):
 				node["announce"] = _("offline")
 	
 	def cb_syncthing_node_added(self, daemon, nid, name, data):
-		self.show_node(nid, name, data["Compression"])
+		self.show_node(nid, name, data["Compression"], data["Introducer"])
 	
 	def cb_syncthing_node_data_changed(self, daemon, nid, address, client_version,
 			dl_rate, up_rate, bytes_in, bytes_out):
@@ -640,7 +640,7 @@ class App(Gtk.Application, TimerManager):
 		self.repos[id] = box
 		return box
 	
-	def show_node(self, id, name, use_compression):
+	def show_node(self, id, name, use_compression, introducer):
 		if name in (None, ""):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
@@ -650,6 +650,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
 		box.add_value("dl.rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)", visible=False)
 		box.add_value("up.rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)", visible=False)
+		box.add_value("introducer",	"thumb_up.png",	_("Introducer"),		_("Yes") if introducer else _("No"))
 		box.add_value("version",	"version.png",	_("Version"),			"?", visible=False)
 		box.add_value('last-seen',	"clock.png",	_("Last Seen"),			_("Never"))
 		box.add_hidden_value("id", id)
