@@ -476,15 +476,6 @@ class EditorDialog(GObject.GObject):
 		# Post configuration back to daemon
 		self["editor"].set_sensitive(False)
 		self.post_config()
-		# Show some changes directly
-		if self.mode == "node-edit" and self.id in self.app.nodes:
-			name = self.values["Name"]
-			node = self.app.nodes[self.id]
-			if name in (None, ""):
-				# Show first block from ID if name is unset
-				name = self.id.split("-")[0]
-			node.set_title(name)
-			node.set_value("compress", _("Yes") if self.values["Compression"] else _("No"))
 	
 	def cb_format_value_s(self, spinner):
 		""" Formats spinner value  """

@@ -30,6 +30,10 @@ class Daemon(GObject.GObject, TimerManager):
 			Emited when daemon synchronization gets out of sync and
 			daemon needs to be restarted.
 		
+		config-saved ()
+			Emited when daemon saves configuration without need for
+			restarting.
+		
 		connected ()
 			Emited when connection to daemon is initiated, before
 			configuration is loaded and parsed.
@@ -189,6 +193,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	__gsignals__ = {
 			b"config-out-of-sync"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"config-saved"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
@@ -265,6 +270,8 @@ class Daemon(GObject.GObject, TimerManager):
 		self._last_seen = {}
 		# last_error_time is used to discard repeating errors
 		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1, tzinfo=tz.tzlocal())
+		# last_id is id of last event recieved from daemon
+		self._last_id = 0
 		# Epoch is incereased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
 		self._epoch = 1
@@ -300,7 +307,6 @@ class Daemon(GObject.GObject, TimerManager):
 							.getElementsByTagName("gui")[0] \
 							.getElementsByTagName("address")[0] \
 							.firstChild.nodeValue
-			self._last_id = 0
 			# TODO: https?
 		except Exception, e:
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
@@ -588,7 +594,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _request_events(self, *a):
 		""" Request new events from syncthing daemon """
-		self._rest_request("events?since=%s" % self.last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
+		self._rest_request("events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
 	
 	def _request_last_seen(self, *a):
 		""" Request 'last seen' values for all nodes """
@@ -608,9 +614,15 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Called when event list is pulled from syncthing daemon """
 		if type(events) == list:	# Ignore invalid data
 			if len(events) > 0:
+				this_epoch = self._epoch
 				for e in events:
-					self._on_event(e)
-				self.last_id = events[-1]["id"]
+					if e["id"] > self._last_id:
+						self._on_event(e)
+						if this_epoch != self._epoch:
+							# Restarted durring last event handler
+							self._last_id = events[-1]["id"]
+							return
+				self._last_id = events[-1]["id"]
 				
 				for rid in self._needs_update:
 					self._request_repo_data(rid)
@@ -934,6 +946,8 @@ class Daemon(GObject.GObject, TimerManager):
 			if (not rid in self._syncing_nodes) and (not rid in self._scanning_repos):
 				self._needs_update.add(rid)
 			self.emit("item-updated", rid, filename, mtime)
+		elif eType == "ConfigSaved":
+			self.emit("config-saved")
 		else:
 			print "Unhandled event type:", e
 	

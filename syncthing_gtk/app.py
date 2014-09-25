@@ -165,6 +165,7 @@ class App(Gtk.Application, TimerManager):
 			sys.exit(1)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
+		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)
 		self.daemon.connect("connected", self.cb_syncthing_connected)
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
 		self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
@@ -269,6 +270,11 @@ class App(Gtk.Application, TimerManager):
 			r.connect("response", self.cb_infobar_response)
 			r.show()
 			r.set_reveal_child(True)
+	
+	def cb_syncthing_config_saved(self, *a):
+		# Ask daemon to reconnect and reload entire UI
+		self.cancel_all() # timers
+		self.daemon.reconnect()
 	
 	def cb_syncthing_error(self, daemon, message):
 		if message in self.error_messages:
