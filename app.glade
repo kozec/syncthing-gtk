@@ -291,6 +291,17 @@
 		</object>
 	</child>
 	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-edit-ignored">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Edit _Ingnore Patterns</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-popup-edit-ignored-image</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_edit_ignored" swapped="no"/>
+		</object>
+	</child>
+	<child>
 		<object class="GtkImageMenuItem" id="menu-popup-rescan-repo">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -587,6 +598,13 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="stock">gtk-refresh</property>
+</object>
+
+<object class="GtkImage" id="menu-popup-edit-ignored-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="pixbuf">icons/eye.png</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-show-id-image">

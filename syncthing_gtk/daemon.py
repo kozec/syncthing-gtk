@@ -997,6 +997,19 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		self._rest_post("config", config, self._syncthing_cb_config_written, self._syncthing_cb_config_write_failed, callback, error_callback, calbackdata)
 	
+	def read_stignore(self, repo_id, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously reads .stignore data from from daemon.
+		Calls callback(text) with .stignore content on success,
+		error_callback(exception) on failure
+		"""
+		def r_filter(data):
+			if "ignore" in data and not data["ignore"] is None:
+				callback("\n".join(data["ignore"]).strip(" \t\n"))
+			else:
+				callback("")
+		self._rest_request("ignores?repo=%s" % (repo_id,), r_filter, error_callback, *calbackdata)
+	
 	def restart(self):
 		"""
 		Asks daemon to restart. If sucesfull, call will cause
