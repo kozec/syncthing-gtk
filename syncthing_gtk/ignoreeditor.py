@@ -29,7 +29,7 @@ class IgnoreEditor(object):
 			self["dialog"].set_transient_for(parent)
 		self["dialog"].show_all()
 	
-	def close(self):
+	def close(self, *a):
 		self["dialog"].set_visible(False)
 		self["dialog"].destroy()
 	
@@ -61,7 +61,13 @@ class IgnoreEditor(object):
 		self.close()
 		
 	def btSave_clicked_cb(self, *a):
-		pass
+		start_iter = self["tbPatterns"].get_start_iter()
+		end_iter = self["tbPatterns"].get_end_iter()
+		text = self["tbPatterns"].get_text(start_iter, end_iter, True)
+		self["tvPatterns"].set_sensitive(False)
+		self["btSave"].set_sensitive(False)
+		# TODO: Expect error and create appropriate callback for it
+		self.app.daemon.write_stignore(self.rid, text, self.close, self.close)
 	
 	def load(self):
 		self.app.daemon.read_stignore(self.rid, self.cb_data_loaded, self.cb_data_failed)
@@ -74,6 +80,6 @@ class IgnoreEditor(object):
 	
 	def cb_data_loaded(self, text):
 		self["tbPatterns"].set_text(text)
-		self["tvPatterns"].set_sensitive(True)
 		self["tvPatterns"].grab_focus()
+		self["tvPatterns"].set_sensitive(True)
 		self["btSave"].set_sensitive(True)
