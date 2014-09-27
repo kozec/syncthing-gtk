@@ -171,7 +171,7 @@ class EditorDialog(GObject.GObject):
 			return self.values[key]
 		else:
 			print self.values
-			raise KeyError(key)
+			raise ValueNotFoundError(key)
 	
 	def set_value(self, key, value):
 		""" Stores value to configuration, handling some special cases """
@@ -205,7 +205,7 @@ class EditorDialog(GObject.GObject):
 		elif key in self.values:
 			self.values[key] = value
 		else:
-			raise KeyError(key)	
+			raise ValueNotFoundError(key)	
 	
 	def create_dicts(self, parent, keys):
 		"""
@@ -292,46 +292,50 @@ class EditorDialog(GObject.GObject):
 			w = self.find_widget_by_id(key)
 			self.widget_to_id[w] = key
 			if not key is None:
-				if isinstance(w, Gtk.SpinButton):
-					w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
-				elif isinstance(w, Gtk.Entry):
-					w.set_text(str(self.get_value(key.lstrip("v"))))
-				elif isinstance(w, Gtk.ComboBox):
-					val = self.get_value(key.lstrip("v"))
-					m = w.get_model()
-					for i in xrange(0, len(m)):
-						if val == str(m[i][0]).strip():
-							w.set_active(i)
-							break
-				elif isinstance(w, Gtk.CheckButton):
-					w.set_active(self.get_value(key.lstrip("v")))
-				elif key == "vNodes":
-					# Very special case
-					nids = [ n["NodeID"] for n in self.get_value("Nodes") ]
-					for node in self.app.nodes.values():
-						if node["id"] != self.app.daemon.get_my_id():
-							b = Gtk.CheckButton(node.get_title(), False)
-							b.set_tooltip_text(node["id"])
-							self["vNodes"].pack_end(b, False, False, 0)
-							b.set_active(node["id"] in nids)
-					self["vNodes"].show_all()
-				elif key == "vRepos":
-					# Even more special case
-					rids = [ ]
-					# Get list of repos that share this node
-					for r in self.config["Repositories"]:
-						for n in r["Nodes"]:
-							if n["NodeID"] == self.id:
-								rids.append(r["ID"])
-					# Create CheckButtons
-					for repo in reversed(sorted(self.app.repos.values(), key=lambda x : x["id"])):
-						b = Gtk.CheckButton(repo["folder"], False)
-						b.set_tooltip_text(repo["id"])
-						self["vRepos"].pack_end(b, False, False, 0)
-						b.set_active(repo["id"] in rids)
-					self["vRepos"].show_all()
-				else:
-					print w
+				try:
+					if isinstance(w, Gtk.SpinButton):
+						w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
+					elif isinstance(w, Gtk.Entry):
+						w.set_text(str(self.get_value(key.lstrip("v"))))
+					elif isinstance(w, Gtk.ComboBox):
+						val = self.get_value(key.lstrip("v"))
+						m = w.get_model()
+						for i in xrange(0, len(m)):
+							if val == str(m[i][0]).strip():
+								w.set_active(i)
+								break
+					elif isinstance(w, Gtk.CheckButton):
+						w.set_active(self.get_value(key.lstrip("v")))
+					elif key == "vNodes":
+						# Very special case
+						nids = [ n["NodeID"] for n in self.get_value("Nodes") ]
+						for node in self.app.nodes.values():
+							if node["id"] != self.app.daemon.get_my_id():
+								b = Gtk.CheckButton(node.get_title(), False)
+								b.set_tooltip_text(node["id"])
+								self["vNodes"].pack_end(b, False, False, 0)
+								b.set_active(node["id"] in nids)
+						self["vNodes"].show_all()
+					elif key == "vRepos":
+						# Even more special case
+						rids = [ ]
+						# Get list of repos that share this node
+						for r in self.config["Repositories"]:
+							for n in r["Nodes"]:
+								if n["NodeID"] == self.id:
+									rids.append(r["ID"])
+						# Create CheckButtons
+						for repo in reversed(sorted(self.app.repos.values(), key=lambda x : x["id"])):
+							b = Gtk.CheckButton(repo["folder"], False)
+							b.set_tooltip_text(repo["id"])
+							self["vRepos"].pack_end(b, False, False, 0)
+							b.set_active(repo["id"] in rids)
+						self["vRepos"].show_all()
+					else:
+						print w
+				except ValueNotFoundError:
+					# Value not found, probably old daemon version
+					w.set_sensitive(False)
 		self.update_special_widgets()
 		# Enable dialog
 		self["editor"].set_sensitive(True)
@@ -419,54 +423,58 @@ class EditorDialog(GObject.GObject):
 		for key in self.VALUES[self.mode]:
 			w = self.find_widget_by_id(key)
 			if not key is None:
-				if isinstance(w, Gtk.SpinButton):
-					self.set_value(key.strip("v"), int(w.get_adjustment().get_value()))
-				elif isinstance(w, Gtk.Entry):
-					self.set_value(key.strip("v"), w.get_text())
-				elif isinstance(w, Gtk.CheckButton):
-					self.set_value(key.strip("v"), w.get_active())
-				elif isinstance(w, Gtk.ComboBox):
-					self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
-				elif key == "vNodes":	# Still very special case
-					nodes = [ {
-							   "Addresses" : None,
-							   "NodeID" : b.get_tooltip_text(),
-							   "Name" : "",
-							   "CertName" : "",
-							   "Compression" : False
-								}
-								for b in self["vNodes"].get_children()
-								if b.get_active()
-							]
-					self.set_value("Nodes", nodes)
-				elif key == "vRepos":	# And this one is special too
-					# Generate dict of { repo_id : bool } where bool is True if
-					# repo should be shared with this node
-					repos = {}
-					for b in self["vRepos"].get_children():
-						repos[b.get_tooltip_text()] = b.get_active()
-					# Go over all Repositories/<repo>/Nodes/<node> keys in config
-					# and set them as needed
-					nid = self.get_value("NodeID")
-					for r in self.config["Repositories"]:
-						rid = r["ID"]
-						found = False
-						for n in r["Nodes"]:
-							if n["NodeID"] == nid:
-								if not rid in repos or not repos[rid]:
-									# Remove this /<node> key (unshare repo with node)
-									r["Nodes"].remove(n)
-									break
-								found = True
-						if not found and rid in repos and repos[rid]:
-							# Add new /<node> key (share repo with node)
-							r["Nodes"].append({
-							   "Addresses" : None,
-							   "NodeID" : nid,
-							   "Name" : "",
-							   "CertName" : "",
-							   "Compression" : False
-								})
+				try:
+					if isinstance(w, Gtk.SpinButton):
+						self.set_value(key.strip("v"), int(w.get_adjustment().get_value()))
+					elif isinstance(w, Gtk.Entry):
+						self.set_value(key.strip("v"), w.get_text())
+					elif isinstance(w, Gtk.CheckButton):
+						self.set_value(key.strip("v"), w.get_active())
+					elif isinstance(w, Gtk.ComboBox):
+						self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
+					elif key == "vNodes":	# Still very special case
+						nodes = [ {
+								   "Addresses" : None,
+								   "NodeID" : b.get_tooltip_text(),
+								   "Name" : "",
+								   "CertName" : "",
+								   "Compression" : False
+									}
+									for b in self["vNodes"].get_children()
+									if b.get_active()
+								]
+						self.set_value("Nodes", nodes)
+					elif key == "vRepos":	# And this one is special too
+						# Generate dict of { repo_id : bool } where bool is True if
+						# repo should be shared with this node
+						repos = {}
+						for b in self["vRepos"].get_children():
+							repos[b.get_tooltip_text()] = b.get_active()
+						# Go over all Repositories/<repo>/Nodes/<node> keys in config
+						# and set them as needed
+						nid = self.get_value("NodeID")
+						for r in self.config["Repositories"]:
+							rid = r["ID"]
+							found = False
+							for n in r["Nodes"]:
+								if n["NodeID"] == nid:
+									if not rid in repos or not repos[rid]:
+										# Remove this /<node> key (unshare repo with node)
+										r["Nodes"].remove(n)
+										break
+									found = True
+							if not found and rid in repos and repos[rid]:
+								# Add new /<node> key (share repo with node)
+								r["Nodes"].append({
+								   "Addresses" : None,
+								   "NodeID" : nid,
+								   "Name" : "",
+								   "CertName" : "",
+								   "Compression" : False
+									})
+				except ValueNotFoundError:
+					# Value not found, probably old daemon version
+					pass
 		# Add new dict to configuration (edited dict is already there)
 		if self.is_new:
 			if self.mode == "repo-edit":
@@ -572,3 +580,5 @@ class EditorDialog(GObject.GObject):
 					l = child.get_children()[0]	# Label in checkbox
 					l.set_markup("<b>%s</b>" % (l.get_label()))
 					child.set_active(True)
+
+class ValueNotFoundError(KeyError): pass

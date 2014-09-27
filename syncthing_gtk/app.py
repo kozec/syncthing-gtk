@@ -360,7 +360,10 @@ class App(Gtk.Application, TimerManager):
 				node["announce"] = _("offline")
 	
 	def cb_syncthing_node_added(self, daemon, nid, name, data):
-		self.show_node(nid, name, data["Compression"], data["Introducer"])
+		self.show_node(nid, name,
+			data["Compression"],
+			data["Introducer"] if "Introducer" in data else False
+		)
 	
 	def cb_syncthing_node_data_changed(self, daemon, nid, address, client_version,
 			dl_rate, up_rate, bytes_in, bytes_out):
