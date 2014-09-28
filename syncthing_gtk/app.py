@@ -766,6 +766,15 @@ class App(Gtk.Application, TimerManager):
 		# Editing repository
 		self.open_editor("repo-edit", self.rightclick_box["id"])
 	
+	def cb_menu_popup_edit_ignored(self, *a):
+		""" Handler for 'edit ignore patterns' context menu item """
+		e = IgnoreEditor(self,
+			self.rightclick_box["id"],
+			self.rightclick_box["folder"],
+			)
+		e.load()
+		e.show(self["window"])
+	
 	def cb_menu_popup_edit_node(self, *a):
 		""" Handler for other 'edit' context menu item """
 		# Editing node

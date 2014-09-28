@@ -850,19 +850,6 @@ class Daemon(GObject.GObject, TimerManager):
 				# Not in sync...
 				self.emit("config-out-of-sync")
 	
-	def _syncthing_cb_config_written(self, data, callback, errorcallback, calbackdata):
-		self.check_config()
-		if calbackdata == None:
-			callback()
-		else:
-			callback(*calbackdata)
-	
-	def _syncthing_cb_config_write_failed(self, exception, command, data, callback, errorcallback, calbackdata):
-		if errorcallback == None:
-			errorcallback(exception)
-		else:
-			errorcallback(exception, *calbackdata)
-	
 	def _syncthing_cb_rescan_error(self, exception, command, data, repo_id):
 		print >>sys.stderr, "Warning: Failed to rescan repository %s: %s" % (repo_id, exception.response)
 		self.emit("error", "Warning: Failed to rescan repository %s: %s" % (repo_id, exception.response))
@@ -991,11 +978,34 @@ class Daemon(GObject.GObject, TimerManager):
 	def write_config(self, config, callback, error_callback=None, *calbackdata):
 		"""
 		Asynchronously POSTs new configuration to daemon. Calls
-		callback() with data decoded from json on success,
-		error_callback(exception) on failure.
+		callback() on success, error_callback(exception) on failure.
 		Should cause 'config-out-of-sync' event to be raised ASAP.
 		"""
-		self._rest_post("config", config, self._syncthing_cb_config_written, self._syncthing_cb_config_write_failed, callback, error_callback, calbackdata)
+		def run_before(data, *a):
+			self.check_config()
+			callback(*calbackdata)
+		self._rest_post("config", config, run_before, error_callback, *calbackdata)
+	
+	def read_stignore(self, repo_id, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously reads .stignore data from from daemon.
+		Calls callback(text) with .stignore content on success,
+		error_callback(exception) on failure
+		"""
+		def r_filter(data, *a):
+			if "ignore" in data and not data["ignore"] is None:
+				callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
+			else:
+				callback("", *a)
+		self._rest_request("ignores?repo=%s" % (repo_id,), r_filter, error_callback, *calbackdata)
+	
+	def write_stignore(self, repo_id, text, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously POSTs .stignore to daemon. Calls callback()
+		with on success, error_callback(exception) on failure.
+		"""
+		data = { 'ignore': text.split("\n") }
+		self._rest_post("ignores?repo=%s" % (repo_id,), data, callback, error_callback, *calbackdata)
 	
 	def restart(self):
 		"""
