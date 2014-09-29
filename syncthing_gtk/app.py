@@ -10,6 +10,7 @@ from gi.repository import Gtk, Gio
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
 from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
+from syncthing_gtk.tools import compare_version
 import os, webbrowser, sys, pprint, re
 
 _ = lambda (a) : a
@@ -242,6 +243,8 @@ class App(Gtk.Application, TimerManager):
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
 			if reason == Daemon.NOT_AUTHORIZED:
 				message = _("Cannot authorize with daemon failed. Please, use WebUI to generate API key or disable password authentication.")
+			elif reason == Daemon.OLD_VERSION:
+				message = _("Your syncthing daemon is too old.\nPlease, upgrade syncthing package at least to version %s and try again.") % (self.daemon.get_min_version(),)
 			else: # Daemon.UNKNOWN
 				message = "%s\n\n%s %s" % (
 						_("Connection to daemon failed. Check your configuration and try again."),
@@ -377,6 +380,9 @@ class App(Gtk.Application, TimerManager):
 			# Update rates
 			node['dl_rate'] = "%sps (%s)" % (sizeof_fmt(dl_rate), sizeof_fmt(bytes_in))
 			node['up_rate'] = "%sps (%s)" % (sizeof_fmt(up_rate), sizeof_fmt(bytes_out))
+		if nid == self.daemon.get_my_id():
+			# "Ingnore Patterns" requires v0.9.18
+			self["menu-popup-edit-ignored"].set_sensitive(compare_version(node["version"], "0.9.18"))
 	
 	def cb_syncthing_last_seen_changed(self, daemon, nid, dt):
 		if nid in self.nodes:	# Should be always

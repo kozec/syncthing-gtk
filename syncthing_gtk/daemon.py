@@ -8,11 +8,14 @@ Class interfacing with syncthing daemon
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager, DEBUG
-from syncthing_gtk.tools import parsetime, get_header
+from syncthing_gtk.tools import parsetime, get_header, compare_version
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
 import json, os, sys, time
+
+# Minimal version supported by Daemon class
+MIN_VERSION = "0.9.8"
 
 # Random constant used as key when adding headers to returned data in
 # REST requests; Anything goes, as long as it isn't string
@@ -244,6 +247,7 @@ class Daemon(GObject.GObject, TimerManager):
 	# Constants for 'reason' parameter of connection-error event
 	REFUSED			= 1
 	NOT_AUTHORIZED	= 2
+	OLD_VERSION		= 3
 	UNKNOWN			= 255
 	
 	def __init__(self):
@@ -777,6 +781,12 @@ class Daemon(GObject.GObject, TimerManager):
 		Called when version is recieved from daemon, either by
 		calling /rest/version or from X-Syncthing-Version header.
 		"""
+		if not compare_version(version, MIN_VERSION):
+			# Syncting version too low. Cancel everything and report error
+			self.cancel_all()
+			self._epoch += 1
+			self.emit("connection-error", Daemon.OLD_VERSION, "")
+			return
 		if self._my_id != None:
 			node = self._get_node_data(self._my_id)
 			if version != node["version"]:
@@ -967,7 +977,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._last_seen = {}
 		self.cancel_all()
 		self._epoch += 1
-		GLib.idle_add(self._request_config)		
+		GLib.idle_add(self._request_config)
 	
 	def check_config(self):
 		"""
@@ -1034,6 +1044,13 @@ class Daemon(GObject.GObject, TimerManager):
 	def syncing(self):
 		""" Returns true if any repo is being synchronized right now  """
 		return len(self._syncing_repos) > 0
+	
+	def get_min_version(self):
+		"""
+		Returns minimal syncthing daemon version that daemon instance
+		can handle.
+		"""
+		return MIN_VERSION
 	
 	def get_syncing_list(self):
 		"""

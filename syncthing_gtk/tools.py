@@ -13,6 +13,7 @@ import re, os
 
 _ = lambda (a) : a
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
+VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
 
 def luhn_b32generate(s):
 	"""
@@ -170,3 +171,30 @@ def check_daemon_running():
 	p = Popen(["killall", "-u", os.environ["USER"], "-q", "-s", "0", "syncthing"])
 	p.communicate()
 	return p.returncode == 0
+
+def parse_version(ver):
+	"""
+	Parses ver as version string, returning integer.
+	Only first 6 components are recognized; If version string uses less
+	than 6 components, it's zero-paded from right (1.0 -> 1.0.0.0.0.0).
+	Maximum recognized value for component is 255.
+	If version string includes non-numeric character, part of string
+	starting with this character is discarded.
+	If version string starts with 'v', 'v' is ignored.
+	"""
+	comps = VERSION_NUMBER.match(ver).group(1).split(".")
+	if comps[0] == "":
+		# Not even single number in version string
+		return 0
+	while len(comps) < 6:
+		comps.append("0")
+	res = 0
+	for i in xrange(0, 6):
+		res += min(255, int(comps[i])) << ((5-i) * 8)
+	return res
+
+def compare_version(a, b):
+	"""
+	Parses a and b as version strings. Rreturns True, if a >= b
+	"""
+	return parse_version(a) >= parse_version(b)
