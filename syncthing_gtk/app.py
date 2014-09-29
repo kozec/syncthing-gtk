@@ -23,6 +23,7 @@ COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_SCANNING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
 COLOR_REPO_STOPPED		= "#87000B"
+COLOR_NEW				= "#A0A0A0"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
 # Infobar position
@@ -183,6 +184,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("node-sync-finished", self.cb_syncthing_node_sync_progress, 1.0)
 		self.daemon.connect("repo-added", self.cb_syncthing_repo_added)
 		self.daemon.connect("repo-data-changed", self.cb_syncthing_repo_data_changed)
+		self.daemon.connect("repo-data-failed", self.cb_syncthing_repo_state_changed, 0.0, COLOR_NEW, "")
 		self.daemon.connect("repo-sync-started", self.cb_syncthing_repo_state_changed, 0.0, COLOR_REPO_SYNCING, _("Syncing"))
 		self.daemon.connect("repo-sync-progress", self.cb_syncthing_repo_state_changed, COLOR_REPO_SYNCING, _("Syncing"))
 		self.daemon.connect("repo-sync-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))

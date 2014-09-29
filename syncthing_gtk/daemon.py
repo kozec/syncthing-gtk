@@ -139,6 +139,12 @@ class Daemon(GObject.GObject, TimerManager):
 				id:		id of repo
 				data:	dict with loaded data
 		
+		repo-data-failed (id):
+			Emited when daemon fails to load repository data
+			(/rest/model call), most likely beacause repo was just
+			added and syncthing daemon needs to be restarted
+				id:		id of repo
+		
 		repo-sync-started (id):
 			Emited after repository synchronization is started
 				id:		id of repo
@@ -212,6 +218,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"node-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"repo-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"repo-data-failed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"repo-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
@@ -577,7 +584,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._rest_request("config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 	
 	def _request_repo_data(self, rid):
-		self._rest_request("model?repo=%s" % (rid,), self._syncthing_cb_repo_data, None, rid)
+		self._rest_request("model?repo=%s" % (rid,), self._syncthing_cb_repo_data, self._syncthing_cb_repo_data_failed, rid)
 	
 	def _request_completion(self, nid, rid=None):
 		"""
@@ -796,6 +803,9 @@ class Daemon(GObject.GObject, TimerManager):
 		else:
 			if self._repo_state_changed(rid, state, 0):
 				self.timer("repo_%s" % rid, self._refresh_interval, self._request_repo_data, rid)
+	
+	def _syncthing_cb_repo_data_failed(self, exception, request, rid):
+		self.emit('repo-data-failed', rid)
 	
 	def _syncthing_cb_config(self, config):
 		"""
