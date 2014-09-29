@@ -14,15 +14,16 @@ import os, webbrowser, sys, pprint, re
 
 _ = lambda (a) : a
 
-COLOR_NODE				= "#9246B1"
-COLOR_NODE_SYNCING		= "#2A89C8"
-COLOR_NODE_CONNECTED	= "#2A89C8"
-COLOR_OWN_NODE			= "#C0C0C0"
+COLOR_DEVICE			= "#9246B1"
+COLOR_DEVICE_SYNCING	= "#2A89C8"
+COLOR_DEVICE_CONNECTED	= "#2A89C8"
+COLOR_OWN_DEVICE		= "#C0C0C0"
 COLOR_REPO				= "#9246B1"
 COLOR_REPO_SYNCING		= "#2A89C8"
 COLOR_REPO_SCANNING		= "#2A89C8"
 COLOR_REPO_IDLE			= "#2AAB61"
 COLOR_REPO_STOPPED		= "#87000B"
+COLOR_REPO_UNKNOWN		= "#A0A0A0"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
 # Infobar position
@@ -34,7 +35,7 @@ FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-
 # Response IDs
 RESPONSE_RESTART		= 256
 RESPONSE_FIX_REPOID		= 257
-RESPONSE_FIX_NEW_NODE	= 258
+RESPONSE_FIX_NEW_device	= 258
 RESPONSE_QUIT			= 260
 RESPONSE_START_DAEMON	= 271
 RESPONSE_SLAIN_DAEMON	= 272
@@ -69,9 +70,9 @@ class App(Gtk.Application, TimerManager):
 		self.widgets = {}
 		self.error_boxes = []
 		self.error_messages = set([])	# Holds set of already displayed error messages
-		self.repos = {}
-		self.nodes = {}
-		self.open_boxes = set([])		# Holds set of expanded node/repo boxes
+		self.folders = {}
+		self.devices = {}
+		self.open_boxes = set([])		# Holds set of expanded device/folder boxes
 		self.sync_animation = 0
 	
 	def do_startup(self, *a):
@@ -170,25 +171,25 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
 		self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
 		self.daemon.connect("error", self.cb_syncthing_error)
-		self.daemon.connect("repo-rejected", self.cb_syncthing_repo_rejected)
-		self.daemon.connect("node-rejected", self.cb_syncthing_node_rejected)
+		self.daemon.connect("folder-rejected", self.cb_syncthing_folder_rejected)
+		self.daemon.connect("device-rejected", self.cb_syncthing_device_rejected)
 		self.daemon.connect("my-id-changed", self.cb_syncthing_my_id_changed)
-		self.daemon.connect("node-added", self.cb_syncthing_node_added)
-		self.daemon.connect("node-data-changed", self.cb_syncthing_node_data_changed)
+		self.daemon.connect("device-added", self.cb_syncthing_device_added)
+		self.daemon.connect("device-data-changed", self.cb_syncthing_device_data_changed)
 		self.daemon.connect("last-seen-changed", self.cb_syncthing_last_seen_changed)
-		self.daemon.connect("node-connected", self.cb_syncthing_node_state_changed, True)
-		self.daemon.connect("node-disconnected", self.cb_syncthing_node_state_changed, False)
-		self.daemon.connect("node-sync-started", self.cb_syncthing_node_sync_progress)
-		self.daemon.connect("node-sync-progress", self.cb_syncthing_node_sync_progress)
-		self.daemon.connect("node-sync-finished", self.cb_syncthing_node_sync_progress, 1.0)
-		self.daemon.connect("repo-added", self.cb_syncthing_repo_added)
-		self.daemon.connect("repo-data-changed", self.cb_syncthing_repo_data_changed)
-		self.daemon.connect("repo-sync-started", self.cb_syncthing_repo_state_changed, 0.0, COLOR_REPO_SYNCING, _("Syncing"))
-		self.daemon.connect("repo-sync-progress", self.cb_syncthing_repo_state_changed, COLOR_REPO_SYNCING, _("Syncing"))
-		self.daemon.connect("repo-sync-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
-		self.daemon.connect("repo-scan-started", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_SCANNING, _("Scanning"))
-		self.daemon.connect("repo-scan-finished", self.cb_syncthing_repo_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
-		self.daemon.connect("repo-stopped", self.cb_syncthing_repo_stopped) 
+		self.daemon.connect("device-connected", self.cb_syncthing_device_state_changed, True)
+		self.daemon.connect("device-disconnected", self.cb_syncthing_device_state_changed, False)
+		self.daemon.connect("device-sync-started", self.cb_syncthing_device_sync_progress)
+		self.daemon.connect("device-sync-progress", self.cb_syncthing_device_sync_progress)
+		self.daemon.connect("device-sync-finished", self.cb_syncthing_device_sync_progress, 1.0)
+		self.daemon.connect("folder-added", self.cb_syncthing_folder_added)
+		self.daemon.connect("folder-data-changed", self.cb_syncthing_folder_data_changed)
+		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_REPO_SYNCING, _("Syncing"))
+		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_REPO_SYNCING, _("Syncing"))
+		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
+		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_REPO_SCANNING, _("Scanning"))
+		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
+		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 	
 	def start_deamon(self):
@@ -282,182 +283,182 @@ class App(Gtk.Application, TimerManager):
 			print >>sys.stderr, "(repeated)", message
 			return
 		print >>sys.stderr, message
-		if "Unexpected repository ID" in message:
+		if "Unexpected folder ID" in message:
 			# Handled by event, don't display twice
 			return
 		severity = Gtk.MessageType.WARNING
-		if "Stopping repo" in message:
+		if "Stopping folder" in message:
 			severity = Gtk.MessageType.ERROR
 		self.error_messages.add(message)
 		self.show_error_box(RIBar(message, severity))
 	
-	def cb_syncthing_repo_rejected(self, daemon, nid, rid):
+	def cb_syncthing_folder_rejected(self, daemon, nid, rid):
 		if (nid, rid) in self.error_messages:
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, rid))
-		node, can_fix = nid, False
-		if nid in self.nodes:
-			node = self.nodes[nid].get_title()
+		device, can_fix = nid, False
+		if nid in self.devices:
+			device = self.devices[nid].get_title()
 			can_fix = True
-		markup = _('Unexpected repository ID "<b>%s</b>" sent from node "<b>%s</b>"; ensure that the '
-					'repository exists and that  this node is selected under "Share With" in the '
-					'repository configuration.') % (rid, node)
+		markup = _('Unexpected folder ID "<b>%s</b>" sent from device "<b>%s</b>"; ensure that the '
+					'folder exists and that  this device is selected under "Share With" in the '
+					'folder configuration.') % (rid, device)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
 			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_REPOID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
-	def cb_syncthing_node_rejected(self, daemon, nid, address):
+	def cb_syncthing_device_rejected(self, daemon, nid, address):
 		address = address.split(":")[0]	# Remove port from address, it's random by default anyway
 		if (nid, address) in self.error_messages:
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Unknown node "<b>%s</b>" is trying to connect from IP "<b>%s</b>"; '
-					'If you just configured this remote node, you can click \'fix\' '
-					'to open Add node dialog.') % (nid, address)
+		markup = _('Unknown device "<b>%s</b>" is trying to connect from IP "<b>%s</b>"; '
+					'If you just configured this remote device, you can click \'fix\' '
+					'to open Add device dialog.') % (nid, address)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
-		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_NODE)
+		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_device)
 		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
-	def cb_syncthing_my_id_changed(self, daemon, node_id):
-		if node_id in self.nodes:
-			node = self.nodes[node_id]
-			# Move my node to top
-			self["nodelist"].reorder_child(node, 0)
+	def cb_syncthing_my_id_changed(self, daemon, device_id):
+		if device_id in self.devices:
+			device = self.devices[device_id]
+			# Move my device to top
+			self["devicelist"].reorder_child(device, 0)
 			# Modify header & color
-			node.set_status("")
-			node.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
-			node.invert_header(True)
-			node.set_color_hex(COLOR_OWN_NODE)
-			self["header"].set_subtitle(node.get_title())
+			device.set_status("")
+			device.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
+			device.invert_header(True)
+			device.set_color_hex(COLOR_OWN_DEVICE)
+			self["header"].set_subtitle(device.get_title())
 			if "server-name" in self:
-				self["server-name"].set_markup("<b>%s</b>" % (node.get_title(),))
+				self["server-name"].set_markup("<b>%s</b>" % (device.get_title(),))
 			# Modify values
-			node.clear_values()
-			node.add_value("ram",		"ram.png",		_("RAM Utilization"),	"")
-			node.add_value("cpu",		"cpu.png",		_("CPU Utilization"),	"")
-			node.add_value("dl_rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
-			node.add_value("up_rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
-			node.add_value("announce",	"announce.png",	_("Announce Server"),	"")
-			node.add_value("version",	"version.png",	_("Version"),			"?")
-			node.show_all()
+			device.clear_values()
+			device.add_value("ram",		"ram.png",		_("RAM Utilization"),	"")
+			device.add_value("cpu",		"cpu.png",		_("CPU Utilization"),	"")
+			device.add_value("dl_rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
+			device.add_value("up_rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
+			device.add_value("announce",	"announce.png",	_("Announce Server"),	"")
+			device.add_value("version",	"version.png",	_("Version"),			"?")
+			device.show_all()
 	
 	def cb_syncthing_system_data(self, daemon, mem, cpu, announce):
-		if self.daemon.get_my_id() in self.nodes:
-			# Update my node display
-			node = self.nodes[self.daemon.get_my_id()]
-			node["ram"] = sizeof_fmt(mem)
-			node["cpu"] = "%3.2f%%" % (cpu)
+		if self.daemon.get_my_id() in self.devices:
+			# Update my device display
+			device = self.devices[self.daemon.get_my_id()]
+			device["ram"] = sizeof_fmt(mem)
+			device["cpu"] = "%3.2f%%" % (cpu)
 			if announce == -1:
-				node["announce"] = _("disabled")
+				device["announce"] = _("disabled")
 			elif announce == 1:
-				node["announce"] = _("Online") 
+				device["announce"] = _("Online") 
 			else:
-				node["announce"] = _("offline")
+				device["announce"] = _("offline")
 	
-	def cb_syncthing_node_added(self, daemon, nid, name, data):
-		self.show_node(nid, name,
+	def cb_syncthing_device_added(self, daemon, nid, name, data):
+		self.show_device(nid, name,
 			data["Compression"],
 			data["Introducer"] if "Introducer" in data else False
 		)
 	
-	def cb_syncthing_node_data_changed(self, daemon, nid, address, client_version,
+	def cb_syncthing_device_data_changed(self, daemon, nid, address, client_version,
 			dl_rate, up_rate, bytes_in, bytes_out):
-		if nid in self.nodes:	# Should be always
-			node = self.nodes[nid]
+		if nid in self.devices:	# Should be always
+			device = self.devices[nid]
 			# Update strings
-			node["address"] = address
-			node["version"] = client_version
+			device["address"] = address
+			device["version"] = client_version
 			# Update rates
-			node['dl_rate'] = "%sps (%s)" % (sizeof_fmt(dl_rate), sizeof_fmt(bytes_in))
-			node['up_rate'] = "%sps (%s)" % (sizeof_fmt(up_rate), sizeof_fmt(bytes_out))
+			device['dl_rate'] = "%sps (%s)" % (sizeof_fmt(dl_rate), sizeof_fmt(bytes_in))
+			device['up_rate'] = "%sps (%s)" % (sizeof_fmt(up_rate), sizeof_fmt(bytes_out))
 	
 	def cb_syncthing_last_seen_changed(self, daemon, nid, dt):
-		if nid in self.nodes:	# Should be always
-			node = self.nodes[nid]
+		if nid in self.devices:	# Should be always
+			device = self.devices[nid]
 			if dt is None:
-				node['last-seen'] = _("Never")
+				device['last-seen'] = _("Never")
 			else:
 				dtf = dt.strftime("%Y-%m-%d %H:%M")
-				node['last-seen'] = str(dtf)
+				device['last-seen'] = str(dtf)
 	
-	def cb_syncthing_node_state_changed(self, daemon, nid, connected):
-		if nid in self.nodes:	# Should be always
-			node = self.nodes[nid]
-			if node["connected"] != connected:
-				node["connected"] = connected
+	def cb_syncthing_device_state_changed(self, daemon, nid, connected):
+		if nid in self.devices:	# Should be always
+			device = self.devices[nid]
+			if device["connected"] != connected:
+				device["connected"] = connected
 				if connected:
 					# Update color & header
-					node.set_status(_("Connected"))
-					node.set_color_hex(COLOR_NODE_CONNECTED)
+					device.set_status(_("Connected"))
+					device.set_color_hex(COLOR_DEVICE_CONNECTED)
 					# Update visible values
-					node.show_values("sync", "dl.rate", "up.rate", "version")
-					node.hide_values("last-seen")
+					device.show_values("sync", "dl.rate", "up.rate", "version")
+					device.hide_values("last-seen")
 				else:
 					# Update color & header
-					node.set_status(_("Disconnected"))
-					node.set_color_hex(COLOR_NODE)
+					device.set_status(_("Disconnected"))
+					device.set_color_hex(COLOR_DEVICE)
 					# Update visible values
-					node.hide_values("sync", "dl.rate", "up.rate", "version")
-					node.show_values("last-seen")
+					device.hide_values("sync", "dl.rate", "up.rate", "version")
+					device.show_values("last-seen")
 	
-	def cb_syncthing_node_sync_progress(self, daemon, node_id, sync):
-		if node_id in self.nodes:
-			node = self.nodes[node_id]
-			node["sync"] = "%3.f%%" % (sync * 100.0)
-			if not node["connected"]:
-				node.set_color_hex(COLOR_NODE)
-				node.set_status(_("Disconnected"))
+	def cb_syncthing_device_sync_progress(self, daemon, device_id, sync):
+		if device_id in self.devices:
+			device = self.devices[device_id]
+			device["sync"] = "%3.f%%" % (sync * 100.0)
+			if not device["connected"]:
+				device.set_color_hex(COLOR_DEVICE)
+				device.set_status(_("Disconnected"))
 			elif sync >= 0.0 and sync < 0.99:
-				node.set_color_hex(COLOR_NODE_SYNCING)
-				node.set_status(_("Syncing"), sync)
+				device.set_color_hex(COLOR_DEVICE_SYNCING)
+				device.set_status(_("Syncing"), sync)
 			else:
-				node.set_color_hex(COLOR_NODE_CONNECTED)
-				node.set_status(_("Up to Date"))
+				device.set_color_hex(COLOR_DEVICE_CONNECTED)
+				device.set_status(_("Up to Date"))
 	
-	def cb_syncthing_repo_added(self, daemon, rid, r):
-		self.show_repo(
-			rid, r["Directory"], r["Directory"],
+	def cb_syncthing_folder_added(self, daemon, rid, r):
+		self.show_folder(
+			rid, r["Path"], r["Path"],
 			r["ReadOnly"], r["IgnorePerms"], 
 			r["RescanIntervalS"],
 			sorted(
-				[ self.nodes[n["NodeID"]] for n in r["Nodes"] ],
+				[ self.devices[n["DeviceID"]] for n in r["Devices"] ],
 				key=lambda x : x.get_title().lower()
 				)
 			)
 	
-	def cb_syncthing_repo_data_changed(self, daemon, rid, data):
-		if rid in self.repos:	# Should be always
-			repo = self.repos[rid]
-			repo["global"] = "%s %s, %s" % (data["globalFiles"], _("Files"), sizeof_fmt(data["globalBytes"]))
-			repo["local"]	 = "%s %s, %s" % (data["localFiles"], _("Files"), sizeof_fmt(data["localBytes"]))
-			repo["oos"]	 = "%s %s, %s" % (data["needFiles"], _("Files"), sizeof_fmt(data["needBytes"]))
+	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
+		if rid in self.folders:	# Should be always
+			folder = self.folders[rid]
+			folder["global"] = "%s %s, %s" % (data["globalFiles"], _("Files"), sizeof_fmt(data["globalBytes"]))
+			folder["local"]	 = "%s %s, %s" % (data["localFiles"], _("Files"), sizeof_fmt(data["localBytes"]))
+			folder["oos"]	 = "%s %s, %s" % (data["needFiles"], _("Files"), sizeof_fmt(data["needBytes"]))
 			if float(data["globalBytes"]) > 0.0:
 				sync = float(data["inSyncBytes"]) / float(data["globalBytes"]),
 			else:
 				sync = 0.0
-			# repo.set_status(_(data['state'].capitalize()), sync)
+			# folder.set_status(_(data['state'].capitalize()), sync)
 	
-	def cb_syncthing_repo_state_changed(self, daemon, rid, percentage, color, text):
-		if rid in self.repos:	# Should be always
-			repo = self.repos[rid]
-			repo.set_color_hex(color)
-			repo.set_status(text, percentage)
+	def cb_syncthing_folder_state_changed(self, daemon, rid, percentage, color, text):
+		if rid in self.folders:	# Should be always
+			folder = self.folders[rid]
+			folder.set_color_hex(color)
+			folder.set_status(text, percentage)
 			self.set_status(True)
 	
-	def cb_syncthing_repo_stopped(self, daemon, rid, message):
-		if rid in self.repos:	# Should be always
-			repo = self.repos[rid]
-			repo.set_color_hex(COLOR_REPO_STOPPED)
-			repo.set_status(_("Stopped"), 0)
+	def cb_syncthing_folder_stopped(self, daemon, rid, message):
+		if rid in self.folders:	# Should be always
+			folder = self.folders[rid]
+			folder.set_color_hex(COLOR_REPO_STOPPED)
+			folder.set_status(_("Stopped"), 0)
 			# Color, theme-based icon is used here. It's intentional and
 			# supposed to draw attention
-			repo.add_value("error", "dialog-error", _("Error"), message)
-			repo.show_value('error')
+			folder.add_value("error", "dialog-error", _("Error"), message)
+			folder.show_value('error')
 	
 	def set_status(self, is_connected):
 		""" Sets icon and text on first line of popup menu """
@@ -467,7 +468,7 @@ class App(Gtk.Application, TimerManager):
 				if len(sr) == 1:
 					self["menu-si-status"].set_label(_("Synchronizing '%s'") % (sr[0],))
 				else:
-					self["menu-si-status"].set_label(_("Synchronizing %s repos") % (len(sr),))
+					self["menu-si-status"].set_label(_("Synchronizing %s folders") % (len(sr),))
 				self.animate_status()
 			else:
 				self.statusicon.set("si-idle", _("Idle"))
@@ -618,12 +619,12 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
-	def show_repo(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
+	def show_folder(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
 		# title = name if len(name) < 20 else "...%s" % name[-20:]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("id",			"version.png",	_("Repository ID"),			id)
-		box.add_value("folder",		"folder.png",	_("Folder"),				path)
+		box.add_value("path",		"folder.png",	_("Path"),					path)
 		box.add_value("global",		"global.png",	_("Global Repository"),		"? items, ?B")
 		box.add_value("local",		"home.png",		_("Local Repository"),		"? items, ?B")
 		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
@@ -632,18 +633,18 @@ class App(Gtk.Application, TimerManager):
 		box.add_value("rescan",		"restart.png",	_("Rescan Interval"),		"%s s" % (rescan_interval,))
 		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
 		box.add_hidden_value("id", id)
-		box.add_hidden_value("nodes", shared)
+		box.add_hidden_value("devices", shared)
 		box.set_status("Unknown")
 		box.set_color_hex(COLOR_REPO)
-		box.connect('right-click', self.cb_popup_menu_repo)
-		self["repolist"].pack_start(box, False, False, 3)
+		box.connect('right-click', self.cb_popup_menu_folder)
+		self["folderlist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
-		self["repolist"].show_all()
-		self.repos[id] = box
+		self["folderlist"].show_all()
+		self.folders[id] = box
 		return box
 	
-	def show_node(self, id, name, use_compression, introducer):
+	def show_device(self, id, name, use_compression, introducer):
 		if name in (None, ""):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
@@ -662,23 +663,23 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("bytes_in", 0)
 		box.add_hidden_value("bytes_out", 0)
 		box.add_hidden_value("time", 0)
-		box.set_color_hex(COLOR_NODE)
-		box.connect('right-click', self.cb_popup_menu_node)
-		self["nodelist"].pack_start(box, False, False, 3)
+		box.set_color_hex(COLOR_DEVICE)
+		box.connect('right-click', self.cb_popup_menu_device)
+		self["devicelist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
-		self["nodelist"].show_all()
-		self.nodes[id] = box
+		self["devicelist"].show_all()
+		self.devices[id] = box
 		return box
 	
 	def clear(self):
-		""" Clears repo and node lists. """
-		for i in ('nodelist', 'repolist'):
+		""" Clears folder and device lists. """
+		for i in ('devicelist', 'folderlist'):
 			for c in [] + self[i].get_children():
 				self[i].remove(c)
 				c.destroy()
-		self.nodes = {}
-		self.repos = {}
+		self.devices = {}
+		self.folders = {}
 	
 	def restart(self):
 		self["edit-menu"].set_sensitive(False)
@@ -731,15 +732,15 @@ class App(Gtk.Application, TimerManager):
 		d = IDDialog(self, self.daemon.get_my_id())
 		d.show(self["window"])
 	
-	def cb_menu_add_repo(self, event, *a):
-		""" Handler for 'Add repository' menu item """
-		e = EditorDialog(self, "repo-edit", True)
+	def cb_menu_add_folder(self, event, *a):
+		""" Handler for 'Add folder' menu item """
+		e = EditorDialog(self, "folder-edit", True)
 		e.load()
 		e.show(self["window"])
 	
-	def cb_menu_add_node(self, event, *a):
-		""" Handler for 'Add node' menu item """
-		e = EditorDialog(self, "node-edit", True)
+	def cb_menu_add_device(self, event, *a):
+		""" Handler for 'Add device' menu item """
+		e = EditorDialog(self, "device-edit", True)
 		e.load()
 		e.show(self["window"])
 	
@@ -749,60 +750,60 @@ class App(Gtk.Application, TimerManager):
 		e.load()
 		e.show(self["window"])
 	
-	def cb_popup_menu_repo(self, box, button, time):
+	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
-		self["popup-menu-repo"].popup(None, None, None, None, button, time)
+		self["popup-menu-folder"].popup(None, None, None, None, button, time)
 	
-	def cb_popup_menu_node(self, box, button, time):
+	def cb_popup_menu_device(self, box, button, time):
 		self.rightclick_box = box
-		self["popup-menu-node"].popup(None, None, None, None, button, time)
+		self["popup-menu-device"].popup(None, None, None, None, button, time)
 	
 	def cb_menu_popup(self, source, menu):
 		""" Handler for ubuntu-only toolbar buttons """
 		menu.popup(None, None, None, None, 0, 0)
 	
-	def cb_menu_popup_edit_repo(self, *a):
+	def cb_menu_popup_edit_folder(self, *a):
 		""" Handler for 'edit' context menu item """
-		# Editing repository
-		self.open_editor("repo-edit", self.rightclick_box["id"])
+		# Editing folder
+		self.open_editor("folder-edit", self.rightclick_box["id"])
 	
 	def cb_menu_popup_edit_ignored(self, *a):
 		""" Handler for 'edit ignore patterns' context menu item """
 		e = IgnoreEditor(self,
 			self.rightclick_box["id"],
-			self.rightclick_box["folder"],
+			self.rightclick_box["path"],
 			)
 		e.load()
 		e.show(self["window"])
 	
-	def cb_menu_popup_edit_node(self, *a):
+	def cb_menu_popup_edit_device(self, *a):
 		""" Handler for other 'edit' context menu item """
-		# Editing node
-		self.open_editor("node-edit", self.rightclick_box["id"])
+		# Editing device
+		self.open_editor("device-edit", self.rightclick_box["id"])
 	
-	def cb_menu_popup_browse_repo(self, *a):
-		""" Handler for 'browse' repo context menu item """
-		path = os.path.expanduser(self.rightclick_box["folder"])
+	def cb_menu_popup_browse_folder(self, *a):
+		""" Handler for 'browse' folder context menu item """
+		path = os.path.expanduser(self.rightclick_box["path"])
 		# Try to use any of following, known commands to display directory contents
 		for x in ('xdg-open', 'gnome-open', 'kde-open'):
 			if os.path.exists("/usr/bin/%s" % x):
 				os.system("/usr/bin/%s '%s' &" % (x, path))
 				break
 	
-	def cb_menu_popup_delete_repo(self, *a):
-		""" Handler for 'delete' repo context menu item """
-		# Editing repository
-		self.check_delete("repo", self.rightclick_box["id"], self.rightclick_box.get_title())
+	def cb_menu_popup_delete_folder(self, *a):
+		""" Handler for 'delete' folder context menu item """
+		# Editing folder
+		self.check_delete("folder", self.rightclick_box["id"], self.rightclick_box.get_title())
 
-	def cb_menu_popup_rescan_repo(self, *a):
+	def cb_menu_popup_rescan_folder(self, *a):
 		""" Handler for 'rescan' context menu item """
-		# Editing repository
+		# Editing folder
 		self.daemon.rescan(self.rightclick_box["id"])
 	
-	def cb_menu_popup_delete_node(self, *a):
+	def cb_menu_popup_delete_device(self, *a):
 		""" Handler for other 'edit' context menu item """
-		# Editing node
-		self.check_delete("node", self.rightclick_box["id"], self.rightclick_box.get_title())
+		# Editing device
+		self.check_delete("device", self.rightclick_box["id"], self.rightclick_box.get_title())
 	
 	def check_delete(self, mode, id, name):
 		"""
@@ -816,7 +817,7 @@ class App(Gtk.Application, TimerManager):
 				Gtk.ButtonsType.YES_NO,
 				"%s %s\n'%s'?" % (
 					_("Do you really want do delete"),
-					_("repository") if mode == "repo" else _("node"),
+					_("folder") if mode == "folder" else _("device"),
 					name
 					)
 				)
@@ -832,14 +833,14 @@ class App(Gtk.Application, TimerManager):
 		Callback called when user decides to _really_ delete something and
 		configuration is loaded from server.
 		"""
-		if mode == "repo":
-			config["Repositories"] = [ x for x in config["Repositories"] if x["ID"] != id ]
-			if id in self.repos:
-				self.repos[id].get_parent().remove(self.repos[id])
-		else: # node
-			config["Nodes"] = [ x for x in config["Nodes"] if x["NodeID"] != id ]
-			if id in self.nodes:
-				self.nodes[id].get_parent().remove(self.nodes[id])
+		if mode == "folder":
+			config["Folders"] = [ x for x in config["Folders"] if x["ID"] != id ]
+			if id in self.folders:
+				self.folders[id].get_parent().remove(self.folders[id])
+		else: # device
+			config["Devices"] = [ x for x in config["Devices"] if x["DeviceID"] != id ]
+			if id in self.devices:
+				self.devices[id].get_parent().remove(self.devices[id])
 		self.daemon.write_config(config, lambda *a: a)
 	
 	def open_editor(self, mode, id):
@@ -849,7 +850,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_popup_show_id(self, *a):
 		""" Handler for 'show id' context menu item """
-		# Available only for nodes
+		# Available only for devices
 		d = IDDialog(self, self.rightclick_box["id"])
 		d.show(self["window"])
 	
@@ -892,26 +893,26 @@ class App(Gtk.Application, TimerManager):
 			# Restart
 			self.daemon.restart()
 		elif response_id == RESPONSE_FIX_REPOID:
-			# Give up if there is no node with matching ID
-			if additional_data["nid"] in self.nodes:
-				# Find repository with matching ID ...
-				if additional_data["rid"] in self.repos:
+			# Give up if there is no device with matching ID
+			if additional_data["nid"] in self.devices:
+				# Find folder with matching ID ...
+				if additional_data["rid"] in self.folders:
 					# ... if found, show edit dialog and pre-select
-					# matching node
-					e = EditorDialog(self, "repo-edit", False, additional_data["rid"])
-					e.call_after_loaded(e.mark_node, additional_data["nid"])
+					# matching device
+					e = EditorDialog(self, "folder-edit", False, additional_data["rid"])
+					e.call_after_loaded(e.mark_device, additional_data["nid"])
 					e.load()
 					e.show(self["window"])
 				else:
-					# If there is no matching repository, prefill 'new repo'
+					# If there is no matching folder, prefill 'new folder'
 					# dialog and let user to save it
-					e = EditorDialog(self, "repo-edit", True, additional_data["rid"])
-					e.call_after_loaded(e.mark_node, additional_data["nid"])
-					e.call_after_loaded(e.fill_repo_id, additional_data["rid"])
+					e = EditorDialog(self, "folder-edit", True, additional_data["rid"])
+					e.call_after_loaded(e.mark_device, additional_data["nid"])
+					e.call_after_loaded(e.fill_folder_id, additional_data["rid"])
 					e.load()
 					e.show(self["window"])
-		elif response_id == RESPONSE_FIX_NEW_NODE:
-			e = EditorDialog(self, "node-edit", True, additional_data["nid"])
+		elif response_id == RESPONSE_FIX_NEW_device:
+			e = EditorDialog(self, "device-edit", True, additional_data["nid"])
 			e.load()
 			e.show(self["window"])
 		self.cb_infobar_close(bar)

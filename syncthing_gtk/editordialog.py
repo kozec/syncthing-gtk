@@ -7,7 +7,7 @@ Universal dialog handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, GObject, Pango
-from syncthing_gtk.tools import check_node_id, ints
+from syncthing_gtk.tools import check_device_id, ints
 import os, re
 _ = lambda (a) : a
 
@@ -30,13 +30,13 @@ class EditorDialog(GObject.GObject):
 	
 	VALUES = {
 		# Dict with lists of all editable values, indexed by editor mode
-		"repo-edit" : [
-			"vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vNodes",
+		"folder-edit" : [
+			"vID", "vPath", "vReadOnly", "vIgnorePerms", "vDevices",
 			"vVersioning", "vKeepVersions", "vRescanIntervalS",
 			"vMaxAge", "vVersionsPath"
 			],
-		"node-edit" : [
-			"vNodeID", "vName", "vAddresses", "vCompression", "vRepos",
+		"device-edit" : [
+			"vDeviceID", "vName", "vAddresses", "vCompression", "vFolders",
 			"vIntroducer",
 			],
 		"daemon-settings" : [
@@ -47,15 +47,15 @@ class EditorDialog(GObject.GObject):
 			]
 	}
 	
-	# Regexp to check if repository id is valid
-	RE_REPO_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
+	# Regexp to check if folder id is valid
+	RE_FOLDER_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
 	# Invalid Value Messages.
 	# Messages displayed when value in field is invalid
 	IV_MESSAGES = {
-		"vNodeID" : _("The entered node ID does not look valid. It "
+		"vDeviceID" : _("The entered device ID does not look valid. It "
 			"should be a 52 character string consisting of letters and "
 			"numbers, with spaces and dashes being optional."),
-		"vID" : _("The repository ID must be a short, unique identifier"
+		"vID" : _("The Folder ID must be a short, unique identifier"
 			" (64 characters or less) consisting of letters, numbers "
 			"and the the dot (.), dash (-) and underscode (_) "
 			"characters only"),
@@ -103,8 +103,9 @@ class EditorDialog(GObject.GObject):
 			if id in self: return self[id] # Do things fast if possible
 			parent = self["editor"]
 		for c in parent.get_children():
-			if c.get_id() == id:
-				return c
+			if hasattr(c, "get_id"):
+				if c.get_id() == id:
+					return c
 			if isinstance(c, Gtk.Container):
 				r = self.find_widget_by_id(id, c)
 				if not r is None:
@@ -247,34 +248,34 @@ class EditorDialog(GObject.GObject):
 		try:
 			if self.is_new:
 				self.values = { x.lstrip("v") : "" for x in self.VALUES[self.mode] }
-				if self.mode == "repo-edit":
+				if self.mode == "folder-edit":
 					self.checks = {
-						"vID" : self.check_repo_id,
-						"vDirectory" : self.check_path
+						"vID" : self.check_folder_id,
+						"vPath" : self.check_path
 						}
 					if self.id != None:
 						try:
-							v = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+							v = [ x for x in self.config["Folders"] if x["ID"] == self.id ][0]
 							self.values = v
 							self.is_new = False
 						except IndexError:
 							pass
-				elif self.mode == "node-edit":
+				elif self.mode == "device-edit":
 					self.set_value("Addresses", "dynamic")
 					self.set_value("Compression", True)
 					self.checks = {
-						"vNodeID" : check_node_id,
+						"vDeviceID" : check_device_id,
 						}
 					if self.id != None:
-						# Pre-fill node id, if provided
-						self.set_value("NodeID", self.id)
+						# Pre-fill device id, if provided
+						self.set_value("DeviceID", self.id)
 			else:
-				if self.mode == "repo-edit":
-					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
+				if self.mode == "folder-edit":
+					self.values = [ x for x in self.config["Folders"] if x["ID"] == self.id ][0]
 					self.checks = {}
-					self["vDirectory"].set_sensitive(False)
-				elif self.mode == "node-edit":
-					self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
+					self["vPath"].set_sensitive(False)
+				elif self.mode == "device-edit":
+					self.values = [ x for x in self.config["Devices"] if x["DeviceID"] == self.id ][0]
 				elif self.mode == "daemon-settings":
 					self.values = self.config["Options"]
 					self.checks = {}
@@ -306,31 +307,31 @@ class EditorDialog(GObject.GObject):
 								break
 					elif isinstance(w, Gtk.CheckButton):
 						w.set_active(self.get_value(key.lstrip("v")))
-					elif key == "vNodes":
+					elif key == "vDevices":
 						# Very special case
-						nids = [ n["NodeID"] for n in self.get_value("Nodes") ]
-						for node in self.app.nodes.values():
-							if node["id"] != self.app.daemon.get_my_id():
-								b = Gtk.CheckButton(node.get_title(), False)
-								b.set_tooltip_text(node["id"])
-								self["vNodes"].pack_end(b, False, False, 0)
-								b.set_active(node["id"] in nids)
-						self["vNodes"].show_all()
-					elif key == "vRepos":
+						nids = [ n["DeviceID"] for n in self.get_value("Devices") ]
+						for device in self.app.devices.values():
+							if device["id"] != self.app.daemon.get_my_id():
+								b = Gtk.CheckButton(device.get_title(), False)
+								b.set_tooltip_text(device["id"])
+								self["vDevices"].pack_end(b, False, False, 0)
+								b.set_active(device["id"] in nids)
+						self["vDevices"].show_all()
+					elif key == "vFolders":
 						# Even more special case
 						rids = [ ]
-						# Get list of repos that share this node
-						for r in self.config["Repositories"]:
-							for n in r["Nodes"]:
-								if n["NodeID"] == self.id:
+						# Get list of folders that share this device
+						for r in self.config["Folders"]:
+							for n in r["Devices"]:
+								if n["DeviceID"] == self.id:
 									rids.append(r["ID"])
 						# Create CheckButtons
-						for repo in reversed(sorted(self.app.repos.values(), key=lambda x : x["id"])):
-							b = Gtk.CheckButton(repo["folder"], False)
-							b.set_tooltip_text(repo["id"])
-							self["vRepos"].pack_end(b, False, False, 0)
-							b.set_active(repo["id"] in rids)
-						self["vRepos"].show_all()
+						for folder in reversed(sorted(self.app.folders.values(), key=lambda x : x["id"])):
+							b = Gtk.CheckButton(folder["path"], False)
+							b.set_tooltip_text(folder["id"])
+							self["vFolders"].pack_end(b, False, False, 0)
+							b.set_active(folder["id"] in rids)
+						self["vFolders"].show_all()
 					else:
 						print w
 				except ValueNotFoundError:
@@ -357,7 +358,7 @@ class EditorDialog(GObject.GObject):
 	
 	def update_special_widgets(self, *a):
 		""" Enables/disables some widgets """
-		if self.mode == "repo-edit":
+		if self.mode == "folder-edit":
 			self["vID"].set_sensitive(self.id is None)
 			v = self.get_value("Versioning")
 			if v == "":
@@ -368,8 +369,8 @@ class EditorDialog(GObject.GObject):
 				self["bxVersioningStaggered"].set_visible(self.get_value("Versioning") == "staggered")
 				if not self["rvVersioning"].get_reveal_child():
 					self["rvVersioning"].set_reveal_child(True)
-		elif self.mode == "node-edit":
-			self["vNodeID"].set_sensitive(self.is_new)
+		elif self.mode == "device-edit":
+			self["vDeviceID"].set_sensitive(self.is_new)
 			self["vAddresses"].set_sensitive(self.id != self.app.daemon.get_my_id())
 		elif self.mode == "daemon-settings":
 			self["vMaxSendKbps"].set_sensitive(self.get_value("MaxSendKbpsEnabled"))
@@ -432,42 +433,42 @@ class EditorDialog(GObject.GObject):
 						self.set_value(key.strip("v"), w.get_active())
 					elif isinstance(w, Gtk.ComboBox):
 						self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
-					elif key == "vNodes":	# Still very special case
-						nodes = [ {
+					elif key == "vDevices":	# Still very special case
+						devices = [ {
 								   "Addresses" : None,
-								   "NodeID" : b.get_tooltip_text(),
+								   "DeviceID" : b.get_tooltip_text(),
 								   "Name" : "",
 								   "CertName" : "",
 								   "Compression" : False
 									}
-									for b in self["vNodes"].get_children()
+									for b in self["vDevices"].get_children()
 									if b.get_active()
 								]
-						self.set_value("Nodes", nodes)
-					elif key == "vRepos":	# And this one is special too
-						# Generate dict of { repo_id : bool } where bool is True if
-						# repo should be shared with this node
-						repos = {}
-						for b in self["vRepos"].get_children():
-							repos[b.get_tooltip_text()] = b.get_active()
-						# Go over all Repositories/<repo>/Nodes/<node> keys in config
+						self.set_value("Devices", devices)
+					elif key == "vFolders":	# And this one is special too
+						# Generate dict of { folder_id : bool } where bool is True if
+						# folder should be shared with this device
+						folders = {}
+						for b in self["vFolders"].get_children():
+							folders[b.get_tooltip_text()] = b.get_active()
+						# Go over all Folders/<folder>/Devices/<device> keys in config
 						# and set them as needed
-						nid = self.get_value("NodeID")
-						for r in self.config["Repositories"]:
+						nid = self.get_value("DeviceID")
+						for r in self.config["Folders"]:
 							rid = r["ID"]
 							found = False
-							for n in r["Nodes"]:
-								if n["NodeID"] == nid:
-									if not rid in repos or not repos[rid]:
-										# Remove this /<node> key (unshare repo with node)
-										r["Nodes"].remove(n)
+							for n in r["Devices"]:
+								if n["DeviceID"] == nid:
+									if not rid in folders or not folders[rid]:
+										# Remove this /<device> key (unshare folder with device)
+										r["Devices"].remove(n)
 										break
 									found = True
-							if not found and rid in repos and repos[rid]:
-								# Add new /<node> key (share repo with node)
-								r["Nodes"].append({
+							if (not found) and (rid in folders) and folders[rid]:
+								# Add new /<device> key (share repo with device)
+								r["Devices"].append({
 								   "Addresses" : None,
-								   "NodeID" : nid,
+								   "DeviceID" : nid,
 								   "Name" : "",
 								   "CertName" : "",
 								   "Compression" : False
@@ -477,10 +478,10 @@ class EditorDialog(GObject.GObject):
 					pass
 		# Add new dict to configuration (edited dict is already there)
 		if self.is_new:
-			if self.mode == "repo-edit":
-				self.config["Repositories"].append(self.values)
-			elif self.mode == "node-edit":
-				self.config["Nodes"].append(self.values)
+			if self.mode == "folder-edit":
+				self.config["Folders"].append(self.values)
+			elif self.mode == "device-edit":
+				self.config["Devices"].append(self.values)
 		# Post configuration back to daemon
 		self["editor"].set_sensitive(False)
 		self.post_config()
@@ -501,11 +502,11 @@ class EditorDialog(GObject.GObject):
 			spinner.get_buffer().set_text(_("%s days") % (v,), -1);
 		return True
 	
-	def check_repo_id(self, value):
-		if value in self.app.repos:
-			# Duplicate repo id
+	def check_folder_id(self, value):
+		if value in self.app.folders:
+			# Duplicate folder id
 			return False
-		if self.RE_REPO_ID.match(value) is None:
+		if self.RE_FOLDER_ID.match(value) is None:
 			# Invalid string
 			return False
 		return True
@@ -524,21 +525,21 @@ class EditorDialog(GObject.GObject):
 		# Close editor
 		self["editor"].set_sensitive(True)
 		self.close()
-		# If new repo/node was added, show dummy item UI, so user will
+		# If new folder/device was added, show dummy item UI, so user will
 		# see that something happen even before daemon gets restarted
 		if self.is_new:
 			box = None
-			if self.mode == "repo-edit":
-				box = self.app.show_repo(
-					self.get_value("ID"), self.get_value("Directory"), self.get_value("Directory"),
+			if self.mode == "folder-edit":
+				box = self.app.show_folder(
+					self.get_value("ID"), self.get_value("Path"), self.get_value("Path"),
 					self.get_value("ReadOnly"), self.get_value("IgnorePerms"),
 					self.get_value("RescanIntervalS"),
 					sorted(
-						[ self.app.nodes[n["NodeID"]] for n in self.get_value("Nodes") ],
+						[ self.app.devices[n["DeviceID"]] for n in self.get_value("Devices") ],
 						key=lambda x : x.get_title().lower()
 					))
-			elif self.mode == "node-edit":
-				box = self.app.show_node(self.get_value("NodeID"), self.get_value("Name"),
+			elif self.mode == "device-edit":
+				box = self.app.show_device(self.get_value("DeviceID"), self.get_value("Name"),
 					self.get_value("Compression"), self.get_value("Introducer"))
 			# Gray background for new stuff
 			if not box is None:
@@ -566,16 +567,16 @@ class EditorDialog(GObject.GObject):
 			callback, *data
 			)
 	
-	def fill_repo_id(self, rid):
-		""" Pre-fills repository Id for new-repo dialog """
+	def fill_folder_id(self, rid):
+		""" Pre-fills folder Id for new-folder dialog """
 		self["vID"].set_text(rid)
 		self.id = rid
 		self.update_special_widgets()
 	
-	def mark_node(self, nid):
-		""" Marks (checks) checkbox for specified node """
-		if "vNodes" in self:	# ... only if there are checkboxes here
-			for child in self["vNodes"].get_children():
+	def mark_device(self, nid):
+		""" Marks (checks) checkbox for specified device """
+		if "vDevices" in self:	# ... only if there are checkboxes here
+			for child in self["vDevices"].get_children():
 				if child.get_tooltip_text() == nid:
 					l = child.get_children()[0]	# Label in checkbox
 					l.set_markup("<b>%s</b>" % (l.get_label()))

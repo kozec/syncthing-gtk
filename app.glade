@@ -86,7 +86,7 @@
 							<property name="position_set">True</property>
 							<!-- Left panel -->
 							<child>
-								<object class="GtkBox" id="repolist">
+								<object class="GtkBox" id="folderlist">
 									<property name="visible">True</property>
 									<property name="can_focus">False</property>
 									<property name="orientation">vertical</property>
@@ -101,7 +101,7 @@
 							
 							<!-- Right panel -->
 							<child>
-								<object class="GtkBox" id="nodelist">
+								<object class="GtkBox" id="devicelist">
 									<property name="visible">True</property>
 									<property name="can_focus">False</property>
 									<property name="orientation">vertical</property>
@@ -183,28 +183,28 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-add-repository">
+		<object class="GtkImageMenuItem" id="menu-add-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">Add _Repository</property>
+			<property name="label" translatable="yes">Add Shared _Folder</property>
 			<property name="use_underline">True</property>
-			<property name="image">menu-add-repository-image</property>
+			<property name="image">menu-add-folder-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_add_repo" swapped="no"/>
+			<signal name="activate" handler="cb_menu_add_folder" swapped="no"/>
 		</object>
 	</child>
 	
 	<child>
-		<object class="GtkImageMenuItem" id="menu-add-node">
+		<object class="GtkImageMenuItem" id="menu-add-device">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">Add _Node</property>
+			<property name="label" translatable="yes">Add _Device</property>
 			<property name="use_underline">True</property>
-			<property name="image">menu-add-node-image</property>
+			<property name="image">menu-add-device-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_add_node" swapped="no"/>
+			<signal name="activate" handler="cb_menu_add_device" swapped="no"/>
 		</object>
 	</child>
 	
@@ -275,19 +275,19 @@
 	</child>
 </object>
 
-<!-- Popup menu for repo -->
-<object class="GtkMenu" id="popup-menu-repo">
+<!-- Popup menu for folder -->
+<object class="GtkMenu" id="popup-menu-folder">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-edit-repo">
+		<object class="GtkImageMenuItem" id="menu-popup-edit-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">gtk-edit</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_popup_edit_repo" swapped="no"/>
+			<signal name="activate" handler="cb_menu_popup_edit_folder" swapped="no"/>
 		</object>
 	</child>
 	<child>
@@ -302,19 +302,19 @@
 		</object>
 	</child>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-rescan-repo">
+		<object class="GtkImageMenuItem" id="menu-popup-rescan-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">_Rescan</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
-			<property name="image">menu-popup-rescan-repo-image</property>
-			<signal name="activate" handler="cb_menu_popup_rescan_repo" swapped="no"/>
+			<property name="image">menu-popup-rescan-folder-image</property>
+			<signal name="activate" handler="cb_menu_popup_rescan_folder" swapped="no"/>
 		</object>
 	</child>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-browse-repo">
+		<object class="GtkImageMenuItem" id="menu-popup-browse-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">_Browse</property>
@@ -322,7 +322,7 @@
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
 			<property name="image">menu-popup-browse-image</property>
-			<signal name="activate" handler="cb_menu_popup_browse_repo" swapped="no"/>
+			<signal name="activate" handler="cb_menu_popup_browse_folder" swapped="no"/>
 		</object>
 	</child>
 	<child>
@@ -332,31 +332,31 @@
 		</object>
 	</child>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-delete-repo">
+		<object class="GtkImageMenuItem" id="menu-popup-delete-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">gtk-delete</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_popup_delete_repo" swapped="no"/>
+			<signal name="activate" handler="cb_menu_popup_delete_folder" swapped="no"/>
 		</object>
 	</child>
 </object>
 
-<!-- Popup menu for node -->
-<object class="GtkMenu" id="popup-menu-node">
+<!-- Popup menu for device -->
+<object class="GtkMenu" id="popup-menu-device">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-edit-node">
+		<object class="GtkImageMenuItem" id="menu-popup-edit-device">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">gtk-edit</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_popup_edit_node" swapped="no"/>
+			<signal name="activate" handler="cb_menu_popup_edit_device" swapped="no"/>
 		</object>
 	</child>
 	<child>
@@ -372,14 +372,14 @@
 		</object>
 	</child>
 	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-delete-node">
+		<object class="GtkImageMenuItem" id="menu-popup-delete-device">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="label" translatable="yes">gtk-delete</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_popup_delete_node" swapped="no"/>
+			<signal name="activate" handler="cb_menu_popup_delete_device" swapped="no"/>
 		</object>
 	</child>
 </object>
@@ -503,14 +503,14 @@
 </object>
 
 <!-- Menu images -->
-<object class="GtkImage" id="menu-add-repository-image">
+<object class="GtkImage" id="menu-add-folder-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
 	<property name="icon_name">drive-harddisk</property>
 </object>
 
-<object class="GtkImage" id="menu-add-node-image">
+<object class="GtkImage" id="menu-add-device-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
@@ -614,7 +614,7 @@
 	<property name="pixbuf">icons/show_id.png</property>
 </object>
 
-<object class="GtkImage" id="menu-popup-rescan-repo-image">
+<object class="GtkImage" id="menu-popup-rescan-folder-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="stock">gtk-refresh</property>

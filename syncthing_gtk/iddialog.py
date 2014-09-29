@@ -35,7 +35,7 @@ class IDDialog(object):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file(os.path.join(self.app.gladepath, "node-id.glade"))
+		self.builder.add_from_file(os.path.join(self.app.gladepath, "device-id.glade"))
 		self.builder.connect_signals(self)
 		self["vID"].set_text(self.node_id)
 

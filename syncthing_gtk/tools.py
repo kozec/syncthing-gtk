@@ -12,7 +12,7 @@ from subprocess import Popen
 import re, os
 
 _ = lambda (a) : a
-LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
+LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 
 def luhn_b32generate(s):
 	"""
@@ -33,8 +33,8 @@ def luhn_b32generate(s):
 	checkcodepoint = (n - remainder) % n
 	return LUHN_ALPHABET[checkcodepoint]
 
-def check_node_id(nid):
-	""" Returns True if node id is valid """
+def check_device_id(nid):
+	""" Returns True if device id is valid """
 	# Based on nodeid.go
 	nid = nid.strip("== \t").upper() \
 		.replace("0", "O") \
