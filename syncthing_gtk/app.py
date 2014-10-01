@@ -52,7 +52,8 @@ class App(Gtk.Application, TimerManager):
 	Hide parameter controlls if app should be minimized to status icon
 	after start.
 	"""
-	def __init__(self, hide=True, gladepath="/usr/share/syncthing-gtk",
+	def __init__(self, hide=True, use_headerbar=True,
+						gladepath="/usr/share/syncthing-gtk",
 						iconpath="/usr/share/syncthing-gtk/icons"):
 		Gtk.Application.__init__(self,
 				application_id="me.kozec.syncthingtk",
@@ -65,6 +66,7 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide
 		self.process = None
+		self.use_headerbar = use_headerbar
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -100,9 +102,10 @@ class App(Gtk.Application, TimerManager):
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu"].set_sensitive(False)
-		if THE_HELL:
+		if THE_HELL or not self.use_headerbar:
 			# Modify window if running under Ubuntu; Ubuntu default GTK
 			# engine handles windows with header in... weird way.
+			# This can be also forced by -s parameter in command line.
 			
 			# Unparent some stuff
 			for u in ("content", "window-menu-icon"):

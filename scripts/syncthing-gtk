@@ -11,8 +11,15 @@ if __name__ == "__main__":
 	path = "/usr/share/syncthing-gtk"
 	if os.path.exists("/usr/local/share/syncthing-gtk"):
 		path = "/usr/local/share/syncthing-gtk"
+	if "-h" in sys.argv or "--help" in sys.argv:
+		print "Usage: %s [-h | [-w] [-s]]" % (sys.argv[0],)
+		print "  -h   Display this help message and exit"
+		print "  -w   Display window / don't start minimized"
+		print "  -s   Use classic window header instead of Gtk.HeaderBar"
+		sys.exit(0)
 	App(
 		"-w" not in sys.argv,
+		"-s" not in sys.argv,
 		path,
 		os.path.join(path, "icons")
-		).run()
+	).run()
