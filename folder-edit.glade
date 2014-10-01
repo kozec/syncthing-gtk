@@ -45,7 +45,6 @@
   </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Edit Shared Folder|New Shared Folder</property>
     <property name="role">folder-edit</property>
     <property name="modal">True</property>
     <property name="default_width">700</property>

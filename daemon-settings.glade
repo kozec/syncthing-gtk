@@ -23,7 +23,6 @@
   </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Syncthing Daemon Settings</property>
     <property name="role">node-edit</property>
     <property name="modal">True</property>
     <property name="default_width">500</property>

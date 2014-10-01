@@ -734,19 +734,19 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_add_folder(self, event, *a):
 		""" Handler for 'Add folder' menu item """
-		e = EditorDialog(self, "folder-edit", True)
+		e = FolderEditorDialog(self, True)
 		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_add_device(self, event, *a):
 		""" Handler for 'Add device' menu item """
-		e = EditorDialog(self, "device-edit", True)
+		e = DeviceEditorDialog(self, True)
 		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_daemon_settings(self, event, *a):
 		""" Handler for 'Daemon Settings' menu item """
-		e = EditorDialog(self, "daemon-settings", False)
+		e = DaemonSettingsDialog(self)
 		e.load()
 		e.show(self["window"])
 	
@@ -765,7 +765,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_edit_folder(self, *a):
 		""" Handler for 'edit' context menu item """
 		# Editing folder
-		self.open_editor("folder-edit", self.rightclick_box["id"])
+		self.open_editor(FolderEditorDialog, self.rightclick_box["id"])
 	
 	def cb_menu_popup_edit_ignored(self, *a):
 		""" Handler for 'edit ignore patterns' context menu item """
@@ -779,7 +779,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_edit_device(self, *a):
 		""" Handler for other 'edit' context menu item """
 		# Editing device
-		self.open_editor("device-edit", self.rightclick_box["id"])
+		self.open_editor(DeviceEditorDialog, self.rightclick_box["id"])
 	
 	def cb_menu_popup_browse_folder(self, *a):
 		""" Handler for 'browse' folder context menu item """
@@ -843,8 +843,8 @@ class App(Gtk.Application, TimerManager):
 				self.devices[id].get_parent().remove(self.devices[id])
 		self.daemon.write_config(config, lambda *a: a)
 	
-	def open_editor(self, mode, id):
-		e = EditorDialog(self, mode, False, id)
+	def open_editor(self, cls, id):
+		e = cls(self, False, id)
 		e.load()
 		e.show(self["window"])
 	
@@ -899,20 +899,20 @@ class App(Gtk.Application, TimerManager):
 				if additional_data["rid"] in self.folders:
 					# ... if found, show edit dialog and pre-select
 					# matching device
-					e = EditorDialog(self, "folder-edit", False, additional_data["rid"])
+					e = FolderEditorDialog(self, False, additional_data["rid"])
 					e.call_after_loaded(e.mark_device, additional_data["nid"])
 					e.load()
 					e.show(self["window"])
 				else:
 					# If there is no matching folder, prefill 'new folder'
 					# dialog and let user to save it
-					e = EditorDialog(self, "folder-edit", True, additional_data["rid"])
+					e = FolderEditorDialog(self, True, additional_data["rid"])
 					e.call_after_loaded(e.mark_device, additional_data["nid"])
 					e.call_after_loaded(e.fill_folder_id, additional_data["rid"])
 					e.load()
 					e.show(self["window"])
 		elif response_id == RESPONSE_FIX_NEW_device:
-			e = EditorDialog(self, "device-edit", True, additional_data["nid"])
+			e = DeviceEditorDialog(self, True, additional_data["nid"])
 			e.load()
 			e.show(self["window"])
 		self.cb_infobar_close(bar)
