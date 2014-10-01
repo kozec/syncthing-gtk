@@ -915,7 +915,7 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "DeviceDiscovered":
 			nid = e["data"]["device"]
 			addresses = e["data"]["addrs"]
-			self.emit("Device-discovered", nid, addresses)
+			self.emit("device-discovered", nid, addresses)
 		elif eType == "FolderRejected":
 			nid = e["data"]["device"]
 			rid = e["data"]["folder"]
@@ -923,7 +923,7 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "DeviceRejected":
 			nid = e["data"]["device"]
 			address = e["data"]["address"]
-			self.emit("Device-rejected", nid, address)
+			self.emit("device-rejected", nid, address)
 		elif eType == "ItemStarted":
 			rid = e["data"]["folder"]
 			filename = e["data"]["item"]

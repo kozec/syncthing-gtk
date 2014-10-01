@@ -162,7 +162,7 @@ class EditorDialog(GObject.GObject):
 			# Nothing to show
 			return
 		self.original_labels[value_id] = self[wid].get_label()
-		self[wid].set_markup('<span color="red">%s</span>' % (self.IV_MESSAGES[value_id],))
+		self[wid].set_markup('<span color="red">%s</span>' % (self.MESSAGES[value_id],))
 	
 	def hide_error_message(self, value_id):
 		""" Changes text on associated label back to normal text """

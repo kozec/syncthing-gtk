@@ -87,6 +87,9 @@ class FolderEditorDialog(EditorDialog):
 						self.is_new = False
 					except IndexError:
 						pass
+				self.set_value("Versioning", "simple")
+				self.set_value("RescanIntervalS", 30)
+				self.set_value("KeepVersions", 10)
 			else:
 				self.values = [ x for x in self.config["Folders"] if x["ID"] == self.id ][0]
 				self.checks = {}
