@@ -6,6 +6,8 @@ from infobox			import InfoBox
 from editordialog		import EditorDialog
 from configuration		import Configuration
 from iddialog			import IDDialog
+from about				import AboutDialog
+from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
 from timermgr			import TimerManager
 from statusicon			import StatusIcon

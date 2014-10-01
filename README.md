@@ -16,8 +16,13 @@ Additional features:
 
 Dependencies:  
 &nbsp;&nbsp;&nbsp;python 2.7, gtk3, <a href=https://live.gnome.org/PyGObject>PyGObject</a>,
-<a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version)
-and, obviously, <a href="http://syncthing.net">syncthing</a>
+<a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version), <a href="http://syncthing.net">syncthing</a>
+
+Packages:
+- Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
+- Arch Linux: <a href="https://aur.archlinux.org/packages/syncthing-gtk/">AUR</a>
+- Or, in worst case scenario, download <a href="https://github.com/kozec/syncthing-gui/releases/latest">latest tarball</a>, extract it and run syncthing-gtk.py.
 
 Related links:
+- http://syncthing.net
 - https://discourse.syncthing.net/t/syncthing-gtk-gui-for-syncthing/709

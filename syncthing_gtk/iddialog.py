@@ -35,13 +35,13 @@ class IDDialog(object):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file(os.path.join(self.app.gladepath, "node-id.glade"))
+		self.builder.add_from_file(os.path.join(self.app.gladepath, "device-id.glade"))
 		self.builder.connect_signals(self)
 		self["vID"].set_text(self.node_id)
 
 	def load_data(self):
 		""" Loads QR code from Syncthing daemon """
-		uri = "%s/qr/%s" % (self.app.daemon.get_webui_url(), self.node_id)
+		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.node_id)
 		io = Gio.file_new_for_uri(uri)
 		io.load_contents_async(None, self.cb_syncthing_qr)
 	

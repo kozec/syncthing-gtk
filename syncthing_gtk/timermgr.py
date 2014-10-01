@@ -33,10 +33,14 @@ class TimerManager(object):
 		return (name in self._timers)
 	
 	def cancel_timer(self, name):
-		""" Cancels named timer """
+		"""
+		Cancels named timer. Returns True on success, False if there is no such timer.
+		"""
 		if name in self._timers:
 			GLib.source_remove(self._timers[name])
 			del self._timers[name]
+			return True
+		return False
 	
 	def cancel_all(self):
 		""" Cancels all active timers """

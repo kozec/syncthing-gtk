@@ -12,7 +12,7 @@ from subprocess import Popen
 import re, os
 
 _ = lambda (a) : a
-LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
+LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 
 def luhn_b32generate(s):
 	"""
@@ -33,8 +33,8 @@ def luhn_b32generate(s):
 	checkcodepoint = (n - remainder) % n
 	return LUHN_ALPHABET[checkcodepoint]
 
-def check_node_id(nid):
-	""" Returns True if node id is valid """
+def check_device_id(nid):
+	""" Returns True if device id is valid """
 	# Based on nodeid.go
 	nid = nid.strip("== \t").upper() \
 		.replace("0", "O") \
@@ -79,6 +79,17 @@ def ints(s):
 	if hasattr(s, "__len__"):
 		if len(s) == 0 : return 0
 	return int(s)
+
+def get_header(headers, key):
+	"""
+	Returns value of single header parsed from headers array or None
+	if header is not found
+	"""
+	if not key.endswith(":"): key = "%s:" % (key,)
+	for h in headers:
+		if h.startswith(key):
+			return h.split(" ", 1)[-1]
+	return None
 
 class Timezone(tzinfo):
 	def __init__(self, hours, minutes):

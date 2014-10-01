@@ -66,6 +66,7 @@ class InfoBox(Gtk.Container):
 		hbox.pack_start(self.icon, False, False, 0)
 		hbox.pack_start(self.title, True, True, 0)
 		hbox.pack_start(self.status, False, False, 0)
+		hbox.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
 		eb.add(hbox)
 		# Update stuff
 		self.header_box = hbox
@@ -85,6 +86,7 @@ class InfoBox(Gtk.Container):
 		self.rev.set_reveal_child(False)
 		align.set_padding(2, 2, 5, 5)
 		eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
+		self.grid.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
 		# Connect signals
 		eb.connect("button-release-event", self.on_grid_click)
 		# Pack together
@@ -293,6 +295,7 @@ class InfoBox(Gtk.Container):
 		""" Expects floats """
 		self.color = (r, g, b, a)
 		self.header.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(r, g, b, a))
+		self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
 		self.queue_draw()
 	
 	def set_border(self, width):
@@ -306,11 +309,16 @@ class InfoBox(Gtk.Container):
 		""" Returns True if box is open """
 		return self.rev.get_reveal_child()
 	
-	def add_value(self, key, icon, title, value):
+	def add_value(self, key, icon, title, value, visible=True):
 		""" Adds new line with provided properties """
-		wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
+		if "." in icon:
+			# Icon is filename
+			wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
+		else:
+			# Icon is theme icon name
+			wIcon = Gtk.Image.new_from_icon_name(icon, 1)
 		wTitle, wValue = Gtk.Label(), Gtk.Label()
-		self.value_widgets[key] = wValue
+		self.value_widgets[key] = (wValue, wIcon, wTitle)
 		self.set_value(key, value)
 		wTitle.set_text(title)
 		wTitle.set_alignment(0.0, 0.5)
@@ -321,6 +329,9 @@ class InfoBox(Gtk.Container):
 		self.grid.attach(wIcon, 0, line, 1, 1)
 		self.grid.attach_next_to(wTitle, wIcon, Gtk.PositionType.RIGHT, 1, 1)
 		self.grid.attach_next_to(wValue, wTitle, Gtk.PositionType.RIGHT, 1, 1)
+		if not visible:
+			for w in self.value_widgets[key]:
+				w.set_no_show_all(True)
 	
 	def clear_values(self):
 		""" Removes all lines from UI, efectively making all values hidden """
@@ -336,7 +347,29 @@ class InfoBox(Gtk.Container):
 		""" Updates already existing value """
 		self.values[key] = value
 		if key in self.value_widgets:
-			self.value_widgets[key].set_text(value)
+			self.value_widgets[key][0].set_text(value)
+	
+	def hide_value(self, key):
+		""" Hides value added by add_value """
+		if key in self.value_widgets:
+			for w in self.value_widgets[key]:
+				w.set_no_show_all(True)
+				w.set_visible(False)
+	
+	def show_value(self, key):
+		""" Shows value added by add_value """
+		if key in self.value_widgets:
+			for w in self.value_widgets[key]:
+				w.set_no_show_all(False)
+				w.set_visible(True)
+	
+	def hide_values(self, *keys):
+		""" Same as hide_value, but for multiple keys at once """
+		for k in keys: self.hide_value(k)
+	
+	def show_values(self, *keys):
+		""" Same as show_value, but for multiple keys at once """
+		for k in keys: self.show_value(k)
 	
 	def get_value(self, key):
 		return self.values[key]
