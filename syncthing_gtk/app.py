@@ -619,6 +619,8 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.connect("response", self.cb_run_daemon_response, cb)
 			if self.is_visible():
 				self.connect_dialog.show_all()
+			else:
+				cb.show()	# Keep this one visible, even if dialog is not
 	
 	def close_connect_dialog(self):
 		if self.connect_dialog != None:
