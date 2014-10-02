@@ -123,7 +123,7 @@ class EditorDialog(GObject.GObject):
 		if key in self.values:
 			return self.values[key]
 		else:
-			print self.values
+			print "Warning: get_value: Value %s not found" % (key,)
 			raise ValueNotFoundError(key)
 	
 	def set_value(self, key, value):

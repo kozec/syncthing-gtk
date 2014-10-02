@@ -51,7 +51,7 @@ class UISettingsDialog(EditorDialog):
 			elif self["rbOnExitLeave"].get_active() : return self.set_value(key[1:], 0)
 			else: return self.set_value(key[1:], 2)	# vOnExitAsk
 		else:
-			return EditorDialog.get_value(self, key)
+			return EditorDialog.store_value(self, key, w)
 	
 	#@Overrides
 	def on_data_loaded(self):

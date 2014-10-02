@@ -62,7 +62,7 @@ class App(Gtk.Application, TimerManager):
 		self.builder = None
 		self.rightclick_box = None
 		self.config = Configuration()
-		self.first_activation = hide
+		self.first_activation = hide and self.config["minimize_on_start"]
 		self.process = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
