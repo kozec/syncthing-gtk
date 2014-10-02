@@ -89,7 +89,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="vOnStartWait">
+              <object class="GtkRadioButton" id="rbOnStartWait">
                 <property name="label" translatable="yes">... _wait for daemon</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -106,7 +106,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="vOnStartRun">
+              <object class="GtkRadioButton" id="rbOnStartRun">
                 <property name="label" translatable="yes">... _start daemon in background</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -115,7 +115,7 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">vOnStartWait</property>
+                <property name="group">rbOnStartWait</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -124,7 +124,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="vOnStartAsk">
+              <object class="GtkRadioButton" id="rbOnStartAsk">
                 <property name="label" translatable="yes">... _ask me what to do</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -133,7 +133,7 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">vOnStartWait</property>
+                <property name="group">rbOnStartWait</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -156,7 +156,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="vOnExitTerminate">
+              <object class="GtkRadioButton" id="rbOnExitTerminate">
                 <property name="label" translatable="yes">... terminate _daemon</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -165,7 +165,7 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">vOnExitLeave</property>
+                <property name="group">rbOnExitLeave</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -174,7 +174,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="vOnExitLeave">
+              <object class="GtkRadioButton" id="rbOnExitLeave">
                 <property name="label" translatable="yes">... leave daemon _running</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -190,7 +190,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="vOnExitAsk">
+              <object class="GtkRadioButton" id="rbOnExitAsk">
                 <property name="label" translatable="yes">... ask me w_hat to do</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -198,7 +198,7 @@
                 <property name="use_underline">True</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">vOnExitLeave</property>
+                <property name="group">rbOnExitLeave</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -206,7 +206,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vauto_minimize">
+              <object class="GtkCheckButton" id="vminimize_on_start">
                 <property name="label" translatable="yes">Minimize to _tray on start</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>

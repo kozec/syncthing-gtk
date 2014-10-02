@@ -203,7 +203,7 @@ class EditorDialog(GObject.GObject):
 					self.display_value(key, widget)
 				except ValueNotFoundError:
 					# Value not found, probably old daemon version
-					print >>sys.stderr, "Warning: Value", key, "not found"
+					print >>sys.stderr, "Warning: display_values: Value", key, "not found"
 					widget.set_sensitive(False)
 		return True
 		
@@ -226,7 +226,7 @@ class EditorDialog(GObject.GObject):
 		elif isinstance(w, Gtk.CheckButton):
 			w.set_active(self.get_value(key.lstrip("v")))
 		else:
-			print >>sys.stderr, "Warning: EditorDialog class cannot handle widget", w, "key", key
+			print >>sys.stderr, "Warning: display_value: %s class cannot handle widget %s, key %s" % (self.__class__.__name__, w, key)
 			if not w is None: w.set_sensitive(False)
 	
 	def ui_value_changed(self, w, *a):
