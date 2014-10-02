@@ -154,6 +154,26 @@
 	</child>
 	
 	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-separator15">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="ui-settings">
+			<property name="label" translatable="yes">UI _Settings</property>
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-ui-settings-image</property>
+			<property name="use_stock">False</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_ui_settings" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
 		<object class="GtkImageMenuItem" id="menu-about">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -221,7 +241,7 @@
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="use_underline">True</property>
-			<property name="image">menu-settings-image</property>
+			<property name="image">menu-daemon-settings-image</property>
 			<property name="use_stock">False</property>
 			<property name="always_show_image">True</property>
 			<signal name="activate" handler="cb_menu_daemon_settings" swapped="no"/>
@@ -517,7 +537,14 @@
 	<property name="icon_name">computer</property>
 </object>
 
-<object class="GtkImage" id="menu-settings-image">
+<object class="GtkImage" id="menu-daemon-settings-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">preferences-system</property>
+</object>
+
+<object class="GtkImage" id="menu-ui-settings-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>

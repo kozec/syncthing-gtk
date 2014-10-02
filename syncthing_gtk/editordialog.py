@@ -227,7 +227,7 @@ class EditorDialog(GObject.GObject):
 			w.set_active(self.get_value(key.lstrip("v")))
 		else:
 			print >>sys.stderr, "Warning: EditorDialog class cannot handle widget", w, "key", key
-			w.set_sensitive(False)
+			if not w is None: w.set_sensitive(False)
 	
 	def ui_value_changed(self, w, *a):
 		"""

@@ -206,7 +206,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vAutoMinimize">
+              <object class="GtkCheckButton" id="vauto_minimize">
                 <property name="label" translatable="yes">Minimize to _tray on start</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -222,7 +222,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vUseNormalSkin">
+              <object class="GtkCheckButton" id="vuse_old_header">
                 <property name="label" translatable="yes">Us_e traditional window header</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -236,15 +236,6 @@
                 <property name="top_attach">1</property>
                 <property name="width">3</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
             </child>
             <child>
               <placeholder/>

@@ -230,8 +230,11 @@ class App(Gtk.Application, TimerManager):
 					self.display_connect_dialog(_("Connecting to Syncthing daemon at %s...") % (self.daemon.get_webui_url(),))
 				else:
 					# Daemon is probably not there, give user option to start it
-					if self.config["autostart_daemon"]:
-						# ... unless he already decided once forever
+					if self.config["autostart_daemon"] == 0:
+						# ... unless he already decided once forever ...
+						self.display_connect_dialog(_("Waiting for Syncthing daemon at %s...") % (self.daemon.get_webui_url(),))
+					elif self.config["autostart_daemon"] == 1:
+						# ... or already gave persmission ...
 						self.display_connect_dialog(_("Starting Syncthing daemon"))
 						self.start_deamon()
 					else:
@@ -699,7 +702,7 @@ class App(Gtk.Application, TimerManager):
 	# --- Callbacks ---
 	def cb_exit(self, *a):
 		if self.process != None:
-			if self.config["autokill_daemon"] == 0:
+			if self.config["autokill_daemon"] == 2:	# Ask
 				d = Gtk.MessageDialog(
 					self["window"],
 					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -716,7 +719,7 @@ class App(Gtk.Application, TimerManager):
 				d.connect("response", self.cb_kill_daemon_response, cb)
 				d.show_all()
 				return
-			elif self.config["autokill_daemon"] == 1:
+			elif self.config["autokill_daemon"] == 1: # Yes
 				self.process.kill()
 		self.quit()
 	
@@ -747,6 +750,12 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_daemon_settings(self, event, *a):
 		""" Handler for 'Daemon Settings' menu item """
 		e = DaemonSettingsDialog(self)
+		e.load()
+		e.show(self["window"])
+	
+	def cb_menu_ui_settings(self, event, *a):
+		""" Handler for 'UI Settings' menu item """
+		e = UISettingsDialog(self)
 		e.load()
 		e.show(self["window"])
 	
@@ -932,7 +941,7 @@ class App(Gtk.Application, TimerManager):
 			self.close_connect_dialog()
 			self.display_connect_dialog(_("Starting Syncthing daemon"))
 			if checkbox.get_active():
-				self.config["autostart_daemon"] = True
+				self.config["autostart_daemon"] = 1
 		else: # if response <= 0 or response == RESPONSE_QUIT:
 			self.cb_exit()
 	
@@ -941,7 +950,7 @@ class App(Gtk.Application, TimerManager):
 			if not self.process is None:
 				self.process.terminate()
 		if checkbox.get_active():
-			self.config["autokill_daemon"] = (1 if response == RESPONSE_SLAIN_DAEMON else -1)
+			self.config["autokill_daemon"] = (1 if response == RESPONSE_SLAIN_DAEMON else 0)
 		self.process = None
 		self.cb_exit()
 	

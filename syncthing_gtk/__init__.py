@@ -7,6 +7,7 @@ from editordialog		import EditorDialog
 from deviceeditor		import DeviceEditorDialog
 from foldereditor		import FolderEditorDialog
 from daemonsettings		import DaemonSettingsDialog
+from uisettings			import UISettingsDialog
 from configuration		import Configuration
 from iddialog			import IDDialog
 from about				import AboutDialog
