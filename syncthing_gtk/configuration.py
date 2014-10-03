@@ -19,8 +19,10 @@ class Configuration(object):
 	
 	REQUIRED_KEYS = {
 		# key : (type, default)
-		"autostart_daemon" : (bool, False),
-		"autokill_daemon" : (int, 0),	# 0 - no, 1 - yes, anything else - don't ask
+		"autostart_daemon"		: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
+		"autokill_daemon"		: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
+		"minimize_on_start"		: (bool, True),
+		"use_old_header"		: (bool, False),
 	}
 	
 	def __init__(self):
@@ -80,6 +82,10 @@ class Configuration(object):
 		file(self._conffile, "w").write(json.dumps(
 			self._values, sort_keys=True, indent=4, separators=(',', ': ')
 			))
+	
+	def __iter__(self):
+		for k in self._values:
+			yield k
 	
 	def __getitem__(self, key):
 		return self._values[key]

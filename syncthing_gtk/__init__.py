@@ -4,6 +4,10 @@ DEBUG = False
 import tools
 from infobox			import InfoBox
 from editordialog		import EditorDialog
+from deviceeditor		import DeviceEditorDialog
+from foldereditor		import FolderEditorDialog
+from daemonsettings		import DaemonSettingsDialog
+from uisettings			import UISettingsDialog
 from configuration		import Configuration
 from iddialog			import IDDialog
 from about				import AboutDialog
@@ -13,5 +17,7 @@ from timermgr			import TimerManager
 from statusicon			import StatusIcon
 from daemonoutputdialog	import DaemonOutputDialog
 from daemonprocess		import DaemonProcess
-from daemon				import Daemon, InvalidConfigurationException, TLSUnsupportedException
+from daemon				import Daemon, InvalidConfigurationException, \
+							TLSUnsupportedException, HTTPException, \
+							HTTPAuthException, ConnectionRestarted
 from app				import App

@@ -11,8 +11,7 @@
   </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Edit Node|New Node</property>
-    <property name="role">node-edit</property>
+    <property name="role">device-edit</property>
     <property name="modal">True</property>
     <property name="default_width">500</property>
     <property name="type_hint">dialog</property>
@@ -78,9 +77,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Node _ID</property>
+                <property name="label" translatable="yes">Device _ID</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vNodeID</property>
+                <property name="mnemonic_widget">vDeviceID</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -92,7 +91,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="vNodeID">
+              <object class="GtkEntry" id="vDeviceID">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <signal name="changed" handler="cb_check_value" swapped="no"/>
@@ -108,7 +107,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Node _Name</property>
+                <property name="label" translatable="yes">Device _Name</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">vName</property>
                 <attributes>
@@ -138,7 +137,7 @@
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">10</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Shown instead of Node ID in the cluster status.</property>
+                <property name="label" translatable="yes">Shown instead of Device ID in the cluster status.</property>
                 <property name="wrap">True</property>
               </object>
               <packing>
@@ -208,7 +207,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="lblvNodeID">
+              <object class="GtkLabel" id="lblvDeviceID">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
@@ -225,7 +224,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Share _Repositories</property>
+                <property name="label" translatable="yes">Share _Folders</property>
                 <property name="use_underline">True</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -238,7 +237,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="vRepos">
+              <object class="GtkBox" id="vFolders">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -257,7 +256,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Select the repositories to share with this node</property>
+                <property name="label" translatable="yes">Select the folders to share with this device</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -287,7 +286,7 @@
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">10</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Any nodes configured on an introducer node will be added to this node as well.</property>
+                <property name="label" translatable="yes">Any devices configured on an introducer device will be added to this device as well.</property>
                 <property name="wrap">True</property>
               </object>
               <packing>
