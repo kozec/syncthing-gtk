@@ -167,7 +167,7 @@ class App(Gtk.Application, TimerManager):
 			self.fatal_error(str(e))
 			sys.exit(1)
 		# Enable filesystem watching, if possible
-		self.watcher = Watcher(self.daemon)
+		self.watcher = Watcher(self, self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)
@@ -431,7 +431,7 @@ class App(Gtk.Application, TimerManager):
 				node.set_status(_("Up to Date"))
 	
 	def cb_syncthing_repo_added(self, daemon, rid, r):
-		self.show_repo(
+		box = self.show_repo(
 			rid, r["Directory"], r["Directory"],
 			r["ReadOnly"], r["IgnorePerms"], 
 			r["RescanIntervalS"],
@@ -441,7 +441,7 @@ class App(Gtk.Application, TimerManager):
 				)
 			)
 		if not self.watcher is None:
-			self.watcher.watch(r["Directory"])
+			self.watcher.watch(box["norm_path"])
 	
 	def cb_syncthing_repo_data_changed(self, daemon, rid, data):
 		if rid in self.repos:	# Should be always
@@ -524,6 +524,19 @@ class App(Gtk.Application, TimerManager):
 		d.hide()
 		d.destroy()
 		self.quit()
+	
+	def get_repo_n_path(self, path):
+		"""
+		Returns tuple of ID of repository containign specified path
+		and relative path in that repo, or (None, None) if specified
+		path doesn't belongs anywhere
+		"""
+		for rid in self.repos:
+			r = self.repos[rid]
+			relpath = os.path.relpath(path, r["norm_path"])
+			if not relpath.startswith("../") and relpath != "..":
+				return (rid, relpath)
+		return (None, None)
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
@@ -646,6 +659,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("nodes", shared)
+		box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 		box.set_status("Unknown")
 		box.set_color_hex(COLOR_REPO)
 		box.connect('right-click', self.cb_popup_menu_repo)

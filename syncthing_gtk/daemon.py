@@ -1074,9 +1074,14 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns tuple address on which daemon listens on. """
 		return self._address
 	
-	def rescan(self, repo_id):
-		""" Asks daemon to rescan repository """
-		self._rest_post("scan?repo=%s" % (repo_id,), {}, lambda *a: a, self._syncthing_cb_rescan_error, repo_id)
+	def rescan(self, repo_id, path=None):
+		""" Asks daemon to rescan entire repository or specified path """
+		# Errors here are ignored; Syncthing rescans stuff periodicaly,
+		# so it's not big problem if call fails.
+		if path is None:
+			self._rest_post("scan?repo=%s" % (repo_id,), {}, lambda *a: a, self._syncthing_cb_rescan_error, repo_id)
+		else:
+			self._rest_post("scan?repo=%s&sub=%s" % (repo_id, path), {}, lambda *a: a, self._syncthing_cb_rescan_error, repo_id)
 	
 	def request_events(self):
 		"""
@@ -1092,7 +1097,7 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Sets interval used mainly by event quering timer """
 		self._refresh_interval = i
 		if DEBUG: print "Set refresh interval to", i
-	
+
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(InvalidConfigurationException): pass
 class HTTPException(RuntimeError):

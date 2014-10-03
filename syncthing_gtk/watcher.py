@@ -7,13 +7,14 @@ Watches for filesystem changes and reports them to daemon
 
 from __future__ import unicode_literals
 import pyinotify
+from syncthing_gtk import DEBUG
 from gi.repository import GLib
 import os, sys
-DEBUG = True
 
 class Watcher(object):
 	""" Watches for filesystem changes and reports them to daemon """
-	def __init__(self, daemon):
+	def __init__(self, app, daemon):
+		self.app = app
 		self.daemon = daemon
 		self.wds = {}
 		self.wm = pyinotify.WatchManager()
@@ -22,7 +23,6 @@ class Watcher(object):
 	
 	def watch(self, path):
 		""" Starts recursive watching on specified directory """
-		path = os.path.abspath(os.path.expanduser(path))
 		self.wm.add_watch(path,
 			pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
 			pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True
@@ -30,7 +30,6 @@ class Watcher(object):
 	
 	def remove(self, path):
 		""" Cancels watching on specified directory """
-		path = os.path.abspath(os.path.expanduser(path))
 		if path in self.wds:
 			self.wm.rm_watch(self.wds[path], rec=True, quiet=True)
 			del self.wds[path]
@@ -71,9 +70,15 @@ class Watcher(object):
 		elif event.mask & pyinotify.IN_DELETE != 0:
 			# Deleted file
 			self._report_deleted(event.pathname)
-		else:
-			# Whatever
-			print event.maskname, event.pathname
+		elif event.mask & pyinotify.IN_MOVED_FROM != 0:
+			# Moved out = deleted
+			self._report_deleted(event.pathname)
+		elif event.mask & pyinotify.IN_DELETE != 0:
+			# Moved in = created
+			self._report_created(event.pathname)
+		#else:
+		#	# Whatever
+		#	print event.maskname, event.pathname
 	
 	def _process_events(self):
 		""" Called from GLib.idle_add """
@@ -85,9 +90,20 @@ class Watcher(object):
 		return True	# Repeat until killed
 	
 	def _report_created(self, path):
-		if DEBUG: print "CREATED", path
+		rid, relpath = self.app.get_repo_n_path(path)
+		if DEBUG: print "CREATED", rid, path, ">", relpath
+		if not rid is None:
+			self.daemon.rescan(rid, relpath)
+	
 	def _report_changed(self, path):
-		if DEBUG: print "CHANGED", path
+		rid, relpath = self.app.get_repo_n_path(path)
+		if DEBUG: print "CHANGED", rid, path, ">", relpath
+		if not rid is None:
+			self.daemon.rescan(rid, relpath)
+	
 	def _report_deleted(self, path):
-		if DEBUG: print "DELETED", path
-		
+		rid, relpath = self.app.get_repo_n_path(path)
+		if DEBUG: print "DELETED", rid, path, ">", relpath
+		if not rid is None:
+			self.daemon.rescan(rid, relpath)
+
