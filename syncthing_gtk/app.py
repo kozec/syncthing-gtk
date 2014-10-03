@@ -9,8 +9,6 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gio
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
-from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
-from syncthing_gtk.tools import compare_version
 import os, webbrowser, sys, pprint, re
 
 _ = lambda (a) : a
@@ -167,7 +165,8 @@ class App(Gtk.Application, TimerManager):
 			self.fatal_error(str(e))
 			sys.exit(1)
 		# Enable filesystem watching, if possible
-		self.watcher = Watcher(self, self.daemon)
+		if HAS_INOTIFY:
+			self.watcher = Watcher(self, self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)

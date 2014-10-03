@@ -10,9 +10,9 @@ from about				import AboutDialog
 from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
 from timermgr			import TimerManager
-from statusicon			import StatusIcon
+from statusicon			import StatusIcon, THE_HELL, HAS_INDICATOR
 from daemonoutputdialog	import DaemonOutputDialog
 from daemonprocess		import DaemonProcess
 from daemon				import Daemon, InvalidConfigurationException, TLSUnsupportedException
-from watcher			import Watcher
+from watcher			import Watcher, HAS_INOTIFY
 from app				import App
