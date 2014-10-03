@@ -65,7 +65,7 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide
 		self.process = None
-		self.watcher = Watcher(self)	# TODO: Turn off by configuration
+		self.watcher = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -166,6 +166,8 @@ class App(Gtk.Application, TimerManager):
 		except InvalidConfigurationException, e:
 			self.fatal_error(str(e))
 			sys.exit(1)
+		# Enable filesystem watching, if possible
+		self.watcher = Watcher(self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)
@@ -439,7 +441,7 @@ class App(Gtk.Application, TimerManager):
 				)
 			)
 		if not self.watcher is None:
-			self.watcher.add_root(r["Directory"])
+			self.watcher.watch(r["Directory"])
 	
 	def cb_syncthing_repo_data_changed(self, daemon, rid, data):
 		if rid in self.repos:	# Should be always
@@ -704,6 +706,8 @@ class App(Gtk.Application, TimerManager):
 		self.error_boxes = []
 		self.error_messages = set([])
 		self.cancel_all() # timers
+		if not self.watcher is None:
+			self.watcher.clear()
 		self.daemon.reconnect()
 	
 	# --- Callbacks ---

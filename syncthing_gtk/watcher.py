@@ -6,85 +6,88 @@ Watches for filesystem changes and reports them to daemon
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gio, GLib
+import pyinotify
+from gi.repository import GLib
 import os, sys
 DEBUG = True
 
 class Watcher(object):
 	""" Watches for filesystem changes and reports them to daemon """
-	def __init__(self, app):
-		self.app = app
-		self._monitors = {}
+	def __init__(self, daemon):
+		self.daemon = daemon
+		self.wds = {}
+		self.wm = pyinotify.WatchManager()
+		self.notifier = pyinotify.Notifier(self.wm, timeout=10, default_proc_fun=self._process)
+		self.glibsrc = GLib.idle_add(self._process_events)
 	
-	def add_root(self, path):
-		""" Starts watch on specified folder """
+	def watch(self, path):
+		""" Starts recursive watching on specified directory """
 		path = os.path.abspath(os.path.expanduser(path))
-		if path in self._monitors:
-			# Remove old monitor, just in case
-			self._monitors[path].cancel()
-			del self._monitors[path]
-		
-		f = Gio.File.new_for_path(path)
-		m = f.monitor_directory(Gio.FileMonitorFlags.NONE, None)
-		if m is None:
-			print >>sys.stderr, "Error: Failed to monitor directory", path
-			return
-		
-		m.connect("changed", self._on_monitor)
-		self._monitors[path] = m
-		if DEBUG: print "Added monitor for", path
-		# Scan for subdirectories, add them recursively
-		f.enumerate_children_async(
-			"standard::name,standard::file_type",
-			Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
-			0, None, # priority, cancelable
-			self._on_enum_children)
-	
-	def remove_root(self, path):
-		""" Cancels watching for specified folder and all subfolders """
-		path = os.path.abspath(os.path.expanduser(path))
-		for p in self._monitors.keys():
-			if p == path or p.startswith("%s/" % (path,)):
-				self._monitors[p].cancel()
-				del self._monitors[p]
-				if DEBUG: print "Removed monitor for", p
-	
-	def _on_enum_children(self, f, res):
-		try:
-			e = f.enumerate_children_finish(res)
-		except Exception, e:
-			print >>sys.stderr, "Error: Failed to enumerate directory", f.get_path()
-			return
-		GLib.timeout_add(100, e.next_files_async,
-			100, 0, None, # number of files, priority, cancelable
-			self._on_enum_child
+		self.wm.add_watch(path,
+			pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
+			pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True
 		)
 	
-	def _on_enum_child(self, e, res):
-		try:
-			files = e.next_files_finish(res)
-		except Exception, e:
-			print >>sys.stderr, "Error: Failed to read directory", f.get_path()
-			return
-		path = e.get_container().get_path()
-		for x in files:
-			if x.get_file_type() == Gio.FileType.DIRECTORY:
-				self.add_root(os.path.join(path, x.get_name()))
-		GLib.timeout_add(100, e.next_files_async,
-			100, 0, None, # number of files, priority, cancelable
-			self._on_enum_child
-		)
+	def remove(self, path):
+		""" Cancels watching on specified directory """
+		path = os.path.abspath(os.path.expanduser(path))
+		if path in self.wds:
+			self.wm.rm_watch(self.wds[path], rec=True, quiet=True)
+			del self.wds[path]
 	
-	def _on_monitor(self, monitor, src, dest, e_type):
-		if e_type == Gio.FileMonitorEvent.ATTRIBUTE_CHANGED:
-			if DEBUG: print "ATTRIBUTE_CHANGED", src.get_path()
-		elif e_type == Gio.FileMonitorEvent.CREATED:
-			f_type = src.query_file_type(Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS)
-			if DEBUG: print "CREATED", f_type, src.get_path()
-			if f_type == Gio.FileType.DIRECTORY:
-				self.add_root(src.get_path())
-		elif e_type == Gio.FileMonitorEvent.DELETED:
-			path = os.path.abspath(src.get_path())
-			if DEBUG: print "DELETED", src.get_path()
-			if path in self._monitors:
-				self.remove_root(path)
+	def clear(self):
+		""" Cancels watching on everything """
+		wds_v = self.wds.values()
+		self.wds = {}
+		for x in wds_v:
+			self.wm.rm_watch(x, rec=True, quiet=True)
+	
+	def kill(self):
+		""" Cancels & deallocates everything """
+		if self.glibsrc > 0:
+			GLib.source_remove(self.glibsrc)
+			self.glibsrc = -1
+		self.clear()
+		del self.notifier
+		del self.wm
+		
+	def _process(self, event):
+		""" Inotify event callback """
+		if event.mask & pyinotify.IN_ISDIR != 0:
+			if event.mask & pyinotify.IN_CREATE != 0:
+				# New dir - Add watch to created dir as well
+				self.watch(event.pathname)
+				self._report_created(event.pathname)
+			elif event.mask & pyinotify.IN_DELETE != 0:
+				# Deleted dir - Remove watch to deleted dir
+				self.remove(event.pathname)
+				self._report_deleted(event.pathname)
+		elif event.mask & pyinotify.IN_CREATE != 0:
+			# New file - ignore event, 'IN_CLOSE_WRITE' is enought for my purpose
+			return
+		elif event.mask & pyinotify.IN_CLOSE_WRITE != 0:
+			# Changed file
+			self._report_changed(event.pathname)
+		elif event.mask & pyinotify.IN_DELETE != 0:
+			# Deleted file
+			self._report_deleted(event.pathname)
+		else:
+			# Whatever
+			print event.maskname, event.pathname
+	
+	def _process_events(self):
+		""" Called from GLib.idle_add """
+		notifier = self.notifier
+		notifier.process_events()
+		while notifier.check_events():
+			notifier.read_events()
+			notifier.process_events()
+		return True	# Repeat until killed
+	
+	def _report_created(self, path):
+		if DEBUG: print "CREATED", path
+	def _report_changed(self, path):
+		if DEBUG: print "CHANGED", path
+	def _report_deleted(self, path):
+		if DEBUG: print "DELETED", path
+		
