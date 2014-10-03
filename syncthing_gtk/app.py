@@ -2,7 +2,7 @@
 """
 Syncthing-GTK - App
 
-Main window of application
+Main application window
 """
 
 from __future__ import unicode_literals
@@ -287,6 +287,8 @@ class App(Gtk.Application, TimerManager):
 	def cb_syncthing_config_saved(self, *a):
 		# Ask daemon to reconnect and reload entire UI
 		self.cancel_all() # timers
+		if not self.watcher is None:
+			self.watcher.clear()
 		self.daemon.reconnect()
 	
 	def cb_syncthing_error(self, daemon, message):
@@ -443,7 +445,8 @@ class App(Gtk.Application, TimerManager):
 				)
 			)
 		if not self.watcher is None:
-			self.watcher.watch(box["norm_path"])
+			if rid in self.config["use_inotify"]:
+				self.watcher.watch(box["norm_path"])
 	
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always

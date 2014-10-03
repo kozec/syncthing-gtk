@@ -8,7 +8,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
-from syncthing_gtk import EditorDialog
+from syncthing_gtk import EditorDialog, HAS_INOTIFY
 import re, sys
 _ = lambda (a) : a
 
@@ -17,7 +17,7 @@ COLOR_NEW				= "#A0A0A0"
 RE_FOLDER_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
 VALUES = [ "vID", "vPath", "vReadOnly", "vIgnorePerms", "vDevices",
 	"vVersioning", "vKeepVersions", "vRescanIntervalS", "vMaxAge",
-	"vVersionsPath"
+	"vVersionsPath", "vINotify"
 	]
 
 class FolderEditorDialog(EditorDialog):
@@ -47,6 +47,8 @@ class FolderEditorDialog(EditorDialog):
 			return self.get_burried_value("Versioning/Params/versionsPath", self.values, "")
 		elif key == "Versioning":
 			return self.get_burried_value("Versioning/Type", self.values, "")
+		elif key == "INotify":
+			return self.id in self.app.config["use_inotify"]
 		else:
 			return EditorDialog.get_value(self, key)
 	
@@ -68,6 +70,15 @@ class FolderEditorDialog(EditorDialog):
 			# Create structure if needed
 			self.create_dicts(self.values, ("Versioning", "Params", "versionsPath"))
 			self.values["Versioning"]["Params"]["versionsPath"] = value
+		elif key == "INotify":
+			l = self.app.config["use_inotify"]
+			if value:
+				if not self.id in l:
+					l.append(self.id)
+			else:
+				while self.id in l:
+					l.remove(self.id)
+			self.app.config["use_inotify"] = l
 		else:
 			EditorDialog.set_value(self, key, value)
 	
@@ -100,6 +111,11 @@ class FolderEditorDialog(EditorDialog):
 			print >>sys.stderr, e
 			self.close()
 			return False
+		if not HAS_INOTIFY:
+			self["vINotify"].set_sensitive(False)
+			self["lblINotify"].set_sensitive(False)
+			self["vINotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
+			self["lblINotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
 		return self.display_values(VALUES)
 	
 	#@Overrides

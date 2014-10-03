@@ -23,6 +23,7 @@ class Configuration(object):
 		"autokill_daemon"		: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
 		"minimize_on_start"		: (bool, True),
 		"use_old_header"		: (bool, False),
+		"use_inotify"			: (list, []),
 	}
 	
 	def __init__(self):
