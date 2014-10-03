@@ -9,8 +9,6 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gio
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
-from syncthing_gtk.statusicon import THE_HELL, HAS_INDICATOR
-from syncthing_gtk.tools import compare_version
 import os, webbrowser, sys, pprint, re
 
 _ = lambda (a) : a
@@ -67,6 +65,7 @@ class App(Gtk.Application, TimerManager):
 		self.first_activation = hide and self.config["minimize_on_start"]
 		self.process = None
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
+		self.watcher = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -168,6 +167,9 @@ class App(Gtk.Application, TimerManager):
 		except InvalidConfigurationException, e:
 			self.fatal_error(str(e))
 			sys.exit(1)
+		# Enable filesystem watching, if possible
+		if HAS_INOTIFY:
+			self.watcher = Watcher(self, self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)
@@ -431,7 +433,7 @@ class App(Gtk.Application, TimerManager):
 				device.set_status(_("Up to Date"))
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
-		self.show_folder(
+		box = self.show_folder(
 			rid, r["Path"], r["Path"],
 			r["ReadOnly"], r["IgnorePerms"], 
 			r["RescanIntervalS"],
@@ -440,6 +442,8 @@ class App(Gtk.Application, TimerManager):
 				key=lambda x : x.get_title().lower()
 				)
 			)
+		if not self.watcher is None:
+			self.watcher.watch(box["norm_path"])
 	
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always
@@ -522,6 +526,19 @@ class App(Gtk.Application, TimerManager):
 		d.hide()
 		d.destroy()
 		self.quit()
+	
+	def get_folder_n_path(self, path):
+		"""
+		Returns tuple of ID of folder containign specified path and
+		relative path in that folder, or (None, None) if specified path
+		doesn't belongs anywhere
+		"""
+		for folder_id in self.folders:
+			f = self.folders[folder_id]
+			relpath = os.path.relpath(path, f["norm_path"])
+			if not relpath.startswith("../") and relpath != "..":
+				return (folder_id, relpath)
+		return (None, None)
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
@@ -646,6 +663,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("devices", shared)
+		box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 		box.set_status("Unknown")
 		box.set_color_hex(COLOR_REPO)
 		box.connect('right-click', self.cb_popup_menu_folder)
@@ -706,6 +724,8 @@ class App(Gtk.Application, TimerManager):
 		self.error_boxes = []
 		self.error_messages = set([])
 		self.cancel_all() # timers
+		if not self.watcher is None:
+			self.watcher.clear()
 		self.daemon.reconnect()
 	
 	# --- Callbacks ---

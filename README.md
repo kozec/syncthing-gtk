@@ -16,7 +16,9 @@ Additional features:
 
 Dependencies:  
 &nbsp;&nbsp;&nbsp;python 2.7, gtk3, <a href=https://live.gnome.org/PyGObject>PyGObject</a>,
-<a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version), <a href="http://syncthing.net">syncthing 0.10 or newer</a>
+<a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version),
+<a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> (optional),
+<a href="http://syncthing.net">syncthing 0.10 or newer</a>
 
 Packages:
 - Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
