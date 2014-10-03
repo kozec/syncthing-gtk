@@ -383,9 +383,6 @@ class App(Gtk.Application, TimerManager):
 			# Update rates
 			node['dl_rate'] = "%sps (%s)" % (sizeof_fmt(dl_rate), sizeof_fmt(bytes_in))
 			node['up_rate'] = "%sps (%s)" % (sizeof_fmt(up_rate), sizeof_fmt(bytes_out))
-		if nid == self.daemon.get_my_id():
-			# "Ingnore Patterns" requires v0.9.18
-			self["menu-popup-edit-ignored"].set_sensitive(compare_version(node["version"], "0.9.18"))
 	
 	def cb_syncthing_last_seen_changed(self, daemon, nid, dt):
 		if nid in self.nodes:	# Should be always

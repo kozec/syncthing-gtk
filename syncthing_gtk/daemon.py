@@ -15,7 +15,7 @@ from datetime import datetime
 import json, os, sys, time
 
 # Minimal version supported by Daemon class
-MIN_VERSION = "0.9.8"
+MIN_VERSION = "0.10"
 
 # Random constant used as key when adding headers to returned data in
 # REST requests; Anything goes, as long as it isn't string
