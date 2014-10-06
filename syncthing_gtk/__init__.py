@@ -20,5 +20,6 @@ from about				import AboutDialog
 from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
 from statusicon			import StatusIcon, THE_HELL, HAS_INDICATOR
+from notifications		import Notifications, HAS_DESKTOP_NOTIFY
 from daemonoutputdialog	import DaemonOutputDialog
 from app				import App

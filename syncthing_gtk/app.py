@@ -66,6 +66,7 @@ class App(Gtk.Application, TimerManager):
 		self.process = None
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
 		self.watcher = None
+		self.notifications = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -167,9 +168,12 @@ class App(Gtk.Application, TimerManager):
 		except InvalidConfigurationException, e:
 			self.fatal_error(str(e))
 			sys.exit(1)
-		# Enable filesystem watching, if possible
+		# Enable filesystem watching and desktop notifications,
+		# if desired and possible
 		if HAS_INOTIFY:
 			self.watcher = Watcher(self, self.daemon)
+		if HAS_DESKTOP_NOTIFY:
+			self.notifications = Notifications(self, self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)

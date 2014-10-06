@@ -116,4 +116,5 @@ if HAS_INOTIFY:
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 	
-	Watcher = WatcherCls # Only if pyinotify is available, None otherwise
+	# Watcher is set to class only if pyinotify is available
+	Watcher = WatcherCls
