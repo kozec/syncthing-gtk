@@ -558,6 +558,22 @@ class App(Gtk.Application, TimerManager):
 		if name in self.widgets: return True
 		return self.builder.get_object(name) != None
 	
+	def hilight(self, boxes):
+		to_hilight = set([])
+		for box in boxes:
+			if box["id"] in self.folders:
+				for d in box["devices"]:
+					if d["id"] != self.daemon.get_my_id():
+						to_hilight.add(d)
+				to_hilight.add(box)
+			if box["id"] in self.devices and box["id"] != self.daemon.get_my_id():
+				for f in self.folders.values():
+					if box in f["devices"]:
+						to_hilight.add(f)
+				to_hilight.add(box)
+		for box in [] + self.devices.values() + self.folders.values():
+			box.set_hilight(box in to_hilight)
+	
 	def is_visible(self):
 		""" Returns True if main window is visible """
 		return self["window"].is_visible()
@@ -670,6 +686,8 @@ class App(Gtk.Application, TimerManager):
 		box.set_status("Unknown")
 		box.set_color_hex(COLOR_REPO)
 		box.connect('right-click', self.cb_popup_menu_folder)
+		box.connect('enter-notify-event', self.cb_box_mouse_enter)
+		box.connect('leave-notify-event', self.cb_box_mouse_leave)
 		self["folderlist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
@@ -698,6 +716,8 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("time", 0)
 		box.set_color_hex(COLOR_DEVICE)
 		box.connect('right-click', self.cb_popup_menu_device)
+		box.connect('enter-notify-event', self.cb_box_mouse_enter)
+		box.connect('leave-notify-event', self.cb_box_mouse_leave)
 		self["devicelist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
@@ -762,6 +782,12 @@ class App(Gtk.Application, TimerManager):
 		# Hide main window
 		self.hide()
 		return True
+	
+	def cb_box_mouse_enter(self, box, *a):
+		self.hilight([box])
+
+	def cb_box_mouse_leave(self, *a):
+		self.hilight([])
 	
 	def cb_menu_show_id(self, *a):
 		d = IDDialog(self, self.daemon.get_my_id())

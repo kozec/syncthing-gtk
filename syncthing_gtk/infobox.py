@@ -28,6 +28,7 @@ class InfoBox(Gtk.Container):
 		self.header_inverted = False
 		self.values = {}
 		self.value_widgets = {}
+		self.hilight = False
 		self.icon = icon
 		self.color = (1, 0, 1, 1)		# rgba
 		self.background = (1, 1, 1, 1)	# rgba
@@ -48,6 +49,10 @@ class InfoBox(Gtk.Container):
 		self.header_box.show_all()
 		self.icon = icon
 	
+	def set_hilight(self, h):
+		self.hilight = h
+		self.set_color(*self.color)
+	
 	def init_header(self):
 		# Create widgets
 		eb = Gtk.EventBox()
@@ -62,6 +67,8 @@ class InfoBox(Gtk.Container):
 		# Connect signals
 		eb.connect("realize", self.set_header_cursor)
 		eb.connect("button-release-event", self.on_header_click)
+		eb.connect('enter-notify-event', self.on_enter_notify)
+		eb.connect('leave-notify-event', self.on_leave_notify)
 		# Pack together
 		hbox.pack_start(self.icon, False, False, 0)
 		hbox.pack_start(self.title, True, True, 0)
@@ -89,6 +96,8 @@ class InfoBox(Gtk.Container):
 		self.grid.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
 		# Connect signals
 		eb.connect("button-release-event", self.on_grid_click)
+		eb.connect('enter-notify-event', self.on_enter_notify)
+		eb.connect('leave-notify-event', self.on_leave_notify)
 		# Pack together
 		align.add(self.grid)
 		eb.add(align)
@@ -209,7 +218,7 @@ class InfoBox(Gtk.Container):
 		header_al = self.children[0].get_allocation()
 		
 		# Border
-		cr.set_source_rgba(*self.color)
+		cr.set_source_rgba(*( hilight(self.color) if self.hilight else self.color ))
 		cr.move_to(0, self.border_width / 2.0)
 		cr.line_to(0, allocation.height)
 		cr.line_to(allocation.width, allocation.height)
@@ -229,7 +238,7 @@ class InfoBox(Gtk.Container):
 			cr.fill()
 		
 		# Header
-		cr.set_source_rgba(*self.color)
+		cr.set_source_rgba(*( hilight(self.color) if self.hilight else self.color ))
 		cr.rectangle(self.border_width / 2.0, 0, allocation.width - self.border_width, header_al.height + (2 * self.border_width))
 		cr.fill()
 		
@@ -257,6 +266,13 @@ class InfoBox(Gtk.Container):
 		""" Displays popup menu on right click """
 		if event.button == 3:	# right
 			self.emit('right-click', event.button, event.time)
+	
+	### Translated events
+	def on_enter_notify(self, eb, event, *data):
+		self.emit("enter-notify-event", None, *data)
+	
+	def on_leave_notify(self, eb, event, *data):
+		self.emit("leave-notify-event", None, *data)
 	
 	### Methods
 	def set_title(self, t):
@@ -295,7 +311,10 @@ class InfoBox(Gtk.Container):
 		""" Expects floats """
 		self.color = (r, g, b, a)
 		self.header.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(r, g, b, a))
-		self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
+		if self.hilight:
+			self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*hilight(self.color)))
+		else:
+			self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
 		self.queue_draw()
 	
 	def set_border(self, width):
@@ -381,3 +400,7 @@ class InfoBox(Gtk.Container):
 	def __setitem__(self, key, value):
 		""" Shortcut to set_value. Creates new hidden_value if key doesn't exist """
 		self.set_value(key, value)
+
+def hilight(color):
+	""" Returns 'hilighted' version of color """
+	return tuple([ min(1.0, x + 0.25) for x in color])
