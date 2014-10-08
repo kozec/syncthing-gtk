@@ -22,6 +22,7 @@ Dependencies:
 
 Optional Dependencies:  
 - <a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> for instant synchronization.
+- libnotofy for desktop notifications.
 
 Packages:
 - Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>

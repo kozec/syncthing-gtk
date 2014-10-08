@@ -63,6 +63,7 @@ class App(Gtk.Application, TimerManager):
 		self.process = None
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
 		self.watcher = None
+		self.notifications = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
@@ -164,9 +165,13 @@ class App(Gtk.Application, TimerManager):
 		except InvalidConfigurationException, e:
 			self.fatal_error(str(e))
 			sys.exit(1)
-		# Enable filesystem watching, if possible
+		# Enable filesystem watching and desktop notifications,
+		# if desired and possible
 		if HAS_INOTIFY:
 			self.watcher = Watcher(self, self.daemon)
+		if HAS_DESKTOP_NOTIFY:
+			if self.config["notification_for_update"] or self.config["notification_for_error"]:
+				self.notifications = Notifications(self, self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)
@@ -301,7 +306,15 @@ class App(Gtk.Application, TimerManager):
 		if "Stopping folder" in message:
 			severity = Gtk.MessageType.ERROR
 		self.error_messages.add(message)
-		self.show_error_box(RIBar(message, severity))
+		bar = RIBar(message, severity)
+		bar.connect("response", self.cb_error_response, message)
+		self.show_error_box(bar)
+	
+	def cb_error_response(self, bar, response, message):
+		# Remove closed error message from self.error_messages list,
+		# so it can re-appear
+		if message in self.error_messages:
+			self.error_messages.remove(message)
 	
 	def cb_syncthing_folder_rejected(self, daemon, nid, rid):
 		if (nid, rid) in self.error_messages:

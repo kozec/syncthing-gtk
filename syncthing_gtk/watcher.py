@@ -36,6 +36,7 @@ if HAS_INOTIFY:
 				pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
 				pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True
 			)
+			if DEBUG: print "Watching", path
 		
 		def remove(self, path):
 			""" Cancels watching on specified directory """
@@ -49,6 +50,7 @@ if HAS_INOTIFY:
 			self.wds = {}
 			for x in wds_v:
 				self.wm.rm_watch(x, rec=True, quiet=True)
+			if DEBUG: print "Cleared all watches"
 		
 		def kill(self):
 			""" Cancels & deallocates everything """
@@ -116,4 +118,5 @@ if HAS_INOTIFY:
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 	
-	Watcher = WatcherCls # Only if pyinotify is available, None otherwise
+	# Watcher is set to class only if pyinotify is available
+	Watcher = WatcherCls
