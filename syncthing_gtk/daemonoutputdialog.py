@@ -12,7 +12,7 @@ import os, tempfile
 _ = lambda (a) : a
 
 class DaemonOutputDialog(object):
-	""" Dialog with Node ID and generated QR code """
+	""" Displays output from daemon subprocess """
 	def __init__(self, app, proc):
 		self.proc = proc
 		self.app = app

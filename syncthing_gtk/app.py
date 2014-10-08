@@ -17,24 +17,21 @@ COLOR_DEVICE			= "#9246B1"
 COLOR_DEVICE_SYNCING	= "#2A89C8"
 COLOR_DEVICE_CONNECTED	= "#2A89C8"
 COLOR_OWN_DEVICE		= "#C0C0C0"
-COLOR_REPO				= "#9246B1"
-COLOR_REPO_SYNCING		= "#2A89C8"
-COLOR_REPO_SCANNING		= "#2A89C8"
-COLOR_REPO_IDLE			= "#2AAB61"
-COLOR_REPO_STOPPED		= "#87000B"
+COLOR_FOLDER			= "#9246B1"
+COLOR_FOLDER_SYNCING	= "#2A89C8"
+COLOR_FOLDER_SCANNING	= "#2A89C8"
+COLOR_FOLDER_IDLE		= "#2AAB61"
+COLOR_FOLDER_STOPPED	= "#87000B"
 COLOR_NEW				= "#A0A0A0"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
 # Infobar position
 RIBAR_POSITION = 0 if not THE_HELL else 1
 
-# Regexps used to extract meaningfull data from error messages
-FIX_EXTRACT_REPOID = re.compile(r'[a-zA-Z ]+"([-\._a-zA-Z0-9]+)"[a-zA-Z ]+"([-A-Z0-9]+)".*')
-
 # Response IDs
 RESPONSE_RESTART		= 256
-RESPONSE_FIX_REPOID		= 257
-RESPONSE_FIX_NEW_device	= 258
+RESPONSE_FIX_FOLDER_ID	= 257
+RESPONSE_FIX_NEW_DEVICE	= 258
 RESPONSE_QUIT			= 260
 RESPONSE_START_DAEMON	= 271
 RESPONSE_SLAIN_DAEMON	= 272
@@ -191,11 +188,11 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-added", self.cb_syncthing_folder_added)
 		self.daemon.connect("folder-data-changed", self.cb_syncthing_folder_data_changed)
 		self.daemon.connect("folder-data-failed", self.cb_syncthing_folder_state_changed, 0.0, COLOR_NEW, "")
-		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_REPO_SYNCING, _("Syncing"))
-		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_REPO_SYNCING, _("Syncing"))
-		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
-		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_REPO_SCANNING, _("Scanning"))
-		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_REPO_IDLE, _("Idle"))
+		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_FOLDER_SYNCING, _("Syncing"))
+		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
+		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
+		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
+		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 	
@@ -321,7 +318,7 @@ class App(Gtk.Application, TimerManager):
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
-			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_REPOID)
+			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_FOLDER_ID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, address):
@@ -335,7 +332,7 @@ class App(Gtk.Application, TimerManager):
 					'to open Add device dialog.') % (nid, address)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
-		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_device)
+		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_DEVICE)
 		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
@@ -470,7 +467,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_syncthing_folder_stopped(self, daemon, rid, message):
 		if rid in self.folders:	# Should be always
 			folder = self.folders[rid]
-			folder.set_color_hex(COLOR_REPO_STOPPED)
+			folder.set_color_hex(COLOR_FOLDER_STOPPED)
 			folder.set_status(_("Stopped"), 0)
 			# Color, theme-based icon is used here. It's intentional and
 			# supposed to draw attention
@@ -671,12 +668,12 @@ class App(Gtk.Application, TimerManager):
 		""" Shared is expected to be list """
 		# title = name if len(name) < 20 else "...%s" % name[-20:]
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
-		box.add_value("id",			"version.png",	_("Repository ID"),			id)
+		box.add_value("id",			"version.png",	_("Folder ID"),			id)
 		box.add_value("path",		"folder.png",	_("Path"),					path)
-		box.add_value("global",		"global.png",	_("Global Repository"),		"? items, ?B")
-		box.add_value("local",		"home.png",		_("Local Repository"),		"? items, ?B")
+		box.add_value("global",		"global.png",	_("Global State"),		"? items, ?B")
+		box.add_value("local",		"home.png",		_("Local State"),		"? items, ?B")
 		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
-		box.add_value("master",		"lock.png",		_("Master Repo"),			_("Yes") if is_master else _("No"))
+		box.add_value("master",		"lock.png",		_("Folder Master"),			_("Yes") if is_master else _("No"))
 		box.add_value("ignore",		"ignore.png",	_("Ignore Permissions"),	_("Yes") if ignore_perms else _("No"))
 		box.add_value("rescan",		"restart.png",	_("Rescan Interval"),		"%s s" % (rescan_interval,))
 		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
@@ -684,7 +681,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("devices", shared)
 		box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 		box.set_status("Unknown")
-		box.set_color_hex(COLOR_REPO)
+		box.set_color_hex(COLOR_FOLDER)
 		box.connect('right-click', self.cb_popup_menu_folder)
 		box.connect('enter-notify-event', self.cb_box_mouse_enter)
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
@@ -959,7 +956,7 @@ class App(Gtk.Application, TimerManager):
 		if response_id == RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
-		elif response_id == RESPONSE_FIX_REPOID:
+		elif response_id == RESPONSE_FIX_FOLDER_ID:
 			# Give up if there is no device with matching ID
 			if additional_data["nid"] in self.devices:
 				# Find folder with matching ID ...
@@ -978,7 +975,7 @@ class App(Gtk.Application, TimerManager):
 					e.call_after_loaded(e.fill_folder_id, additional_data["rid"])
 					e.load()
 					e.show(self["window"])
-		elif response_id == RESPONSE_FIX_NEW_device:
+		elif response_id == RESPONSE_FIX_NEW_DEVICE:
 			e = DeviceEditorDialog(self, True, additional_data["nid"])
 			e.load()
 			e.show(self["window"])

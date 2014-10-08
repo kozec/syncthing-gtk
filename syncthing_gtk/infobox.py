@@ -2,7 +2,7 @@
 """
 Syncthing-GTK - InfoBox
 
-Colorfull, expandlable widget displaying node/repo data
+Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject, Pango
@@ -11,7 +11,7 @@ import os
 _ = lambda (a) : a
 
 class InfoBox(Gtk.Container):
-	""" Expandlable widget displaying node/repo data """
+	""" Expandlable widget displaying folder/device data """
 	__gtype_name__ = "InfoBox"
 	__gsignals__ = {
 			# right-click(button, time)

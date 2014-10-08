@@ -126,7 +126,7 @@ class DeviceEditorDialog(EditorDialog):
 							break
 						found = True
 				if (not found) and (rid in folders) and folders[rid]:
-					# Add new /<device> key (share repo with device)
+					# Add new /<device> key (share folder with device)
 					r["Devices"].append({
 					   "Addresses" : None,
 					   "DeviceID" : nid,
