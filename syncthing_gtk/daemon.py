@@ -276,7 +276,7 @@ class Daemon(GObject.GObject, TimerManager):
 		# last-seen-changed event with same values twice
 		self._last_seen = {}
 		# last_error_time is used to discard repeating errors
-		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1, tzinfo=tz.tzlocal())
+		self._last_error_time = None # Time is taken for first event
 		# last_id is id of last event recieved from daemon
 		self._last_id = 0
 		# Epoch is incereased when reconnect() method is called; It is
@@ -620,6 +620,16 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("disconnected", reason, None)
 			self.cancel_all()
 	
+	def _init_event_pooling(self, events):
+		if type(events) == list and len(events) > 0:
+			self._last_id = events[-1]["id"]
+			self._last_error_time = parsetime(events[-1]["time"])
+			self._rest_request("errors", self._syncthing_cb_errors)
+		else:
+			# Retry for invalid data
+			self._rest_request("events?limit=1", self._init_event_pooling)
+
+	
 	def _syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
 		if type(events) == list:	# Ignore invalid data
@@ -641,10 +651,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self.timer("event", self._refresh_interval, self._request_events)
 	
 	def _syncthing_cb_errors(self, errors):
-		if "errors" in errors:
-			# New since https://github.com/syncthing/syncthing/commit/37a473e7d6532951e2617a91338a6f1b114cb4de
-			errors = errors["errors"]
-		for e in errors:
+		for e in errors["errors"]:
 			t = parsetime(e["Time"])
 			if t > self._last_error_time:
 				self.emit("error", e["Error"])
@@ -838,8 +845,7 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("folder-added", rid, r)
 				self._request_folder_data(rid)
 			
-			self._rest_request("events?limit=1", self._syncthing_cb_events)	# Requests most recent event only
-			self._rest_request("errors", self._syncthing_cb_errors)
+			self._rest_request("events?limit=1", self._init_event_pooling)	# Requests most recent event only
 			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
 			self._rest_request("connections", self._syncthing_cb_connections)
 			self._rest_request("system", self._syncthing_cb_system)
@@ -973,6 +979,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._needs_update = set()
 		self._device_data = {}
 		self._folder_devices = {}
+		self._last_id = 0
 		self._last_seen = {}
 		self.cancel_all()
 		self._epoch += 1
