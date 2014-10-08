@@ -38,34 +38,50 @@ if HAS_DESKTOP_NOTIFY:
 			self.updating = set([])		# Filenames
 			self.updated = set([])		# Filenames
 			self.deleted = set([])		# Filenames
-			# Load icon
+			# Load icons
 			self.icon = None
+			self.error_icon = None
 			try:
 				self.icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.app.iconpath, "st-logo-64.png"))
+				self.error_icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.app.iconpath, "error-64.png"))
 			except Exception, e:
 				print >>sys.stderr, "Failed to load icon:", e
 			# Make deep connection with daemon
 			self.daemon.connect("connected", self.cb_syncthing_connected)
+			self.daemon.connect("error", self.cb_syncthing_error)
 			self.daemon.connect('item-started', self.cb_syncthing_item_started)
 			self.daemon.connect('item-updated', self.cb_syncthing_item_updated)
 		
-		def info(self, text):
+		def info(self, text, icon=None):
 			n = Notify.Notification.new(
 					_("Syncthing GTK"),
 					text
 				)
-			if not self.icon is None:
-				n.set_icon_from_pixbuf(self.icon)
-			if n.show ():
-				return n
+			if icon is None:
+				icon = self.icon
+			if not icon is None:
+				n.set_icon_from_pixbuf(icon)
+			try:
+				if n.show ():
+					return n
+			except Exception, e:
+				# Ignore all errors here, there is no way I can handle
+				# everything what can be broken with notifications...
+				pass
 			del n
 			return None
+		
+		def error(self, text):
+			self.info(text, self.error_icon)
 		
 		def cb_syncthing_connected(self, *a):
 			# Clear download list
 			self.updating = set([])
 			self.updated = set([])
 			self.deleted = set([])
+		
+		def cb_syncthing_error(self, daemon, error):
+			self.error(error)
 		
 		def cb_syncthing_item_started(self, daemon, folder_id, path, time):
 			if folder_id in self.app.folders:
@@ -85,7 +101,6 @@ if HAS_DESKTOP_NOTIFY:
 				self.updating.remove(f_path)
 				self.cancel_timer("display")
 				self.timer("display", DELAY, self.display)
-
 		
 		def display(self):
 			if len(self.updated) == 1 and len(self.deleted) == 0:
