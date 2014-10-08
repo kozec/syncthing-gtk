@@ -8,6 +8,7 @@ from daemon				import Daemon, InvalidConfigurationException, \
 							TLSUnsupportedException, HTTPException, \
 							HTTPAuthException, ConnectionRestarted
 from watcher			import Watcher, HAS_INOTIFY
+from notifications		import Notifications, HAS_DESKTOP_NOTIFY
 from infobox			import InfoBox
 from editordialog		import EditorDialog
 from deviceeditor		import DeviceEditorDialog
@@ -20,6 +21,5 @@ from about				import AboutDialog
 from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
 from statusicon			import StatusIcon, THE_HELL, HAS_INDICATOR
-from notifications		import Notifications, HAS_DESKTOP_NOTIFY
 from daemonoutputdialog	import DaemonOutputDialog
 from app				import App

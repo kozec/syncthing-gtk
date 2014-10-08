@@ -24,6 +24,7 @@ if HAS_DESKTOP_NOTIFY:
 	from syncthing_gtk.tools import parsetime
 	from dateutil import tz
 	from datetime import datetime
+	from syncthing_gtk import DEBUG
 	import os, sys
 	_ = lambda (a) : a
 	
@@ -47,10 +48,20 @@ if HAS_DESKTOP_NOTIFY:
 			except Exception, e:
 				print >>sys.stderr, "Failed to load icon:", e
 			# Make deep connection with daemon
-			self.daemon.connect("connected", self.cb_syncthing_connected)
-			self.daemon.connect("error", self.cb_syncthing_error)
-			self.daemon.connect('item-started', self.cb_syncthing_item_started)
-			self.daemon.connect('item-updated', self.cb_syncthing_item_updated)
+			self.signals = [
+				self.daemon.connect("connected", self.cb_syncthing_connected)
+			]
+			if self.app.config["notification_for_update"]:
+				self.signals += [
+					self.daemon.connect("error", self.cb_syncthing_error),
+				]
+				if DEBUG: print "Error notifications enabled"
+			if self.app.config["notification_for_error"]:
+				self.signals += [
+					self.daemon.connect('item-started', self.cb_syncthing_item_started),
+					self.daemon.connect('item-updated', self.cb_syncthing_item_updated),
+				]
+				if DEBUG: print "File update notifications enabled"
 		
 		def info(self, text, icon=None):
 			n = Notify.Notification.new(
@@ -73,6 +84,12 @@ if HAS_DESKTOP_NOTIFY:
 		
 		def error(self, text):
 			self.info(text, self.error_icon)
+		
+		def kill(self, *a):
+			""" Removes all event handlers and frees some stuff """
+			for s in self.signals:
+				self.daemon.handler_disconnect(s)
+			if DEBUG: print "Notifications killed"
 		
 		def cb_syncthing_connected(self, *a):
 			# Clear download list

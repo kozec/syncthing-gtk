@@ -8,15 +8,18 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
+from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
 _ = lambda (a) : a
 
-VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start", "vuse_old_header" ]
-
+VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
+		"vnotification_for_update", "vuse_old_header", "vnotification_for_error"
+	]
 
 class UISettingsDialog(EditorDialog):
 	def __init__(self, app):
 		EditorDialog.__init__(self, app, "ui-settings.glade",
 			"UI Settings")
+		self.app = app
 	
 	#@Overrides
 	def load_data(self):
@@ -75,3 +78,10 @@ class UISettingsDialog(EditorDialog):
 	#@Overrides
 	def on_saved(self):
 		self.close()
+		# Recreate Notifications object if needed
+		if HAS_DESKTOP_NOTIFY:
+			if not self.app.notifications is None:
+				self.app.notifications.kill()
+				self.app.notifications = None
+			if self.app.config["notification_for_update"] or self.app.config["notification_for_error"]:
+				self.app.notifications = Notifications(self.app, self.app.daemon)

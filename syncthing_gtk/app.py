@@ -173,7 +173,8 @@ class App(Gtk.Application, TimerManager):
 		if HAS_INOTIFY:
 			self.watcher = Watcher(self, self.daemon)
 		if HAS_DESKTOP_NOTIFY:
-			self.notifications = Notifications(self, self.daemon)
+			if self.config["notification_for_update"] or self.config["notification_for_error"]:
+				self.notifications = Notifications(self, self.daemon)
 		# Connect signals
 		self.daemon.connect("config-out-of-sync", self.cb_syncthing_config_oos)
 		self.daemon.connect("config-saved", self.cb_syncthing_config_saved)
