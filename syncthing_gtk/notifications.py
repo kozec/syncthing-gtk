@@ -21,6 +21,9 @@ except ImportError:
 if HAS_DESKTOP_NOTIFY:
 	from gi.repository import GdkPixbuf
 	from syncthing_gtk import TimerManager
+	from syncthing_gtk.tools import parsetime
+	from dateutil import tz
+	from datetime import datetime
 	import os, sys
 	_ = lambda (a) : a
 	
@@ -32,8 +35,9 @@ if HAS_DESKTOP_NOTIFY:
 			# Prepare stuff
 			self.app = app
 			self.daemon = daemon
-			self.downloading = {}		# Key is repo-id
-			self.finished = set([])		# Tuples of (path, repo-id)
+			self.updating = set([])		# Filenames
+			self.updated = set([])		# Filenames
+			self.deleted = set([])		# Filenames
 			# Load icon
 			self.icon = None
 			try:
@@ -59,30 +63,54 @@ if HAS_DESKTOP_NOTIFY:
 		
 		def cb_syncthing_connected(self, *a):
 			# Clear download list
-			self.downloading = {}
+			self.updating = set([])
+			self.updated = set([])
+			self.deleted = set([])
 		
-		def cb_syncthing_item_started(self, daemon, folder_id, path, *a):
-			if not folder_id in self.downloading:
-				self.downloading[folder_id] = []
-			if not path in self.downloading[folder_id]:
-				self.downloading[folder_id].append(path)
+		def cb_syncthing_item_started(self, daemon, folder_id, path, time):
+			if folder_id in self.app.folders:
+				f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)
+				self.updating.add(f_path)
 		
 		def cb_syncthing_item_updated(self, daemon, folder_id, path, *a):
-			if folder_id in self.downloading:
-				if path in self.downloading[folder_id]:
-					self.downloading[folder_id].remove(path)
-					self.finished.add((path, folder_id))
-					self.cancel_timer("display")
-					self.timer("display", DELAY, self.display)
+			f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)
+			if f_path in self.updating:
+				# Check what kind of 'update' was done
+				if os.path.exists(f_path):
+					# Updated or new file
+					self.updated.add(f_path)
+				else:
+					# Deleted file
+					self.deleted.add(f_path)
+				self.updating.remove(f_path)
+				self.cancel_timer("display")
+				self.timer("display", DELAY, self.display)
+
 		
 		def display(self):
-			if len(self.finished) == 1:
-				path, folder_id = list(self.finished)[0]
-				filename = os.path.split(path)[-1]
-				self.info(_("The file '%s' was updated from remote device") % (filename,))
+			if len(self.updated) == 1 and len(self.deleted) == 0:
+				# One updated file
+				f_path = list(self.updated)[0]
+				filename = os.path.split(f_path)[-1]
+				self.info(_("The file '%s' was updated on remote device.") % (filename,))
+			elif len(self.updated) == 0 and len(self.deleted) == 1:
+				# One deleted file
+				f_path = list(self.deleted)[0]
+				filename = os.path.split(f_path)[-1]
+				self.info(_("The file '%s' was deleted on remote device.") % (filename,))
+			elif len(self.deleted) == 0:
+				# Multiple updated, nothing deleted
+				self.info(_("%s files were updated on remote device.") % (len(self.deleted),))
+			elif len(self.updated) == 0:
+				# Multiple deleted, no updated
+				self.info(_("%s files were deleted on remote device.") % (len(self.deleted),))
 			else:
-				self.info(_("%s files were updated from remote device") % (len(self.finished),))
-			self.finished = set([])
+				 # Multiple deleted, multiple updated
+				self.info(
+					_("%s files were updated and %s deleted on remote device.") % 
+					(len(self.updated), len(self.deleted)))
+			self.updated = set([])
+			self.deleted = set([])
 		
 	# Notifications is set to class only if libnotify is available
 	Notifications = NotificationsCls
