@@ -308,7 +308,15 @@ class App(Gtk.Application, TimerManager):
 		if "Stopping folder" in message:
 			severity = Gtk.MessageType.ERROR
 		self.error_messages.add(message)
-		self.show_error_box(RIBar(message, severity))
+		bar = RIBar(message, severity)
+		bar.connect("response", self.cb_error_response, message)
+		self.show_error_box(bar)
+	
+	def cb_error_response(self, bar, response, message):
+		# Remove closed error message from self.error_messages list,
+		# so it can re-appear
+		if message in self.error_messages:
+			self.error_messages.remove(message)
 	
 	def cb_syncthing_folder_rejected(self, daemon, nid, rid):
 		if (nid, rid) in self.error_messages:
