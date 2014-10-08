@@ -13,12 +13,15 @@ Supported syncthing features:
 Additional features:
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
+- Filesystem watching and instant synchronization using inotify
 
 Dependencies:  
-&nbsp;&nbsp;&nbsp;python 2.7, gtk3, <a href=https://live.gnome.org/PyGObject>PyGObject</a>,
-<a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version),
-<a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> (optional),
-<a href="http://syncthing.net">syncthing 0.10 or newer</a>
+- python 2.7, gtk3 and <a href=https://live.gnome.org/PyGObject>PyGObject</a>
+- <a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version),
+- <a href="http://syncthing.net">syncthing</a> 0.10 or newer
+
+Optional Dependencies:  
+- <a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> for instant synchronization.
 
 Packages:
 - Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
