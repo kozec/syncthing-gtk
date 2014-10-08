@@ -51,12 +51,12 @@ if HAS_DESKTOP_NOTIFY:
 			self.signals = [
 				self.daemon.connect("connected", self.cb_syncthing_connected)
 			]
-			if self.app.config["notification_for_update"]:
+			if self.app.config["notification_for_error"]:
 				self.signals += [
 					self.daemon.connect("error", self.cb_syncthing_error),
 				]
 				if DEBUG: print "Error notifications enabled"
-			if self.app.config["notification_for_error"]:
+			if self.app.config["notification_for_update"]:
 				self.signals += [
 					self.daemon.connect('item-started', self.cb_syncthing_item_started),
 					self.daemon.connect('item-updated', self.cb_syncthing_item_updated),
