@@ -54,6 +54,8 @@ if HAS_DESKTOP_NOTIFY:
 			if self.app.config["notification_for_error"]:
 				self.signals += [
 					self.daemon.connect("error", self.cb_syncthing_error),
+					self.daemon.connect("folder-rejected", self.cb_syncthing_folder_rejected),
+					self.daemon.connect("device-rejected", self.cb_syncthing_device_rejected)
 				]
 				if DEBUG: print "Error notifications enabled"
 			if self.app.config["notification_for_update"]:
@@ -97,9 +99,22 @@ if HAS_DESKTOP_NOTIFY:
 			self.updated = set([])
 			self.deleted = set([])
 		
-		def cb_syncthing_error(self, daemon, error):
-			self.error(error)
+		def cb_syncthing_error(self, daemon, message):
+			if "Unexpected folder ID" in message:
+				# Handled by event, don't display twice
+				return
+			self.error(message)
 		
+		def cb_syncthing_folder_rejected(self, daemon, nid, rid):
+			if nid in self.app.devices:
+				device = self.app.devices[nid].get_title()
+				markup = _('Unexpected folder ID sent from device "<b>%s</b>".') % (device,)
+				self.info(markup)
+		
+		def cb_syncthing_device_rejected(self, daemon, nid, address):
+			markup = _('Unknown device is trying to connect to syncthing daemon.')
+			self.info(markup)
+			
 		def cb_syncthing_item_started(self, daemon, folder_id, path, time):
 			if folder_id in self.app.folders:
 				f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)

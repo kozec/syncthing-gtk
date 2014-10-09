@@ -340,9 +340,10 @@ class App(Gtk.Application, TimerManager):
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Unknown device "<b>%s</b>" is trying to connect from IP "<b>%s</b>"; '
-					'If you just configured this remote device, you can click \'fix\' '
-					'to open Add device dialog.') % (nid, address)
+		markup = _('Unknown device "<b>%s</b>" is trying from connect from IP "<b>%s</b>"') % (nid, address)
+		markup += ";"
+		markup += _('If you just configured this remote device, you can click \'fix\' '
+					'to open Add device dialog.')
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_DEVICE)
