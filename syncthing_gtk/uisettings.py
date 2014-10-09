@@ -8,7 +8,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
-from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
+from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
@@ -25,6 +25,9 @@ class UISettingsDialog(EditorDialog):
 	def load_data(self):
 		# Don't load data from syncthing daemon, it knows nothing...
 		copy = { k : self.app.config[k] for k in self.app.config }
+		if THE_HELL:
+			self["vuse_old_header"].set_visible(False)
+			self["vuse_old_header"].set_no_show_all(True)
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	

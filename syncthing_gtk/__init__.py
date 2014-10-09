@@ -14,12 +14,12 @@ from editordialog		import EditorDialog
 from deviceeditor		import DeviceEditorDialog
 from foldereditor		import FolderEditorDialog
 from daemonsettings		import DaemonSettingsDialog
+from statusicon			import StatusIcon, THE_HELL, HAS_INDICATOR
 from uisettings			import UISettingsDialog
 from configuration		import Configuration
 from iddialog			import IDDialog
 from about				import AboutDialog
 from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
-from statusicon			import StatusIcon, THE_HELL, HAS_INDICATOR
 from daemonoutputdialog	import DaemonOutputDialog
 from app				import App
