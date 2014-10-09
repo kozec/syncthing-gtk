@@ -625,6 +625,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self._last_id = events[-1]["id"]
 			self._last_error_time = parsetime(events[-1]["time"])
 			self._rest_request("errors", self._syncthing_cb_errors)
+			self._request_events()
 		else:
 			# Retry for invalid data
 			self._rest_request("events?limit=1", self._init_event_pooling)
