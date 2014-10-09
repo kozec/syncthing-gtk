@@ -5,10 +5,14 @@ Syncthing-GTK - InfoBox
 Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GObject, Pango
+from gi.repository import Gtk, Gdk, GLib, GObject, Pango
 from syncthing_gtk import DEBUG
-import os
+import os, math
 _ = lambda (a) : a
+
+COLOR_CHANGE_TIMER	= 10	# ms
+COLOR_CHANGE_STEP	= 0.05
+HILIGHT_INTENSITY	= 0.3	# 0.0 to 1.0
 
 class InfoBox(Gtk.Container):
 	""" Expandlable widget displaying folder/device data """
@@ -29,9 +33,12 @@ class InfoBox(Gtk.Container):
 		self.values = {}
 		self.value_widgets = {}
 		self.hilight = False
+		self.hilight_factor = 0.0
+		self.timer_enabled = False
 		self.icon = icon
 		self.color = (1, 0, 1, 1)		# rgba
 		self.background = (1, 1, 1, 1)	# rgba
+		self.real_color = self.color	# set color + hilight
 		self.border_width = 2
 		self.children = [self.header, self.child]
 		# Initialization
@@ -41,17 +48,6 @@ class InfoBox(Gtk.Container):
 		# Settings
 		self.set_title(title)
 		self.set_status(_("Disconnected"))
-	
-	def set_icon(self, icon):
-		self.header_box.remove(self.icon)
-		self.header_box.pack_start(icon, False, False, 0)
-		self.header_box.reorder_child(icon, 0)
-		self.header_box.show_all()
-		self.icon = icon
-	
-	def set_hilight(self, h):
-		self.hilight = h
-		self.set_color(*self.color)
 	
 	def init_header(self):
 		# Create widgets
@@ -218,7 +214,7 @@ class InfoBox(Gtk.Container):
 		header_al = self.children[0].get_allocation()
 		
 		# Border
-		cr.set_source_rgba(*( hilight(self.color) if self.hilight else self.color ))
+		cr.set_source_rgba(*self.real_color)
 		cr.move_to(0, self.border_width / 2.0)
 		cr.line_to(0, allocation.height)
 		cr.line_to(allocation.width, allocation.height)
@@ -238,7 +234,7 @@ class InfoBox(Gtk.Container):
 			cr.fill()
 		
 		# Header
-		cr.set_source_rgba(*( hilight(self.color) if self.hilight else self.color ))
+		cr.set_source_rgba(*self.real_color)
 		cr.rectangle(self.border_width / 2.0, 0, allocation.width - self.border_width, header_al.height + (2 * self.border_width))
 		cr.fill()
 		
@@ -267,6 +263,29 @@ class InfoBox(Gtk.Container):
 		if event.button == 3:	# right
 			self.emit('right-click', event.button, event.time)
 	
+	def hilight_timer(self, *a):
+		""" Called repeatedly while color is changing """
+		if self.hilight and self.hilight_factor < 1.0:
+			self.hilight_factor = min(1.0, self.hilight_factor + COLOR_CHANGE_STEP)
+		elif not self.hilight and self.hilight_factor > 0.0:
+			self.hilight_factor = max(0.0, self.hilight_factor - COLOR_CHANGE_STEP)		
+		else:
+			self.timer_enabled = False
+		self.recolor()
+		return self.timer_enabled
+	
+	def recolor(self, *a):
+		"""
+		Called to computes actual color every time when self.color or
+		self.hilight_factor changes.
+		"""
+		self.real_color = tuple([ min(1.0, x + HILIGHT_INTENSITY * math.sin(self.hilight_factor)) for x in self.color])
+		gdkcol = Gdk.RGBA(*self.real_color)
+		self.header.override_background_color(Gtk.StateType.NORMAL, gdkcol)
+		self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, gdkcol)
+
+		self.queue_draw()
+	
 	### Translated events
 	def on_enter_notify(self, eb, event, *data):
 		self.emit("enter-notify-event", None, *data)
@@ -284,6 +303,20 @@ class InfoBox(Gtk.Container):
 	
 	def get_title(self):
 		return self.str_title
+	
+	def set_icon(self, icon):
+		self.header_box.remove(self.icon)
+		self.header_box.pack_start(icon, False, False, 0)
+		self.header_box.reorder_child(icon, 0)
+		self.header_box.show_all()
+		self.icon = icon
+	
+	def set_hilight(self, h):
+		if self.hilight != h:
+			self.hilight = h
+			if not self.timer_enabled:
+				GLib.timeout_add(COLOR_CHANGE_TIMER, self.hilight_timer)
+				self.timer_enabled = True
 	
 	def invert_header(self, e):
 		self.header_inverted = e
@@ -310,12 +343,7 @@ class InfoBox(Gtk.Container):
 	def set_color(self, r, g, b, a):
 		""" Expects floats """
 		self.color = (r, g, b, a)
-		self.header.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(r, g, b, a))
-		if self.hilight:
-			self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*hilight(self.color)))
-		else:
-			self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
-		self.queue_draw()
+		self.recolor()
 	
 	def set_border(self, width):
 		self.border_width = width
@@ -400,7 +428,3 @@ class InfoBox(Gtk.Container):
 	def __setitem__(self, key, value):
 		""" Shortcut to set_value. Creates new hidden_value if key doesn't exist """
 		self.set_value(key, value)
-
-def hilight(color):
-	""" Returns 'hilighted' version of color """
-	return tuple([ min(1.0, x + 0.25) for x in color])
