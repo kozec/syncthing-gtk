@@ -93,7 +93,6 @@ class DeviceEditorDialog(EditorDialog):
 	#@Overrides
 	def update_special_widgets(self, *a):
 		self["vDeviceID"].set_sensitive(self.is_new)
-		self["vAddresses"].set_sensitive(self.id != self.app.daemon.get_my_id())
 	
 	#@Overrides
 	def on_save_reuqested(self):

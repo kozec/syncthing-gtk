@@ -833,6 +833,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_popup_menu_device(self, box, button, time):
 		self.rightclick_box = box
+		# Display 'edit device' and 'delete device' menu items on
+		# everything but my own node
+		b = box["id"] != self.daemon.get_my_id()
+		self["menu-popup-edit-device"].set_visible(b)
+		self["menu-popup-delete-device"].set_visible(b)
 		self["popup-menu-device"].popup(None, None, None, None, button, time)
 	
 	def cb_menu_popup(self, source, menu):
