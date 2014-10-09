@@ -282,7 +282,11 @@ class InfoBox(Gtk.Container):
 		self.real_color = tuple([ min(1.0, x + HILIGHT_INTENSITY * math.sin(self.hilight_factor)) for x in self.color])
 		gdkcol = Gdk.RGBA(*self.real_color)
 		self.header.override_background_color(Gtk.StateType.NORMAL, gdkcol)
-		self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, gdkcol)
+		try:
+			self.header.get_children()[0].override_background_color(Gtk.StateFlags.NORMAL, gdkcol)
+		except IndexError:
+			# Happens when recolor is called before header widget is created
+			pass
 
 		self.queue_draw()
 	
@@ -394,7 +398,10 @@ class InfoBox(Gtk.Container):
 		""" Updates already existing value """
 		self.values[key] = value
 		if key in self.value_widgets:
-			self.value_widgets[key][0].set_text(value)
+			if value is None:
+				self.value_widgets[key][0].set_text("?")
+			else:
+				self.value_widgets[key][0].set_text(value)
 	
 	def hide_value(self, key):
 		""" Hides value added by add_value """
