@@ -145,13 +145,13 @@ if HAS_DESKTOP_NOTIFY:
 				f_path = list(self.deleted)[0]
 				filename = os.path.split(f_path)[-1]
 				self.info(_("The file '%s' was deleted on remote device.") % (filename,))
-			elif len(self.deleted) == 0:
+			elif len(self.deleted) == 0 and len(self.updated) > 0:
 				# Multiple updated, nothing deleted
 				self.info(_("%s files were updated on remote device.") % (len(self.deleted),))
-			elif len(self.updated) == 0:
+			elif len(self.updated) == 0 and len(self.deleted) > 0:
 				# Multiple deleted, no updated
 				self.info(_("%s files were deleted on remote device.") % (len(self.deleted),))
-			else:
+			elif len(self.deleted) > 0 and len(self.updated) > 0:
 				 # Multiple deleted, multiple updated
 				self.info(
 					_("%s files were updated and %s deleted on remote device.") % 
