@@ -876,10 +876,6 @@ class Daemon(GObject.GObject, TimerManager):
 				# Not in sync...
 				self.emit("config-out-of-sync")
 	
-	def _syncthing_cb_rescan_error(self, exception, command, data, folder_id):
-		print >>sys.stderr, "Warning: Failed to rescan folder %s: %s" % (folder_id, exception.response)
-		self.emit("error", "Warning: Failed to rescan folder %s: %s" % (folder_id, exception.response))
-	
 	def _folder_state_changed(self, rid, state, progress):
 		"""
 		Emits event according to last known and new state.
@@ -1086,9 +1082,9 @@ class Daemon(GObject.GObject, TimerManager):
 		# Errors here are ignored; Syncthing rescans stuff periodicaly,
 		# so it's not big problem if call fails.
 		if path is None:
-			self._rest_post("scan?folder=%s" % (folder_id,), {}, lambda *a: a, self._syncthing_cb_rescan_error, folder_id)
+			self._rest_post("scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: a, folder_id)
 		else:
-			self._rest_post("scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, self._syncthing_cb_rescan_error, folder_id)
+			self._rest_post("scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
 	
 	def request_events(self):
 		"""
