@@ -322,6 +322,23 @@
 		</object>
 	</child>
 	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-delete-folder">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">gtk-delete</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_delete_folder" swapped="no"/>
+		</object>
+	</child>
+	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-separator7">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+	<child>
 		<object class="GtkImageMenuItem" id="menu-popup-rescan-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -343,23 +360,6 @@
 			<property name="always_show_image">True</property>
 			<property name="image">menu-popup-browse-image</property>
 			<signal name="activate" handler="cb_menu_popup_browse_folder" swapped="no"/>
-		</object>
-	</child>
-	<child>
-		<object class="GtkSeparatorMenuItem" id="menu-separator7">
-			<property name="visible">True</property>
-			<property name="can_focus">False</property>
-		</object>
-	</child>
-	<child>
-		<object class="GtkImageMenuItem" id="menu-popup-delete-folder">
-			<property name="visible">True</property>
-			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">gtk-delete</property>
-			<property name="use_underline">True</property>
-			<property name="use_stock">True</property>
-			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_popup_delete_folder" swapped="no"/>
 		</object>
 	</child>
 </object>
