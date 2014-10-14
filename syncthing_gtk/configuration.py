@@ -26,6 +26,7 @@ class Configuration(object):
 		"use_inotify"				: (list, []),
 		"use_old_header"			: (bool, False),
 		"notification_for_update"	: (bool, True),
+		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),
 	}
 	

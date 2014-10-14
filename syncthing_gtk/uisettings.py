@@ -12,7 +12,8 @@ from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
-		"vnotification_for_update", "vuse_old_header", "vnotification_for_error"
+		"vnotification_for_update", "vuse_old_header", "vnotification_for_folder",
+		"vnotification_for_error"
 	]
 
 class UISettingsDialog(EditorDialog):

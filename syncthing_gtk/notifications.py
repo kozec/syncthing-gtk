@@ -39,6 +39,7 @@ if HAS_DESKTOP_NOTIFY:
 			self.updating = set([])		# Filenames
 			self.updated = set([])		# Filenames
 			self.deleted = set([])		# Filenames
+			self.syncing = set([])		# Folder id's
 			# Load icons
 			self.icon = None
 			self.error_icon = None
@@ -64,6 +65,13 @@ if HAS_DESKTOP_NOTIFY:
 					self.daemon.connect('item-updated', self.cb_syncthing_item_updated),
 				]
 				if DEBUG: print "File update notifications enabled"
+			if self.app.config["notification_for_folder"]:
+				self.signals += [
+					self.daemon.connect('folder-sync-progress', self.cb_syncthing_folder_progress),
+					self.daemon.connect('folder-sync-finished', self.cb_syncthing_folder_finished)
+					]
+				#if DEBUG: 
+				print "Folder notifications enabled"
 		
 		def info(self, text, icon=None):
 			n = Notify.Notification.new(
@@ -98,6 +106,7 @@ if HAS_DESKTOP_NOTIFY:
 			self.updating = set([])
 			self.updated = set([])
 			self.deleted = set([])
+			self.syncing = set([])
 		
 		def cb_syncthing_error(self, daemon, message):
 			if "Unexpected folder ID" in message:
@@ -134,6 +143,15 @@ if HAS_DESKTOP_NOTIFY:
 				self.cancel_timer("display")
 				self.timer("display", DELAY, self.display)
 		
+		def cb_syncthing_folder_progress(self, daemon, folder_id, progress):
+			if progress < 1.0:
+				self.syncing.add(folder_id)
+		
+		def cb_syncthing_folder_finished(self, daemon, folder_id):
+			if folder_id in self.syncing:
+				self.syncing.remove(folder_id)
+				self.info(_("Synchronization of folder '%s' is completed.") % (folder_id,))
+		
 		def display(self):
 			if len(self.updated) == 1 and len(self.deleted) == 0:
 				# One updated file
@@ -147,7 +165,7 @@ if HAS_DESKTOP_NOTIFY:
 				self.info(_("The file '%s' was deleted on remote device.") % (filename,))
 			elif len(self.deleted) == 0 and len(self.updated) > 0:
 				# Multiple updated, nothing deleted
-				self.info(_("%s files were updated on remote device.") % (len(self.deleted),))
+				self.info(_("%s files were updated on remote device.") % (len(self.updated),))
 			elif len(self.updated) == 0 and len(self.deleted) > 0:
 				# Multiple deleted, no updated
 				self.info(_("%s files were deleted on remote device.") % (len(self.deleted),))
