@@ -43,12 +43,12 @@ class IDDialog(object):
 		""" Loads QR code from Syncthing daemon """
 		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
 		io = Gio.file_new_for_uri(uri)
-		io.load_contents_async(None, self.cb_syncthing_qr)
+		io.load_contents_async(None, self.cb_syncthing_qr, ())
 	
 	def cb_btClose_clicked(self, *a):
 		self.close()
 	
-	def cb_syncthing_qr(self, io, results):
+	def cb_syncthing_qr(self, io, results, *a):
 		"""
 		Called when QR code is loaded or operation fails. Image is then
 		displayed in dialog, failure is silently ignored.

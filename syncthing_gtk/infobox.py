@@ -143,12 +143,13 @@ class InfoBox(Gtk.Container):
 		# Use sum of predered height from children.
 		for c in self.children:
 			if not c is None:
-				mw, nw = c.get_preferred_width()
-				mh, nh = c.get_preferred_height()
-				min_width = max(min_width, mw)
-				nat_width = max(nat_width, nw)
-				min_height = min_height + mh
-				nat_height = nat_height + nh
+				if c != self.rev or self.rev.get_reveal_child():
+					mw, nw = c.get_preferred_width()
+					mh, nh = c.get_preferred_height()
+					min_width = max(min_width, mw)
+					nat_width = max(nat_width, nw)
+					min_height = min_height + mh
+					nat_height = nat_height + nh
 		# Add border size
 		min_width += self.border_width * 2	# Left + right border
 		nat_width += self.border_width * 2
@@ -177,6 +178,7 @@ class InfoBox(Gtk.Container):
 					# TODO: Handle child that has window (where whould i get it?)
 					c.size_allocate(child_allocation)
 					child_allocation.y += child_allocation.height + self.border_width
+
  
 	def do_realize(self):
 		allocation = self.get_allocation()
