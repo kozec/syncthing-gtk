@@ -350,9 +350,9 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		sc = Gio.SocketClient()
 		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
-			command, self._epoch, callback, error_callback, callback_data)
+			(command, self._epoch, callback, error_callback, callback_data))
 	
-	def _rest_connected(self, sc, results, command, epoch, callback, error_callback, callback_data):
+	def _rest_connected(self, sc, results, (command, epoch, callback, error_callback, callback_data)):
 		""" Second part of _rest_request, called after HTTP connection is initiated """
 		try:
 			con = sc.connect_to_service_finish(results)
@@ -363,7 +363,7 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old connection for", command
 		# Build GET request
 		get_str = "\r\n".join([
@@ -373,30 +373,30 @@ class Daemon(GObject.GObject, TimerManager):
 			"", ""
 			]).encode("utf-8")
 		# Send it out and wait for response
-		con.get_output_stream().write_all(get_str)
+		con.get_output_stream().write_all(get_str, None)
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-			con, command, epoch, callback, error_callback, callback_data, [])
+			(con, command, epoch, callback, error_callback, callback_data, []))
 	
-	def _rest_response(self, sc, results, con, command, epoch, callback, error_callback, callback_data, buffer):
+	def _rest_response(self, sc, results, (con, command, epoch, callback, error_callback, callback_data, buffer)):
 		try:
 			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception, e:
-			con.close()
+			con.close(None)
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old response for", command
 		# Repeat read_bytes_async until entire response is readed in buffer
 		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-				con, command, epoch, callback, error_callback, callback_data, buffer)
+				(con, command, epoch, callback, error_callback, callback_data, buffer))
 			return
-		con.close()
+		con.close(None)
 		response = "".join(buffer)
 		# Split headers from response
 		try:
@@ -444,9 +444,9 @@ class Daemon(GObject.GObject, TimerManager):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
 		sc = Gio.SocketClient()
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
-			command, data, self._epoch, callback, error_callback, callback_data)
+			(command, data, self._epoch, callback, error_callback, callback_data))
 	
-	def _rest_post_connected(self, sc, results, command, data, epoch, callback, error_callback, callback_data):
+	def _rest_post_connected(self, sc, results, (command, data, epoch, callback, error_callback, callback_data)):
 		""" Second part of _rest_post, called after HTTP connection is initiated """
 		try:
 			con = sc.connect_to_service_finish(results)
@@ -457,7 +457,7 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old connection for POST ", command
 		post_str = None
 		if self._CSRFtoken is None and self._api_key is None:
@@ -486,30 +486,30 @@ class Daemon(GObject.GObject, TimerManager):
 				json_str
 				]).encode("utf-8")
 		# Send it out and wait for response
-		con.get_output_stream().write_all(post_str)
+		con.get_output_stream().write_all(post_str, None)
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-			con, command, data, epoch, callback, error_callback, callback_data, [])
+			(con, command, data, epoch, callback, error_callback, callback_data, []))
 	
-	def _rest_post_response(self, sc, results, con, command, data, epoch, callback, error_callback, callback_data, buffer):
+	def _rest_post_response(self, sc, results, (con, command, data, epoch, callback, error_callback, callback_data, buffer)):
 		try:
 			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception, e:
-			con.close()
+			con.close(None)
 			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old response for POST ", command
 		# Repeat _rest_post_response until entire response is readed in buffer
 		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-				con, command, data, epoch, callback, error_callback, callback_data, buffer)
+				(con, command, data, epoch, callback, error_callback, callback_data, buffer))
 			return
-		con.close()
+		con.close(None)
 		response = "".join(buffer)
 		# Parse response
 		if self._CSRFtoken is None and self._api_key is None:

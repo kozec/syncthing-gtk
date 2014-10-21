@@ -19,4 +19,4 @@ if __name__ == "__main__":
 		"-s" not in sys.argv,
 		".",
 		"./icons"
-	).run()
+	).run([])
