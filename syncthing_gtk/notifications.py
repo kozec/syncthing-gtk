@@ -76,7 +76,8 @@ if HAS_DESKTOP_NOTIFY:
 		def info(self, text, icon=None):
 			n = Notify.Notification.new(
 					_("Syncthing GTK"),
-					text
+					text,
+					None
 				)
 			if icon is None:
 				icon = self.icon
