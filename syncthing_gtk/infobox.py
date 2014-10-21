@@ -143,7 +143,7 @@ class InfoBox(Gtk.Container):
 		# Use sum of predered height from children.
 		for c in self.children:
 			if not c is None:
-				if c != self.rev or self.rev.get_reveal_child():
+				if c != self.rev or self.rev.get_reveal_child() or self.rev.get_child_revealed():
 					mw, nw = c.get_preferred_width()
 					mh, nh = c.get_preferred_height()
 					min_width = max(min_width, mw)
