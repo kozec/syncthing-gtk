@@ -17,13 +17,12 @@ if __name__ == "__main__":
 	if "-1" in sys.argv:
 		from syncthing_gtk import Wizard
 		Wizard(
-			"./icons"
+			".", "./icons", None
 			).run([])
 	else:
 		from syncthing_gtk import App
 		App(
 			"-w" not in sys.argv,
 			"-s" not in sys.argv,
-			".",
-			"./icons"
+			".", "./icons"
 		).run([])

@@ -8,19 +8,21 @@ values afterwards.
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, GLib
-from syncthing_gtk import Configuration, DaemonProcess
+from syncthing_gtk import Configuration, DaemonProcess, DaemonOutputDialog
 import os, sys
 
 _ = lambda (a) : a
 
 class Wizard(Gtk.Assistant):
-	def __init__(self, iconpath="/usr/share/syncthing-gtk/icons", config=None):
+	def __init__(self, gladepath="/usr/share/syncthing-gtk",
+				iconpath="/usr/share/syncthing-gtk/icons", config=None):
 		# Init
 		Gtk.Assistant.__init__(self)
 		if not config is None:
 			self.config = config
 		else:
 			self.config = Configuration()
+		self.gladepath = gladepath
 		self.iconpath = iconpath
 		self.connect("prepare", self.prepare_page)
 		# Window setup
@@ -171,7 +173,13 @@ class FindDaemonPage(Page):
 					print "FOUND"
 					self.parent.config["syncthing_binary"] = bin_path
 					self.parent.set_page_complete(self, True)
-					self.parent.next_page()
+					self.label.set_markup(
+							_("<b>Syncthing daemon binary found.</b>") +
+							"\n\n" +
+							_("Binary path:") +
+							" " +
+							bin_path
+						)
 					return
 				else:
 					print "not executable"
@@ -184,6 +192,7 @@ class GenerateKeysPage(Page):
 	TITLE = _("Generate keys")
 	def init_page(self):
 		""" Displayed while syncthing binary is being searched for """
+		self.lines = []
 		self.label = WrappedLabel(
 			_("<b>Syncthing is generating RSA key and certificate.</b>") +
 			"\n\n" +
@@ -199,8 +208,20 @@ class GenerateKeysPage(Page):
 		Starts syncthing binary with -generate parameter and waits until
 		key generation is finished
 		"""
-		# self.process = DaemonProcess([ self.parent.config["syncthing_binary"], "-no-browser" ])
-		self.process = DaemonProcess([ "false" ])
+		# Find syncthing configuration directory
+		confdir = GLib.get_user_config_dir()
+		if confdir is None:
+			confdir = os.path.expanduser("~/.config")
+		st_configdir = os.path.join(confdir, "syncthing")
+		self.cb_daemon_line(None, "syncthing-gtk: Configuration directory: '%s'" % (st_configdir,))
+		# Create it, if needed
+		try:
+			os.makedirs(st_configdir)
+		except Exception, e:
+			self.cb_daemon_line(None, "syncthing-gtk: Failed to create configuration directory")
+			self.cb_daemon_line(None, "syncthing-gtk: %s" % (str(e),))
+		# Run syncthing -generate
+		self.process = DaemonProcess([ self.parent.config["syncthing_binary"], '-generate=%s' % st_configdir ])
 		self.process.connect('line', self.cb_daemon_line)
 		self.process.connect('exit', self.cb_daemon_exit)
 	
@@ -209,19 +230,46 @@ class GenerateKeysPage(Page):
 		GenerateKeysPage turns into error page if syncthing binary
 		fails to generate keys.
 		"""
+		# Text
+		st_link = '<a href="https://github.com/syncthing/syncthing/issues">syncthing</a>'
+		stgtk_link = '<a href="https://github.com/kozec/syncthing-gui/issues">Syncthing-GTK</a>'
 		self.label.set_markup(
 			_("<b>Failed to generate keys.</b>") +
 			"\n\n" +
-			_("blah.") +
-			_("TODO: This message")
+			_("Syncthing daemon failed to generate RSA key or certificate.") +
+			"\n\n" +
+			_("This usually shouldn't happen. Please, check error log "
+			  "and fill bug report against %s or %s.") % (st_link, stgtk_link)
 		)
-		
+		# 'Display error log' button
+		vbox = Gtk.Box()
+		button = Gtk.Button(_("Display error log"))
+		vbox.pack_end(button, False, False, 25)
+		self.attach(vbox, 0, 1, 1, 1)
+		self.set_row_spacing(25)
+		self.show_all()
+		button.connect("clicked", lambda *a : self.show_output())
+	
+	def show_output(self, *a):
+		"""
+		Displays DaemonOutput window with error messages captured
+		durring key generation.
+		"""
+		d = DaemonOutputDialog(self.parent, None)
+		d.show_with_lines(self.lines, self.parent)
+	
 	def cb_daemon_line(self, dproc, line):
+		""" Called for every line that syncthing process outputs """
+		self.lines.append(line)
 		print line
 	
 	def cb_daemon_exit(self, dproc, exit_code):
+		""" Called when syncthing finishes """
 		if exit_code == 0:
+			# Finished without problem, advance to next page
+			del self.lines
 			self.parent.set_page_complete(self, True)
+			self.parent.next_page()
 		else:
 			self.error()
 

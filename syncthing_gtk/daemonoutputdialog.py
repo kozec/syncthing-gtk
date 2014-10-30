@@ -23,6 +23,12 @@ class DaemonOutputDialog(object):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
 		return self.builder.get_object(name)
 	
+	def show_with_lines(self, lines, parent=None):
+		if not parent is None:
+			self["dialog"].set_transient_for(parent)
+		self["dialog"].show_all()
+		self["tvOutput"].get_buffer().set_text("\n".join(lines))
+
 	def show(self, parent=None):
 		if not parent is None:
 			self["dialog"].set_transient_for(parent)
