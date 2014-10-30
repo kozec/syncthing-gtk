@@ -21,6 +21,7 @@ class Configuration(object):
 		# key : (type, default)
 		"autostart_daemon"			: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
 		"autokill_daemon"			: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
+		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
 		"minimize_on_start"			: (bool, True),
 		"use_old_header"			: (bool, False),
 		"use_inotify"				: (list, []),

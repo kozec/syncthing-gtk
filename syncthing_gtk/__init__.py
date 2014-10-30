@@ -23,3 +23,4 @@ from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
 from daemonoutputdialog	import DaemonOutputDialog
 from app				import App
+from wizard				import Wizard

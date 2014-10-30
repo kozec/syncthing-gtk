@@ -203,7 +203,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def start_deamon(self):
 		if self.process == None:
-			self.process = DaemonProcess(["syncthing"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('exit', self.cb_daemon_exit)
 			self["menu-daemon-output"].set_sensitive(True)
 	
@@ -1032,5 +1032,5 @@ class App(Gtk.Application, TimerManager):
 		if not self.process is None:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
-			self.process = DaemonProcess(["syncthing"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('exit', self.cb_daemon_exit)
