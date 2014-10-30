@@ -34,7 +34,13 @@ class DaemonProcess(GObject.GObject):
 		self._stdout.read_bytes_async(256, 0, self._cancel, self._cb_read)
 	
 	def _cb_read(self, proc, results):
-		response = proc.read_bytes_finish(results)
+		try:
+			response = proc.read_bytes_finish(results)
+		except Exception, e:
+			if not self._cancel.is_cancelled():
+				print e
+				GLib.idle_add(self._stdout.read_bytes_async, 256, 1, None, self._cb_read)
+			return
 		response = response.get_data().decode('utf-8')
 		self._buffer = "%s%s" % (self._buffer, response)
 		while "\n" in self._buffer:

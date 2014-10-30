@@ -38,7 +38,8 @@ class Wizard(Gtk.Assistant):
 		# Pages
 		self.add_page(IntroPage())
 		self.add_page(FindDaemonPage())
-		self.add_page(GeneratKeys())
+		self.add_page(GenerateKeysPage())
+		self.add_page(HttpSettingsPage())
 	
 	def add_page(self, page):
 		""" Adds page derived from custom Page class """
@@ -178,16 +179,60 @@ class FindDaemonPage(Page):
 				print "not found"
 		GLib.idle_add(self.search, paths)
 
-class GeneratKeys(Page):
+class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	TITLE = _("Generate keys")
 	def init_page(self):
 		""" Displayed while syncthing binary is being searched for """
-		self.attach(WrappedLabel(
+		self.label = WrappedLabel(
 			_("<b>Syncthing is generating RSA key and certificate.</b>") +
 			"\n\n" +
 			_("This may take a while...")
-		), 0, 0, 1, 1)
+		)
+		self.attach(self.label, 0, 0, 1, 1)
 	
 	def prepare(self):
-		pass
+		GLib.idle_add(self.start_binary)
+	
+	def start_binary(self):
+		"""
+		Starts syncthing binary with -generate parameter and waits until
+		key generation is finished
+		"""
+		# self.process = DaemonProcess([ self.parent.config["syncthing_binary"], "-no-browser" ])
+		self.process = DaemonProcess([ "false" ])
+		self.process.connect('line', self.cb_daemon_line)
+		self.process.connect('exit', self.cb_daemon_exit)
+	
+	def error(self):
+		"""
+		GenerateKeysPage turns into error page if syncthing binary
+		fails to generate keys.
+		"""
+		self.label.set_markup(
+			_("<b>Failed to generate keys.</b>") +
+			"\n\n" +
+			_("blah.") +
+			_("TODO: This message")
+		)
+		
+	def cb_daemon_line(self, dproc, line):
+		print line
+	
+	def cb_daemon_exit(self, dproc, exit_code):
+		if exit_code == 0:
+			self.parent.set_page_complete(self, True)
+		else:
+			self.error()
+
+class HttpSettingsPage(Page):
+	TYPE = Gtk.AssistantPageType.CONTENT
+	TITLE = _("Setup WebUI")
+	def init_page(self):
+		""" Displayed while syncthing binary is being searched for """
+		self.attach(WrappedLabel(
+			_("<b>WebUI setup</b>")
+		), 0, 0, 1, 1)
+	
+	#def prepare(self):
+	#	pass
