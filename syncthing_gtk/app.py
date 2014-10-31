@@ -6,7 +6,7 @@ Main application window
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, Gdk
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
 import os, webbrowser, sys, pprint, re
@@ -67,6 +67,8 @@ class App(Gtk.Application, TimerManager):
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
+		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
+		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
 		self.widgets = {}
 		self.error_boxes = []
 		self.error_messages = set([])	# Holds set of already displayed error messages
@@ -150,6 +152,7 @@ class App(Gtk.Application, TimerManager):
 			self["devicelist"].props.margin_left = 5
 		
 		self["window"].set_title(_("Syncthing GTK"))
+		self["window"].connect("realize", self.cb_realized)
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):
@@ -702,6 +705,8 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 		box.set_status("Unknown")
 		box.set_color_hex(COLOR_FOLDER)
+		box.set_bg_color(*self.box_background)
+		box.set_text_color(*self.box_text_color)
 		box.connect('right-click', self.cb_popup_menu_folder)
 		box.connect('enter-notify-event', self.cb_box_mouse_enter)
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
@@ -732,6 +737,8 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("bytes_out", 0)
 		box.add_hidden_value("time", 0)
 		box.set_color_hex(COLOR_DEVICE)
+		box.set_bg_color(*self.box_background)
+		box.set_text_color(*self.box_text_color)
 		box.connect('right-click', self.cb_popup_menu_device)
 		box.connect('enter-notify-event', self.cb_box_mouse_enter)
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
@@ -799,6 +806,25 @@ class App(Gtk.Application, TimerManager):
 		# Hide main window
 		self.hide()
 		return True
+	
+	def cb_realized(self, widget, *a):
+		context = widget.get_style_context()
+		color = context.get_background_color(Gtk.StateFlags.SELECTED)
+		# Dark color: Gdk.RGBA(red=0.223529, green=0.247059, blue=0.247059, alpha=1.000000)
+		# Light color: Gdk.RGBA(red=0.929412, green=0.929412, blue=0.929412, alpha=1.000000)
+		light_color = False
+		for c in list(color)[0:3]:
+			if c > 0.75: light_color = True
+		"""
+		# Black background will clash with black icons, so this one is no-go for now
+		if not light_color:
+			self.box_background = (color.red, color.green, color.blue, 1.0)
+			for box in self.folders.values():
+				box.set_bg_color(self.box_background)
+			self.box_text_color = (1,1,1,1)
+			for box in self.devices.values():
+				box.set_bg_color(self.box_text_color)
+		"""
 	
 	def cb_box_mouse_enter(self, box, *a):
 		self.hilight([box])

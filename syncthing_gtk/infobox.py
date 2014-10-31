@@ -38,6 +38,7 @@ class InfoBox(Gtk.Container):
 		self.icon = icon
 		self.color = (1, 0, 1, 1)		# rgba
 		self.background = (1, 1, 1, 1)	# rgba
+		self.text_color = (0, 0, 0, 1)	# rgba (text color)
 		self.real_color = self.color	# set color + hilight
 		self.border_width = 2
 		self.children = [self.header, self.child]
@@ -82,22 +83,22 @@ class InfoBox(Gtk.Container):
 		self.grid = Gtk.Grid()
 		self.rev = Gtk.Revealer()
 		align = Gtk.Alignment()
-		eb = Gtk.EventBox()
+		self.eb = Gtk.EventBox()
 		# Set values
 		self.grid.set_row_spacing(1)
 		self.grid.set_column_spacing(3)
 		self.rev.set_reveal_child(False)
 		align.set_padding(2, 2, 5, 5)
-		eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
-		self.grid.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1,1,1,1))
+		self.eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(*self.background))
+		self.grid.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(*self.background))
 		# Connect signals
-		eb.connect("button-release-event", self.on_grid_click)
-		eb.connect('enter-notify-event', self.on_enter_notify)
-		eb.connect('leave-notify-event', self.on_leave_notify)
+		self.eb.connect("button-release-event", self.on_grid_click)
+		self.eb.connect('enter-notify-event', self.on_enter_notify)
+		self.eb.connect('leave-notify-event', self.on_leave_notify)
 		# Pack together
 		align.add(self.grid)
-		eb.add(align)
-		self.rev.add(eb)
+		self.eb.add(align)
+		self.rev.add(self.eb)
 		self.add(self.rev)
 	
 	### GtkWidget-related stuff
@@ -203,15 +204,6 @@ class InfoBox(Gtk.Container):
  
 	def do_draw(self, cr):
 		allocation = self.get_allocation()
-		
-		if self.background is None:
-			# Use default window background
-			Gtk.render_background(self.get_style_context(), cr,
-					self.border_width,
-					self.border_width,
-					allocation.width - (2 * self.border_width),
-					allocation.height - (2 * self.border_width)
-					)
 		
 		header_al = self.children[0].get_allocation()
 		
@@ -351,6 +343,24 @@ class InfoBox(Gtk.Container):
 		self.color = (r, g, b, a)
 		self.recolor()
 	
+	def set_bg_color(self, r, g, b, a):
+		""" Expects floats """
+		self.background = (r, g, b, a)
+		col = Gdk.RGBA(r, g, b, a)
+		for key in self.value_widgets:
+			for w in self.value_widgets[key ]:
+				w.override_background_color(Gtk.StateFlags.NORMAL, col)
+		self.eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(*self.background))
+		self.grid.override_background_color(Gtk.StateType.NORMAL, col)
+	
+	def set_text_color(self, r, g, b, a):
+		""" Expects floats """
+		self.text_color = (r, g, b, a)
+		col = Gdk.RGBA(r, g, b, a)
+		for key in self.value_widgets:
+			for w in self.value_widgets[key ]:
+				w.override_color(Gtk.StateFlags.NORMAL, col)
+	
 	def set_border(self, width):
 		self.border_width = width
 		self.queue_resize()
@@ -382,8 +392,10 @@ class InfoBox(Gtk.Container):
 		self.grid.attach(wIcon, 0, line, 1, 1)
 		self.grid.attach_next_to(wTitle, wIcon, Gtk.PositionType.RIGHT, 1, 1)
 		self.grid.attach_next_to(wValue, wTitle, Gtk.PositionType.RIGHT, 1, 1)
-		if not visible:
-			for w in self.value_widgets[key]:
+		for w in self.value_widgets[key]:
+			w.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.background))
+			w.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.text_color))
+			if not visible:
 				w.set_no_show_all(True)
 	
 	def clear_values(self):

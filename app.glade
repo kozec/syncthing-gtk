@@ -71,7 +71,7 @@
 			<property name="can_focus">False</property>
 			<property name="orientation">vertical</property>
 			<child>
-				<object class="GtkAlignment" id="alignment1">
+				<object class="GtkAlignment" id="alignment_split">
 					<property name="visible">True</property>
 					<property name="can_focus">False</property>
 					<property name="top_padding">5</property>
@@ -90,7 +90,7 @@
 									<property name="visible">True</property>
 									<property name="can_focus">False</property>
 									<property name="orientation">vertical</property>
-									<!-- Script adds widgets here -->					
+									<!-- Script adds widgets here -->
 								</object>
 								<packing>
 									<property name="resize">False</property>
@@ -105,7 +105,7 @@
 									<property name="visible">True</property>
 									<property name="can_focus">False</property>
 									<property name="orientation">vertical</property>
-									<!-- Script adds widgets here -->					
+									<!-- Script adds widgets here -->
 								</object> <!-- /GtkBox -->
 								<packing>
 									<property name="resize">False</property>
