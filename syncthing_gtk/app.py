@@ -138,10 +138,16 @@ class App(Gtk.Application, TimerManager):
 			self["content"].pack_start(bar, False, False, 0)
 			self["content"].reorder_child(bar, 0)
 			self["content"].show_all()
-			w.add(self["content"])			
+			w.add(self["content"])
 			self["window"].destroy()
 			self["window"] = w
 			self["window"].connect("delete-event", self.cb_delete_event)
+		
+		# Fix for margin arounnd Gtk.Paned handle suddednly missing after
+		# upgrade to GTK 3.14
+		if (Gtk.get_major_version(), Gtk.get_minor_version()) > (3, 12):
+			self["folderlist"].props.margin_right = 5
+			self["devicelist"].props.margin_left = 5
 		
 		self["window"].set_title(_("Syncthing GTK"))
 		self.add_window(self["window"])
