@@ -464,7 +464,7 @@ class SaveSettingsPage(GenerateKeysPage):
 		self.process.connect('exit', self.cb_daemon_exit)
 		self.parent.connect('cancel', self.terminate_process)
 		# Create daemon instance and wait until startup completes
-		self.retries = 5
+		self.retries = 10
 		self.daemon = Daemon()
 		self.daemon.connect("startup-complete", self.cb_syncthing_startup_complete)
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
@@ -557,7 +557,7 @@ class LastPage(GenerateKeysPage):
 			"\n\n" +
 			_("Syncthing has been successfully configured.") +
 			"\n" +
-			_("You can configure more details later, in"
+			_("You can configure more details later, in "
 			  "<b>UI Settings</b> and <b>Daemon Settings</b> menus "
 			  "in main window of application.")
 		)
@@ -569,4 +569,4 @@ class LastPage(GenerateKeysPage):
 		self.parent.config["autokill_daemon"] = 1
 		self.parent.config["minimize_on_start"] = False
 		self.parent.quit_button.get_parent().remove(self.parent.quit_button)
-		self.finished = True
+		self.parent.finished = True

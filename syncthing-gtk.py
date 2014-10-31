@@ -12,7 +12,7 @@ if __name__ == "__main__":
 		print "  -h   Display this help message and exit"
 		print "  -w   Display window / don't start minimized"
 		print "  -s   Use classic window header instead of Gtk.HeaderBar"
-		print "  -1   Run 'first start wizard' even if syncthing is already configured"
+		print "  -1   Run 'first start wizard' and exit"
 		sys.exit(0)
 	if "-1" in sys.argv:
 		from syncthing_gtk import Wizard

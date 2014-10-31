@@ -63,10 +63,12 @@ class App(Gtk.Application, TimerManager):
 		self.process = None
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
 		self.watcher = None
+		self.daemon = None
 		self.notifications = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
+		self.wizard = None
 		self.widgets = {}
 		self.error_boxes = []
 		self.error_messages = set([])	# Holds set of already displayed error messages
@@ -79,13 +81,14 @@ class App(Gtk.Application, TimerManager):
 		Gtk.Application.do_startup(self, *a)
 		self.setup_widgets()
 		self.setup_statusicon()
-		self.setup_connection()
-		self.daemon.reconnect()
+		if self.setup_connection():
+			self.daemon.reconnect()
 	
 	def do_activate(self, *a):
 		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
-			# Show main window
-			self.show()
+			if self.wizard is None:
+				# Show main window
+				self.show()
 		elif self.first_activation:
 			print
 			print _("Syncthing-GTK started and running in notification area")
@@ -162,9 +165,16 @@ class App(Gtk.Application, TimerManager):
 				_("Disable HTTPS in WebUI and try again.")
 				))
 			sys.exit(1)
+			return False
 		except InvalidConfigurationException, e:
-			self.fatal_error(str(e))
-			sys.exit(1)
+			# Syncthing is not configured, most likely never launched.
+			# Run wizard.
+			self.hide()
+			self.wizard = Wizard(self.gladepath, self.iconpath, self.config)
+			self.wizard.connect('cancel', self.cb_wizard_finished)
+			self.wizard.connect('close', self.cb_wizard_finished)
+			self.wizard.show()
+			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
 		if HAS_INOTIFY:
@@ -200,6 +210,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
+		return True
 	
 	def start_deamon(self):
 		if self.process == None:
@@ -595,9 +606,9 @@ class App(Gtk.Application, TimerManager):
 		If connection to daemon is not established, shows 'Connecting'
 		dialog as well.
 		"""
-		
-		self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
-		self.daemon.request_events()
+		if not self.daemon is None:
+			self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
+			self.daemon.request_events()
 		if not self["window"].is_visible():
 			# self["window"].show_all()
 			self["window"].show()
@@ -611,7 +622,8 @@ class App(Gtk.Application, TimerManager):
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
 		self["window"].hide()
-		self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
+		if not self.daemon is None:
+			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
 	def display_connect_dialog(self, message):
 		"""
@@ -1027,6 +1039,18 @@ class App(Gtk.Application, TimerManager):
 			self.config["autokill_daemon"] = (1 if response == RESPONSE_SLAIN_DAEMON else 0)
 		self.process = None
 		self.cb_exit()
+	
+	def cb_wizard_finished(self, wizard, *a):
+		self.wizard = None
+		if wizard.is_finished():
+			# Good, try connecting again
+			wizard.hide()
+			wizard.destroy()
+			self.show()
+			if self.setup_connection():
+				self.daemon.reconnect()
+		else:
+			self.quit()
 	
 	def cb_daemon_exit(self, proc, error_code):
 		if not self.process is None:
