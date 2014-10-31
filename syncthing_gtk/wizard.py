@@ -409,7 +409,7 @@ class SaveSettingsPage(GenerateKeysPage):
 		# Text
 		stgtk_link = '<a href="https://github.com/kozec/syncthing-gui/issues">Syncthing-GTK</a>'
 		# No bug against syncthing here, should anything bad happen here,
-		# it's most likely my mistake.
+		# it's most likely my fault.
 		self.label.set_markup(
 			_("<b>Failed to store configuration.</b>") +
 			"\n\n" +
@@ -421,8 +421,8 @@ class SaveSettingsPage(GenerateKeysPage):
 		"""
 		Tries to open TCP port to check it availability.
 		It this fails, checks next ports, until MAX_PORT is reached.
-		When maxport is reached, assumes something completly wrong
-		happens and displays error.
+		When MAX_PORT is reached, it's safe to assume that something
+		completly wrong is happening and to display error.
 		"""
 		if port >= MAX_PORT:
 			self.error()
@@ -440,7 +440,7 @@ class SaveSettingsPage(GenerateKeysPage):
 			self.parent.syncthing_options["port"] = str(port)
 			GLib.idle_add(self.start_binary)
 		except socket.error:
-			# Address already in use (most likely)
+			# Address already in use (or some crazy error)
 			del s
 			self.cb_daemon_line(None, "syncthing-gtk: port %s is not available" % (port,))
 			GLib.idle_add(self.check_port, port + 1)
