@@ -8,10 +8,8 @@ values afterwards.
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
-from xml.dom import minidom
 from syncthing_gtk import Configuration, Daemon
 from syncthing_gtk import DaemonProcess, DaemonOutputDialog
-from syncthing_gtk.tools import hashpw
 import os, sys, socket, random, string
 
 _ = lambda (a) : a
@@ -382,55 +380,6 @@ class HttpSettingsPage(Page):
 				self.parent.syncthing_options["listen_ip"] = "0.0.0.0"
 			self.parent.syncthing_options["user"] = str(self.tx_username.get_text())
 			self.parent.syncthing_options["password"] = str(self.tx_username.get_text())
-		"""
-			try:
-				# Load XML
-				config = file(self.parent.st_configfile, "r").read()
-				xml = minidom.parseString(config)
-				gui = xml.getElementsByTagName("configuration")[0].getElementsByTagName("gui")[0]
-				# Create required nodes
-				for x in ("address", "user", "password"):
-					if not len(gui.getElementsByTagName(x)):
-						e = xml.createElement(x)
-						txt = xml.createTextNode(" ")
-						e.appendChild(txt)
-						gui.appendChild(e)
-				# Change values
-				gui.setAttribute("tls", "false")
-				gui.setAttribute("enabled", "true")
-				if self.rb_localhost.get_active():
-					# Localhost
-					gui.getElementsByTagName("address")[0] \
-						.firstChild.nodeValue = "127.0.0.1:8080"
-				else:
-					# All interfaces
-					gui.getElementsByTagName("address")[0] \
-						.firstChild.nodeValue = "0.0.0.0:8080"
-					gui.getElementsByTagName("user")[0] \
-						.firstChild.nodeValue = str(self.tx_username.get_text())
-					# p_hash = bcrypt.GenerateFromPassword
-					gui.getElementsByTagName("password")[0] \
-						.firstChild.nodeValue = hashpw(str(self.tx_username.get_text()))
-					# $2a$10$ThY24Q7rR9/zYrDXXpS5xuGSj7kouLR/WkRRW/k9lobILY5ndvY2K
-					# $2a$10$Arpibe2OV1ztSaVzWmN0keIW4Ptk665.KZin4XC/8Zf3NqrqMfD3S
-					# $2a$10$.OHcG5qeCYnH3A4FAfl19e7N48qcLcD/BJnMzHmOneGZeVflDZrzm
-					# $2a$01$6jejH8v2LqBP0KS1q5AowOiMl7dmyhbpoLwbwcD6qxBGZyMpwvfsm
-					# $2a$01$T2CUEjGCQBMpKdHVpY7u..rTQ3kbkunfGO434AxuG.C2oJCZcN0z6
-				# Save XML
-				config = xml.toxml()
-				file(self.parent.st_configfile, "w").write(config)
-			except Exception, e:
-				# This stuff is _really_ not supposed to fail.
-				# I really hope it will never fail. 'cos fixing
-				# everything what can fail here is like writing two
-				# syncthing-gtk's.
-				#
-				# So, should anything fail here, simple error dialog
-				# will be shown and program will bail out. Sorry.
-				self.parent.fatal_error(_("Failed to edit configuration.") + "\n" + str(e))
-				Gtk.main_quit()
-				return
-		"""
 	
 	def prepare(self):
 		# Refresh UI
