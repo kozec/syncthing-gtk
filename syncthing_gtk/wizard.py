@@ -248,6 +248,7 @@ class GenerateKeysPage(Page):
 			self.cb_daemon_line(None, "syncthing-gtk: Failed to create configuration directory")
 			self.cb_daemon_line(None, "syncthing-gtk: %s" % (str(e),))
 		# Run syncthing -generate
+		self.cb_daemon_line(None, "syncthing-gtk: Syncthing configuration directory: %s" % (self.parent.st_configdir,))
 		self.process = DaemonProcess([ self.parent.config["syncthing_binary"], '-generate=%s' % self.parent.st_configdir ])
 		self.process.connect('line', self.cb_daemon_line)
 		self.process.connect('exit', self.cb_daemon_exit)

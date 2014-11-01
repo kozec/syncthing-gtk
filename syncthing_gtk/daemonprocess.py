@@ -38,7 +38,7 @@ class DaemonProcess(GObject.GObject):
 		else:
 			# Gio < 3.12 - Gio.Subprocess is missing :(
 			self._proc = Popen(commandline, stdout=PIPE)
-			self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), True)
+			self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
 			self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 		self._lines = deque([], DaemonProcess.SCROLLBACK_SIZE)
 		self._buffer = ""
