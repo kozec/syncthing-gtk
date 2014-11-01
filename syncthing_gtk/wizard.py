@@ -28,6 +28,8 @@ class Wizard(Gtk.Assistant):
 		self.gladepath = gladepath
 		self.iconpath = iconpath
 		self.syncthing_options = {}
+		self.lines = []					# Daemon and wizard output,
+										# maybe for error reports
 		self.finished = False
 		self.connect("prepare", self.prepare_page)
 		# Find syncthing configuration directory
@@ -96,6 +98,11 @@ class Wizard(Gtk.Assistant):
 		d.run()
 		d.hide()
 		d.destroy()
+	
+	def output_line(self, line):
+		""" Called for every line that wizard or daemon process outputs """
+		self.lines.append(line)
+		print line
 	
 	def is_finished(self):
 		""" Returns True if user finished entire wizard """
@@ -173,8 +180,8 @@ class FindDaemonPage(Page):
 		self.label.set_markup(
 			_("<b>Syncthing daemon not found.</b>") +
 			"\n\n" +
-			_("Please, use package manager to install syncthing package") +
-			(_("or %s from syncthing page and save it") % dll_link) +
+			_("Please, use package manager to install syncthing package") + " "
+			(_("or %s from syncthing page and save it") % dll_link) + " "
 			(_("to your %s or any other directory in PATH") % local_bin_folder_link)
 		)
 	
@@ -224,7 +231,6 @@ class GenerateKeysPage(Page):
 	TITLE = _("Generate Keys")
 	def init_page(self):
 		""" Displayed while syncthing binary is being searched for """
-		self.lines = []
 		self.label = WrappedLabel(
 			_("<b>Syncthing is generating RSA key and certificate.</b>") +
 			"\n\n" +
@@ -240,17 +246,17 @@ class GenerateKeysPage(Page):
 		Starts syncthing binary with -generate parameter and waits until
 		key generation is finished
 		"""
-		self.cb_daemon_line(None, "syncthing-gtk: Configuration directory: '%s'" % (self.parent.st_configdir,))
+		self.parent.output_line("syncthing-gtk: Configuration directory: '%s'" % (self.parent.st_configdir,))
 		# Create it, if needed
 		try:
 			os.makedirs(self.parent.st_configdir)
 		except Exception, e:
-			self.cb_daemon_line(None, "syncthing-gtk: Failed to create configuration directory")
-			self.cb_daemon_line(None, "syncthing-gtk: %s" % (str(e),))
+			self.parent.output_line("syncthing-gtk: Failed to create configuration directory")
+			self.parent.output_line("syncthing-gtk: %s" % (str(e),))
 		# Run syncthing -generate
-		self.cb_daemon_line(None, "syncthing-gtk: Syncthing configuration directory: %s" % (self.parent.st_configdir,))
+		self.parent.output_line("syncthing-gtk: Syncthing configuration directory: %s" % (self.parent.st_configdir,))
 		self.process = DaemonProcess([ self.parent.config["syncthing_binary"], '-generate=%s' % self.parent.st_configdir ])
-		self.process.connect('line', self.cb_daemon_line)
+		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
 		self.process.connect('exit', self.cb_daemon_exit)
 	
 	def error(self):
@@ -284,18 +290,12 @@ class GenerateKeysPage(Page):
 		durring key generation.
 		"""
 		d = DaemonOutputDialog(self.parent, None)
-		d.show_with_lines(self.lines, self.parent)
-	
-	def cb_daemon_line(self, dproc, line):
-		""" Called for every line that syncthing process outputs """
-		self.lines.append(line)
-		print line
+		d.show_with_lines(self.parent.lines, self.parent)
 	
 	def cb_daemon_exit(self, dproc, exit_code):
 		""" Called when syncthing finishes """
 		if exit_code == 0:
 			# Finished without problem, advance to next page
-			self.lines = []
 			self.parent.set_page_complete(self, True)
 			self.parent.next_page()
 		else:
@@ -391,7 +391,6 @@ class SaveSettingsPage(GenerateKeysPage):
 	TITLE = _("Save Settings")
 	def init_page(self):
 		""" Displayed while syncthing binary is being searched for """
-		self.lines = []
 		self.label = WrappedLabel(_("<b>Saving settings...</b>") + "\n\n")
 		self.status = Gtk.Label(_("Checking for available port..."))
 		self.attach(self.label,		0, 0, 1, 1)
@@ -436,14 +435,14 @@ class SaveSettingsPage(GenerateKeysPage):
 			s.close()
 			# Good, port is available
 			del s
-			self.cb_daemon_line(None, "syncthing-gtk: choosen port %s" % (port,))
+			self.parent.output_line("syncthing-gtk: choosen port %s" % (port,))
 			self.port = port
 			self.parent.syncthing_options["port"] = str(port)
 			GLib.idle_add(self.start_binary)
 		except socket.error:
 			# Address already in use (or some crazy error)
 			del s
-			self.cb_daemon_line(None, "syncthing-gtk: port %s is not available" % (port,))
+			self.parent.output_line("syncthing-gtk: port %s is not available" % (port,))
 			GLib.idle_add(self.check_port, port + 1)
 	
 	def start_binary(self):
@@ -461,7 +460,7 @@ class SaveSettingsPage(GenerateKeysPage):
 			"-gui-authentication=",
 			"-gui-apikey=",
 		])
-		self.process.connect('line', self.cb_daemon_line)
+		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
 		self.process.connect('exit', self.cb_daemon_exit)
 		self.parent.connect('cancel', self.terminate_process)
 		# Create daemon instance and wait until startup completes
@@ -490,10 +489,10 @@ class SaveSettingsPage(GenerateKeysPage):
 		"""
 		if reason == Daemon.REFUSED and self.retries > 0:
 			self.retries -= 1
-			self.cb_daemon_line(None, "syncthing-gtk: %s" % (message,))
+			self.parent.output_line("syncthing-gtk: %s" % (message,))
 			return
-		self.cb_daemon_line(None, "syncthing-gtk: Failed to connect to daemon")
-		self.cb_daemon_line(None, "syncthing-gtk: %s" % (message,))
+		self.parent.output_line("syncthing-gtk: Failed to connect to daemon")
+		self.parent.output_line("syncthing-gtk: %s" % (message,))
 		self.daemon.close()
 		self.terminate_process()
 		self.error()
@@ -512,8 +511,8 @@ class SaveSettingsPage(GenerateKeysPage):
 			config["GUI"]["Enabled"] = True
 			config["GUI"]["apikey"] = self.apikey
 		except Exception, e:
-			self.cb_daemon_line(None, "syncthing-gtk: Failed to modify settings")
-			self.cb_daemon_line(None, "syncthing-gtk: %s" % (str(e),))
+			self.parent.output_line("syncthing-gtk: Failed to modify settings")
+			self.parent.output_line("syncthing-gtk: %s" % (str(e),))
 			self.daemon.close()
 			self.terminate_process()
 			self.error()
@@ -521,15 +520,15 @@ class SaveSettingsPage(GenerateKeysPage):
 		self.daemon.write_config(config, self.cb_syncthing_config_saved, self.cb_syncthing_config_save_failed)
 	
 	def cb_syncthing_config_load_failed(self, exception, *a):
-		self.cb_daemon_line(None, "syncthing-gtk: Failed to load configuration from daemon")
-		self.cb_daemon_line(None, "syncthing-gtk: %s" % (str(exception)))
+		self.parent.output_line("syncthing-gtk: Failed to load configuration from daemon")
+		self.parent.output_line("syncthing-gtk: %s" % (str(exception)))
 		self.daemon.close()
 		self.terminate_process()
 		self.error()
 	
 	def cb_syncthing_config_save_failed(self, exception, *a):
-		self.cb_daemon_line(None, "syncthing-gtk: Failed to save daemon configuration")
-		self.cb_daemon_line(None, "syncthing-gtk: %s" % (str(exception)))
+		self.parent.output_line("syncthing-gtk: Failed to save daemon configuration")
+		self.parent.output_line("syncthing-gtk: %s" % (str(exception)))
 		self.daemon.close()
 		self.terminate_process()
 		self.error()
