@@ -6,7 +6,6 @@ def sigint(*a):
 	sys.exit(0)
 
 if __name__ == "__main__":
-	from syncthing_gtk import App
 	signal.signal(signal.SIGINT, sigint)
 	path = "/usr/share/syncthing-gtk"
 	if os.path.exists("/usr/local/share/syncthing-gtk"):
@@ -16,10 +15,16 @@ if __name__ == "__main__":
 		print "  -h   Display this help message and exit"
 		print "  -w   Display window / don't start minimized"
 		print "  -s   Use classic window header instead of Gtk.HeaderBar"
+		print "  -a   Display about dialog and exits"
 		sys.exit(0)
-	App(
-		"-w" not in sys.argv,
-		"-s" not in sys.argv,
-		path,
-		os.path.join(path, "icons")
-	).run([])
+	if "-a" in sys.argv:
+		from syncthing_gtk import AboutDialog
+		AboutDialog(path).run([])
+	else:
+		from syncthing_gtk import App
+		App(
+			"-w" not in sys.argv,
+			"-s" not in sys.argv,
+			path,
+			os.path.join(path, "icons")
+		).run([])

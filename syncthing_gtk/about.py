@@ -11,8 +11,8 @@ _ = lambda (a) : a
 
 class AboutDialog(object):
 	""" Standard looking about dialog """
-	def __init__(self, app):
-		self.app = app
+	def __init__(self, gladepath):
+		self.gladepath = gladepath
 		self.setup_widgets()
 	
 	def show(self, parent=None):
@@ -20,14 +20,18 @@ class AboutDialog(object):
 			self.dialog.set_transient_for(parent)
 		self.dialog.show_all()
 	
+	def run(self, *a):
+		self.dialog.run()
+	
 	def close(self):
-		self.dialog.set_visible(False)
-		self.dialog.destroy()
+		if hasattr(self, "dialog"):
+			self.dialog.set_visible(False)
+			self.dialog.destroy()
 	
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file(os.path.join(self.app.gladepath, "about.glade"))
+		self.builder.add_from_file(os.path.join(self.gladepath, "about.glade"))
 		self.builder.connect_signals(self)
 		self.dialog = self.builder.get_object("dialog")
 	

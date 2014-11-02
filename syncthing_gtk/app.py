@@ -800,7 +800,7 @@ class App(Gtk.Application, TimerManager):
 		self.quit()
 	
 	def cb_about(self, *a):
-		AboutDialog(self).show(self["window"])
+		AboutDialog(self.gladepath).show(self["window"])
 	
 	def cb_delete_event(self, *e):
 		# Hide main window
