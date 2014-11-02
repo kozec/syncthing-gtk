@@ -18,7 +18,7 @@ class AboutDialog(object):
 	def show(self, parent=None):
 		if not parent is None:
 			self.dialog.set_transient_for(parent)
-		self.dialog.show_all()
+		self.dialog.show()
 	
 	def run(self, *a):
 		self.dialog.run()
