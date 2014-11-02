@@ -3,15 +3,29 @@
 Syncthing-GTK - Daemon
 
 Class interfacing with syncthing daemon
+
+Create instance, connect singal handlers and call daemon.reconnect()
+
 """
 
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager, DEBUG
-from syncthing_gtk.tools import parsetime
+from syncthing_gtk.tools import parsetime, get_header, compare_version
+from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
 import json, os, sys, time
+
+# Minimal version supported by Daemon class
+MIN_VERSION = "0.10"
+
+# Random constant used as key when adding headers to returned data in
+# REST requests; Anything goes, as long as it isn't string
+HTTP_HEADERS = int(65513)
+
+# Last-seen values before this date are translated to never
+NEVER = datetime(1971, 1, 1, 1, 1, 1, tzinfo=tz.tzlocal())
 
 class Daemon(GObject.GObject, TimerManager):
 	"""
@@ -21,6 +35,10 @@ class Daemon(GObject.GObject, TimerManager):
 		config-out-of-sync ()
 			Emited when daemon synchronization gets out of sync and
 			daemon needs to be restarted.
+		
+		config-saved ()
+			Emited when daemon saves configuration without need for
+			restarting.
 		
 		connected ()
 			Emited when connection to daemon is initiated, before
@@ -47,89 +65,131 @@ class Daemon(GObject.GObject, TimerManager):
 				message:	generated error message
 		
 		my-id-changed (my_id, replaced)
-			Emited when ID is retrieved from node or when ID changes
-			after client connects to another node
-				my_id:		ID of node that is instance connected to.
+			Emited when ID is retrieved from device or when ID changes
+			after client connects to another device
+				my_id:		ID of device that is instance connected to.
 		
 		error (message)
 			Emited every time when daemon generates error readable by
 			WebUI (/rest/errors call)
 				message:	Error message sent by daemon
 		
-		node-added (id, name, data)
-			Emited when new node is loaded from configuration
-				id:		id of loaded node
-				name:	name of loaded node (may be None)
-				data:	dict with rest of node data
+		folder-rejected(device_id, folder_id)
+			Emited when daemon detects unexpected folder from known
+			device.
+				device_id:	id of device that send unexpected folder id
+				folder_id:	id of unexpected folder
 		
-		node-connected (id)
-			Emited when daemon connects to remote node
-				id:			id of node
+		device-rejected(device_id, address)
+			Emited when daemon detects connection from unknown device
+				device_id:	device id
+				address:	address which connection come from
 		
-		node-disconnected (id)
-			Emited when daemon losts connection to remote node
-				id:			id of node
+		device-added (id, name, data)
+			Emited when new device is loaded from configuration
+				id:		id of loaded device
+				name:	name of loaded device (may be None)
+				data:	dict with rest of device data
 		
-		node-discovered (id, addresses)
+		device-connected (id)
+			Emited when daemon connects to remote device
+				id:			id of device
+		
+		device-disconnected (id)
+			Emited when daemon losts connection to remote device
+				id:			id of device
+		
+		device-discovered (id, addresses)
 			# TODO: What this event does?
-				id:			id of node
-				addresses:	list of node addresses
+				id:			id of device
+				addresses:	list of device addresses
 		
-		node-data-changed (id, address, version, dl_rate, up_rate, bytes_in, bytes_out)
-			Emited when node data changes
-				id:			id of node
-				address:	address of remote node
-				version:	daemon version of remote node
+		device-data-changed (id, address, version, dl_rate, up_rate, bytes_in, bytes_out)
+			Emited when device data changes
+				id:			id of device
+				address:	address of remote device
+				version:	daemon version of remote device
 				dl_rate:	download rate
 				up_rate:	upload rate
 				bytes_in:	total number of bytes downloaded
 				bytes_out:	total number of bytes uploaded
 		
-		node-sync-started (id, progress):
-			Emited after node synchronization is started
-				id:			id of repo
+		last-seen-changed (id, last_seen)
+			Emited when daemon reported 'last seen' value for device changes
+			or when is this value recieved for first time
+				id:			id of device
+				last_seen:	datetime object or None, if device was never seen
+		
+		device-sync-started (id, progress):
+			Emited after device synchronization is started
+				id:			id of folder
 				progress:	synchronization progress (0.0 to 1.0)
 		
-		node-sync-progress (id, progress):
-			Emited repeatedly while node is being synchronized
-				id:			id of repo
+		device-sync-progress (id, progress):
+			Emited repeatedly while device is being synchronized
+				id:			id of folder
 				progress:	synchronization progress (0.0 to 1.0)
 	
-		node-sync-finished (id):
-			Emited after node synchronization is finished
-				id:		id of repo
+		device-sync-finished (id):
+			Emited after device synchronization is finished
+				id:		id of folder
 		
-		repo-added (id, data)
-			Emited when new repository is loaded from configuration
-				id:		id of loaded repo
-				data:	dict with rest of repo data
+		folder-added (id, data)
+			Emited when new folder is loaded from configuration
+				id:		id of loaded folder
+				data:	dict with rest of folder data
 		
-		repo-data-changed (id, data):
-			Emited when change in repository data (/rest/model call)
+		folder-data-changed (id, data):
+			Emited when change in folder data (/rest/model call)
 			is detected and sucesfully loaded.
-				id:		id of repo
+				id:		id of folder
 				data:	dict with loaded data
 		
-		repo-sync-started (id):
-			Emited after repository synchronization is started
-				id:		id of repo
+		folder-data-failed (id):
+			Emited when daemon fails to load folder data (/rest/model call),
+			most likely beacause folder was just added and syncthing
+			daemon needs to be restarted
+				id:		id of folder
 		
-		repo-sync-progress (id, progress):
-			Emited repeatedly while repo is being synchronized
-				id:			id of repo
+		folder-sync-progress (id, progress):
+			Emited repeatedly while folder is being synchronized
+				id:			id of folder
 				progress:	synchronization progress (0.0 to 1.0)
 	
-		repo-sync-finished (id):
-			Emited after repository synchronization is finished
-				id:		id of repo
+		folder-sync-finished (id):
+			Emited after folder synchronization is finished
+				id:		id of folder
 		
-		repo-scan-started (id):
-			Emited after repository scan is started
-				id:		id of repo
+		folder-scan-started (id):
+			Emited after folder scan is started
+				id:		id of folder
 		
-		repo-scan-finished (id):
-			Emited after repository scan is finished
-				id:		id of repo
+		folder-scan-finished (id):
+			Emited after folder scan is finished
+				id:		id of folder
+		
+		folder-stopped (id, message):
+			Emited when folder enters 'stopped' state.
+			No 'folder-sync', 'folder-sync-progress' and 'folder-scan-started'
+			events are emitted after folder enters this state, until
+			reconnect() is called.
+				id:			id of folder
+				message:	error message
+		
+		item-started (folder_id, filename, time):
+			Emited when synchronization of file starts
+				folder_id:	id of folder that contains file
+				filename:	synchronized file
+				time:		event timestamp
+		
+		item-updated (folder_id, filename, mtime):
+			Emited when change in local file is detected (LocalIndexUpdated event)
+				folder_id:	id of folder that contains file
+				filename:	updated file
+				mtime:		last modification time of updated file
+		
+		startup-complete():
+			Emited when daemon initialization is complete.
 		
 		system-data-updated (ram_ussage, cpu_ussage, announce)
 			Emited every time when system informations are recieved
@@ -144,27 +204,36 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	__gsignals__ = {
 			b"config-out-of-sync"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"config-saved"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"node-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
-			b"node-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"node-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"node-discovered"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
-			b"node-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
-			b"node-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-			b"node-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-			b"node-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"repo-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
-			b"repo-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
-			b"repo-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"repo-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"repo-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-			b"repo-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"repo-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"repo-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
+			b"device-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"device-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"device-discovered"	: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
+			b"device-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
+			b"last-seen-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"device-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+			b"device-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+			b"device-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"folder-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"folder-data-failed"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+			b"folder-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-stopped"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+			b"startup-complete"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
 		}
 	
@@ -181,6 +250,7 @@ class Daemon(GObject.GObject, TimerManager):
 	# Constants for 'reason' parameter of connection-error event
 	REFUSED			= 1
 	NOT_AUTHORIZED	= 2
+	OLD_VERSION		= 3
 	UNKNOWN			= 255
 	
 	def __init__(self):
@@ -190,23 +260,32 @@ class Daemon(GObject.GObject, TimerManager):
 		self._address = None
 		self._api_key = None
 		self._connected = False
-		self._refresh_rate = 1 # seconds
-		# syncing_repos holds set of repos that are being synchronized
-		self._syncing_repos = set()
-		# syncing_nodes does same thing, only for nodes
-		self._syncing_nodes = set()
-		# and once again, for repos in 'Scanning' state
-		self._scanning_repos = set()
-		# needs_update holds set of repos whose state was recently
+		self._refresh_interval = 1 # seconds
+		# syncing_folders holds set of folders that are being synchronized
+		self._syncing_folders = set()
+		# stopped_folders holds set of folders in 'stopped' state
+		# No 'folder-sync', 'folder-sync-progress' and 'folder-scan-started'
+		# events are emitted after folder enters this state
+		self._stopped_folders = set()
+		# syncing_devices does same thing, only for devices
+		self._syncing_devices = set()
+		# and once again, for folders in 'Scanning' state
+		self._scanning_folders = set()
+		# needs_update holds set of folders whose state was recently
 		# changed and needs to be fetched from server
 		self._needs_update = set()
-		# node_data stores data needed to compute transfer speeds
+		# device_data stores data needed to compute transfer speeds
 		# and synchronization state
-		self._node_data = {}
-		# repo_nodes stores list of nodes assigned to repository
-		self._repo_nodes = {}
+		self._device_data = {}
+		# folder_devices stores list of devices assigned to folder
+		self._folder_devices = {}
+		# last_seen holds last_seen value for each folder, preventing firing
+		# last-seen-changed event with same values twice
+		self._last_seen = {}
 		# last_error_time is used to discard repeating errors
-		self._last_error_time = datetime(1970, 1, 1, 1, 1, 1)
+		self._last_error_time = None # Time is taken for first event
+		# last_id is id of last event recieved from daemon
+		self._last_id = 0
 		# Epoch is incereased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
 		self._epoch = 1
@@ -242,9 +321,9 @@ class Daemon(GObject.GObject, TimerManager):
 							.getElementsByTagName("gui")[0] \
 							.getElementsByTagName("address")[0] \
 							.firstChild.nodeValue
-			self._last_id = 0
 			# TODO: https?
 		except Exception, e:
+			print >>sys.stderr, e
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
 		try:
 			self._api_key = xml.getElementsByTagName("configuration")[0] \
@@ -255,15 +334,23 @@ class Daemon(GObject.GObject, TimerManager):
 			# API key can be none
 			pass
 	
-	def _get_node_data(self, nid):
-		""" Returns dict with node data, creating it if needed """
-		if not nid in self._node_data:
-			self._node_data[nid] = {
+	def override_config(self, address, api_key):
+		"""
+		Can be used to override settings loaded from config file.
+		api_key can be None.
+		"""
+		self._address = address
+		self.api_key = api_key
+	
+	def _get_device_data(self, nid):
+		""" Returns dict with device data, creating it if needed """
+		if not nid in self._device_data:
+			self._device_data[nid] = {
 					"bytes_in" : 0, "bytes_out" : 0, "time" : time.time(),
 					"dl_rate" : 0, "up_rate" : 0 , "version" : "?",
 					"completion" : {}, "connected" : False,
 				}
-		return self._node_data[nid]
+		return self._device_data[nid]
 	
 	def _rest_request(self, command, callback, error_callback=None, *callback_data):
 		"""
@@ -278,21 +365,20 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		sc = Gio.SocketClient()
 		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
-			command, self._epoch, callback, error_callback, callback_data)
+			(command, self._epoch, callback, error_callback, callback_data))
 	
-	def _rest_connected(self, sc, results, command, epoch, callback, error_callback, callback_data):
+	def _rest_connected(self, sc, results, (command, epoch, callback, error_callback, callback_data)):
 		""" Second part of _rest_request, called after HTTP connection is initiated """
 		try:
 			con = sc.connect_to_service_finish(results)
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
-			if epoch >= self._epoch :
-				self._rest_error(e, command, callback, error_callback, callback_data)
+			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old connection for", command
 		# Build GET request
 		get_str = "\r\n".join([
@@ -302,30 +388,30 @@ class Daemon(GObject.GObject, TimerManager):
 			"", ""
 			]).encode("utf-8")
 		# Send it out and wait for response
-		con.get_output_stream().write_all(get_str)
+		con.get_output_stream().write_all(get_str, None)
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-			con, command, epoch, callback, error_callback, callback_data, [])
+			(con, command, epoch, callback, error_callback, callback_data, []))
 	
-	def _rest_response(self, sc, results, con, command, epoch, callback, error_callback, callback_data, buffer):
+	def _rest_response(self, sc, results, (con, command, epoch, callback, error_callback, callback_data, buffer)):
 		try:
 			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception, e:
-			con.close()
-			self._rest_error(e, command, callback, error_callback, callback_data)
+			con.close(None)
+			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old response for", command
 		# Repeat read_bytes_async until entire response is readed in buffer
 		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-				con, command, epoch, callback, error_callback, callback_data, buffer)
+				(con, command, epoch, callback, error_callback, callback_data, buffer))
 			return
-		con.close()
+		con.close(None)
 		response = "".join(buffer)
 		# Split headers from response
 		try:
@@ -333,14 +419,14 @@ class Daemon(GObject.GObject, TimerManager):
 			headers = headers.split("\r\n")
 			code = int(headers[0].split(" ")[1])
 			if code == 401:
-				self._rest_error(HTTPAuthException("Not Authorized"), command, callback, error_callback, callback_data)
+				self._rest_error(HTTPAuthException("Not Authorized"), epoch, command, callback, error_callback, callback_data)
 				return
 			elif code != 200:
-				self._rest_error(HTTPException("HTTP error %s" % (code,)), command, callback, error_callback, callback_data)
+				self._rest_error(HTTPException("HTTP error %s" % (code,)), epoch, command, callback, error_callback, callback_data)
 				return
 		except Exception, e:
 			# That probably wasn't HTTP
-			self._rest_error(HTTPException("Invalid HTTP response"), command, callback, error_callback, callback_data)
+			self._rest_error(HTTPException("Invalid HTTP response"), epoch, command, callback, error_callback, callback_data)
 			return
 		# Parse response and call callback
 		try:
@@ -349,21 +435,25 @@ class Daemon(GObject.GObject, TimerManager):
 			rdata = { }
 		except ValueError: # Not a JSON
 			rdata = {'data' : response }
+		if type(rdata) == dict:
+			rdata[HTTP_HEADERS] = headers
 		if callback_data:
 			callback(rdata, *callback_data)
 		else:
 			callback(rdata)
 	
-	def _rest_error(self, exception, command, callback, error_callback, callback_data):
+	def _rest_error(self, exception, epoch, command, callback, error_callback, callback_data):
 		""" Error handler for _rest_response method """
 		if error_callback:
+			if epoch != self._epoch:
+				exception = ConnectionRestarted()
 			if callback_data:
 				error_callback(exception, command, *callback_data)
 			else:
 				error_callback(exception, command)
-		else:
+		elif epoch == self._epoch:
 			try:
-				print >>sys.stderr, ("Request '%s' failed (%s) Repeating..." % (command, exception)).encode("utf-8")
+				print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
 			except UnicodeDecodeError:
 				# Windows...
 				print >>sys.stderr, "Request '%s' failed; Repeating..." % (command,)
@@ -374,21 +464,20 @@ class Daemon(GObject.GObject, TimerManager):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
 		sc = Gio.SocketClient()
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
-			command, data, self._epoch, callback, error_callback, callback_data)
+			(command, data, self._epoch, callback, error_callback, callback_data))
 	
-	def _rest_post_connected(self, sc, results, command, data, epoch, callback, error_callback, callback_data):
+	def _rest_post_connected(self, sc, results, (command, data, epoch, callback, error_callback, callback_data)):
 		""" Second part of _rest_post, called after HTTP connection is initiated """
 		try:
 			con = sc.connect_to_service_finish(results)
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
-			if epoch >= self._epoch :
-				self._rest_post_error(e, command, data, callback, error_callback, *callback_data)
+			self._rest_post_error(e, epoch, command, data, callback, error_callback, *callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old connection for POST ", command
 		post_str = None
 		if self._CSRFtoken is None and self._api_key is None:
@@ -417,30 +506,30 @@ class Daemon(GObject.GObject, TimerManager):
 				json_str
 				]).encode("utf-8")
 		# Send it out and wait for response
-		con.get_output_stream().write_all(post_str)
+		con.get_output_stream().write_all(post_str, None)
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-			con, command, data, epoch, callback, error_callback, callback_data, [])
+			(con, command, data, epoch, callback, error_callback, callback_data, []))
 	
-	def _rest_post_response(self, sc, results, con, command, data, epoch, callback, error_callback, callback_data, buffer):
+	def _rest_post_response(self, sc, results, (con, command, data, epoch, callback, error_callback, callback_data, buffer)):
 		try:
 			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception, e:
-			con.close()
-			self._rest_post_error(e, command, data, callback, error_callback, callback_data)
+			con.close(None)
+			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
-			con.close()
+			con.close(None)
 			if DEBUG : print "Discarded old response for POST ", command
 		# Repeat _rest_post_response until entire response is readed in buffer
 		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
 			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-				con, command, data, epoch, callback, error_callback, callback_data, buffer)
+				(con, command, data, epoch, callback, error_callback, callback_data, buffer))
 			return
-		con.close()
+		con.close(None)
 		response = "".join(buffer)
 		# Parse response
 		if self._CSRFtoken is None and self._api_key is None:
@@ -462,20 +551,22 @@ class Daemon(GObject.GObject, TimerManager):
 					print >>sys.stderr, ""
 					print >>sys.stderr, "Error: Request '%s' failed: Error: failed to get CSRF cookie from daemon" % (command,)
 				else:
-					self._rest_post_error(Exception("Failed to get CSRF cookie"), command, data, callback, error_callback, callback_data)
+					self._rest_post_error(Exception("Failed to get CSRF cookie"), epoch, command, data, callback, error_callback, callback_data)
 				return
 			# Repeat request with acqiured cookie
 			self._rest_post(command, data, callback, error_callback, *callback_data)
 			return
 		# Extract response code
 		try:
-			code = int(response.split("\n")[0].strip("\r\n").split(" ")[1])
+			headers, response = response.split("\r\n\r\n", 1)
+			headers = headers.split("\r\n")
+			code = int(headers[0].split(" ")[1])
 			if code != 200:
-				self._rest_post_error(HTTPException("HTTP error %s" % (code,)), command, data, callback, error_callback, callback_data)
+				self._rest_post_error(HTTPException("HTTP error %s" % (code,), response), epoch, command, data, callback, error_callback, callback_data)
 				return
 		except Exception:
 			# That probably wasn't HTTP
-			self._rest_post_error(HTTPException("Invalid HTTP response"), command, data, callback, error_callback, callback_data)
+			self._rest_post_error(HTTPException("Invalid HTTP response"), epoch, command, data, callback, error_callback, callback_data)
 			return
 		if "CSRF Error" in response:
 			# My cookie is too old; Throw it away and try again
@@ -486,27 +577,30 @@ class Daemon(GObject.GObject, TimerManager):
 		
 		# Parse response and call callback
 		try:
-			response = response.split("\r\n\r\n", 1)[1]
 			rdata = json.loads(response)
 		except IndexError: # No data
 			rdata = { }
 		except ValueError: # Not a JSON
 			rdata = {'data' : response }
+		if type(rdata) == dict:
+			rdata[HTTP_HEADERS] = headers
 		if callback_data:
 			callback(rdata, *callback_data)
 		else:
 			callback(rdata)
 	
-	def _rest_post_error(self, exception, command, data, callback, error_callback, callback_data):
+	def _rest_post_error(self, exception, epoch, command, data, callback, error_callback, callback_data):
 		""" Error handler for _rest_post_response method """
 		if error_callback:
+			if epoch != self._epoch:
+				exception = ConnectionRestarted()
 			if callback_data:
 				error_callback(exception, command, data, *callback_data)
 			else:
 				error_callback(exception, command, data)
-		else:
+		elif epoch != self._epoch:
 			try:
-				print >>sys.stderr, ("Post '%s' failed (%s) Repeating..." % (command, exception)).encode("utf-8")
+				print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
 			except UnicodeDecodeError:
 				# Windows...
 				print >>sys.stderr, "Post '%s' failed; Repeating..." % (command,)
@@ -517,25 +611,29 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Request settings from syncthing daemon """
 		self._rest_request("config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 	
-	def _request_repo_data(self, rid):
-		self._rest_request("model?repo=%s" % (rid,), self._syncthing_cb_repo_data, None, rid)
+	def _request_folder_data(self, rid):
+		self._rest_request("model?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid)
 	
 	def _request_completion(self, nid, rid=None):
 		"""
-		Requests completion data for specified node and repo.
-		If rid is None, requests completion data for specified node and
-		ALL repos.
+		Requests completion data for specified device and folder.
+		If rid is None, requests completion data for specified device and
+		ALL folders.
 		"""
 		if rid is None:
-			for rid in self._repo_nodes:
-				if nid in self._repo_nodes[rid]:
+			for rid in self._folder_devices:
+				if nid in self._folder_devices[rid]:
 					self._request_completion(nid, rid)
 			return
-		self._rest_request("completion?node=%s&repo=%s" % (nid, rid), self._syncthing_cb_completion, None, nid, rid)
+		self._rest_request("completion?device=%s&folder=%s" % (nid, rid), self._syncthing_cb_completion, None, nid, rid)
 	
 	def _request_events(self, *a):
 		""" Request new events from syncthing daemon """
-		self._rest_request("events?since=%s" % self.last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
+		self._rest_request("events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
+	
+	def _request_last_seen(self, *a):
+		""" Request 'last seen' values for all devices """
+		self._rest_request("stats/device", self._syncthing_cb_last_seen, lambda *a: True)
 	
 	### Callbacks ###
 	
@@ -547,27 +645,44 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("disconnected", reason, None)
 			self.cancel_all()
 	
+	def _init_event_pooling(self, events):
+		if type(events) == list and len(events) > 0:
+			self._last_id = events[-1]["id"]
+			self._last_error_time = parsetime(events[-1]["time"])
+			self._rest_request("errors", self._syncthing_cb_errors)
+			self._request_events()
+		else:
+			# Retry for invalid data
+			self._rest_request("events?limit=1", self._init_event_pooling)
+
+	
 	def _syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
 		if type(events) == list:	# Ignore invalid data
 			if len(events) > 0:
+				this_epoch = self._epoch
 				for e in events:
-					self._on_event(e)
-				self.last_id = events[-1]["id"]
+					if e["id"] > self._last_id:
+						self._on_event(e)
+						if this_epoch != self._epoch:
+							# Restarted durring last event handler
+							self._last_id = events[-1]["id"]
+							return
+				self._last_id = events[-1]["id"]
 				
 				for rid in self._needs_update:
-					self._request_repo_data(rid)
+					self._request_folder_data(rid)
 				self._needs_update.clear()
 		
-		self.timer("event", self._refresh_rate, self._request_events)
+		self.timer("event", self._refresh_interval, self._request_events)
 	
 	def _syncthing_cb_errors(self, errors):
-		for e in errors:
+		for e in errors["errors"]:
 			t = parsetime(e["Time"])
 			if t > self._last_error_time:
 				self.emit("error", e["Error"])
 				self._last_error_time = t
-		self.timer("errors", self._refresh_rate * 5, self._rest_request, "errors", self._syncthing_cb_errors)
+		self.timer("errors", self._refresh_interval * 5, self._rest_request, "errors", self._syncthing_cb_errors)
 	
 	def _syncthing_cb_events_error(self, exception, command):
 		"""
@@ -583,74 +698,83 @@ class Daemon(GObject.GObject, TimerManager):
 				self.cancel_all()
 				return
 		# Other errors are ignored and events are pulled again after prolonged delay
-		self.timer("event", self._refresh_rate * 5, self._request_events)
+		self.timer("event", self._refresh_interval * 5, self._request_events)
 	
 	def _syncthing_cb_connections(self, connections):
 		totals = {"dl_rate" : 0.0, "up_rate" : 0.0 }	# Total up/down rate
 		current_time = time.time()
 		for nid in connections:
-			if nid != "total":
+			if nid != "total" and nid != HTTP_HEADERS:
 				# Grab / create cached data
-				node = self._get_node_data(nid)
-				time_delta = current_time - node["time"]
+				device = self._get_device_data(nid)
+				time_delta = current_time - device["time"]
 				# Compute transfer rate
 				for key, ui_key, data_key in ( ("bytes_in", "dl_rate", "InBytesTotal"), ("bytes_out", "up_rate", "OutBytesTotal") ):
-					if node[key] != 0:
+					if device[key] != 0:
 						if time_delta > 0: # Don't divide by zero
-							bytes_delta = connections[nid][data_key] - node[key]
+							bytes_delta = connections[nid][data_key] - device[key]
 							bps = float(bytes_delta) / time_delta  # B/s
-							node[ui_key] = bps
+							device[ui_key] = bps
 							totals[ui_key] += bps
-					node[key] = connections[nid][data_key]
-				node["time"] = current_time
-				if not node["connected"]:
-					node["connected"] = True
-					self.emit("node-connected", nid)
-				node["version"] = connections[nid]["ClientVersion"]
-				self.emit("node-data-changed", nid, 
+					device[key] = connections[nid][data_key]
+				device["time"] = current_time
+				if not device["connected"]:
+					device["connected"] = True
+					self.emit("device-connected", nid)
+				device["version"] = connections[nid]["ClientVersion"]
+				self.emit("device-data-changed", nid, 
 					connections[nid]["Address"],
-					node["version"],
-					node["dl_rate"], node["up_rate"],
-					node["bytes_in"], node["bytes_out"])
+					device["version"],
+					device["dl_rate"], device["up_rate"],
+					device["bytes_in"], device["bytes_out"])
 				self._request_completion(nid)
 		
 		if self._my_id != None:
-			node = self._get_node_data(self._my_id)
-			node["dl_rate"] =	totals["dl_rate"]
-			node["up_rate"] =	totals["dl_rate"]
-			node["bytes_in"] =	connections["total"]["InBytesTotal"]
-			node["bytes_out"] =	connections["total"]["OutBytesTotal"]
-			self.emit("node-data-changed", self._my_id, 
+			device = self._get_device_data(self._my_id)
+			device["dl_rate"] =	totals["dl_rate"]
+			device["up_rate"] =	totals["dl_rate"]
+			device["bytes_in"] =	connections["total"]["InBytesTotal"]
+			device["bytes_out"] =	connections["total"]["OutBytesTotal"]
+			self.emit("device-data-changed", self._my_id, 
 				None,
-				node["version"],
-				node["dl_rate"], node["up_rate"],
-				node["bytes_in"], node["bytes_out"])
+				device["version"],
+				device["dl_rate"], device["up_rate"],
+				device["bytes_in"], device["bytes_out"])
 	
-		self.timer("conns", self._refresh_rate * 5, self._rest_request, "connections", self._syncthing_cb_connections)
-		
+		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections)
+	
+	def _syncthing_cb_last_seen(self, data):
+		for nid in data:
+			if nid != HTTP_HEADERS:
+				t = parsetime(data[nid]["LastSeen"])
+				if t < NEVER: t = None
+				if not nid in self._last_seen or self._last_seen[nid] != t:
+					self._last_seen[nid] = t
+					self.emit('last-seen-changed', nid, t)
+	
 	def _syncthing_cb_completion(self, data, nid, rid):
 		if "completion" in data:
 			# Store acquired value
-			node = self._get_node_data(nid)
-			node["completion"][rid] = float(data["completion"])
+			device = self._get_device_data(nid)
+			device["completion"][rid] = float(data["completion"])
 			
 			# Recompute stuff
-			total = 100.0 * len(node["completion"])
+			total = 100.0 * len(device["completion"])
 			sync = 0.0
 			if total > 0.0:
-				sync = sum(node["completion"].values()) / total
+				sync = sum(device["completion"].values()) / total
 			if sync <= 0 or sync >= 100:
 				# Not syncing
-				if nid in self._syncing_nodes:
-					self._syncing_nodes.discard(nid)
-					self.emit("node-sync-finished", nid)
+				if nid in self._syncing_devices:
+					self._syncing_devices.discard(nid)
+					self.emit("device-sync-finished", nid)
 			else:
 				# Syncing
-				if not nid in self._syncing_nodes:
-					self._syncing_nodes.add(nid)
-					self.emit("node-sync-started", nid, sync)
+				if not nid in self._syncing_devices:
+					self._syncing_devices.add(nid)
+					self.emit("device-sync-started", nid, sync)
 				else:
-					self.emit("node-sync-progress", nid, sync)
+					self.emit("device-sync-progress", nid, sync)
 
 	
 	def _syncthing_cb_system(self, data):
@@ -660,7 +784,11 @@ class Daemon(GObject.GObject, TimerManager):
 				print >>sys.stderr, "Warning: My ID was changed on the fly"
 			self._my_id = data["myID"]
 			self.emit('my-id-changed', self._my_id)
-			self._rest_request("version", self._syncthing_cb_version)
+			version = get_header(data[HTTP_HEADERS], "X-Syncthing-Version")
+			if version:
+				self._syncthing_cb_version_known(version)
+			else:
+				self._rest_request("version", self._syncthing_cb_version)
 		
 		announce = Daemon.DISABLED
 		if "extAnnounceOK" in data:
@@ -670,33 +798,56 @@ class Daemon(GObject.GObject, TimerManager):
 			data["sys"], float(data["cpuPercent"]),
 			announce)
 		
-		self.timer("system", self._refresh_rate * 5, self._rest_request, "system", self._syncthing_cb_system)
+		self.timer("system", self._refresh_interval * 5, self._rest_request, "system", self._syncthing_cb_system)
 	
 	def _syncthing_cb_version(self, data):
-		version = data["data"]
-		if self._my_id != None:
-			node = self._get_node_data(self._my_id)
-			if version != node["version"]:
-				node["version"] = version
-				self.emit("node-data-changed", self._my_id, 
-					None,
-					node["version"],
-					node["dl_rate"], node["up_rate"],
-					node["bytes_in"], node["bytes_out"])
+		if "version" in data:
+			# New since https://github.com/syncthing/syncthing/commit/d7956dd4957fa6eee5971c072fd7181015fa876c
+			version = data["version"]
+		else:
+			version = data["data"]
+		self._syncthing_cb_version_known(version)
 	
-	def _syncthing_cb_repo_data(self, data, rid):
+	def _syncthing_cb_version_known(self, version):
+		"""
+		Called when version is recieved from daemon, either by
+		calling /rest/version or from X-Syncthing-Version header.
+		"""
+		if not compare_version(version, MIN_VERSION):
+			# Syncting version too low. Cancel everything and report error
+			self.cancel_all()
+			self._epoch += 1
+			self.emit("connection-error", Daemon.OLD_VERSION, "")
+			return
+		if self._my_id != None:
+			device = self._get_device_data(self._my_id)
+			if version != device["version"]:
+				device["version"] = version
+				self.emit("device-data-changed", self._my_id, 
+					None,
+					device["version"],
+					device["dl_rate"], device["up_rate"],
+					device["bytes_in"], device["bytes_out"])
+	
+	def _syncthing_cb_folder_data(self, data, rid):
 		state = data['state']
-		self.emit('repo-data-changed', rid, data)
+		if len(data['invalid'].strip()) > 0:
+			if not rid in self._stopped_folders:
+				self._stopped_folders.add(rid)
+				self.emit("folder-stopped", rid, data["invalid"])
+		self.emit('folder-data-changed', rid, data)
 		if state == "syncing":
 			p = 0.0
 			if float(data["globalBytes"]) > 0.0:
 				p = float(data["inSyncBytes"]) / float(data["globalBytes"])
-			if self._repo_state_changed(rid, state, p):
-				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
-				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+			if self._folder_state_changed(rid, state, p):
+				self.timer("folder_%s" % rid, self._refresh_interval, self._request_folder_data, rid)
 		else:
-			if self._repo_state_changed(rid, state, 0):
-				self.timer("repo_%s" % rid, self._refresh_rate, self._request_repo_data, rid)
+			if self._folder_state_changed(rid, state, 0):
+				self.timer("folder_%s" % rid, self._refresh_interval, self._request_folder_data, rid)
+	
+	def _syncthing_cb_folder_data_failed(self, exception, request, rid):
+		self.emit('folder-data-failed', rid)
 	
 	def _syncthing_cb_config(self, config):
 		"""
@@ -706,25 +857,25 @@ class Daemon(GObject.GObject, TimerManager):
 		if not self._connected:
 			self._connected = True
 			self.emit('connected')
-			# Parse nodes
-			for n in sorted(config["Nodes"], key=lambda x : x["Name"].lower()):
-				nid = n["NodeID"]
-				self._get_node_data(nid)	# Creates dict with node data
-				self.emit("node-added", nid, n["Name"], n)
+			# Parse devices
+			for n in sorted(config["Devices"], key=lambda x : x["Name"].lower()):
+				nid = n["DeviceID"]
+				self._get_device_data(nid)	# Creates dict with device data
+				self.emit("device-added", nid, n["Name"], n)
 				
-			# Parse repos
-			for r in config["Repositories"]:
+			# Parse folders
+			for r in config["Folders"]:
 				rid = r["ID"]
-				self._syncing_repos.add(rid)
-				self._repo_nodes[rid] = [ n["NodeID"] for n in r["Nodes"] ]
-				self.emit("repo-added", rid, r)
-				self._request_repo_data(rid)
+				self._syncing_folders.add(rid)
+				self._folder_devices[rid] = [ n["DeviceID"] for n in r["Devices"] ]
+				self.emit("folder-added", rid, r)
+				self._request_folder_data(rid)
 			
-			self._rest_request("events?limit=1", self._syncthing_cb_events)	# Requests most recent event only
-			self._rest_request("errors", self._syncthing_cb_errors)
+			self._rest_request("events?limit=1", self._init_event_pooling)	# Requests most recent event only
 			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
 			self._rest_request("connections", self._syncthing_cb_connections)
 			self._rest_request("system", self._syncthing_cb_system)
+			self._request_last_seen()
 			self.check_config()
 	
 	def _syncthing_cb_config_error(self, exception, command):
@@ -732,8 +883,10 @@ class Daemon(GObject.GObject, TimerManager):
 		if isinstance(exception, GLib.GError):
 			if exception.code in (0, 39, 34):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
+				epoch = self._epoch
 				self.emit("connection-error", Daemon.REFUSED, exception.message)
-				self.timer("config", self._refresh_rate, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+				if epoch == self._epoch:
+					self.timer("config", self._refresh_interval, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 				return
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
@@ -750,76 +903,89 @@ class Daemon(GObject.GObject, TimerManager):
 				# Not in sync...
 				self.emit("config-out-of-sync")
 	
-	def _syncthing_cb_config_written(self, data, callback, errorcallback, calbackdata):
-		self.check_config()
-		if calbackdata == None:
-			callback()
-		else:
-			callback(*calbackdata)
-	
-	def __syncthing_cb_config_write_failed(self, exception, command, data, callback, errorcallback, calbackdata):
-		if errorcallback == None:
-			errorcallback(exception)
-		else:
-			errorcallback(exception, *calbackdata)
-	
-	def _repo_state_changed(self, rid, state, progress):
+	def _folder_state_changed(self, rid, state, progress):
 		"""
 		Emits event according to last known and new state.
-		Returns False or True to indicate that repo status should be
+		Returns False or True to indicate that folder status should be
 		re-checked after short time.
 		"""
 		recheck = False
-		if state != "syncing" and rid in self._syncing_repos:
-			self._syncing_repos.discard(rid)
-			self.emit("repo-sync-finished", rid)
-		if state != "scanning" and rid in self._scanning_repos:
-			self._scanning_repos.discard(rid)
-			self.emit("repo-scan-finished", rid)
+		if state != "syncing" and rid in self._syncing_folders:
+			self._syncing_folders.discard(rid)
+			if not rid in self._stopped_folders:
+				self.emit("folder-sync-finished", rid)
+		if state != "scanning" and rid in self._scanning_folders:
+			self._scanning_folders.discard(rid)
+			if not rid in self._stopped_folders:
+				self.emit("folder-scan-finished", rid)
 		if state == "syncing":
-			if rid in self._syncing_repos:
-				self.emit("repo-sync-progress", rid, progress)
-			else:
-				self._syncing_repos.add(rid)
-				self.emit("repo-sync-started", rid)
-			recheck = True
+			if not rid in self._stopped_folders:
+				if rid in self._syncing_folders:
+					self.emit("folder-sync-progress", rid, progress)
+				else:
+					self._syncing_folders.add(rid)
+					self.emit("folder-sync-started", rid)
+				recheck = True
 		elif state == "scanning":
-			if rid in self._scanning_repos:
-				self.emit("repo-scan-progress", rid)
-			else:
-				self._scanning_repos.add(rid)
-				self.emit("repo-scan-started", rid)
-			recheck = True
+			if not rid in self._stopped_folders:
+				if rid in self._scanning_folders:
+					self.emit("folder-scan-progress", rid)
+				else:
+					self._scanning_folders.add(rid)
+					self.emit("folder-scan-started", rid)
+				recheck = True
 		return recheck
 	
 	def _on_event(self, e):
 		eType = e["type"]
-		if eType in ("Ping", "Starting", "StartupComplete"):
+		if eType in ("Ping", "Starting"):
 			# Just ignore ignore those
 			pass
-		elif eType == "ItemStarted":
-			# This is TODO
-			pass
+		elif eType == "StartupComplete":
+			self.emit("startup-complete")
 		elif eType == "StateChanged":
 			state = e["data"]["to"]
-			rid = e["data"]["repo"]
-			if self._repo_state_changed(rid, state, 0):
+			rid = e["data"]["folder"]
+			if self._folder_state_changed(rid, state, 0):
 				self._needs_update.add(rid)
-		elif eType in ("LocalIndexUpdated", "RemoteIndexUpdated"):
-			rid = e["data"]["repo"]
-			if (not rid in self._syncing_nodes) and (not rid in self._scanning_repos):
+		elif eType in ("RemoteIndexUpdated"):
+			rid = e["data"]["folder"]
+			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
 				self._needs_update.add(rid)
-		elif eType == "NodeConnected":
+		elif eType == "DeviceConnected":
 			nid = e["data"]["id"]
-			self.emit("node-connected", nid)
+			self.emit("device-connected", nid)
 			self._request_completion(nid)
-		elif eType == "NodeDisconnected":
+		elif eType == "DeviceDisconnected":
 			nid = e["data"]["id"]
-			self.emit("node-disconnected", nid)
-		elif eType == "NodeDiscovered":
-			nid = e["data"]["node"]
+			self.emit("device-disconnected", nid)
+			self._request_last_seen()
+		elif eType == "DeviceDiscovered":
+			nid = e["data"]["device"]
 			addresses = e["data"]["addrs"]
-			self.emit("node-discovered", nid, addresses)
+			self.emit("device-discovered", nid, addresses)
+		elif eType == "FolderRejected":
+			nid = e["data"]["device"]
+			rid = e["data"]["folder"]
+			self.emit("folder-rejected", nid, rid)
+		elif eType == "DeviceRejected":
+			nid = e["data"]["device"]
+			address = e["data"]["address"]
+			self.emit("device-rejected", nid, address)
+		elif eType == "ItemStarted":
+			rid = e["data"]["folder"]
+			filename = e["data"]["item"]
+			t = parsetime(e["time"])
+			self.emit("item-started", rid, filename, t)
+		elif eType == "LocalIndexUpdated":
+			rid = e["data"]["folder"]
+			filename = e["data"]["name"]
+			mtime = parsetime(e["data"]["modified"])
+			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
+				self._needs_update.add(rid)
+			self.emit("item-updated", rid, filename, mtime)
+		elif eType == "ConfigSaved":
+			self.emit("config-saved")
 		else:
 			print "Unhandled event type:", e
 	
@@ -830,17 +996,28 @@ class Daemon(GObject.GObject, TimerManager):
 		Cancel all pending requests, throw away all data and (re)connect.
 		Should be called from glib loop
 		"""
+		self.close()
+		GLib.idle_add(self._request_config)
+	
+	def close(self):
+		"""
+		Terminates everything, cancel all pending requests, throws away
+		data.
+		Works like reconnect(), but without reconnecting.
+		"""
 		self._my_id = None
 		self._connected = False
-		self._syncing_repos = set()
-		self._syncing_nodes = set()
-		self._scanning_repos = set()
+		self._syncing_folders = set()
+		self._stopped_folders = set()
+		self._syncing_devices = set()
+		self._scanning_folders = set()
 		self._needs_update = set()
-		self._node_data = {}
-		self._repo_nodes = {}
+		self._device_data = {}
+		self._folder_devices = {}
+		self._last_id = 0
+		self._last_seen = {}
 		self.cancel_all()
 		self._epoch += 1
-		GLib.idle_add(self._request_config)		
 	
 	def check_config(self):
 		"""
@@ -861,11 +1038,34 @@ class Daemon(GObject.GObject, TimerManager):
 	def write_config(self, config, callback, error_callback=None, *calbackdata):
 		"""
 		Asynchronously POSTs new configuration to daemon. Calls
-		callback() with data decoded from json on success,
-		error_callback(exception) on failure.
+		callback() on success, error_callback(exception) on failure.
 		Should cause 'config-out-of-sync' event to be raised ASAP.
 		"""
-		self._rest_post("config", config, self._syncthing_cb_config_written, self.__syncthing_cb_config_write_failed, callback, error_callback, calbackdata)
+		def run_before(data, *a):
+			self.check_config()
+			callback(*calbackdata)
+		self._rest_post("config", config, run_before, error_callback, *calbackdata)
+	
+	def read_stignore(self, folder_id, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously reads .stignore data from from daemon.
+		Calls callback(text) with .stignore content on success,
+		error_callback(exception) on failure
+		"""
+		def r_filter(data, *a):
+			if "ignore" in data and not data["ignore"] is None:
+				callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
+			else:
+				callback("", *a)
+		self._rest_request("ignores?folder=%s" % (folder_id,), r_filter, error_callback, *calbackdata)
+	
+	def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
+		"""
+		Asynchronously POSTs .stignore to daemon. Calls callback()
+		with on success, error_callback(exception) on failure.
+		"""
+		data = { 'ignore': text.split("\n") }
+		self._rest_post("ignores?folder=%s" % (folder_id,), data, callback, error_callback, *calbackdata)
 	
 	def restart(self):
 		"""
@@ -882,19 +1082,26 @@ class Daemon(GObject.GObject, TimerManager):
 		self._rest_post("shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN)
 	
 	def syncing(self):
-		""" Returns true if any repo is being synchronized right now  """
-		return len(self._syncing_repos) > 0
+		""" Returns true if any folder is being synchronized right now  """
+		return len(self._syncing_folders) > 0
+	
+	def get_min_version(self):
+		"""
+		Returns minimal syncthing daemon version that daemon instance
+		can handle.
+		"""
+		return MIN_VERSION
 	
 	def get_syncing_list(self):
 		"""
-		Returns list of ids of repositories that are being
+		Returns list of ids of foldersitories that are being
 		synchronized right now.
 		"""
-		return list(self._syncing_repos)
+		return list(self._syncing_folders)
 	
 	def get_my_id(self):
 		"""
-		Returns ID of node that is instance connected to.
+		Returns ID of device that is instance connected to.
 		May return None to indicate that ID is not yet known
 		"""
 		return self._my_id
@@ -907,7 +1114,37 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns tuple address on which daemon listens on. """
 		return self._address
 	
+	def rescan(self, folder_id, path=None):
+		""" Asks daemon to rescan entire folder or specified path """
+		# Errors here are ignored; Syncthing rescans stuff periodicaly,
+		# so it's not big problem if call fails.
+		if path is None:
+			self._rest_post("scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: a, folder_id)
+		else:
+			self._rest_post("scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
+	
+	def request_events(self):
+		"""
+		Requests event directly, without waiting for timer to fire.
+		May fail silently if instance is not connected to daemon or is
+		already waiting for events.
+		"""
+		if self.cancel_timer("event"):
+			self._request_events()
+			if DEBUG: print "Forced to request events"
+	
+	def set_refresh_interval(self, i):
+		""" Sets interval used mainly by event quering timer """
+		self._refresh_interval = i
+		if DEBUG: print "Set refresh interval to", i
+
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(InvalidConfigurationException): pass
-class HTTPException(RuntimeError): pass
+class HTTPException(RuntimeError):
+	def __init__(self, message, response=None):
+		RuntimeError.__init__(self, message)
+		self.response = response
 class HTTPAuthException(HTTPException): pass
+class ConnectionRestarted(Exception):
+	def __init__(self):
+		Exception.__init__(self, "Connection was restarted after request")

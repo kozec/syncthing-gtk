@@ -5,12 +5,13 @@ Syncthing-GTK - RIBar
 Infobar wrapped in Revealer, for greater justice
 """
 from __future__ import unicode_literals
-from gi.repository import Gtk, GLib, GObject
+from gi.repository import Gtk, GLib, GObject, Pango
 from syncthing_gtk import DEBUG
 import os
 _ = lambda (a) : a
+RevealerClass = Gtk.Revealer
 
-class RIBar(Gtk.Revealer):
+class RIBar(RevealerClass):
 	"""
 	Infobar wrapped in Revealer
 	
@@ -33,7 +34,7 @@ class RIBar(Gtk.Revealer):
 		of (Gtk.Button, response_id)
 		"""
 		# Init
-		Gtk.Revealer.__init__(self)
+		RevealerClass.__init__(self)
 		self._infobar = Gtk.InfoBar()
 		self._values = {}
 		self._label = None
@@ -52,8 +53,9 @@ class RIBar(Gtk.Revealer):
 			self._label = label
 		else:
 			self._label = Gtk.Label()
-			self._label.set_line_wrap(True)
+			self._label.set_size_request(300, -1)
 			self._label.set_markup(label)
+			self._label.set_line_wrap(True)
 			self._infobar.get_content_area().add(self._label)
 		# Buttons
 		for button, response_id in buttons:

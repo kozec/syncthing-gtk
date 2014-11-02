@@ -2,16 +2,14 @@
 """
 Syncthing-GTK - EditorDialog
 
-Universal dialog handler for all Syncthing settings and editing
+Base class and universal handler for all Syncthing settings and editing
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GLib, GObject, Pango
-from syncthing_gtk.tools import check_node_id, ints
-import os, re
+from gi.repository import Gtk, Gdk, Gio, GObject
+from syncthing_gtk.tools import ints
+import os, sys
 _ = lambda (a) : a
-
-COLOR_NEW				= "#A0A0A0"
 
 class EditorDialog(GObject.GObject):
 	"""
@@ -21,50 +19,19 @@ class EditorDialog(GObject.GObject):
 		close()
 			emitted after dialog is closed
 		loaded()
-			Emitted after dialog loads and parses configurationdata
+			Emitted after dialog loads and parses configuration data
 	"""
 	__gsignals__ = {
 			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 		}
 	
-	VALUES = {
-		# Dict with lists of all editable values, indexed by editor mode
-		"repo-edit" : [
-			"vID", "vDirectory", "vReadOnly", "vIgnorePerms", "vNodes",
-			"vVersioning", "vKeepVersions"
-			],
-		"node-edit" : [
-			"vNodeID", "vName", "vAddresses", "vCompression"
-			],
-		"daemon-settings" : [
-			"vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
-			"vStartBrowser", "vMaxSendKbpsEnabled", "vMaxSendKbps",
-			"vRescanIntervalS", "vURAccepted", "vLocalAnnPort",
-			"vGlobalAnnEnabled", "vGlobalAnnServer"
-			]
-	}
+	# Should be overrided by subclass
+	MESSAGES = {}
 	
-	# Regexp to check if repository id is valid
-	RE_REPO_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
-	# Invalid Value Messages.
-	# Messages displayed when value in field is invalid
-	IV_MESSAGES = {
-		"vNodeID" : _("The entered node ID does not look valid. It "
-			"should be a 52 character string consisting of letters and "
-			"numbers, with spaces and dashes being optional."),
-		"vID" : _("The repository ID must be a short, unique identifier"
-			" (64 characters or less) consisting of letters, numbers "
-			"and the the dot (.), dash (-) and underscode (_) "
-			"characters only"),
-	}
-	
-	def __init__(self, app, mode, is_new, id=None):
+	def __init__(self, app, gladefile, title):
 		GObject.GObject.__init__(self)
 		self.app = app
-		self.mode = mode
-		self.id = id
-		self.is_new = is_new
 		self.config = None
 		self.values = None
 		self.checks = {}
@@ -72,7 +39,7 @@ class EditorDialog(GObject.GObject):
 		self.original_labels={}
 		# Used by get_widget_id
 		self.widget_to_id = {}
-		self.setup_widgets()
+		self.setup_widgets(gladefile, title)
 	
 	def load(self):
 		""" Loads configuration data and pre-fills values to fields """
@@ -101,8 +68,9 @@ class EditorDialog(GObject.GObject):
 			if id in self: return self[id] # Do things fast if possible
 			parent = self["editor"]
 		for c in parent.get_children():
-			if c.get_id() == id:
-				return c
+			if hasattr(c, "get_id"):
+				if c.get_id() == id:
+					return c
 			if isinstance(c, Gtk.Container):
 				r = self.find_widget_by_id(id, c)
 				if not r is None:
@@ -120,72 +88,53 @@ class EditorDialog(GObject.GObject):
 		self["editor"].hide()
 		self["editor"].destroy()
 	
-	def setup_widgets(self):
+	def setup_widgets(self, gladefile, title):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file(os.path.join(self.app.gladepath, "%s.glade" % self.mode))
+		self.builder.add_from_file(os.path.join(self.app.gladepath, gladefile))
 		self.builder.connect_signals(self)
-		# Set title stored in glade file in "Edit Title|Save Title" format
-		if "|" in self["editor"].get_title():
-			self["editor"].set_title(self["editor"].get_title().split("|")[ 1 if self.is_new else 0 ])
+		self["editor"].set_title(title)
 		# Disable everything until configuration is loaded
 		self["editor"].set_sensitive(False)
+	
+	def get_burried_value(self, key, vals, default, convert=lambda a:a):
+		"""
+		Returns value stored deeper in element tree.
+		Method is called recursively for every tree level. If value is
+		not found, default is returned.
+		"""
+		if type(key) != list:
+			# Parse key, split by '/'
+			return self.get_burried_value(key.split("/"), vals, default, convert)
+		try:
+			if len(key) > 1:
+				tkey, key = key[0], key[1:]
+				return self.get_burried_value(key, vals[tkey], default, convert)
+			return convert(vals[key[0]])
+		except Exception:
+			return default
 	
 	def get_value(self, key):
 		"""
 		Returns value from configuration.
-		Usualy returns self.values[key], but can handle some special cases
+		Usualy returns self.values[key], but overriding methods can
+		handle some special cases
 		"""
-		if key == "KeepVersions":
-			# Number
-			try:
-				return self.values["Versioning"]["Params"]["keep"] # oww...
-			except (KeyError, TypeError):
-				# Node not found
-				return 0
-		elif key == "Versioning":
-			# Boool
-			try:
-				return self.values["Versioning"]["Type"] != ""
-			except (KeyError, TypeError):
-				# Node not found
-				return False
-		elif key in ("Addresses", "ListenAddress"):
-			return ",".join([ x.strip() for x in self.values[key]])
-		elif key == "MaxSendKbpsEnabled":
-			return (self.values["MaxSendKbps"] != 0)
-		elif key in self.values:
+		if key in self.values:
 			return self.values[key]
 		else:
-			raise KeyError(key)
+			print "Warning: get_value: Value %s not found" % (key,)
+			raise ValueNotFoundError(key)
 	
 	def set_value(self, key, value):
-		""" Stores value to configuration, handling some special cases """
-		if key == "KeepVersions":
-			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
-			self.values["Versioning"]["Params"]["keep"] = str(int(value))
-		elif key == "Versioning":
-			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Type"))
-			self.values["Versioning"]["Type"] = "simple" if value else ""
-		#elif key  in ("LocalAnnPort", "RescanIntervalS"):
-		#	self.values[key] = ints(value)
-		elif key == "URAccepted":
-			self.values[key] = 1 if value else 0
-		elif key in ("Addresses", "ListenAddress"):
-			self.values[key] = [ x.strip() for x in value.split(",") ]
-		elif key == "MaxSendKbpsEnabled":
-			if value:
-				if self.values["MaxSendKbps"] <= 0:
-					self.values["MaxSendKbps"] = 1
-			else:
-				self.values["MaxSendKbps"] = 0
-			self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
-		elif key in self.values:
+		"""
+		Stores value to configuration, handling some special cases in
+		overriding methods
+		"""
+		if key in self.values:
 			self.values[key] = value
 		else:
-			raise KeyError(key)	
+			raise ValueNotFoundError(key)
 	
 	def create_dicts(self, parent, keys):
 		"""
@@ -209,11 +158,11 @@ class EditorDialog(GObject.GObject):
 		if value_id in self.original_labels:
 			# Already done
 			return
-		if not value_id in self.IV_MESSAGES:
+		if not value_id in self.MESSAGES:
 			# Nothing to show
 			return
 		self.original_labels[value_id] = self[wid].get_label()
-		self[wid].set_markup('<span color="red">%s</span>' % (self.IV_MESSAGES[value_id],))
+		self[wid].set_markup('<span color="red">%s</span>' % (self.MESSAGES[value_id],))
 	
 	def hide_error_message(self, value_id):
 		""" Changes text on associated label back to normal text """
@@ -223,91 +172,94 @@ class EditorDialog(GObject.GObject):
 			del self.original_labels[value_id]
 	
 	def cb_data_loaded(self, config):
+		""" Used as handler in load_data """
 		self.config = config
-		try:
-			if self.is_new:
-				self.values = { x.lstrip("v") : "" for x in self.VALUES[self.mode] }
-				if self.mode == "repo-edit":
-					self.checks = {
-						"vID" : self.check_repo_id,
-						"vDirectory" : self.check_path
-						}
-					if self.id != None:
-						try:
-							v = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
-							self.values = v
-							self.is_new = False
-						except IndexError:
-							pass
-				elif self.mode == "node-edit":
-					self.set_value("Addresses", "dynamic")
-					self.set_value("Compression", True)
-					self.checks = {
-						"vNodeID" : check_node_id,
-						}
-			else:
-				if self.mode == "repo-edit":
-					self.values = [ x for x in self.config["Repositories"] if x["ID"] == self.id ][0]
-					self.checks = {
-						"vDirectory" : self.check_path
-						}
-				elif self.mode == "node-edit":
-					self.values = [ x for x in self.config["Nodes"] if x["NodeID"] == self.id ][0]
-				elif self.mode == "daemon-settings":
-					self.values = self.config["Options"]
-					self.checks = {}
-				else:
-					# Invalid mode. Shouldn't be possible
-					self.close()
-					return
-		except KeyError:
-			# ID not found in configuration. This is practicaly impossible,
-			# so it's handled only by self-closing dialog.
-			self.close()
-			return
-		# Iterate over all known configuration values and set UI elements using unholy method
-		for key in self.VALUES[self.mode]:
-			w = self.find_widget_by_id(key)
-			self.widget_to_id[w] = key
+		if self.on_data_loaded():
+			self.update_special_widgets()
+			# Enable dialog
+			self["editor"].set_sensitive(True)
+			# Brag
+			self.emit("loaded")
+	
+	def on_data_loaded(self, config):
+		"""
+		Called from cb_data_loaded, should be overrided by subclass.
+		Should return True to indicate that everything is OK, false on
+		error.
+		"""
+		raise RuntimeError("Override this!")
+	
+	def display_values(self, values):
+		"""
+		Iterates over all known configuration values and sets UI
+		elements using unholy method.
+		Returns True.
+		"""
+		for key in values:
+			widget = self.find_widget_by_id(key)
+			self.widget_to_id[widget] = key
 			if not key is None:
-				if isinstance(w, Gtk.SpinButton):
-					w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
-				elif isinstance(w, Gtk.Entry):
-					w.set_text(str(self.get_value(key.lstrip("v"))))
-				elif isinstance(w, Gtk.CheckButton):
-					w.set_active(self.get_value(key.lstrip("v")))
-				elif key == "vNodes":
-					# Very special case
-					nids = [ n["NodeID"] for n in self.get_value("Nodes") ]
-					for node in self.app.nodes.values():
-						if node["id"] != self.app.daemon.get_my_id():
-							b = Gtk.CheckButton(node.get_title(), False)
-							b.set_tooltip_text(node["id"])
-							self["vNodes"].pack_end(b, False, False, 0)
-							b.set_active(node["id"] in nids)
-					self["vNodes"].show_all()
-				else:
-					print w
-		self.update_special_widgets()
-		# Enable dialog
-		self["editor"].set_sensitive(True)
-		# Brag
-		self.emit("loaded")
+				try:
+					self.display_value(key, widget)
+				except ValueNotFoundError:
+					# Value not found, probably old daemon version
+					print >>sys.stderr, "Warning: display_values: Value", key, "not found"
+					widget.set_sensitive(False)
+		return True
+		
+	def display_value(self, key, w):
+		"""
+		Sets value on UI element for single key. May be overriden
+		by subclass to handle special values.
+		"""
+		if isinstance(w, Gtk.SpinButton):
+			w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
+		elif isinstance(w, Gtk.Entry):
+			w.set_text(str(self.get_value(key.lstrip("v"))))
+		elif isinstance(w, Gtk.ComboBox):
+			val = self.get_value(key.lstrip("v"))
+			m = w.get_model()
+			for i in xrange(0, len(m)):
+				if val == str(m[i][0]).strip():
+					w.set_active(i)
+					break
+		elif isinstance(w, Gtk.CheckButton):
+			w.set_active(self.get_value(key.lstrip("v")))
+		else:
+			print >>sys.stderr, "Warning: display_value: %s class cannot handle widget %s, key %s" % (self.__class__.__name__, w, key)
+			if not w is None: w.set_sensitive(False)
 	
 	def ui_value_changed(self, w, *a):
+		"""
+		Handler for widget that controls state of other widgets
+		"""
 		key = self.get_widget_id(w)
 		if key != None:
 			if isinstance(w, Gtk.CheckButton):
 				self.set_value(key.lstrip("v"), w.get_active())
 				self.update_special_widgets()
+			if isinstance(w, Gtk.ComboBox):
+				self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
+				self.update_special_widgets()
 	
 	def update_special_widgets(self, *a):
-		""" Enables/disables some widgets """
-		if self.mode == "repo-edit":
+		"""
+		Enables/disables special widgets. Does nothing by default, but
+		may be overrided by subclasses
+		"""
+		if self.mode == "folder-edit":
 			self["vID"].set_sensitive(self.id is None)
-			self["rvVersioning"].set_reveal_child(self.get_value("Versioning"))
-		elif self.mode == "node-edit":
-			self["vNodeID"].set_sensitive(self.is_new)
+			v = self.get_value("Versioning")
+			if v == "":
+				if self["rvVersioning"].get_reveal_child():
+					self["rvVersioning"].set_reveal_child(False)
+			else:
+				self["bxVersioningSimple"].set_visible(self.get_value("Versioning") == "simple")
+				self["bxVersioningStaggered"].set_visible(self.get_value("Versioning") == "staggered")
+				if not self["rvVersioning"].get_reveal_child():
+					self["rvVersioning"].set_reveal_child(True)
+		elif self.mode == "device-edit":
+			self["vDeviceID"].set_sensitive(self.is_new)
 			self["vAddresses"].set_sensitive(self.id != self.app.daemon.get_my_id())
 		elif self.mode == "daemon-settings":
 			self["vMaxSendKbps"].set_sensitive(self.get_value("MaxSendKbpsEnabled"))
@@ -315,7 +267,6 @@ class EditorDialog(GObject.GObject):
 			self["vLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
 			self["lblvGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))
 			self["vGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))
-
 	
 	def cb_data_failed(self, exception, *a):
 		"""
@@ -356,64 +307,67 @@ class EditorDialog(GObject.GObject):
 				self.hide_error_message(x)
 	
 	def cb_btSave_clicked(self, *a):
-		# Saving data... Iterate over same values as load does and put
-		# stuff back to self.values dict
-		for key in self.VALUES[self.mode]:
-			w = self.find_widget_by_id(key)
-			if not key is None:
-				if isinstance(w, Gtk.SpinButton):
-					self.set_value(key.strip("v"), int(w.get_adjustment().get_value()))
-				elif isinstance(w, Gtk.Entry):
-					self.set_value(key.strip("v"), w.get_text())
-				elif isinstance(w, Gtk.CheckButton):
-					self.set_value(key.strip("v"), w.get_active())
-				elif key == "vNodes":
-					# Still very special case
-					nodes = [ {
-							   "Addresses" : None,
-							   "NodeID" : b.get_tooltip_text(),
-							   "Name" : "",
-							   "CertName" : "",
-							   "Compression" : False
-								}
-								for b in self["vNodes"].get_children()
-								if b.get_active()
-							]
-					self.set_value("Nodes", nodes)
-		# Add new dict to configuration (edited dict is already there)
-		if self.is_new:
-			if self.mode == "repo-edit":
-				self.config["Repositories"].append(self.values)
-			elif self.mode == "node-edit":
-				self.config["Nodes"].append(self.values)
-		# Post configuration back to daemon
-		self["editor"].set_sensitive(False)
-		self.post_config()
-		# Show some changes directly
-		if self.mode == "node-edit" and self.id in self.app.nodes:
-			name = self.values["Name"]
-			node = self.app.nodes[self.id]
-			if name in (None, ""):
-				# Show first block from ID if name is unset
-				name = self.id.split("-")[0]
-			node.set_title(name)
-			node.set_value("compress", _("Yes") if self.values["Compression"] else _("No"))
+		""" Calls on_save_reuqested to do actual work """
+		self.on_save_reuqested()
 	
-	def check_repo_id(self, value):
-		if value in self.app.repos:
-			# Duplicate repo id
-			return False
-		if self.RE_REPO_ID.match(value) is None:
-			# Invalid string
-			return False
+	def on_save_reuqested(self, config):
+		"""
+		Should be overrided by subclass.
+		Should return True to indicate that everything is OK, false on
+		error.
+		"""
+		raise RuntimeError("Override this!")
+	
+	def store_values(self, values):
+		"""
+		'values' parameter should be same as display_values recieved.
+		Iterates over values configuration values and puts stuff from
+		UI back to self.values dict
+		Returns True.
+		"""
+		for key in values:
+			widget = self.find_widget_by_id(key)
+			if not key is None:
+				try:
+					self.store_value(key, widget)
+				except ValueNotFoundError:
+					pass
 		return True
 	
-	def check_path(self, value):
-		# Any non-empty path is OK
+	def store_value(self, key, w):
+		"""
+		Loads single value from UI element to self.values dict. May be
+		overriden by subclass to handle special values.
+		"""
+		if isinstance(w, Gtk.SpinButton):
+			self.set_value(key.strip("v"), int(w.get_adjustment().get_value()))
+		elif isinstance(w, Gtk.Entry):
+			self.set_value(key.strip("v"), w.get_text())
+		elif isinstance(w, Gtk.CheckButton):
+			self.set_value(key.strip("v"), w.get_active())
+		elif isinstance(w, Gtk.ComboBox):
+			self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
+		# else nothing, unknown widget class cannot be read
+	
+	def cb_format_value_s(self, spinner):
+		""" Formats spinner value  """
+		spinner.get_buffer().set_text(_("%ss") % (int(spinner.get_adjustment().get_value()),), -1);
+		return True
+	
+	def cb_format_value_days(self, spinner):
+		""" Formats spinner value  """
+		v = int(spinner.get_adjustment().get_value())
+		if v == 0:
+			spinner.get_buffer().set_text(_("never delete"), -1)
+		elif v == 1:
+			spinner.get_buffer().set_text(_("%s day") % (v,), -1);
+		else:
+			spinner.get_buffer().set_text(_("%s days") % (v,), -1);
 		return True
 	
 	def post_config(self):
 		""" Posts edited configuration back to daemon """
+		self["editor"].set_sensitive(False)
 		self.app.daemon.write_config(self.config, self.syncthing_cb_post_config, self.syncthing_cb_post_error)
 	
 	def syncthing_cb_post_config(self, *a):
@@ -421,25 +375,14 @@ class EditorDialog(GObject.GObject):
 		print "Configuration (probably) saved"
 		# Close editor
 		self["editor"].set_sensitive(True)
-		self.close()
-		# If new repo/node was added, show dummy item UI, so user will
-		# see that something happen even before daemon gets restarted
-		if self.is_new:
-			box = None
-			if self.mode == "repo-edit":
-				box = self.app.show_repo(
-					self.get_value("ID"), self.get_value("Directory"), self.get_value("Directory"),
-					self.get_value("ReadOnly"), self.get_value("IgnorePerms"),
-					sorted(
-						[ self.app.nodes[n["NodeID"]] for n in self.get_value("Nodes") ],
-						key=lambda x : x.get_title().lower()
-					))
-			elif self.mode == "node-edit":
-				box = self.app.show_node(self.get_value("NodeID"), self.get_value("Name"),
-					self.get_value("Compression"))
-			# Gray background for new stuff
-			if not box is None:
-				box.set_color_hex(COLOR_NEW)
+		self.on_saved()
+	
+	def on_saved(self):
+		"""
+		Should be overrided by subclass.
+		Called after post_config saves configuration.
+		"""
+		raise RuntimeError("Override this!")
 	
 	def syncthing_cb_post_error(self, *a):
 		# TODO: Unified error message
@@ -455,25 +398,12 @@ class EditorDialog(GObject.GObject):
 		self["editor"].set_sensitive(True)
 	
 	def call_after_loaded(self, callback, *data):
-		""" Calls callback whem 'loaded' event is emited """
+		""" Calls callback when 'loaded' event is emited """
 		self.connect("loaded",
 			# lambda bellow throws 'event_source' argument and
 			# calls callback with rest of arguments
 			lambda obj, callback, *a : callback(*a),
 			callback, *data
 			)
-	
-	def fill_repo_id(self, rid):
-		""" Pre-fills repository Id for new-repo dialog """
-		self["vID"].set_text(rid)
-		self.id = rid
-		self.update_special_widgets()
-	
-	def mark_node(self, nid):
-		""" Marks (checks) checkbox for specified node """
-		if "vNodes" in self:	# ... only if there are checkboxes here
-			for child in self["vNodes"].get_children():
-				if child.get_tooltip_text() == nid:
-					l = child.get_children()[0]	# Label in checkbox
-					l.set_markup("<b>%s</b>" % (l.get_label()))
-					child.set_active(True)
+
+class ValueNotFoundError(KeyError): pass

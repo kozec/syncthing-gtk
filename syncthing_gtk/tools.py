@@ -7,13 +7,14 @@ Various stuff that I don't care to fit anywhere else.
 
 from __future__ import unicode_literals
 from base64 import b32decode
-from datetime import datetime
+from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 import re, os, sys
 
+_ = lambda (a) : a
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
-IS_UNITY	= "XDG_CURRENT_DESKTOP" in os.environ and os.environ["XDG_CURRENT_DESKTOP"] == "Unity"
-LUHN_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in node id
+LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
+VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
 
 if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
@@ -38,8 +39,8 @@ def luhn_b32generate(s):
 	checkcodepoint = (n - remainder) % n
 	return LUHN_ALPHABET[checkcodepoint]
 
-def check_node_id(nid):
-	""" Returns True if node id is valid """
+def check_device_id(nid):
+	""" Returns True if device id is valid """
 	# Based on nodeid.go
 	nid = nid.strip("== \t").upper() \
 		.replace("0", "O") \
@@ -85,16 +86,85 @@ def ints(s):
 		if len(s) == 0 : return 0
 	return int(s)
 
-PARSER = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)\.([0-9]+)\+([0-9]+):([0-9]+)")
+def get_header(headers, key):
+	"""
+	Returns value of single header parsed from headers array or None
+	if header is not found
+	"""
+	if not key.endswith(":"): key = "%s:" % (key,)
+	for h in headers:
+		if h.startswith(key):
+			return h.split(" ", 1)[-1]
+	return None
+
+class Timezone(tzinfo):
+	def __init__(self, hours, minutes):
+		if hours >= 0:
+			self.name = "+%s:%s" % (hours, minutes)
+		else:
+			self.name = "+%s:%s" % (hours, minutes)
+		self.delta = timedelta(minutes=minutes, hours=hours)
+	
+	def __str__(self):
+		return "<Timezone %s>" % (self.name,)
+	
+	def utcoffset(self, dt):
+		return self.delta
+	
+	def tzname(self, dt):
+		return self.name
+	
+	def dst(self, dt):
+		return timedelta(0)
+
+PARSER = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)\.([0-9]+)([\-\+][0-9]+):([0-9]+)")
+PARSER_NODOT = re.compile(r"([-0-9]+)[A-Z]([:0-9]+)([\-\+][0-9]+):([0-9]+)")
 FORMAT = "%Y-%m-%d %H:%M:%S %f"
 
 def parsetime(m):
-	""" Parses time recieved from Syncthing daemon, ignoring timezone info """
-	match = PARSER.match(m)
-	times = list(match.groups()[0:3])
-	times[2] = times[2][0:6]
-	reformat = "%s %s %s" % tuple(times)
-	return datetime.strptime(reformat, FORMAT)
+	""" Parses time recieved from Syncthing daemon """
+	reformat, tz = None, None
+	if "." in m:
+		match = PARSER.match(m)
+		times = list(match.groups()[0:3])
+		times[2] = times[2][0:6]
+		reformat = "%s %s %s" % tuple(times)
+		tz = Timezone(int(match.group(4)), int(match.group(5)))
+	else:
+		match = PARSER_NODOT.match(m)
+		times = list(match.groups()[0:2])
+		reformat = "%s %s 00" % tuple(times)
+		tz = Timezone(int(match.group(3)), int(match.group(4)))
+	return datetime.strptime(reformat, FORMAT).replace(tzinfo=tz)
+
+def delta_to_string(d):
+	"""
+	Returns aproximate, human-readable and potentialy localized
+	string from specified timedelta object
+	"""
+	# Negative time, 'some time ago'
+	if d.days == -1:
+		d = - d
+		if d.seconds > 3600:
+			return _("~%s hours ago") % (int(d.seconds / 3600),)
+		if d.seconds > 60:
+			return _("%s minutes ago") % (int(d.seconds / 60),)
+		if d.seconds > 5:
+			return _("%s seconds ago") % (d.seconds,)
+		return _("just now")
+	if d.days < -1:
+		return _("%s days ago") % (-d.days,)
+
+	# Positive time, 'in XY minutes'
+	if d.days > 0:
+		return _("in %s days") % (d.days,)
+	if d.seconds > 3600:
+		return _("~%s hours from now") % (int(d.seconds / 3600),)
+	if d.seconds > 60:
+		return _("%s minutes from now") % (int(d.seconds / 60),)
+	if d.seconds > 5:
+		return _("%s seconds from now") % (d.seconds,)
+	return _("in a moment")
 
 def check_daemon_running():
 	""" Returns True if syncthing daemon is running """
@@ -124,3 +194,30 @@ def check_daemon_running():
 			# Can't get or parse list, something is horribly broken here
 			return False
 		return False
+
+def parse_version(ver):
+	"""
+	Parses ver as version string, returning integer.
+	Only first 6 components are recognized; If version string uses less
+	than 6 components, it's zero-paded from right (1.0 -> 1.0.0.0.0.0).
+	Maximum recognized value for component is 255.
+	If version string includes non-numeric character, part of string
+	starting with this character is discarded.
+	If version string starts with 'v', 'v' is ignored.
+	"""
+	comps = VERSION_NUMBER.match(ver).group(1).split(".")
+	if comps[0] == "":
+		# Not even single number in version string
+		return 0
+	while len(comps) < 6:
+		comps.append("0")
+	res = 0
+	for i in xrange(0, 6):
+		res += min(255, int(comps[i])) << ((5-i) * 8)
+	return res
+
+def compare_version(a, b):
+	"""
+	Parses a and b as version strings. Rreturns True, if a >= b
+	"""
+	return parse_version(a) >= parse_version(b)

@@ -11,8 +11,7 @@
   </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Edit Repository|New Repository</property>
-    <property name="role">repo-edit</property>
+    <property name="role">device-edit</property>
     <property name="modal">True</property>
     <property name="default_width">500</property>
     <property name="type_hint">dialog</property>
@@ -78,9 +77,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Repository _ID</property>
+                <property name="label" translatable="yes">Device _ID</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vID</property>
+                <property name="mnemonic_widget">vDeviceID</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -92,7 +91,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="vID">
+              <object class="GtkEntry" id="vDeviceID">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <signal name="changed" handler="cb_check_value" swapped="no"/>
@@ -104,28 +103,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="lblvID">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Short identifier for the repository. Must be the same on all cluster nodes</property>
-                <property name="wrap">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
-                <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkLabel" id="label3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Repository _Path</property>
+                <property name="label" translatable="yes">Device _Name</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vDirectory</property>
+                <property name="mnemonic_widget">vName</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -137,10 +121,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="vDirectory">
+              <object class="GtkEntry" id="vName">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <signal name="changed" handler="cb_check_value" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -149,12 +132,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="lblPathToRepo">
+              <object class="GtkLabel" id="lblvName">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">10</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Path to the repository on the local computer. Will be created if it does not exist.</property>
+                <property name="label" translatable="yes">Shown instead of Device ID in the cluster status.</property>
                 <property name="wrap">True</property>
               </object>
               <packing>
@@ -164,172 +147,84 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vReadOnly">
-                <property name="label" translatable="yes">Repository _Master</property>
+              <object class="GtkCheckButton" id="vCompression">
+                <property name="label" translatable="yes">Use _Compression</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">9</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">_Addresses</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">vAddresses</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">6</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label5">
-                <property name="width_request">200</property>
+              <object class="GtkEntry" id="vAddresses">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">Files are protected from changes made on other nodes, but changes made on this node will be sent to the rest of the cluster.</property>
-                <property name="wrap">True</property>
+                <property name="can_focus">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">7</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vIgnorePerms">
-                <property name="label" translatable="yes">Ignore P_ermissions</property>
+              <object class="GtkLabel" id="label7">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_underline">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_bottom">10</property>
                 <property name="xalign">0</property>
-                <property name="draw_indicator">True</property>
+                <property name="label" translatable="yes">Enter comma separated "ip:port" addresses or "dynamic" to perform automatic discovery of the address.</property>
+                <property name="wrap">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">8</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblvDeviceID">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
                 <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">File permission bits are ignored when looking for changes. Use on FAT filesystems</property>
-                <property name="wrap">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">9</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="vVersioning">
-                <property name="label" translatable="yes">File _Versioning</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_underline">True</property>
-                <property name="xalign">0.039999999105930328</property>
-                <property name="draw_indicator">True</property>
-                <signal name="toggled" handler="ui_value_changed" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label6">
-                <property name="width_request">200</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing</property>
-                <property name="wrap">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">7</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkRevealer" id="rvVersioning">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="transition_type">crossfade</property>
-                <child>
-                  <object class="GtkBox" id="box1">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkLabel" id="label7">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="label" translatable="yes">_Keep Versions</property>
-                        <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">vKeepVersions</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="vKeepVersions">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjKeepVersions</property>
-                        <property name="climb_rate">1</property>
-                        <property name="snap_to_ticks">True</property>
-                        <property name="numeric">True</property>
-                        <property name="value">5</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label8">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="label" translatable="yes">The number of old versions to keep, per file.</property>
-                        <property name="wrap">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">8</property>
-                <property name="height">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label9">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Share With _Nodes</property>
+                <property name="label" translatable="yes">Share _Folders</property>
                 <property name="use_underline">True</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -337,11 +232,12 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">10</property>
+                <property name="top_attach">12</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="vNodes">
+              <object class="GtkBox" id="vFolders">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -351,26 +247,57 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">11</property>
+                <property name="top_attach">13</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label10">
+              <object class="GtkLabel" id="label5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">Select the nodes to share this repository with</property>
+                <property name="label" translatable="yes">Select the folders to share with this device</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">14</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="vIntroducer">
+                <property name="label" translatable="yes">_Introducer</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="use_underline">True</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">10</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label6">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_bottom">10</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Any devices configured on an introducer device will be added to this device as well.</property>
                 <property name="wrap">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">12</property>
+                <property name="top_attach">11</property>
+                <property name="width">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="padding">1</property>
             <property name="position">1</property>

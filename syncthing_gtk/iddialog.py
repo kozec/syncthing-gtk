@@ -2,7 +2,7 @@
 """
 Syncthing-GTK - IDDialog
 
-Dialog with Node ID and generated QR code
+Dialog with Device ID and generated QR code
 """
 
 from __future__ import unicode_literals
@@ -12,10 +12,10 @@ import os, tempfile
 _ = lambda (a) : a
 
 class IDDialog(object):
-	""" Dialog with Node ID and generated QR code """
-	def __init__(self, app, node_id):
+	""" Dialog with Device ID and generated QR code """
+	def __init__(self, app, device_id):
 		self.app = app
-		self.node_id = node_id
+		self.device_id = device_id
 		self.setup_widgets()
 		self.load_data()
 	
@@ -35,20 +35,20 @@ class IDDialog(object):
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
-		self.builder.add_from_file(os.path.join(self.app.gladepath, "node-id.glade"))
+		self.builder.add_from_file(os.path.join(self.app.gladepath, "device-id.glade"))
 		self.builder.connect_signals(self)
-		self["vID"].set_text(self.node_id)
+		self["vID"].set_text(self.device_id)
 
 	def load_data(self):
 		""" Loads QR code from Syncthing daemon """
-		uri = "%s/qr/%s" % (self.app.daemon.get_webui_url(), self.node_id)
+		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
 		io = Gio.file_new_for_uri(uri)
-		io.load_contents_async(None, self.cb_syncthing_qr)
+		io.load_contents_async(None, self.cb_syncthing_qr, ())
 	
 	def cb_btClose_clicked(self, *a):
 		self.close()
 	
-	def cb_syncthing_qr(self, io, results):
+	def cb_syncthing_qr(self, io, results, *a):
 		"""
 		Called when QR code is loaded or operation fails. Image is then
 		displayed in dialog, failure is silently ignored.
