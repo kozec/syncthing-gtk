@@ -81,6 +81,9 @@ class Configuration(object):
 		""" Returns True if value is set and type match """
 		if not key in self._values:
 			return False
+		if type(self._values[key]) in (str, unicode) and tp in (str, unicode):
+			# This case is little special
+			return True
 		return type(self._values[key]) == tp
 	
 	def _save(self):
