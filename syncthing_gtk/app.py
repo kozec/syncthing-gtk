@@ -692,10 +692,13 @@ class App(Gtk.Application, TimerManager):
 	
 	def show_folder(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
-		# title = name if len(name) < 20 else "...%s" % name[-20:]
-		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
+		display_path = path
+		if IS_WINDOWS:
+			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
+				display_path = "~%s" % display_path[len(os.path.expanduser("~")):]
+		box = InfoBox(self, display_path, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("id",			"version.png",	_("Folder ID"),			id)
-		box.add_value("path",		"folder.png",	_("Path"),					path)
+		box.add_value("path",		"folder.png",	_("Path"),					display_path)
 		box.add_value("global",		"global.png",	_("Global State"),		"? items, ?B")
 		box.add_value("local",		"home.png",		_("Local State"),		"? items, ?B")
 		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
