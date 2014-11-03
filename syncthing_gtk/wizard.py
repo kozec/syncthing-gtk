@@ -8,9 +8,9 @@ values afterwards.
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
-from syncthing_gtk import Configuration, Daemon
-from syncthing_gtk import DaemonProcess, DaemonOutputDialog
-import os, sys, socket, random, string
+from syncthing_gtk import Configuration, DaemonProcess, DaemonOutputDialog
+import os, sys, socket, random, string, traceback
+from xml.dom import minidom
 
 _ = lambda (a) : a
 DEFAULT_PORT = 8080
@@ -60,10 +60,11 @@ class Wizard(Gtk.Assistant):
 	
 	def add_page(self, page):
 		""" Adds page derived from custom Page class """
-		self.append_page(page)
+		index = self.append_page(page)
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
 		self.set_page_title(page, page.TITLE)
+		return index
 	
 	def prepare_page(self, another_self, page):
 		""" Called before page is displayed """
@@ -85,24 +86,48 @@ class Wizard(Gtk.Assistant):
 				if not r is None: return r
 		return None
 	
-	def fatal_error(self, text):
-		# TODO: Better way to handle this
-		# TODO: Move to tools, along with same method in app.py
-		print >>sys.stderr, text
-		d = Gtk.MessageDialog(
-				None,
-				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-				Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
-				text
-				)
-		d.run()
-		d.hide()
-		d.destroy()
-	
 	def output_line(self, line):
 		""" Called for every line that wizard or daemon process outputs """
 		self.lines.append(line)
 		print line
+	
+	def error(self, page, title, message, display_bugreport_link):
+		"""
+		Called from pages on error. Removes everything from page and
+		creates error message.
+		"""
+		for c in [] + page.get_children() :
+			page.remove(c)
+		# Title
+		l_title = WrappedLabel("<b>%s</b>" % (title,))
+		l_title.props.margin_bottom = 15
+		page.attach(l_title,	0, 0, 2, 1)
+		# Message
+		l_message = WrappedLabel(message)
+		l_message.props.margin_bottom = 15
+		page.attach(l_message,	0, 1, 2, 1)
+		# Bugreport link
+		if display_bugreport_link:
+			github_link = '<a href="https://github.com/kozec/syncthing-gui/issues">GitHub</a>'
+			l_bugreport = WrappedLabel(
+				_("Please, check error log and fill bug report on %s.") % (github_link,)
+			)
+			page.attach(l_bugreport, 0, 2, 2, 1)
+			# 'Display error log' button
+			button = Gtk.Button(_("Display error log"))
+			button.props.margin_top = 25
+			page.attach(button, 1, 3, 2, 1)
+			button.connect("clicked", lambda *a : self.show_output())
+		
+		page.show_all()
+	
+	def show_output(self, *a):
+		"""
+		Displays DaemonOutput window with error messages captured
+		durring key generation.
+		"""
+		d = DaemonOutputDialog(self, None)
+		d.show_with_lines(self.lines, self)
 	
 	def is_finished(self):
 		""" Returns True if user finished entire wizard """
@@ -167,24 +192,6 @@ class FindDaemonPage(Page):
 		)
 		self.attach(self.label, 0, 0, 1, 1)
 	
-	def error(self):
-		"""
-		FindDaemonPage turns into error page if syncthing binary
-		is not found.
-		"""
-		local_bin_folder = "~/.local/bin"
-		local_bin_folder_link = '<a href="file://%s">%s</a>' % (
-				os.path.expanduser(local_bin_folder), local_bin_folder)
-		dll_link = '<a href="https://github.com/syncthing/syncthing/releases">' + \
-				_('download latest binary') + '</a>'
-		self.label.set_markup(
-			_("<b>Syncthing daemon not found.</b>") +
-			"\n\n" +
-			_("Please, use package manager to install syncthing package") + " "
-			(_("or %s from syncthing page and save it") % dll_link) + " "
-			(_("to your %s or any other directory in PATH") % local_bin_folder_link)
-		)
-	
 	def prepare(self):
 		paths = [ "./" ]
 		paths += [ os.path.expanduser("~/.local/bin") ]
@@ -202,7 +209,20 @@ class FindDaemonPage(Page):
 			path, paths = paths[0], paths[1:]
 		except IndexError:
 			# Out of possible paths. Not found
-			return self.error()
+			# Generate and display error page and give up
+			local_bin_folder = "~/.local/bin"
+			local_bin_folder_link = '<a href="file://%s">%s</a>' % (
+					os.path.expanduser(local_bin_folder), local_bin_folder)
+			dll_link = '<a href="https://github.com/syncthing/syncthing/releases">' + \
+					_('download latest binary') + '</a>'
+			return self.parent.error(self,
+					_("Syncthing daemon not found."),
+					(_("Please, use package manager to install syncthing package") + " " +
+					 _("or %s from syncthing page and save it") + " " +
+					 _("to your %s or any other directory in PATH")) %
+					 	(dll_link, local_bin_folder_link,),
+					False)
+		
 		for bin in ("syncthing", "syncthing.x86", "syncthing.x86_64", "pulse"):
 			bin_path = os.path.join(path, bin)
 			print " ...", bin_path,
@@ -259,39 +279,6 @@ class GenerateKeysPage(Page):
 		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
 		self.process.connect('exit', self.cb_daemon_exit)
 	
-	def error(self):
-		"""
-		GenerateKeysPage turns into error page if syncthing binary
-		fails to generate keys.
-		"""
-		# Text
-		st_link = '<a href="https://github.com/syncthing/syncthing/issues">syncthing</a>'
-		stgtk_link = '<a href="https://github.com/kozec/syncthing-gui/issues">Syncthing-GTK</a>'
-		self.label.set_markup(
-			_("<b>Failed to generate keys.</b>") +
-			"\n\n" +
-			_("Syncthing daemon failed to generate RSA key or certificate.") +
-			"\n\n" +
-			_("This usually shouldn't happen. Please, check error log "
-			  "and fill bug report against %s or %s.") % (st_link, stgtk_link)
-		)
-		# 'Display error log' button
-		vbox = Gtk.Box()
-		button = Gtk.Button(_("Display error log"))
-		vbox.pack_end(button, False, False, 25)
-		self.attach(vbox, 0, 1, 1, 1)
-		self.set_row_spacing(25)
-		self.show_all()
-		button.connect("clicked", lambda *a : self.show_output())
-	
-	def show_output(self, *a):
-		"""
-		Displays DaemonOutput window with error messages captured
-		durring key generation.
-		"""
-		d = DaemonOutputDialog(self.parent, None)
-		d.show_with_lines(self.parent.lines, self.parent)
-	
 	def cb_daemon_exit(self, dproc, exit_code):
 		""" Called when syncthing finishes """
 		if exit_code == 0:
@@ -299,7 +286,10 @@ class GenerateKeysPage(Page):
 			self.parent.set_page_complete(self, True)
 			self.parent.next_page()
 		else:
-			self.error()
+			self.parent.error(self,
+				_("Failed to generate keys"),
+				_("Syncthing daemon failed to generate RSA key or certificate."),
+				True)
 
 class HttpSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.CONTENT
@@ -380,17 +370,17 @@ class HttpSettingsPage(Page):
 			else:
 				self.parent.syncthing_options["listen_ip"] = "0.0.0.0"
 			self.parent.syncthing_options["user"] = str(self.tx_username.get_text())
-			self.parent.syncthing_options["password"] = str(self.tx_username.get_text())
+			self.parent.syncthing_options["password"] = str(self.tx_password.get_text())
 	
 	def prepare(self):
 		# Refresh UI
 		self.cb_stuff_changed()
 
-class SaveSettingsPage(GenerateKeysPage):
+class SaveSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	TITLE = _("Save Settings")
 	def init_page(self):
-		""" Displayed while syncthing binary is being searched for """
+		""" Displayed while settings are being saved """
 		self.label = WrappedLabel(_("<b>Saving settings...</b>") + "\n\n")
 		self.status = Gtk.Label(_("Checking for available port..."))
 		self.attach(self.label,		0, 0, 1, 1)
@@ -398,24 +388,6 @@ class SaveSettingsPage(GenerateKeysPage):
 	
 	def prepare(self):
 		GLib.idle_add(self.check_port, DEFAULT_PORT)
-	
-	def error(self):
-		"""
-		SaveSettingsPage turns into error page if syncthing binary
-		fails to start or save settings.
-		"""
-		GenerateKeysPage.error(self)
-		self.status.set_visible(False)
-		# Text
-		stgtk_link = '<a href="https://github.com/kozec/syncthing-gui/issues">Syncthing-GTK</a>'
-		# No bug against syncthing here, should anything bad happen here,
-		# it's most likely my fault.
-		self.label.set_markup(
-			_("<b>Failed to store configuration.</b>") +
-			"\n\n" +
-			_("This usually shouldn't happen. Please, check error log "
-			  "and fill bug report against %s.") % (stgtk_link,)
-		)
 	
 	def check_port(self, port):
 		"""
@@ -425,7 +397,15 @@ class SaveSettingsPage(GenerateKeysPage):
 		completly wrong is happening and to display error.
 		"""
 		if port >= MAX_PORT:
-			self.error()
+			# Remove config.xml that I just created
+			try:
+				os.unlink(self.parent.st_configfile)
+			except Exception, e:
+				self.parent.output_line("syncthing-gtk: %s" % (str(e),))
+			self.parent.error(self,
+				_("Failed to find unused port for listening."),
+				_("Please, check your firewall settings and try again."),
+				False)
 			return
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
@@ -438,112 +418,71 @@ class SaveSettingsPage(GenerateKeysPage):
 			self.parent.output_line("syncthing-gtk: choosen port %s" % (port,))
 			self.port = port
 			self.parent.syncthing_options["port"] = str(port)
-			GLib.idle_add(self.start_binary)
+			self.status.set_markup(_("Saving..."))
+			GLib.idle_add(self.save_settings)
 		except socket.error:
 			# Address already in use (or some crazy error)
 			del s
 			self.parent.output_line("syncthing-gtk: port %s is not available" % (port,))
 			GLib.idle_add(self.check_port, port + 1)
 	
-	def start_binary(self):
+	def ct_textnode(self, xml, parent, name, value):
+		""" Helper method """
+		el = xml.createElement(name)
+		text = xml.createTextNode(value)
+		el.appendChild(text)
+		parent.appendChild(el)
+	
+	def save_settings(self):
 		"""
-		Starts syncthing binary listening only on localhost, with
-		authentification disabled. Waits until it finishes loading
-		and sets WebUI configuration.
+		Loads&parses XML, changes some values and writes it back.
+		No backup is created as this wizard is expected to be ran
+		only if there is no config in first place.
 		"""
-		self.status.set_markup(_("Starting syncthing daemon..."))
 		# Generate API key
 		self.apikey = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(30))
-		# Start sycnthing daemon
-		self.process = DaemonProcess([self.parent.config["syncthing_binary"],
-			"-no-browser", "-gui-address=127.0.0.1:%s" % (self.port,),
-			"-gui-authentication=",
-			"-gui-apikey=",
-		])
-		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
-		self.process.connect('exit', self.cb_daemon_exit)
-		self.parent.connect('cancel', self.terminate_process)
-		# Create daemon instance and wait until startup completes
-		self.retries = 10
-		self.daemon = Daemon()
-		self.daemon.connect("startup-complete", self.cb_syncthing_startup_complete)
-		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
-		self.daemon.override_config("127.0.0.1:%s" % (self.port,), None)
-		self.daemon.reconnect()
-	
-	def terminate_process(self, *a):
-		"""
-		Called when user exits wizard while daemon process is still active,
-		or for any other reason that requires daemon to be murdered.
-		"""
-		if self.process != None:
-			self.process.terminate()
-			self.process = None
-			print "Terminated process"
-	
-	def cb_syncthing_con_error(self, daemon, reason, message):
-		"""
-		Called when connection to daemon fails. It's expected to have few
-		con.refused errors, as daemon is just starting, but anything else
-		is big problem.
-		"""
-		if reason == Daemon.REFUSED and self.retries > 0:
-			self.retries -= 1
-			self.parent.output_line("syncthing-gtk: %s" % (message,))
-			return
-		self.parent.output_line("syncthing-gtk: Failed to connect to daemon")
-		self.parent.output_line("syncthing-gtk: %s" % (message,))
-		self.daemon.close()
-		self.terminate_process()
-		self.error()
-	
-	def cb_syncthing_startup_complete(self, *a):
-		""" Called when daemon is ready to be reconfigured """
-		self.status.set_markup(_("Storing configuration..."))
-		self.daemon.read_config(self.cb_syncthing_config_loaded, self.cb_syncthing_config_load_failed)
-	
-	def cb_syncthing_config_loaded(self, config):
+		xml = None
 		try:
-			config["GUI"]["Address"] = "%s:%s" % (self.parent.syncthing_options["listen_ip"], self.parent.syncthing_options["port"])
-			config["GUI"]["User"] = self.parent.syncthing_options["user"]
-			config["GUI"]["Password"] = self.parent.syncthing_options["password"]
-			config["GUI"]["UseTLS"] = False
-			config["GUI"]["Enabled"] = True
-			config["GUI"]["apikey"] = self.apikey
+			# Load XML file
+			config = file(self.parent.st_configfile, "r").read()
+			xml = minidom.parseString(config)
 		except Exception, e:
-			self.parent.output_line("syncthing-gtk: Failed to modify settings")
-			self.parent.output_line("syncthing-gtk: %s" % (str(e),))
-			self.daemon.close()
-			self.terminate_process()
-			self.error()
-			return
-		self.daemon.write_config(config, self.cb_syncthing_config_saved, self.cb_syncthing_config_save_failed)
-	
-	def cb_syncthing_config_load_failed(self, exception, *a):
-		self.parent.output_line("syncthing-gtk: Failed to load configuration from daemon")
-		self.parent.output_line("syncthing-gtk: %s" % (str(exception)))
-		self.daemon.close()
-		self.terminate_process()
-		self.error()
-	
-	def cb_syncthing_config_save_failed(self, exception, *a):
-		self.parent.output_line("syncthing-gtk: Failed to save daemon configuration")
-		self.parent.output_line("syncthing-gtk: %s" % (str(exception)))
-		self.daemon.close()
-		self.terminate_process()
-		self.error()
-	
-	def cb_syncthing_config_saved(self, *a):
-		"""
-		Called after configuration is sucesfully saved. Only thing left
-		is to let daemon exit and say done.
-		"""
-		self.status.set_markup(_("Finishing things..."))
-		self.process.connect('exit', self.cb_everything_finished)
-		self.daemon.shutdown()
-	
-	def cb_everything_finished(self, *a):
-		""" Called after everything """
+			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
+			return self.parent.error(self,
+				_("Failed to load syncthing configuration"),
+				str(e),
+				True)
+		try:
+			# Prepare elements
+			gui = xml.getElementsByTagName("configuration")[0] \
+					.getElementsByTagName("gui")[0]
+			while gui.firstChild != None:
+				gui.removeChild(gui.firstChild)
+			# Update data
+			self.ct_textnode(xml, gui, "address", "%s:%s" % (
+							self.parent.syncthing_options["listen_ip"],
+							self.parent.syncthing_options["port"],
+					))
+			self.ct_textnode(xml, gui, "user", self.parent.syncthing_options["user"])
+			self.ct_textnode(xml, gui, "password", self.parent.syncthing_options["password"])
+			gui.setAttribute("enabled", "true")
+			gui.setAttribute("tls", "false")
+				
+		except Exception, e:
+			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
+			return self.parent.error(self,
+				_("Failed to modify syncthing configuration"),
+				str(e),
+				True)
+		try:
+			# Write xml back to file
+			file(self.parent.st_configfile, "w").write(xml.toxml())
+		except Exception, e:
+			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
+			return self.parent.error(self,
+				_("Failed to save syncthing configuration"),
+				str(e),
+				True)
 		self.parent.set_page_complete(self, True)
 		self.parent.next_page()
 
