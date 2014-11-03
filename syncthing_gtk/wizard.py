@@ -9,6 +9,7 @@ values afterwards.
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import Configuration, DaemonProcess, DaemonOutputDialog
+from syncthing_gtk.tools import IS_WINDOWS
 import os, sys, socket, random, string, traceback
 from xml.dom import minidom
 
@@ -195,6 +196,10 @@ class FindDaemonPage(Page):
 	def prepare(self):
 		paths = [ "./" ]
 		paths += [ os.path.expanduser("~/.local/bin") ]
+		self.binaries = ("syncthing", "syncthing.x86", "syncthing.x86_64", "pulse")
+		if IS_WINDOWS:
+			paths += [ "c:/Program Files/syncthing", "c:/Program Files (x86)/syncthing" ]
+			self.binaries = ("syncthing.exe", "pulse.exe")
 		if "PATH" in os.environ:
 			paths += os.environ["PATH"].split(":")
 		print "Searching for syncthing binary..."
@@ -223,13 +228,14 @@ class FindDaemonPage(Page):
 					 	(dll_link, local_bin_folder_link,),
 					False)
 		
-		for bin in ("syncthing", "syncthing.x86", "syncthing.x86_64", "pulse"):
+		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)
 			print " ...", bin_path,
 			if os.path.isfile(bin_path):
 				if os.access(bin_path, os.X_OK):
 					# File exists and is executable
 					print "FOUND"
+					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
 					self.parent.config["syncthing_binary"] = bin_path
 					self.parent.set_page_complete(self, True)
 					self.label.set_markup(

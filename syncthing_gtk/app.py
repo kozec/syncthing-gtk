@@ -92,7 +92,8 @@ class App(Gtk.Application, TimerManager):
 		elif self.first_activation:
 			print
 			print _("Syncthing-GTK started and running in notification area")
-			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
+			if not self.daemon is None:
+				self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 		self.first_activation = False
 	
 	def setup_widgets(self):
