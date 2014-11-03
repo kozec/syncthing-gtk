@@ -513,5 +513,7 @@ class LastPage(GenerateKeysPage):
 		self.parent.config["autostart_daemon"] = 1
 		self.parent.config["autokill_daemon"] = 1
 		self.parent.config["minimize_on_start"] = False
+		if IS_WINDOWS:
+			self.parent.config["use_old_header"] = True
 		self.parent.quit_button.get_parent().remove(self.parent.quit_button)
 		self.parent.finished = True
