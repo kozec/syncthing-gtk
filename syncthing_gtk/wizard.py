@@ -2,15 +2,16 @@
 """
 Syncthing-GTK - 1st run wizard
 
-Runs syncthing daemon with -generate option and setups some
+Basicaly runs syncthing daemon with -generate option and setups some
 values afterwards.
 """
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
-from syncthing_gtk import Configuration, DaemonProcess, DaemonOutputDialog
+from syncthing_gtk import Configuration, DaemonProcess
+from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import IS_WINDOWS
-import os, sys, socket, random, string, traceback
+import os, sys, socket, random, string, traceback, platform
 from xml.dom import minidom
 
 _ = lambda (a) : a
@@ -65,6 +66,19 @@ class Wizard(Gtk.Assistant):
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
 		self.set_page_title(page, page.TITLE)
+		return index
+	
+	def insert_and_go(self, page):
+		"""
+		Inserts new page after currently displayed
+		and switches to it.
+		"""
+		index = self.get_current_page()
+		index = self.insert_page(page, index + 1)
+		page.parent = self
+		self.set_page_type(page, page.TYPE)
+		self.set_page_title(page, page.TITLE)
+		self.set_current_page(index)
 		return index
 	
 	def prepare_page(self, another_self, page):
@@ -182,8 +196,14 @@ class IntroPage(Page):
 		), 0, 0, 1, 1)
 
 class FindDaemonPage(Page):
+	# Next page, "Download Daemon" is displayed only if needed.
+	# When that happens, it becames page with longest title and  wizard
+	# window changes size to accomodate to this change. And i don't like
+	# that.
+	# To prevent this 'window jumping', padding is added here, so
+	# this page is always one with longest name.
+	TITLE = _("Find Daemon") + "                 "
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Find Daemon")
 	def init_page(self):
 		""" Displayed while syncthing binary is being searched for """
 		self.label = WrappedLabel(
@@ -214,19 +234,27 @@ class FindDaemonPage(Page):
 			path, paths = paths[0], paths[1:]
 		except IndexError:
 			# Out of possible paths. Not found
-			# Generate and display error page and give up
-			local_bin_folder = "~/.local/bin"
-			local_bin_folder_link = '<a href="file://%s">%s</a>' % (
-					os.path.expanduser(local_bin_folder), local_bin_folder)
-			dll_link = '<a href="https://github.com/syncthing/syncthing/releases">' + \
-					_('download latest binary') + '</a>'
-			return self.parent.error(self,
-					_("Syncthing daemon not found."),
-					(_("Please, use package manager to install syncthing package") + " " +
-					 _("or %s from syncthing page and save it") + " " +
-					 _("to your %s or any other directory in PATH")) %
-					 	(dll_link, local_bin_folder_link,),
-					False)
+			if IS_WINDOWS:
+				# On Windows, don't say anything and download syncthing
+				# directly
+				p = DownloadSTPage()
+				self.parent.insert_and_go(p)
+				return False
+			else:
+				# On Linux, generate and display error page and give up
+				# TODO: Download on Linux as well?
+				local_bin_folder = "~/.local/bin"
+				local_bin_folder_link = '<a href="file://%s">%s</a>' % (
+						os.path.expanduser(local_bin_folder), local_bin_folder)
+				dll_link = '<a href="https://github.com/syncthing/syncthing/releases">' + \
+						_('download latest binary') + '</a>'
+				return self.parent.error(self,
+						_("Syncthing daemon not found."),
+						(_("Please, use package manager to install syncthing package") + " " +
+						 _("or %s from syncthing page and save it") + " " +
+						 _("to your %s or any other directory in PATH")) %
+							(dll_link, local_bin_folder_link,),
+						False)
 		
 		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)
@@ -252,6 +280,86 @@ class FindDaemonPage(Page):
 				print "not found"
 		GLib.idle_add(self.search, paths)
 
+class DownloadSTPage(Page):
+	TYPE = Gtk.AssistantPageType.PROGRESS
+	TITLE = _("Download Daemon")
+	
+	def init_page(self):
+		""" Displayed while wizard downloads and extraacts daemon """
+		label = WrappedLabel(_("<b>Downloading Syncthing daemon.</b>"))
+		self.version = WrappedLabel(_("Please wait..."))
+		self.pb = Gtk.ProgressBar()
+		label.props.margin_bottom = 15
+		self.attach(label,			0, 0, 1, 1)
+		self.attach(self.version,	0, 1, 1, 1)
+		self.attach(self.pb,		0, 2, 1, 1)
+	
+	def prepare(self):
+		# Determine which syncthing to use
+		suffix, tag = None, None
+		if platform.system().lower().startswith("linux"):
+			if platform.machine() in ("i386", "i586", "i686"):
+				# Not sure, if anything but i686 is actually used
+				suffix, tag = ".x86", "linux-386"
+			elif platform.machine() == "x86_64":
+				# Who in the world calls x86_64 'amd' anyway?
+				suffix, tag = ".x64", "linux-amd64"
+			elif platform.machine().lower() in ("armv5", "armv6", "armv7"):
+				# TODO: This should work, but I don't have any way
+				# to test this right now
+				suffix = platform.machine().lower()
+				tag = "linux-%s" % (suffix,)
+		elif platform.system().lower().startswith("windows"):
+			if platform.machine() == "AMD64":
+				suffix, tag = ".exe", "windows-amd64"
+			else:
+				# I just hope that MS will not release ARM Windows for
+				# next 50 years...
+				suffix, tag = ".exe", "windows-386"
+		for x in ("freebsd", "solaris", "openbsd"):
+			# Syncthing-GTK should work on those as well...
+			if platform.system().lower().startswith(x):
+				if platform.machine() in ("i386", "i586", "i686"):
+					suffix, tag = ".x86", "%s-386" % (x,)
+				elif platform.machine() in ("amd64", "x86_64"):
+					suffix, tag = ".x64", "%s-amd64" % (x,)
+		# Report error on unsupported platforms
+		if suffix is None or tag is None:
+			pd = "%s %s %s" % (
+				platform.uname()[0], platform.uname()[2],	# OS, version
+				platform.uname()[4])						# architecture
+			self.parent.error(self,
+				_("Cannot download Syncthing daemon."),
+				_("This platform (%s) is not supported") % (pd,),
+				False)
+			return
+		# Determine target directory
+		confdir = GLib.get_user_config_dir()
+		if confdir is None:
+			confdir = os.path.expanduser("~/.config")
+		target = os.path.join(confdir, "syncthing", "syncthing%s" % (suffix,))
+		self.sd = StDownloader(target, tag)
+		self.sd.connect("error", self.on_download_error)
+		self.sd.connect("download-starting", self.on_download_start)
+		self.sd.connect("download-progress", self.on_progress)
+		self.sd.start()
+	
+	def on_download_error(self, downloader, error, message):
+		message = "%s\n%s" % (
+			str(error) if not error is None else "",
+			message if not message is None else ""
+			)
+		self.parent.error(self,
+			_("Failed todownload Syncthing daemon package."),
+			message, False)
+		return
+	
+	def on_download_start(self, dowloader, version):
+		self.version.set_markup("Downloading Syncthing %s..." % (version, ))
+	
+	def on_progress(self, dowloader, progress):
+		self.pb.set_fraction(progress)
+	
 class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	TITLE = _("Generate Keys")
