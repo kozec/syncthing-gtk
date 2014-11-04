@@ -43,6 +43,7 @@ class StDownloader(GObject.GObject):
 		error(exception, message):
 			Emited on error. Either exception or message can be None
 	"""
+	
 	__gsignals__ = {
 			b"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"download-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
@@ -62,8 +63,6 @@ class StDownloader(GObject.GObject):
 		GObject.GObject.__init__(self)
 		self.target = target
 		self.platform = platform
-		self.extract_size = -1
-		self.extracted = 0
 	
 	def start(self):
 		# Determine latest release

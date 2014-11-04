@@ -334,11 +334,12 @@ class DownloadSTPage(Page):
 				_("This platform (%s) is not supported") % (pd,),
 				False)
 			return
-		# Determine target directory
+		# Determine target file & directory
 		confdir = GLib.get_user_config_dir()
 		if confdir is None:
 			confdir = os.path.expanduser("~/.config")
 		self.target = os.path.join(confdir, "syncthing", "syncthing%s" % (suffix,))
+		# Create downloader and connect events
 		self.sd = StDownloader(self.target, tag)
 		self.sd.connect("error", self.on_download_error)
 		self.sd.connect("download-starting", self.on_download_start)
@@ -346,9 +347,14 @@ class DownloadSTPage(Page):
 		self.sd.connect("download-finished", self.on_extract_start)
 		self.sd.connect("extraction-progress", self.on_progress)
 		self.sd.connect("extraction-finished", self.on_extract_finished)
+		# Start downloading
 		self.sd.start()
 	
 	def on_download_error(self, downloader, error, message):
+		"""
+		Called when download fails. This is fatal for now, user can
+		only observe message, cry and quit program.
+		"""
 		message = "%s\n%s" % (
 			str(error) if not error is None else "",
 			message if not message is None else ""
@@ -368,6 +374,7 @@ class DownloadSTPage(Page):
 		self.pb.set_fraction(progress)
 	
 	def on_extract_finished(self, *a):
+		""" Called after extraction is finished """
 		# Everything done. Praise supernatural entities...
 		self.label.set_markup(_("<b>Download finished.</b>"))
 		self.parent.config["syncthing_binary"] = self.target
