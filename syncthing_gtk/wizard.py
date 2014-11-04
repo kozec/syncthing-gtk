@@ -234,7 +234,7 @@ class FindDaemonPage(Page):
 			path, paths = paths[0], paths[1:]
 		except IndexError:
 			# Out of possible paths. Not found
-			if IS_WINDOWS:
+			if True or IS_WINDOWS:	# TODO: Just for testing
 				# On Windows, don't say anything and download syncthing
 				# directly
 				p = DownloadSTPage()
@@ -286,11 +286,12 @@ class DownloadSTPage(Page):
 	
 	def init_page(self):
 		""" Displayed while wizard downloads and extraacts daemon """
-		label = WrappedLabel(_("<b>Downloading Syncthing daemon.</b>"))
+		self.label = WrappedLabel(_("<b>Downloading Syncthing daemon.</b>"))
 		self.version = WrappedLabel(_("Please wait..."))
 		self.pb = Gtk.ProgressBar()
-		label.props.margin_bottom = 15
-		self.attach(label,			0, 0, 1, 1)
+		self.label.props.margin_bottom = 15
+		self.target = None
+		self.attach(self.label,		0, 0, 1, 1)
 		self.attach(self.version,	0, 1, 1, 1)
 		self.attach(self.pb,		0, 2, 1, 1)
 	
@@ -337,11 +338,14 @@ class DownloadSTPage(Page):
 		confdir = GLib.get_user_config_dir()
 		if confdir is None:
 			confdir = os.path.expanduser("~/.config")
-		target = os.path.join(confdir, "syncthing", "syncthing%s" % (suffix,))
-		self.sd = StDownloader(target, tag)
+		self.target = os.path.join(confdir, "syncthing", "syncthing%s" % (suffix,))
+		self.sd = StDownloader(self.target, tag)
 		self.sd.connect("error", self.on_download_error)
 		self.sd.connect("download-starting", self.on_download_start)
 		self.sd.connect("download-progress", self.on_progress)
+		self.sd.connect("download-finished", self.on_extract_start)
+		self.sd.connect("extraction-progress", self.on_progress)
+		self.sd.connect("extraction-finished", self.on_extract_finished)
 		self.sd.start()
 	
 	def on_download_error(self, downloader, error, message):
@@ -355,10 +359,22 @@ class DownloadSTPage(Page):
 		return
 	
 	def on_download_start(self, dowloader, version):
-		self.version.set_markup("Downloading Syncthing %s..." % (version, ))
+		self.version.set_markup("Downloading %s..." % (version, ))
+	
+	def on_extract_start(self, *a):
+		self.version.set_markup("Extracting...")
 	
 	def on_progress(self, dowloader, progress):
 		self.pb.set_fraction(progress)
+	
+	def on_extract_finished(self, *a):
+		# Everything done. Praise supernatural entities...
+		self.label.set_markup(_("<b>Download finished.</b>"))
+		self.parent.config["syncthing_binary"] = self.target
+		self.version.set_markup(_("Binary path:") +
+				" " + self.target)
+		self.pb.set_visible(False)
+		self.parent.set_page_complete(self, True)
 	
 class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
