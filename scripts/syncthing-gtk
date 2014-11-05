@@ -17,6 +17,10 @@ if __name__ == "__main__":
 		print "  -s   Use classic window header instead of Gtk.HeaderBar"
 		print "  -1   Run 'first start wizard' and exit"
 		sys.exit(0)
+	from syncthing_gtk.tools import IS_WINDOWS
+	if IS_WINDOWS:
+		from syncthing_gtk import windows
+		windows.fix_localized_system_error_messages()
 	if "-1" in sys.argv:
 		from syncthing_gtk import Wizard
 		Wizard(
