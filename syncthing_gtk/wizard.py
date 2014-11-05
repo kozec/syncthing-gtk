@@ -415,6 +415,7 @@ class GenerateKeysPage(Page):
 		self.process = DaemonProcess([ self.parent.config["syncthing_binary"], '-generate=%s' % self.parent.st_configdir ])
 		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
 		self.process.connect('exit', self.cb_daemon_exit)
+		self.process.start()
 	
 	def cb_daemon_exit(self, dproc, exit_code):
 		""" Called when syncthing finishes """

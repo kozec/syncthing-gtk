@@ -217,6 +217,7 @@ class App(Gtk.Application, TimerManager):
 		if self.process == None:
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('exit', self.cb_daemon_exit)
+			self.process.start()
 			self["menu-daemon-output"].set_sensitive(True)
 	
 	def cb_syncthing_connected(self, *a):
@@ -1067,3 +1068,4 @@ class App(Gtk.Application, TimerManager):
 			# restart it
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('exit', self.cb_daemon_exit)
+			self.process.start()

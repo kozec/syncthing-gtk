@@ -28,6 +28,9 @@ class DaemonProcess(GObject.GObject):
 	def __init__(self, commandline):
 		""" commandline should be list of arguments """
 		GObject.GObject.__init__(self)
+		self.commandline = commandline
+	
+	def start(self):
 		os.environ["STNORESTART"] = "1"	# see syncthing --help
 		self._cancel = Gio.Cancellable()
 		if HAS_SUBPROCESS:
