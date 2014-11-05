@@ -112,6 +112,12 @@ if 'build' in sys.argv:
 					"system-shutdown",
 					"document-open",
 					"view-refresh",
+					"window-close-symbolic",
+					"window-maximize-symbolic",
+					"window-minimize-symbolic",
+					"list-add-symbolic",
+					"list-remove-symbolic",
+					"pan-down-symbolic",
 				],
 				"devices" : [
 					"drive-harddisk",
