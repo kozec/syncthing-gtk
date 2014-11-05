@@ -8,7 +8,8 @@ to given location.
 
 from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
-import os, sys, stat, json, tempfile, tarfile, zipfile
+import os, sys, stat, json, traceback
+import tempfile, tarfile, zipfile
 _ = lambda (a) : a
 
 CHUNK_SIZE = 102400
@@ -92,6 +93,7 @@ class StDownloader(GObject.GObject):
 			tmpfile = tempfile.NamedTemporaryFile(mode="wb",
 				prefix="syncthing-package.", suffix=suffix, delete=False)
 		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
@@ -107,6 +109,7 @@ class StDownloader(GObject.GObject):
 			stream = f.read_finish(result)
 			del f
 		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
 			self.emit("error", e, _("Download failed."))
 			return
 		stream.read_bytes_async(CHUNK_SIZE, GLib.PRIORITY_DEFAULT, None,
@@ -134,17 +137,23 @@ class StDownloader(GObject.GObject):
 				tmpfile.close()
 				GLib.idle_add(self._open_achive, tmpfile.name)
 		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
 			self.emit("error", e, _("Download failed."))
 			return
 	
 	def _open_achive(self, archive_name):
 		try:
-			# Sanity check
-			if not tarfile.is_tarfile(archive_name):
+			# Determine archive format
+			archive = None
+			if tarfile.is_tarfile(archive_name):
+				# Open TAR
+				archive = tarfile.open(archive_name, "r", bufsize=CHUNK_SIZE * 2)
+			elif zipfile.is_zipfile(archive_name):
+				# Open ZIP
+				archive = ZipThatPretendsToBeTar(archive_name, "r")
+			else:
+				# Unrecognized format
 				self.emit("error", None, _("Downloaded file is corrupted."))
-				return
-			# Open Archive
-			archive = tarfile.open(archive_name, "r", bufsize=CHUNK_SIZE * 2)
 			# Find binary inside
 			for pathname in archive.getnames():
 				filename = pathname.replace("\\", "/").split("/")[-1]
@@ -161,6 +170,7 @@ class StDownloader(GObject.GObject):
 						GLib.idle_add(self._extract, (archive, compressed, output, 0, tinfo.size))
 						return
 		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
@@ -181,15 +191,49 @@ class StDownloader(GObject.GObject):
 				if read_size > 0:
 					output.write(buffer)
 				# Change file mode to 0755
-				os.fchmod(output.fileno(), stat.S_IRWXU | stat.S_IRGRP | 
-						stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+				if hasattr(os, "fchmod"):
+					# ... (on Unix)
+					os.fchmod(output.fileno(), stat.S_IRWXU | stat.S_IRGRP | 
+							stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 				output.close()
 				archive.close()
 				compressed.close()
 				self.emit("extraction-progress", 1.0)
 				self.emit("extraction-finished")
 		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
 		return False
+
+class ZipThatPretendsToBeTar(zipfile.ZipFile):
+	""" Because ZipFile and TarFile are _almost_ the same -_- """
+	def __init__(self, filename, mode):
+		zipfile.ZipFile.__init__(self, filename, mode)
+	
+	def getnames(self):
+		""" Return the members as a list of their names. """
+		return self.namelist()
+		
+	def getmember(self, name):
+		"""
+		Return a TarInfo object for member name. If name can not be
+		found in the archive, KeyError is raised
+		"""
+		return ZipThatPretendsToBeTar.ZipInfo(self, name)
+	
+	def extractfile(self, name):
+		return self.open(name, "r")
+	
+	class ZipInfo:
+		def __init__(self, zipfile, name):
+			info = zipfile.getinfo(name)
+			for x in dir(info):
+				if not (x.startswith("_") or x.endswith("_")):
+					setattr(self, x, getattr(info, x))
+			self.size = self.file_size
+		
+		def isfile(self, *a):
+			# I don't exactly expect anything but files in ZIP...
+			return True
