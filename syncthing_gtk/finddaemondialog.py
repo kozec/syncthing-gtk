@@ -114,6 +114,8 @@ class FindDaemonDialog(EditorDialog):
 		self["lblDownloadProgress"].set_markup(_("Downloading..."))
 		self["btDownload"].set_visible(False)
 		self["pbDownload"].set_visible(True)
+		self["vsyncthing_binary"].set_sensitive(False)
+		self["btBrowse"].set_sensitive(False)
 		sd.start()
 	
 	def cb_btQuit_clicked(self, *a):
@@ -166,6 +168,8 @@ class FindDaemonDialog(EditorDialog):
 		self["lblDownloadProgress"].set_markup(_("Download failed."))
 		self["btDownload"].set_visible(True)
 		self["pbDownload"].set_visible(False)
+		self["vsyncthing_binary"].set_sensitive(True)
+		self["btBrowse"].set_sensitive(True)
 	
 	def cb_download_start(self, downloader, version):
 		self["lblDownloadProgress"].set_markup("Downloading %s..." % (version, ))
@@ -178,6 +182,9 @@ class FindDaemonDialog(EditorDialog):
 	
 	def cb_extract_finished(self, downloader, *a):
 		""" Called after extraction is finished """
+		self["vsyncthing_binary"].set_sensitive(True)
+		self["btBrowse"].set_sensitive(True)
 		self["vsyncthing_binary"].set_text(downloader.get_target())
 		self["lblDownloadProgress"].set_markup(_("<b>Download finished.</b>"))
 		self["pbDownload"].set_visible(False)
+		self["btSave"].set_sensitive(True)
