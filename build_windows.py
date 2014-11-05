@@ -1,4 +1,8 @@
 #!/c/Python27/python.exe
+"""
+Do './build_windows.py build' to build exe.
+"""
+
 import os, site, sys, shutil
 from cx_Freeze import setup, Executable
 
@@ -58,37 +62,33 @@ include_files += [ (os.path.join(gnome_dll_path, x), x) for x in missing_dll ]
 include_files += [ x for x in os.listdir(".") if x.endswith(".glade") ]
 include_files += [ "./icons" ]
 
-base = None
-
-## Lets not open the console while running the app
-#if sys.platform == "win32":
-#	base = "Win32GUI"
-
 executables = [
 	Executable(
 		"scripts/syncthing-gtk-exe.py",
-		targetName="syncthing-gtk.exe",
-		base=base)
-]
-
-buildOptions = dict(
-	compressed = False,
-	includes = ["gi"],
-	packages = ["gi"],
-	include_files = include_files
+		compress = True,
+		targetName = "syncthing-gtk.exe",
+		base = "Win32GUI",
+		icon = "icons/st-logo-128.ico",
 	)
+]
 
 setup(
 	name = "Syncthing GTK",
 	author = "Kozec",
-	version = "1.0",
+	version = "0.4.3",
 	description = "Windows port of Sycnthing GTK",
-	options = dict(build_exe = buildOptions),
+	options = dict(
+		build_exe = dict(
+			compressed = False,
+			includes = ["gi"],
+			packages = ["gi"],
+			include_files = include_files
+		),
+	),
 	executables = executables
 )
 
 if 'build' in sys.argv:
-	# Stupid, but works
 	for l in wrong_sized_dll:
 		print "replacing", l
 		shutil.copy(
