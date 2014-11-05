@@ -1,15 +1,20 @@
-#!/usr/bin/env python2
-import sys, os, signal
-
-def sigint(*a):
-	print("\n*break*")
-	sys.exit(0)
+#!/c/Python27/python.exe
+# Note: this one is used by Windows
+import sys, os, gi, cairo, _winreg
 
 if __name__ == "__main__":
-	signal.signal(signal.SIGINT, sigint)
-	path = "/usr/share/syncthing-gtk"
-	if os.path.exists("/usr/local/share/syncthing-gtk"):
-		path = "/usr/local/share/syncthing-gtk"
+	path = "."
+	if not os.path.exists("./app.glade"):
+		# Usually
+		try:
+			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			path, keytype = _winreg.QueryValueEx(key, "InstallPath")
+			path = str(path)
+		except WindowsError:
+			# This is pretty bad and shouldn't really happen. Just use default path
+			# in that case
+			path = "C:\\Program Files\\SyncthingGTK"
+		pass
 	if "-h" in sys.argv or "--help" in sys.argv:
 		print "Usage: %s [-h | [-w] [-s]]" % (sys.argv[0],)
 		print "  -h   Display this help message and exit"
@@ -18,6 +23,13 @@ if __name__ == "__main__":
 		print "  -1   Run 'first start wizard' and exit"
 		print "  -a   Display about dialog and exits"
 		sys.exit(0)
+	
+	# Tell cx_Freeze that I really need this library
+	gi.require_foreign('cairo')
+	
+	from syncthing_gtk import windows
+	windows.fix_localized_system_error_messages()
+	
 	if "-a" in sys.argv:
 		from syncthing_gtk import AboutDialog
 		AboutDialog(path).run([])

@@ -9,11 +9,16 @@ from __future__ import unicode_literals
 from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
-import re, os
+import re, os, sys
 
 _ = lambda (a) : a
+IS_WINDOWS	= sys.platform in ('win32', 'win64')
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
+
+if IS_WINDOWS:
+	# On Windows, WMI and pywin32 libraries are reqired
+	import wmi
 
 def luhn_b32generate(s):
 	"""
@@ -163,14 +168,32 @@ def delta_to_string(d):
 
 def check_daemon_running():
 	""" Returns True if syncthing daemon is running """
-	if not "USER" in os.environ:
-		# Unlikely
+	if not IS_WINDOWS:
+		# Unix
+		if not "USER" in os.environ:
+			# Unlikely
+			return False
+		# signal 0 doesn't kill anything, but killall exits with 1 if
+		# named process is not found
+		p = Popen(["killall", "-u", os.environ["USER"], "-q", "-s", "0", "syncthing"])
+		p.communicate()
+		return p.returncode == 0
+	else:
+		# Windows
+		if not "USERNAME" in os.environ:
+			# Much more likely
+			os.environ["USERNAME"] = ""
+		proclist = wmi.WMI().ExecQuery('select * from Win32_Process where Name LIKE "syncthing.exe"')
+		try:
+			proclist = list(proclist)
+			for p in proclist:
+				p_user = p.ExecMethod_('GetOwner').Properties_('User').Value
+				if p_user == os.environ["USERNAME"]:
+					return True
+		except Exception, e:
+			# Can't get or parse list, something is horribly broken here
+			return False
 		return False
-	# killall -s 0 doesn't kill anything, but exits with 1 if named
-	# process is not found
-	p = Popen(["killall", "-u", os.environ["USER"], "-q", "-s", "0", "syncthing"])
-	p.communicate()
-	return p.returncode == 0
 
 def parse_version(ver):
 	"""

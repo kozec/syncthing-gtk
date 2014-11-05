@@ -63,12 +63,14 @@ class App(Gtk.Application, TimerManager):
 		self.process = None
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
 		self.watcher = None
+		self.daemon = None
 		self.notifications = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
 		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
 		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
+		self.wizard = None
 		self.widgets = {}
 		self.error_boxes = []
 		self.error_messages = set([])	# Holds set of already displayed error messages
@@ -81,17 +83,19 @@ class App(Gtk.Application, TimerManager):
 		Gtk.Application.do_startup(self, *a)
 		self.setup_widgets()
 		self.setup_statusicon()
-		self.setup_connection()
-		self.daemon.reconnect()
+		if self.setup_connection():
+			self.daemon.reconnect()
 	
 	def do_activate(self, *a):
 		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
-			# Show main window
-			self.show()
+			if self.wizard is None:
+				# Show main window
+				self.show()
 		elif self.first_activation:
 			print
 			print _("Syncthing-GTK started and running in notification area")
-			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
+			if not self.daemon is None:
+				self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 		self.first_activation = False
 	
 	def setup_widgets(self):
@@ -171,9 +175,16 @@ class App(Gtk.Application, TimerManager):
 				_("Disable HTTPS in WebUI and try again.")
 				))
 			sys.exit(1)
+			return False
 		except InvalidConfigurationException, e:
-			self.fatal_error(str(e))
-			sys.exit(1)
+			# Syncthing is not configured, most likely never launched.
+			# Run wizard.
+			self.hide()
+			self.wizard = Wizard(self.gladepath, self.iconpath, self.config)
+			self.wizard.connect('cancel', self.cb_wizard_finished)
+			self.wizard.connect('close', self.cb_wizard_finished)
+			self.wizard.show()
+			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
 		if HAS_INOTIFY:
@@ -209,10 +220,11 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
+		return True
 	
 	def start_deamon(self):
 		if self.process == None:
-			self.process = DaemonProcess(["syncthing"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('exit', self.cb_daemon_exit)
 			self["menu-daemon-output"].set_sensitive(True)
 	
@@ -604,9 +616,9 @@ class App(Gtk.Application, TimerManager):
 		If connection to daemon is not established, shows 'Connecting'
 		dialog as well.
 		"""
-		
-		self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
-		self.daemon.request_events()
+		if not self.daemon is None:
+			self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
+			self.daemon.request_events()
 		if not self["window"].is_visible():
 			# self["window"].show_all()
 			self["window"].show()
@@ -620,7 +632,8 @@ class App(Gtk.Application, TimerManager):
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
 		self["window"].hide()
-		self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
+		if not self.daemon is None:
+			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
 	def display_connect_dialog(self, message):
 		"""
@@ -689,10 +702,13 @@ class App(Gtk.Application, TimerManager):
 	
 	def show_folder(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
-		# title = name if len(name) < 20 else "...%s" % name[-20:]
-		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
+		display_path = path
+		if IS_WINDOWS:
+			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
+				display_path = "~%s" % display_path[len(os.path.expanduser("~")):]
+		box = InfoBox(self, display_path, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("id",			"version.png",	_("Folder ID"),			id)
-		box.add_value("path",		"folder.png",	_("Path"),					path)
+		box.add_value("path",		"folder.png",	_("Path"),					display_path)
 		box.add_value("global",		"global.png",	_("Global State"),		"? items, ?B")
 		box.add_value("local",		"home.png",		_("Local State"),		"? items, ?B")
 		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
@@ -899,11 +915,16 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_browse_folder(self, *a):
 		""" Handler for 'browse' folder context menu item """
 		path = os.path.expanduser(self.rightclick_box["path"])
-		# Try to use any of following, known commands to display directory contents
-		for x in ('xdg-open', 'gnome-open', 'kde-open'):
-			if os.path.exists("/usr/bin/%s" % x):
-				os.system("/usr/bin/%s '%s' &" % (x, path))
-				break
+		if IS_WINDOWS:
+			# Don't attempt anything, use Windows Explorer on Windows
+			os.system('explorer "%s"' % (path,))
+		else:
+			# Try to use any of following, known commands to
+			# display directory contents
+			for x in ('xdg-open', 'gnome-open', 'kde-open'):
+				if os.path.exists("/usr/bin/%s" % x):
+					os.system("/usr/bin/%s '%s' &" % (x, path))
+					break
 	
 	def cb_menu_popup_delete_folder(self, *a):
 		""" Handler for 'delete' folder context menu item """
@@ -1060,9 +1081,21 @@ class App(Gtk.Application, TimerManager):
 		self.process = None
 		self.cb_exit()
 	
+	def cb_wizard_finished(self, wizard, *a):
+		self.wizard = None
+		if wizard.is_finished():
+			# Good, try connecting again
+			wizard.hide()
+			wizard.destroy()
+			self.show()
+			if self.setup_connection():
+				self.daemon.reconnect()
+		else:
+			self.quit()
+	
 	def cb_daemon_exit(self, proc, error_code):
 		if not self.process is None:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
-			self.process = DaemonProcess(["syncthing"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('exit', self.cb_daemon_exit)

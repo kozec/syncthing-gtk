@@ -3,6 +3,9 @@
 Syncthing-GTK - Daemon
 
 Class interfacing with syncthing daemon
+
+Create instance, connect singal handlers and call daemon.reconnect()
+
 """
 
 from __future__ import unicode_literals
@@ -185,6 +188,9 @@ class Daemon(GObject.GObject, TimerManager):
 				filename:	updated file
 				mtime:		last modification time of updated file
 		
+		startup-complete():
+			Emited when daemon initialization is complete.
+		
 		system-data-updated (ram_ussage, cpu_ussage, announce)
 			Emited every time when system informations are recieved
 			from daemon.
@@ -209,7 +215,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
 			b"device-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"device-discovered"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
+			b"device-discovered"	: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
 			b"device-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
 			b"last-seen-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"device-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
@@ -224,9 +230,10 @@ class Daemon(GObject.GObject, TimerManager):
 			b"folder-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"folder-stopped"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"folder-stopped"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+			b"startup-complete"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
 		}
 	
@@ -326,6 +333,14 @@ class Daemon(GObject.GObject, TimerManager):
 		except Exception, e:
 			# API key can be none
 			pass
+	
+	def override_config(self, address, api_key):
+		"""
+		Can be used to override settings loaded from config file.
+		api_key can be None.
+		"""
+		self._address = address
+		self.api_key = api_key
 	
 	def _get_device_data(self, nid):
 		""" Returns dict with device data, creating it if needed """
@@ -437,7 +452,12 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				error_callback(exception, command)
 		elif epoch == self._epoch:
-			print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
+			try:
+				print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
+			except UnicodeDecodeError:
+				# Windows...
+				print >>sys.stderr, "Request '%s' failed; Repeating..." % (command,)
+				print >>sys.stderr, exception
 			self.timer(None, 1, self._rest_request, command, callback, error_callback, *callback_data)
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
@@ -579,7 +599,12 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				error_callback(exception, command, data)
 		elif epoch != self._epoch:
-			print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
+			try:
+				print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
+			except UnicodeDecodeError:
+				# Windows...
+				print >>sys.stderr, "Post '%s' failed; Repeating..." % (command,)
+				print >>sys.stderr, exception
 			self.timer(None, 1, self._rest_post, command, data, callback, error_callback, callback_data)
 	
 	def _request_config(self, *a):
@@ -666,7 +691,7 @@ class Daemon(GObject.GObject, TimerManager):
 		that case, UI is restarted and waits until daemon respawns.
 		"""
 		if isinstance(exception, GLib.GError):
-			if exception.code in (34, 39):	# Connection terminated unexpectedly, Connection Refused
+			if exception.code in (0, 39, 34):	# Connection terminated unexpectedly, Connection Refused
 				if self._connected:
 					self._connected = False
 					self.emit("disconnected", Daemon.UNEXPECTED, exception.message)
@@ -856,10 +881,12 @@ class Daemon(GObject.GObject, TimerManager):
 	def _syncthing_cb_config_error(self, exception, command):
 		self.cancel_all()
 		if isinstance(exception, GLib.GError):
-			if exception.code in (39, 4):	# Connection Refused / Cannot connect to destination
+			if exception.code in (0, 39, 34):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
+				epoch = self._epoch
 				self.emit("connection-error", Daemon.REFUSED, exception.message)
-				self.timer("config", self._refresh_interval, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+				if epoch == self._epoch:
+					self.timer("config", self._refresh_interval, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 				return
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
@@ -911,9 +938,11 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _on_event(self, e):
 		eType = e["type"]
-		if eType in ("Ping", "Starting", "StartupComplete"):
+		if eType in ("Ping", "Starting"):
 			# Just ignore ignore those
 			pass
+		elif eType == "StartupComplete":
+			self.emit("startup-complete")
 		elif eType == "StateChanged":
 			state = e["data"]["to"]
 			rid = e["data"]["folder"]
@@ -967,6 +996,15 @@ class Daemon(GObject.GObject, TimerManager):
 		Cancel all pending requests, throw away all data and (re)connect.
 		Should be called from glib loop
 		"""
+		self.close()
+		GLib.idle_add(self._request_config)
+	
+	def close(self):
+		"""
+		Terminates everything, cancel all pending requests, throws away
+		data.
+		Works like reconnect(), but without reconnecting.
+		"""
 		self._my_id = None
 		self._connected = False
 		self._syncing_folders = set()
@@ -980,7 +1018,6 @@ class Daemon(GObject.GObject, TimerManager):
 		self._last_seen = {}
 		self.cancel_all()
 		self._epoch += 1
-		GLib.idle_add(self._request_config)
 	
 	def check_config(self):
 		"""
