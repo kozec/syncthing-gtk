@@ -13,7 +13,7 @@ import codecs
 def fix_localized_system_error_messages():
 	"""
 	Python has trouble decoding messages like
-	''
+	'S?bor, ktor? u? existuje, sa ned? vytvori:'
 	as they are encoded in some crazy, Windows-specific, locale-specific,
 	day-in-week-specific encoding.
 	
