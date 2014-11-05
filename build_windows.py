@@ -1,6 +1,7 @@
 #!/c/Python27/python.exe
 """
-Do './build_windows.py build' to build exe.
+Do './build_windows.py build' to build exe, then call
+'makensis syncthing-gtk.nsis' to create instalation package.
 """
 
 import os, site, sys, shutil
