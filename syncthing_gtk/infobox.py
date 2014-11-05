@@ -263,7 +263,7 @@ class InfoBox(Gtk.Container):
 	def on_grid_click(self, eventbox, event):
 		""" Displays popup menu on right click """
 		if event.button == 3:	# right
-			self.emit('right-click', event.button, event.time)
+			self.emit('right-click', event.button, 0)
 	
 	def hilight_timer(self, *a):
 		""" Called repeatedly while color is changing """

@@ -883,11 +883,16 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_browse_folder(self, *a):
 		""" Handler for 'browse' folder context menu item """
 		path = os.path.expanduser(self.rightclick_box["path"])
-		# Try to use any of following, known commands to display directory contents
-		for x in ('xdg-open', 'gnome-open', 'kde-open'):
-			if os.path.exists("/usr/bin/%s" % x):
-				os.system("/usr/bin/%s '%s' &" % (x, path))
-				break
+		if IS_WINDOWS:
+			# Don't attempt anything, use Windows Explorer on Windows
+			os.system('explorer "%s"' % (path,))
+		else:
+			# Try to use any of following, known commands to
+			# display directory contents
+			for x in ('xdg-open', 'gnome-open', 'kde-open'):
+				if os.path.exists("/usr/bin/%s" % x):
+					os.system("/usr/bin/%s '%s' &" % (x, path))
+					break
 	
 	def cb_menu_popup_delete_folder(self, *a):
 		""" Handler for 'delete' folder context menu item """
