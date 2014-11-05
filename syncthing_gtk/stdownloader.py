@@ -8,7 +8,7 @@ to given location.
 
 from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
-import os, sys, stat, json, traceback
+import os, sys, stat, json, traceback, platform
 import tempfile, tarfile, zipfile
 _ = lambda (a) : a
 
@@ -66,10 +66,15 @@ class StDownloader(GObject.GObject):
 		self.platform = platform
 	
 	def start(self):
+		""" Starts download """
 		# Determine latest release
 		uri = "https://api.github.com/repos/syncthing/syncthing/releases?per_page=2"
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_latest, None)
+	
+	def get_target(self):
+		""" Returns download target """
+		return self.target
 	
 	def _cb_read_latest(self, f, result, buffer, *a):
 		# Extract release version from response
@@ -206,6 +211,43 @@ class StDownloader(GObject.GObject):
 				_("Failed to determine latest Syncthing version."))
 			return
 		return False
+	
+	@staticmethod
+	def determine_platform():
+		"""
+		Determines what syncthing package should be downloaded.
+		Returns tuple (suffix, tag), where suffix is file extension
+		and tag platform identification used on syncthing releases page.
+		Returns (None, None) if package cannot be determined.
+		"""
+		suffix, tag = None, None
+		if platform.system().lower().startswith("linux"):
+			if platform.machine() in ("i386", "i586", "i686"):
+				# Not sure, if anything but i686 is actually used
+				suffix, tag = ".x86", "linux-386"
+			elif platform.machine() == "x86_64":
+				# Who in the world calls x86_64 'amd' anyway?
+				suffix, tag = ".x64", "linux-amd64"
+			elif platform.machine().lower() in ("armv5", "armv6", "armv7"):
+				# TODO: This should work, but I don't have any way
+				# to test this right now
+				suffix = platform.machine().lower()
+				tag = "linux-%s" % (suffix,)
+		elif platform.system().lower().startswith("windows"):
+			if platform.machine() == "AMD64":
+				suffix, tag = ".exe", "windows-amd64"
+			else:
+				# I just hope that MS will not release ARM Windows for
+				# next 50 years...
+				suffix, tag = ".exe", "windows-386"
+		for x in ("freebsd", "solaris", "openbsd"):
+			# Syncthing-GTK should work on those as well...
+			if platform.system().lower().startswith(x):
+				if platform.machine() in ("i386", "i586", "i686"):
+					suffix, tag = ".x86", "%s-386" % (x,)
+				elif platform.machine() in ("amd64", "x86_64"):
+					suffix, tag = ".x64", "%s-amd64" % (x,)
+		return (suffix, tag)
 
 class ZipThatPretendsToBeTar(zipfile.ZipFile):
 	""" Because ZipFile and TarFile are _almost_ the same -_- """

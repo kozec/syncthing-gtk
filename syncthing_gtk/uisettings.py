@@ -19,8 +19,11 @@ VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 class UISettingsDialog(EditorDialog):
 	def __init__(self, app):
 		EditorDialog.__init__(self, app, "ui-settings.glade",
-			"UI Settings")
+			_("UI Settings"))
 		self.app = app
+	
+	def run(self):
+		return self["dialog"].run()
 	
 	#@Overrides
 	def load_data(self):

@@ -24,4 +24,5 @@ from ribar				import RIBar
 from daemonoutputdialog	import DaemonOutputDialog
 from stdownloader		import StDownloader
 from wizard				import Wizard
+from finddaemondialog	import FindDaemonDialog
 from app				import App
