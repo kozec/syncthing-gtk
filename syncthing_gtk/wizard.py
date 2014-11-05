@@ -360,7 +360,7 @@ class DownloadSTPage(Page):
 			message if not message is None else ""
 			)
 		self.parent.error(self,
-			_("Failed todownload Syncthing daemon package."),
+			_("Failed to download Syncthing daemon package."),
 			message, False)
 		return
 	
