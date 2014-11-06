@@ -577,6 +577,9 @@ class SaveSettingsPage(Page):
 			# Prepare elements
 			gui = xml.getElementsByTagName("configuration")[0] \
 					.getElementsByTagName("gui")[0]
+			au = xml.getElementsByTagName("configuration")[0] \
+					.getElementsByTagName("options")[0] \
+					.getElementsByTagName("autoUpgradeIntervalH")[0]
 			while gui.firstChild != None:
 				gui.removeChild(gui.firstChild)
 			# Update data
@@ -588,6 +591,7 @@ class SaveSettingsPage(Page):
 			self.ct_textnode(xml, gui, "password", self.parent.syncthing_options["password"])
 			gui.setAttribute("enabled", "true")
 			gui.setAttribute("tls", "false")
+			au.firstChild.replaceWholeText("0")
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			return self.parent.error(self,
