@@ -1,11 +1,7 @@
-# Note: Requires http://www.microsoft.com/en-us/download/details.aspx?id=29
-
 # Initial stuff
 !define APP_NAME SyncthingGTK
 !define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.4.3.zip"
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
-!define MSVSLIBS_FILE "vcredist_x86.exe"
-!define MSVSLIBS_URL "http://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/${MSVSLIBS_FILE}"
 OutFile "${APP_NAME}-win32-installer.exe"
 InstallDir $PROGRAMFILES\${APP_NAME}
  

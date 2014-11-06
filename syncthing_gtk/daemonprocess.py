@@ -12,7 +12,13 @@ from syncthing_gtk.tools import IS_WINDOWS
 from collections import deque
 import os, sys
 HAS_SUBPROCESS = hasattr(Gio, "Subprocess")
-if not HAS_SUBPROCESS:
+if IS_WINDOWS:
+	# POpen is used on Windows
+	from subprocess import Popen, PIPE, STARTUPINFO, \
+		STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE, \
+		CREATE_NEW_PROCESS_GROUP
+	from syncthing_gtk.windows import WinPopenReader
+elif not HAS_SUBPROCESS:
 	# Gio.Subprocess is not available in Gio < 3.12
 	from subprocess import Popen, PIPE
 
@@ -22,25 +28,46 @@ class DaemonProcess(GObject.GObject):
 		b"line"			: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 		# exit(code)	- emited when process exits
 		b"exit"			: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
+		# failed(exception) - emited if process fails to start
+		b"failed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 	}
 	SCROLLBACK_SIZE = 500	# Maximum number of output lines stored in memory
 	
 	def __init__(self, commandline):
 		""" commandline should be list of arguments """
 		GObject.GObject.__init__(self)
+		self.commandline = commandline
+		self._proc = None
+	
+	def start(self):
 		os.environ["STNORESTART"] = "1"	# see syncthing --help
-		self._cancel = Gio.Cancellable()
-		if HAS_SUBPROCESS:
-			# Unix
-			flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
-			self._proc = Gio.Subprocess.new(commandline, flags)
-			self._proc.wait_check_async(None, self._cb_finished)
-			self._stdout = self._proc.get_stdout_pipe()
-		else:
-			# Gio < 3.12 - Gio.Subprocess is missing :(
-			self._proc = Popen(commandline, stdout=PIPE)
-			self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
-			self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
+		try:
+			self._cancel = Gio.Cancellable()
+			if IS_WINDOWS:
+				# Windows
+				sinfo = STARTUPINFO()
+				sinfo.dwFlags = STARTF_USESHOWWINDOW
+				sinfo.wShowWindow = 0
+				self._proc = Popen(self.commandline,
+							stdin=PIPE, stdout=PIPE, stderr=PIPE,
+							startupinfo=sinfo)
+				self._stdout = WinPopenReader(self._proc)
+				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
+			elif HAS_SUBPROCESS:
+				# New Gio
+				flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
+				self._proc = Gio.Subprocess.new(self.commandline, flags)
+				self._proc.wait_check_async(None, self._cb_finished)
+				self._stdout = self._proc.get_stdout_pipe()
+			else:
+				# Gio < 3.12 - Gio.Subprocess is missing :(
+				self._proc = Popen(self.commandline, stdout=PIPE)
+				self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
+				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
+		except Exception, e:
+			# Startup failed
+			self.emit("failed", e)
+			return
 		self._lines = deque([], DaemonProcess.SCROLLBACK_SIZE)
 		self._buffer = ""
 		self._stdout.read_bytes_async(256, 0, self._cancel, self._cb_read, ())
@@ -66,20 +93,6 @@ class DaemonProcess(GObject.GObject):
 	def _cb_check_alive(self, *a):
 		"""
 		Repeatedly check if process is still alive.
-		Called only with Gio < 3.12
-		"""
-		self._proc.poll()
-		if self._proc.returncode is None:
-			# Repeat until finished or canceled
-			return (not self._cancel.is_cancelled())
-		# Child just died :)
-		self.emit('exit', self._proc.returncode)
-		self._cancel.cancel()
-		return False
-	
-	def _cb_check_alive(self, *a):
-		"""
-		Repeatedly check if process is still alive.
 		Called only on windows
 		"""
 		self._proc.poll()
@@ -89,6 +102,7 @@ class DaemonProcess(GObject.GObject):
 		# Child just died :)
 		self.emit('exit', self._proc.returncode)
 		self._cancel.cancel()
+		if IS_WINDOWS: self._stdout.close()
 		return False
 	
 	def _cb_finished(self, proc, results):
@@ -103,25 +117,40 @@ class DaemonProcess(GObject.GObject):
 			# Exited with exit code
 			print "Subprocess exited", proc.get_exit_status()
 		self.emit('exit', proc.get_exit_status())
+		if IS_WINDOWS: self._stdout.close()
 		self._cancel.cancel()
 	
 	def terminate(self):
 		""" Terminates process (sends SIGTERM) """
-		if HAS_SUBPROCESS:
-			# Gio.Subprocess
-			self._proc.send_signal(15)
-		else:
-			# subprocess.Popen
-			self._proc.terminate()
+		if not self._proc is None:
+			if IS_WINDOWS:
+				# Windows
+				self._proc.terminate()
+			elif HAS_SUBPROCESS:
+				# Gio.Subprocess
+				self._proc.send_signal(15)
+			else:
+				# subprocess.Popen
+				self._proc.terminate()
+			self._proc = None
+			if IS_WINDOWS: self._stdout.close()
+			self._cancel.cancel()
 	
 	def kill(self):
 		""" Kills process (sends SIGTERM) """
-		if HAS_SUBPROCESS:
-			# Gio.Subprocess
-			self._proc.force_exit()
-		else:
-			# subprocess.Popen
-			self._proc.kill()
+		if not self._proc is None:
+			if IS_WINDOWS:
+				# Windows - can't actually kill
+				self._proc.terminate()
+			elif HAS_SUBPROCESS:
+				# Gio.Subprocess
+				self._proc.force_exit()
+			else:
+				# subprocess.Popen
+				self._proc.kill()
+			self._proc = None
+			if IS_WINDOWS: self._stdout.close()
+			self._cancel.cancel()
 	
 	def get_output(self):
 		""" Returns process output as iterable list of lines """

@@ -297,33 +297,7 @@ class DownloadSTPage(Page):
 	
 	def prepare(self):
 		# Determine which syncthing to use
-		suffix, tag = None, None
-		if platform.system().lower().startswith("linux"):
-			if platform.machine() in ("i386", "i586", "i686"):
-				# Not sure, if anything but i686 is actually used
-				suffix, tag = ".x86", "linux-386"
-			elif platform.machine() == "x86_64":
-				# Who in the world calls x86_64 'amd' anyway?
-				suffix, tag = ".x64", "linux-amd64"
-			elif platform.machine().lower() in ("armv5", "armv6", "armv7"):
-				# TODO: This should work, but I don't have any way
-				# to test this right now
-				suffix = platform.machine().lower()
-				tag = "linux-%s" % (suffix,)
-		elif platform.system().lower().startswith("windows"):
-			if platform.machine() == "AMD64":
-				suffix, tag = ".exe", "windows-amd64"
-			else:
-				# I just hope that MS will not release ARM Windows for
-				# next 50 years...
-				suffix, tag = ".exe", "windows-386"
-		for x in ("freebsd", "solaris", "openbsd"):
-			# Syncthing-GTK should work on those as well...
-			if platform.system().lower().startswith(x):
-				if platform.machine() in ("i386", "i586", "i686"):
-					suffix, tag = ".x86", "%s-386" % (x,)
-				elif platform.machine() in ("amd64", "x86_64"):
-					suffix, tag = ".x64", "%s-amd64" % (x,)
+		suffix, tag = StDownloader.determine_platform()
 		# Report error on unsupported platforms
 		if suffix is None or tag is None:
 			pd = "%s %s %s" % (
@@ -415,6 +389,13 @@ class GenerateKeysPage(Page):
 		self.process = DaemonProcess([ self.parent.config["syncthing_binary"], '-generate=%s' % self.parent.st_configdir ])
 		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
 		self.process.connect('exit', self.cb_daemon_exit)
+		self.process.connect('fail', self.cb_daemon_start_failed)
+		self.process.start()
+	
+	def cb_daemon_start_failed(self, dproc, exception):
+		self.parent.output_line("syncthing-gtk: Daemon startup failed")
+		self.parent.output_line("syncthing-gtk: %s" % (str(exception),))
+		self.cb_daemon_exit(dproc, -1)
 	
 	def cb_daemon_exit(self, dproc, exit_code):
 		""" Called when syncthing finishes """

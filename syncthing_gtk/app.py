@@ -225,7 +225,9 @@ class App(Gtk.Application, TimerManager):
 	def start_deamon(self):
 		if self.process == None:
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
+			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
+			self.process.start()
 			self["menu-daemon-output"].set_sensitive(True)
 	
 	def cb_syncthing_connected(self, *a):
@@ -1098,4 +1100,35 @@ class App(Gtk.Application, TimerManager):
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
+			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
+			self.process.start()
+	
+	def cb_daemon_startup_failed(self, proc, exception):
+		"""
+		Check if daemon binary exists.
+		If not, ask user where did he put it
+		"""
+		# Prepare FindDaemonDialog instance where user can
+		# set new path for syncthing_binary
+		d = FindDaemonDialog(self)
+		d.load()
+		d.set_transient_for(self["window"] if self.connect_dialog is None
+				else self.connect_dialog)
+		# If binary exists, assume that something is completly wrong,
+		# and change error message
+		if os.path.exists(self.config["syncthing_binary"]):
+			d.set_message("%s\n%s %s\n\n%s" % (
+					_("Failed to start Syncthing daemon."),
+					_("Error message:"), str(exception),
+					_("Please, check your installation or set new path to Syncthing daemon binary."),
+			))
+			d.hide_download_button()
+		# Let dialog run and try running syncthing again if new
+		# syncthing_binary is acquired
+		r = d.run()
+		d.destroy()
+		if r == FindDaemonDialog.RESPONSE_SAVED:
+			self.cb_daemon_exit(None, -1)
+		else:
+			self.quit()
