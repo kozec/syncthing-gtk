@@ -4,7 +4,10 @@
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
 OutFile "${APP_NAME}-win32-installer.exe"
 InstallDir $PROGRAMFILES\${APP_NAME}
- 
+
+Page directory
+Page instfiles
+
 # Install
 Section
 	SetOutPath $INSTDIR
