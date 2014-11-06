@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
+from syncthing_gtk.tools import IS_WINDOWS
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
@@ -39,6 +40,12 @@ class UISettingsDialog(EditorDialog):
 			self["vnotification_for_update"].set_sensitive(False)
 			self["vnotification_for_folder"].set_sensitive(False)
 			self["vnotification_for_error"].set_sensitive(False)
+		if IS_WINDOWS:
+			# Leave daemon running causes weird bugs on Windows,
+			# so only one option is enabled there
+			self["rbOnExitLeave"].set_sensitive(False)
+			self["rbOnExitAsk"].set_sensitive(False)
+			self["rbOnExitTerminate"].set_active(True)
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	

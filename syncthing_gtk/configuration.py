@@ -9,6 +9,7 @@ or other ~/.config equivalent
 
 from __future__ import unicode_literals
 from gi.repository import GLib
+from syncthing_gtk.tools import IS_WINDOWS
 import os, sys, json
 
 class Configuration(object):
@@ -17,14 +18,16 @@ class Configuration(object):
 	Use like dict to save / access values
 	"""
 	
+	# key : (type, default)
 	REQUIRED_KEYS = {
-		# key : (type, default)
-		"autostart_daemon"			: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
-		"autokill_daemon"			: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
+		# 0 - wait for daemon, 1 - autostart, 2 - ask
+		"autostart_daemon"			: (int, 2),
+		# 0 - never kill, 1 - always kill, 2 - ask
+		"autokill_daemon"			: (int, 1 if IS_WINDOWS else 2),
 		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
 		"minimize_on_start"			: (bool, True),
 		"use_inotify"				: (list, []),
-		"use_old_header"			: (bool, False),
+		"use_old_header"			: (bool, True if IS_WINDOWS else False),
 		"notification_for_update"	: (bool, True),
 		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),
