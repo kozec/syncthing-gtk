@@ -389,7 +389,7 @@ class GenerateKeysPage(Page):
 		self.process = DaemonProcess([ self.parent.config["syncthing_binary"], '-generate=%s' % self.parent.st_configdir ])
 		self.process.connect('line', lambda proc, line : self.parent.output_line(line))
 		self.process.connect('exit', self.cb_daemon_exit)
-		self.process.connect('fail', self.cb_daemon_start_failed)
+		self.process.connect('failed', self.cb_daemon_start_failed)
 		self.process.start()
 	
 	def cb_daemon_start_failed(self, dproc, exception):
