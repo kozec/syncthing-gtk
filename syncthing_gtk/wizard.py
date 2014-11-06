@@ -215,11 +215,14 @@ class FindDaemonPage(Page):
 	
 	def prepare(self):
 		paths = [ "./" ]
-		paths += [ os.path.expanduser("~/.local/bin") ]
-		self.binaries = ("syncthing", "syncthing.x86", "syncthing.x86_64", "pulse")
+		paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
+		self.binaries = ("syncthing", "syncthing.x86", "syncthing.x86_64")
 		if IS_WINDOWS:
-			paths += [ "c:/Program Files/syncthing", "c:/Program Files (x86)/syncthing" ]
-			self.binaries = ("syncthing.exe", "pulse.exe")
+			paths += [ "c:/Program Files/syncthing",
+				"c:/Program Files (x86)/syncthing",
+				self.parent.st_configdir
+				]
+			self.binaries = ("syncthing.exe",)
 		if "PATH" in os.environ:
 			paths += os.environ["PATH"].split(":")
 		print "Searching for syncthing binary..."
@@ -585,7 +588,6 @@ class SaveSettingsPage(Page):
 			self.ct_textnode(xml, gui, "password", self.parent.syncthing_options["password"])
 			gui.setAttribute("enabled", "true")
 			gui.setAttribute("tls", "false")
-				
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			return self.parent.error(self,
