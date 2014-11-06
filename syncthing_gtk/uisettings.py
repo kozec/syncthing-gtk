@@ -12,7 +12,7 @@ from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
-		"vnotification_for_update", "vuse_old_header", "vnotification_for_folder",
+		"vuse_old_header", "vnotification_for_update", "vnotification_for_folder",
 		"vnotification_for_error"
 	]
 
@@ -32,6 +32,13 @@ class UISettingsDialog(EditorDialog):
 		if THE_HELL:
 			self["vuse_old_header"].set_visible(False)
 			self["vuse_old_header"].set_no_show_all(True)
+		if not HAS_DESKTOP_NOTIFY:
+			# Disable notifications settings if required
+			# library is not available
+			self["lblNotifications"].set_sensitive(False)
+			self["vnotification_for_update"].set_sensitive(False)
+			self["vnotification_for_folder"].set_sensitive(False)
+			self["vnotification_for_error"].set_sensitive(False)
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	
