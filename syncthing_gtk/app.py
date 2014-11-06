@@ -148,6 +148,10 @@ class App(Gtk.Application, TimerManager):
 			self["window"].destroy()
 			self["window"] = w
 			self["window"].connect("delete-event", self.cb_delete_event)
+		elif IS_WINDOWS:
+			# Add border around window-menu button, as Windows user probably
+			# has no idea that it is clickable
+			self["window-menu"].set_relief(Gtk.ReliefStyle.HALF)
 		
 		# Fix for margin arounnd Gtk.Paned handle suddednly missing after
 		# upgrade to GTK 3.14
