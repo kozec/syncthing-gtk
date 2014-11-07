@@ -626,8 +626,9 @@ class App(Gtk.Application, TimerManager):
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
 			self.daemon.request_events()
 		if not self["window"].is_visible():
-			# self["window"].show_all()
 			self["window"].show()
+			if IS_WINDOWS and not self.config["window_position"] is None:
+				self["window"].move(*self.config["window_position"] )
 			if self.connect_dialog != None:
 				self.connect_dialog.show()
 		else:
@@ -637,6 +638,8 @@ class App(Gtk.Application, TimerManager):
 		""" Hides main windows and 'Connecting' dialog, if displayed """
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
+		if IS_WINDOWS:
+			self.config["window_position"] = self["window"].get_position()
 		self["window"].hide()
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)

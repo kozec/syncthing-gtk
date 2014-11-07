@@ -31,6 +31,7 @@ class Configuration(object):
 		"notification_for_update"	: (bool, True),
 		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),
+		"window_position"			: (tuple, None),
 	}
 	
 	# Overrides some default values on Windows
