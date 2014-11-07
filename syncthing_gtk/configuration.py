@@ -18,19 +18,26 @@ class Configuration(object):
 	Use like dict to save / access values
 	"""
 	
-	# key : (type, default)
+	# Dict with keys that are reqiured in configuration file
+	# and default values for thoose keys.
+	# Format: key : (type, default)
 	REQUIRED_KEYS = {
-		# 0 - wait for daemon, 1 - autostart, 2 - ask
-		"autostart_daemon"			: (int, 2),
-		# 0 - never kill, 1 - always kill, 2 - ask
-		"autokill_daemon"			: (int, 1 if IS_WINDOWS else 2),
+		"autostart_daemon"			: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
+		"autokill_daemon"			: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
 		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
-		"minimize_on_start"			: (bool, True),
+		"minimize_on_start"			: (bool, False),
 		"use_inotify"				: (list, []),
-		"use_old_header"			: (bool, True if IS_WINDOWS else False),
+		"use_old_header"			: (bool, False),
 		"notification_for_update"	: (bool, True),
 		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),
+	}
+	
+	# Overrides some default values on Windows
+	WINDOWS_OVERRIDE = {
+		"syncthing_binary"			: (str, "C:\\Program Fies\\Syncthing\\syncthing.exe"),
+		"autokill_daemon"			: (int, 1),
+		"use_old_header"			: (bool, True),
 	}
 	
 	def __init__(self):
@@ -75,6 +82,8 @@ class Configuration(object):
 		for key in Configuration.REQUIRED_KEYS:
 			tp, default = Configuration.REQUIRED_KEYS[key]
 			if not self._check_type(key, tp):
+				if IS_WINDOWS and key in Configuration.WINDOWS_OVERRIDE:
+					tp, default = Configuration.WINDOWS_OVERRIDE[key]
 				self._values[key] = default
 				needs_to_save = True
 		return needs_to_save
