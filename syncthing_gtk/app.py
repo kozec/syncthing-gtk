@@ -394,6 +394,12 @@ class App(Gtk.Application, TimerManager):
 			device.add_value("announce",	"announce.png",	_("Announce Server"),	"")
 			device.add_value("version",	"version.png",	_("Version"),			"?")
 			device.show_all()
+			# Remove my own device from "Shared with" value in all shared directories
+			# ( https://github.com/syncthing/syncthing/issues/915 )
+			for folder in self.folders:
+				f = self.folders[folder]
+				if device in f["devices"]:
+					f["shared"] = ", ".join([ n.get_title() for n in f["devices"] if n != device ])
 	
 	def cb_syncthing_system_data(self, daemon, mem, cpu, announce):
 		if self.daemon.get_my_id() in self.devices:
