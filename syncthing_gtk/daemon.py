@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager, DEBUG
 from syncthing_gtk.tools import parsetime, get_header, compare_version
+from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
@@ -296,10 +297,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _read_config(self):
 		# Read syncthing config to get connection url
-		confdir = GLib.get_user_config_dir()
-		if confdir is None:
-			confdir = os.path.expanduser("~/.config")
-		configxml = os.path.join(confdir, "syncthing", "config.xml")
+		configxml = os.path.join(get_config_dir(), "syncthing", "config.xml")
 		try:
 			config = file(configxml, "r").read()
 		except Exception, e:

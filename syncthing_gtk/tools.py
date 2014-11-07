@@ -6,6 +6,7 @@ Various stuff that I don't care to fit anywhere else.
 """
 
 from __future__ import unicode_literals
+from gi.repository import GLib
 from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
@@ -221,3 +222,13 @@ def compare_version(a, b):
 	Parses a and b as version strings. Rreturns True, if a >= b
 	"""
 	return parse_version(a) >= parse_version(b)
+
+def get_config_dir():
+	"""
+	Returns ~/.config, %APPDATA% or whatever has user set as
+	configuration directory.
+	"""
+	confdir = GLib.get_user_config_dir()
+	if confdir is None:
+		confdir = os.path.expanduser("~/.config")
+	return confdir

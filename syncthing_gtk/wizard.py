@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
 import os, sys, socket, random, string, traceback, platform
 from xml.dom import minidom
 
@@ -35,11 +35,8 @@ class Wizard(Gtk.Assistant):
 		self.finished = False
 		self.connect("prepare", self.prepare_page)
 		# Find syncthing configuration directory
-		confdir = GLib.get_user_config_dir()
-		if confdir is None:
-			confdir = os.path.expanduser("~/.config")
-		self.st_configdir = os.path.join(confdir, "syncthing")
-		self.st_configfile = os.path.join(confdir, "syncthing", "config.xml")
+		self.st_configdir = os.path.join(get_config_dir(), "syncthing")
+		self.st_configfile = os.path.join(get_config_dir(), "syncthing", "config.xml")
 		# Window setup
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_size_request(650, -1)
@@ -309,10 +306,7 @@ class DownloadSTPage(Page):
 				False)
 			return
 		# Determine target file & directory
-		confdir = GLib.get_user_config_dir()
-		if confdir is None:
-			confdir = os.path.expanduser("~/.config")
-		self.target = os.path.join(confdir, "syncthing", "syncthing%s" % (suffix,))
+		self.target = os.path.join(get_config_dir(), "syncthing", "syncthing%s" % (suffix,))
 		# Create downloader and connect events
 		self.sd = StDownloader(self.target, tag)
 		self.sd.connect("error", self.on_download_error)
