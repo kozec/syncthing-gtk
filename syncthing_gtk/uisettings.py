@@ -9,12 +9,15 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import IS_WINDOWS, is_ran_on_startup, \
+		set_run_on_startup, get_executable
+import os
+
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
-		"vuse_old_header", "vnotification_for_update", "vnotification_for_folder",
-		"vnotification_for_error"
+		"vautostart", "vuse_old_header", "vnotification_for_update",
+		"vnotification_for_folder", "vnotification_for_error"
 	]
 
 class UISettingsDialog(EditorDialog):
@@ -76,6 +79,22 @@ class UISettingsDialog(EditorDialog):
 			else: return self.set_value(key[1:], 2)	# vOnExitAsk
 		else:
 			return EditorDialog.store_value(self, key, w)
+	
+	#@Overrides
+	def set_value(self, key, value):
+		if key == "autostart":
+			set_run_on_startup(value, "Syncthing-GTK", get_executable(),
+				"/usr/share/syncthing-gtk/icons/st-logo-128.png",
+				"GUI for Syncthing")
+		else:
+			return EditorDialog.set_value(self, key, value)
+	
+	#@Overrides
+	def get_value(self, key):
+		if key == "autostart":
+			return is_ran_on_startup("Syncthing-GTK")
+		else:
+			return EditorDialog.get_value(self, key)
 	
 	#@Overrides
 	def on_data_loaded(self):

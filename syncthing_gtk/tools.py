@@ -10,16 +10,25 @@ from gi.repository import GLib
 from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
-import re, os, sys
+import re, os, sys, __main__
 
 _ = lambda (a) : a
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
+DESKTOP_FILE = """[Desktop Entry]
+Name=%s
+Exec=%s
+Icon=%s
+Comment=%s
+X-GNOME-Autostart-enabled=true
+Hidden=false
+Type=Application
+"""
 
 if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
-	import wmi
+	import wmi, _winreg
 
 def luhn_b32generate(s):
 	"""
@@ -232,3 +241,121 @@ def get_config_dir():
 	if confdir is None:
 		confdir = os.path.expanduser("~/.config")
 	return confdir
+
+get_install_path = None
+if IS_WINDOWS:
+	def _get_install_path():
+		"""
+		Returns installation path from registry.
+		Available only on Windows
+		"""
+		try:
+			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			path, keytype = _winreg.QueryValueEx(key, "InstallPath")
+			path = str(path)
+			_winreg.CloseKey(key)
+			return path
+		except WindowsError:
+			# This is really shouldn't happen. Just use default path
+			# and expect thing to crash
+			return "C:\\Program Files\\SyncthingGTK"
+		
+	get_install_path = _get_install_path
+
+def get_executable():
+	"""
+	Returns filename of executable that was used to launch program.
+	"""
+	if IS_WINDOWS:
+		return os.path.join(get_install_path(), "syncthing-gtk.exe")
+	else:
+		executable = __main__.__file__
+		if not os.path.isabs(executable):
+			executable = os.path.normpath(os.path.join(os.getcwd(), executable))
+		if executable.endswith(".py"):
+			executable = "/usr/bin/env python2 %s" % (executable,)
+		return executable
+
+def is_ran_on_startup(program_name):
+	"""
+	Returns True if specified program is set to be ran on startup, either
+	by XDG autostart or by windows registry.
+	Only name (desktop filename or registry key) is checked.
+	"""
+	if IS_WINDOWS:
+		# Check if there is value for application in ...\Run
+		try:
+			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+			trash, keytype = _winreg.QueryValueEx(key, program_name)
+			_winreg.CloseKey(key)
+			return keytype in (_winreg.REG_SZ, _winreg.REG_EXPAND_SZ, _winreg.REG_MULTI_SZ)
+		except WindowsError:
+			# Key not found
+			return False
+	else:
+		# Check if there application.desktop file exists
+		desktopfile = os.path.join(get_config_dir(), "autostart", "%s.desktop" % (program_name,))
+		if not os.path.exists(desktopfile):
+			return False
+		# Check if desktop file is not marked as hidden
+		# (stupid way, but should work)
+		in_entry = False
+		for line in file(desktopfile, "r").readlines():
+			line = line.strip(" \r\t").lower()
+			if line == "[desktop entry]":
+				in_entry = True
+				continue
+			if "=" in line:
+				key, value = line.split("=", 1)
+				if key.strip(" ") == "hidden":
+					if value.strip(" ") == "true":
+						# Desktop file is 'hidden', i.e. disabled
+						return False
+		# File is present and not hidden - autostart is enabled
+		return True
+
+def set_run_on_startup(enabled, program_name, executable, icon="", description=""):
+	"""
+	Sets or unsets program to be ran on startup, either by XDG autostart
+	or by windows registry.
+	'Description' parameter is ignored on Windows.
+	Returns True on success.
+	"""
+	if is_ran_on_startup(program_name) == enabled:
+		# Don't do anything if value is already set
+		return
+	if IS_WINDOWS:
+		# Create/delete value for application in ...\Run
+		try:
+			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+			if enabled:
+				_winreg.SetValueEx(key, program_name, 0, _winreg.REG_SZ, executable)
+			else:
+				_winreg.DeleteValue(key, program_name)
+			_winreg.CloseKey(key)
+		except WindowsError, e:
+			# Shouldn't usually happen
+			print >>sys.stderr, "Warning: Failed to modify autostart registry entry:", e
+			return False
+	else:
+		# Create/delete application.desktop with provided values,
+		# removing any hidding parameters
+		desktopfile = os.path.join(get_config_dir(), "autostart", "%s.desktop" % (program_name,))
+		if enabled:
+			try:
+				file(desktopfile, "w").write(DESKTOP_FILE % (
+					program_name, executable, icon, description))
+			except Exception, e:
+				# IO errors or out of disk space... Not really
+				# expected, but may happen
+				print >>sys.stderr, "Warning: Failed to create autostart entry:", e
+				return False
+		else:
+			try:
+				if os.path.exists(desktopfile):
+					os.unlink(desktopfile)
+			except Exception, e:
+				# IO or access error
+				print >>sys.stderr, "Warning: Failed to remove autostart entry:", e
+				return False
+	return True
