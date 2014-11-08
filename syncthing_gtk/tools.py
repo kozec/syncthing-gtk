@@ -326,17 +326,15 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 		return
 	if IS_WINDOWS:
 		# Create/delete value for application in ...\Run
-		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
-			if enabled:
-				_winreg.SetValueEx(key, program_name, 0, _winreg.REG_SZ, executable)
-			else:
-				_winreg.DeleteValue(key, program_name)
-			_winreg.CloseKey(key)
-		except WindowsError, e:
-			# Shouldn't usually happen
-			print >>sys.stderr, "Warning: Failed to modify autostart registry entry:", e
-			return False
+		key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+			"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+			0, _winreg.KEY_ALL_ACCESS)
+		if enabled:
+			_winreg.SetValueEx(key, program_name, 0,
+				_winreg.REG_SZ, '"%s"' % (executable,))
+		else:
+			_winreg.DeleteValue(key, program_name)
+		_winreg.CloseKey(key)
 	else:
 		# Create/delete application.desktop with provided values,
 		# removing any hidding parameters
