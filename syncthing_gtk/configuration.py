@@ -8,8 +8,7 @@ or other ~/.config equivalent
 """
 
 from __future__ import unicode_literals
-from gi.repository import GLib
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
 import os, sys, json
 
 class Configuration(object):
@@ -45,10 +44,7 @@ class Configuration(object):
 		self._load()
 	
 	def _load(self):
-		confdir = GLib.get_user_config_dir()
-		if confdir is None:
-			confdir = os.path.expanduser("~/.config")
-		confdir = os.path.join(confdir, "syncthing-gtk")
+		confdir = os.path.join(get_config_dir(), "syncthing-gtk")
 		if not os.path.exists(confdir):
 			try:
 				os.makedirs(confdir)

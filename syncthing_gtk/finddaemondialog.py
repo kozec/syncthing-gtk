@@ -9,7 +9,7 @@ values afterwards.
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import EditorDialog, StDownloader
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
 import os, platform
 _ = lambda (a) : a
 
@@ -98,10 +98,7 @@ class FindDaemonDialog(EditorDialog):
 				))
 			return
 		# Determine target file & directory
-		confdir = GLib.get_user_config_dir()
-		if confdir is None:
-			confdir = os.path.expanduser("~/.config")
-		self.target = os.path.join(confdir, "syncthing", "syncthing%s" % (suffix,))
+		self.target = os.path.join(get_config_dir(), "syncthing", "syncthing%s" % (suffix,))
 		# Create downloader and connect events
 		sd = StDownloader(self.target, tag)
 		sd.connect("error", self.cb_download_error)
