@@ -466,15 +466,86 @@
 	</child>
 	
 	<child>
-		<object class="GtkImageMenuItem" id="menu-si-restart">
+		<object class="GtkImageMenuItem" id="menu-si-inclimit">
+			<property name="label" translatable="yes">_Incomig Rate Limit</property>
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">_Restart Daemon</property>
 			<property name="use_underline">True</property>
-			<property name="image">menu-si-restart-image</property>
+			<property name="image">menu-si-inclimit-image</property>
 			<property name="use_stock">False</property>
-			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_restart" swapped="no"/>
+			<child type="submenu">
+				<object class="GtkMenu" id="menu-si-inclimit-sub">
+					<property name="visible">True</property>
+					<property name="can_focus">False</property>
+					<child>
+						<object class="GtkMenuItem" id="menu-si-inclimit-0">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<property name="label" translatable="yes">_Unlimited</property>
+							<property name="use_underline">True</property>
+							<signal name="activate" handler="cb_menu_inclimit" swapped="no"/>
+						</object>
+					</child>
+					<child>
+						<object class="GtkMenuItem" id="menu-si-inclimit-other">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<property name="label" translatable="yes">_Other</property>
+							<property name="use_underline">True</property>
+							<signal name="activate" handler="cb_menu_daemon_settings" swapped="no"/>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSeparatorMenuItem" id="menu-si-inclimit-separator">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+						</object>
+					</child>
+					<!-- Rest is generated in python code -->
+				</object>
+			</child>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-outlimit">
+			<property name="label" translatable="yes">_Ongoing Rate Limit</property>
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-si-outlimit-image</property>
+			<property name="use_stock">False</property>
+			<child type="submenu">
+				<object class="GtkMenu" id="menu-si-outlimit-sub">
+					<property name="visible">True</property>
+					<property name="can_focus">False</property>
+					<child>
+						<object class="GtkMenuItem" id="menu-si-outlimit-0">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<property name="label" translatable="yes">_Unlimited</property>
+							<property name="use_underline">True</property>
+							<signal name="activate" handler="cb_menu_outlimit" swapped="no"/>
+						</object>
+					</child>
+					<child>
+						<object class="GtkMenuItem" id="menu-si-outlimit-other">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<property name="label" translatable="yes">_Other</property>
+							<property name="use_underline">True</property>
+							<signal name="activate" handler="cb_menu_daemon_settings" swapped="no"/>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSeparatorMenuItem" id="menu-si-outlimit-separator">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+						</object>
+					</child>
+					<!-- Rest is generated in python code -->
+				</object>
+			</child>
 		</object>
 	</child>
 	
@@ -652,5 +723,18 @@
 	<property name="can_focus">False</property>
 	<property name="stock">gtk-open</property>
 </object>
+
+<object class="GtkImage" id="menu-si-inclimit-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="stock">gtk-go-down</property>
+</object>
+
+<object class="GtkImage" id="menu-si-outlimit-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="stock">gtk-go-up</property>
+</object>
+
 
 </interface>

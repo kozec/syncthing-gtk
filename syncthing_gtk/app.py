@@ -41,6 +41,9 @@ RESPONSE_SPARE_DAEMON	= 273
 REFRESH_INTERVAL_DEFAULT	= 1
 REFRESH_INTERVAL_TRAY		= 5
 
+# Speed values in outcoming/incoming speed limit menus
+SPEED_LIMIT_VALUES = [ 10, 25, 50, 75, 100, 200, 500, 750, 1000, 2000, 5000 ]
+
 class App(Gtk.Application, TimerManager):
 	"""
 	Main application / window.
@@ -155,6 +158,20 @@ class App(Gtk.Application, TimerManager):
 			self["folderlist"].props.margin_right = 5
 			self["devicelist"].props.margin_left = 5
 		
+		# Create speedlimit submenus for incoming and outcoming speeds
+		L_MEH = [("menu-si-outlimit", self.cb_menu_outlimit),
+				 ("menu-si-inclimit", self.cb_menu_inclimit)]
+		for limitmenu, eventhandler in L_MEH:
+			submenu = self["%s-sub" % (limitmenu,)]
+			for speed in SPEED_LIMIT_VALUES:
+				menuitem = Gtk.MenuItem(_("%s kB/s") % (speed,))
+				item_id = "%s-%s" % (limitmenu, speed)
+				menuitem.connect('activate', eventhandler, speed)
+				self[item_id] = menuitem
+				submenu.add(menuitem)
+			self[limitmenu].show_all()
+		
+		# SPEED_LIMIT_VALUES
 		self["window"].set_title(_("Syncthing GTK"))
 		self["window"].connect("realize", self.cb_realized)
 		self.add_window(self["window"])
@@ -237,7 +254,8 @@ class App(Gtk.Application, TimerManager):
 		self["edit-menu"].set_sensitive(True)
 		self["menu-si-shutdown"].set_sensitive(True)
 		self["menu-si-show-id"].set_sensitive(True)
-		self["menu-si-restart"].set_sensitive(True)
+		self["menu-si-inclimit"].set_sensitive(True)
+		self["menu-si-outlimit"].set_sensitive(True)
 	
 	def cb_syncthing_disconnected(self, daemon, reason, message):
 		# if reason == Daemon.UNEXPECTED
@@ -786,7 +804,8 @@ class App(Gtk.Application, TimerManager):
 		self["edit-menu"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
-		self["menu-si-restart"].set_sensitive(False)
+		self["menu-si-inclimit"].set_sensitive(False)
+		self["menu-si-outlimit"].set_sensitive(False)
 		if not self["infobar"] is None:
 			self.cb_infobar_close(self["infobar"])
 		for r in self.error_boxes:
@@ -883,6 +902,12 @@ class App(Gtk.Application, TimerManager):
 		e = UISettingsDialog(self)
 		e.load()
 		e.show(self["window"])
+	
+	def cb_menu_inclimit(self, *a):
+		print "cb_menu_inclimit", a
+	
+	def cb_menu_outlimit(self, *a):
+		print "cb_menu_outlimit", a
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
