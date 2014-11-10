@@ -818,6 +818,65 @@ class App(Gtk.Application, TimerManager):
 			self.watcher.clear()
 		self.daemon.reconnect()
 	
+	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
+		"""
+		Changes one value in daemon configuration and restarts daemon
+		This will:
+		 - call daemon.read_config() to read configuration from daemon
+		 - change value in recieved YAML document
+		 - call daemon.write_config() to post configuration back
+		 - call daemon.restart()
+		Everthing will be done asynchronously and will be repeated
+		until succeed, if retry_on_error is set to True.
+		Even if retry_on_error is True, error in write_config will
+		be only logged.
+		
+		It is possible to change nested setting using '/' as separator.
+		That may cause error if parent setting node is not present and
+		this error will not cause retrying process as well.
+		"""
+		# ^^ Longest comment in entire project
+		self.daemon.read_config(self.csnr_config_read, self.csnr_error, setting_name, value, retry_on_error)
+	
+	def csnr_error(self, e, setting_name, value, retry_on_error):
+		"""
+		Error handler for change_setting_n_restart method
+		"""
+		print >>sys.stderr, "change_setting_n_restart: Failed to read configuration:", e
+		if retry_on_error:
+			print >>sys.stderr, "Retrying..."
+			self.change_setting_n_restart(setting_name, value, True)
+		else:
+			print >>sys.stderr, "Giving up."
+	
+	def csnr_save_error(self, e, *a):
+		"""
+		Another error handler for change_setting_n_restart method.
+		This one just reports failure.
+		"""
+		print >>sys.stderr, "change_setting_n_restart: Failed to store configuration:", e
+		print >>sys.stderr, "Giving up."
+	
+	def csnr_config_read(self, config, setting_name, value, retry_on_error):
+		"""
+		Handler for change_setting_n_restart
+		Modifies recieved config and post it back.
+		"""
+		c, setting = config, setting_name
+		while "/" in setting:
+			key, setting = setting.split("/", 1)
+			c = c[key]
+		c[setting] = value
+		self.daemon.write_config(config, self.csnr_config_saved, self.csnr_save_error, setting_name, value)
+	
+	def csnr_config_saved(self, setting_name, value):
+		"""
+		Handler for change_setting_n_restart
+		Reports good stuff and restarts daemon.
+		"""
+		print "Configuration value '%s' set to '%s'" % (setting_name, value)
+		GLib.idle_add(self.daemon.restart)
+	
 	# --- Callbacks ---
 	def cb_exit(self, *a):
 		if self.process != None:
@@ -903,11 +962,11 @@ class App(Gtk.Application, TimerManager):
 		e.load()
 		e.show(self["window"])
 	
-	def cb_menu_inclimit(self, *a):
-		print "cb_menu_inclimit", a
+	def cb_menu_inclimit(self, menuitem, speed=0):
+		self.change_setting_n_restart("Options/MaxRecvKbps", speed)
 	
-	def cb_menu_outlimit(self, *a):
-		print "cb_menu_outlimit", a
+	def cb_menu_outlimit(self, menuitem, speed=0):
+		self.change_setting_n_restart("Options/MaxSendKbps", speed)
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
