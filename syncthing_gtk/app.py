@@ -73,6 +73,8 @@ class App(Gtk.Application, TimerManager):
 		self.connect_dialog = None
 		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
 		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
+		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
+		self.send_limit = -1			# -//-
 		self.wizard = None
 		self.widgets = {}
 		self.error_boxes = []
@@ -159,14 +161,14 @@ class App(Gtk.Application, TimerManager):
 			self["devicelist"].props.margin_left = 5
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
-		L_MEH = [("menu-si-outlimit", self.cb_menu_outlimit),
-				 ("menu-si-inclimit", self.cb_menu_inclimit)]
+		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
+				 ("menu-si-recvlimit", self.cb_menu_recvlimit)]
 		for limitmenu, eventhandler in L_MEH:
 			submenu = self["%s-sub" % (limitmenu,)]
 			for speed in SPEED_LIMIT_VALUES:
-				menuitem = Gtk.MenuItem(_("%s kB/s") % (speed,))
+				menuitem = Gtk.CheckMenuItem(_("%s kB/s") % (speed,))
 				item_id = "%s-%s" % (limitmenu, speed)
-				menuitem.connect('activate', eventhandler, speed)
+				menuitem.connect('toggled', eventhandler, speed)
 				self[item_id] = menuitem
 				submenu.add(menuitem)
 			self[limitmenu].show_all()
@@ -216,6 +218,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
 		self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
 		self.daemon.connect("error", self.cb_syncthing_error)
+		self.daemon.connect("config-loaded", self.cb_config_loaded)
 		self.daemon.connect("folder-rejected", self.cb_syncthing_folder_rejected)
 		self.daemon.connect("device-rejected", self.cb_syncthing_device_rejected)
 		self.daemon.connect("my-id-changed", self.cb_syncthing_my_id_changed)
@@ -254,8 +257,8 @@ class App(Gtk.Application, TimerManager):
 		self["edit-menu"].set_sensitive(True)
 		self["menu-si-shutdown"].set_sensitive(True)
 		self["menu-si-show-id"].set_sensitive(True)
-		self["menu-si-inclimit"].set_sensitive(True)
-		self["menu-si-outlimit"].set_sensitive(True)
+		self["menu-si-recvlimit"].set_sensitive(True)
+		self["menu-si-sendlimit"].set_sensitive(True)
 	
 	def cb_syncthing_disconnected(self, daemon, reason, message):
 		# if reason == Daemon.UNEXPECTED
@@ -334,6 +337,24 @@ class App(Gtk.Application, TimerManager):
 			self.watcher.clear()
 		self.daemon.reconnect()
 	
+	def cb_config_loaded(self, daemon, config):
+		# Called after connection to daemon is initialized;
+		# Used to change indicating UI components
+		self.recv_limit = config["Options"]["MaxRecvKbps"]
+		self.send_limit = config["Options"]["MaxSendKbps"]
+		L_MEV = [("menu-si-sendlimit", self.send_limit),
+				 ("menu-si-recvlimit", self.recv_limit)]
+		print ">>> cb_config_loaded", config["Options"]
+		
+		for limitmenu, value in L_MEV:
+			other = True
+			for speed in [0] + SPEED_LIMIT_VALUES:
+				menuitem = self["%s-%s" % (limitmenu, speed)]
+				menuitem.set_active(speed == value)
+				print "#", limitmenu, _("%s kB/s") % (speed,), (speed == value), speed, value
+				other = False
+			self["%s-other" % (limitmenu,)].set_active(other)
+		
 	def cb_syncthing_error(self, daemon, message):
 		if message in self.error_messages:
 			# Same error is already displayed
@@ -804,8 +825,8 @@ class App(Gtk.Application, TimerManager):
 		self["edit-menu"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
-		self["menu-si-inclimit"].set_sensitive(False)
-		self["menu-si-outlimit"].set_sensitive(False)
+		self["menu-si-recvlimit"].set_sensitive(False)
+		self["menu-si-sendlimit"].set_sensitive(False)
 		if not self["infobar"] is None:
 			self.cb_infobar_close(self["infobar"])
 		for r in self.error_boxes:
@@ -838,7 +859,7 @@ class App(Gtk.Application, TimerManager):
 		# ^^ Longest comment in entire project
 		self.daemon.read_config(self.csnr_config_read, self.csnr_error, setting_name, value, retry_on_error)
 	
-	def csnr_error(self, e, setting_name, value, retry_on_error):
+	def csnr_error(self, e, trash, setting_name, value, retry_on_error):
 		"""
 		Error handler for change_setting_n_restart method
 		"""
@@ -875,6 +896,10 @@ class App(Gtk.Application, TimerManager):
 		Reports good stuff and restarts daemon.
 		"""
 		print "Configuration value '%s' set to '%s'" % (setting_name, value)
+		message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
+		self.display_connect_dialog(message)
+		self.set_status(False)
+		self.restart()
 		GLib.idle_add(self.daemon.restart)
 	
 	# --- Callbacks ---
@@ -962,11 +987,15 @@ class App(Gtk.Application, TimerManager):
 		e.load()
 		e.show(self["window"])
 	
-	def cb_menu_inclimit(self, menuitem, speed=0):
-		self.change_setting_n_restart("Options/MaxRecvKbps", speed)
+	def cb_menu_recvlimit(self, menuitem, speed=0):
+		if menuitem.get_active() and self.recv_limit != speed:
+			print "cb_menu_recvlimit", self.recv_limit, speed
+			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
 	
-	def cb_menu_outlimit(self, menuitem, speed=0):
-		self.change_setting_n_restart("Options/MaxSendKbps", speed)
+	def cb_menu_sendlimit(self, menuitem, speed=0):
+		if menuitem.get_active() and self.send_limit != speed:
+			print "cb_menu_sendlimit", self.send_limit, speed
+			self.change_setting_n_restart("Options/MaxSendKbps", speed)
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
