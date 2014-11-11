@@ -16,8 +16,15 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="adjMaxRecvKbps">
+    <property name="upper">99999</property>
+    <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="adjMaxSendKbps">
     <property name="upper">99999</property>
+    <property name="value">1</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -130,7 +137,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">4</property>
+                <property name="top_attach">6</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -146,7 +153,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">10</property>
+                <property name="top_attach">12</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -164,7 +171,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">5</property>
+                <property name="top_attach">7</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -174,10 +181,11 @@
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
                 <property name="adjustment">adjMaxSendKbps</property>
+                <property name="value">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">3</property>
+                <property name="top_attach">5</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -205,7 +213,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
+                <property name="top_attach">4</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -222,7 +230,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">12</property>
+                <property name="top_attach">14</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -238,7 +246,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">11</property>
+                <property name="top_attach">13</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -255,7 +263,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">7</property>
+                <property name="top_attach">9</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -273,7 +281,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">8</property>
+                <property name="top_attach">10</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -285,7 +293,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">9</property>
+                <property name="top_attach">11</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -300,7 +308,49 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">6</property>
+                <property name="top_attach">8</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="vMaxRecvKbpsEnabled">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="use_underline">True</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="ui_value_changed" swapped="no"/>
+                <child>
+                  <object class="GtkLabel" id="label2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Incoimg Rate Limit (KiB/s)</property>
+                    <property name="use_underline">True</property>
+                    <property name="mnemonic_widget">vMaxRecvKbpsEnabled</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="vMaxRecvKbps">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="margin_bottom">10</property>
+                <property name="adjustment">adjMaxRecvKbps</property>
+                <property name="value">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
                 <property name="width">2</property>
               </packing>
             </child>
