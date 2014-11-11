@@ -242,6 +242,21 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
 	
+	def start_deamon_ui(self):
+		"""
+		Does same thing as start_deamon.
+		Additionaly displays 'Starting Daemon' message and swaps
+		menu items in notification icon menu.
+		"""
+		# Swap menu items in notification menu
+		self["menu-si-shutdown"].set_visible(True)
+		self["menu-si-resume"].set_visible(False)
+		# Display message
+		self.close_connect_dialog()
+		self.display_connect_dialog(_("Starting Syncthing daemon"))
+		# Start daemon
+		self.start_deamon_ui()
+	
 	def start_deamon(self):
 		if self.process == None:
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
@@ -272,6 +287,9 @@ class App(Gtk.Application, TimerManager):
 		elif reason == Daemon.RESTART:
 			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
 		self.display_connect_dialog(message)
+		if reason == Daemon.SHUTDOWN:
+			# Add 'Start daemon again' button to dialog
+			self.connect_dialog.add_button("Start Again", RESPONSE_START_DAEMON)
 		self.set_status(False)
 		self.restart()
 	
@@ -696,7 +714,7 @@ class App(Gtk.Application, TimerManager):
 				Gtk.MessageType.INFO, 0, "-")
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
-			self.connect_dialog.connect("response", self.cb_exit)
+			self.connect_dialog.connect("response", self.cb_connect_dialog_response, None)
 			if self.is_visible():
 				self.connect_dialog.show_all()
 		def set_label(d, message):
@@ -736,7 +754,7 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.add_button("_Start",   RESPONSE_START_DAEMON)
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
-			self.connect_dialog.connect("response", self.cb_run_daemon_response, cb)
+			self.connect_dialog.connect("response", self.cb_connect_dialog_response, cb)
 			if self.is_visible():
 				self.connect_dialog.show_all()
 			else:
@@ -1146,13 +1164,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_resume(self, event, *a):
 		""" Handler for 'Resume' menu item """
-		# Swap menu items in notification menu
-		self["menu-si-shutdown"].set_visible(True)
-		self["menu-si-resume"].set_visible(False)
-		# Start daemon again
-		self.start_deamon()
-		self.close_connect_dialog()
-		self.display_connect_dialog(_("Starting Syncthing daemon"))
+		self.start_deamon_ui()
 	
 	def cb_menu_webui(self, *a):
 		""" Handler for 'Open WebUI' menu item """
@@ -1217,12 +1229,11 @@ class App(Gtk.Application, TimerManager):
 		else:
 			self.open_boxes.discard(box["id"])
 	
-	def cb_run_daemon_response(self, dialog, response, checkbox):
+	def cb_connect_dialog_response(self, dialog, response, checkbox):
+		# Common for 'Daemon is not running' and 'Connecting to daemon...'
 		if response == RESPONSE_START_DAEMON:
-			self.start_deamon()
-			self.close_connect_dialog()
-			self.display_connect_dialog(_("Starting Syncthing daemon"))
-			if checkbox.get_active():
+			self.start_deamon_ui()
+			if not checkbox is None and checkbox.get_active():
 				self.config["autostart_daemon"] = 1
 		else: # if response <= 0 or response == RESPONSE_QUIT:
 			self.cb_exit()
