@@ -267,6 +267,8 @@ class App(Gtk.Application, TimerManager):
 				_("Syncthing is probably restarting or has been shut down."))
 		if reason == Daemon.SHUTDOWN:
 			message = _("Syncthing has been shut down.")
+			self["menu-si-shutdown"].set_visible(False)
+			self["menu-si-resume"].set_visible(True)			
 		elif reason == Daemon.RESTART:
 			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
 		self.display_connect_dialog(message)
@@ -1141,6 +1143,16 @@ class App(Gtk.Application, TimerManager):
 		""" Handler for 'Shutdown' menu item """
 		self.process = None	# Prevent app from restarting daemon
 		self.daemon.shutdown()
+	
+	def cb_menu_resume(self, event, *a):
+		""" Handler for 'Resume' menu item """
+		# Swap menu items in notification menu
+		self["menu-si-shutdown"].set_visible(True)
+		self["menu-si-resume"].set_visible(False)
+		# Start daemon again
+		self.start_deamon()
+		self.close_connect_dialog()
+		self.display_connect_dialog(_("Starting Syncthing daemon"))
 	
 	def cb_menu_webui(self, *a):
 		""" Handler for 'Open WebUI' menu item """

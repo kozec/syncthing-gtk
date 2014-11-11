@@ -441,13 +441,27 @@
 		<object class="GtkImageMenuItem" id="menu-si-shutdown">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">Sh_utdown Daemon</property>
+			<property name="label" translatable="yes">S_top Syncthing</property>
 			<property name="use_underline">True</property>
 			<property name="image">menu-si-shutdown-image</property>
 			<property name="use_stock">False</property>
 			<property name="sensitive">False</property>
 			<property name="always_show_image">True</property>
 			<signal name="activate" handler="cb_menu_shutdown" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-resume">
+			<property name="visible">False</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Resume Sync_thing</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-si-resume-image</property>
+			<property name="use_stock">False</property>
+			<property name="sensitive">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_resume" swapped="no"/>
 		</object>
 	</child>
 	
@@ -648,6 +662,13 @@
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
 	<property name="icon_name">system-shutdown</property>
+</object>
+
+<object class="GtkImage" id="menu-si-resume-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">media-playback-start</property>
 </object>
 
 <object class="GtkImage" id="menu-restart-image">
