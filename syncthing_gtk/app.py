@@ -344,15 +344,14 @@ class App(Gtk.Application, TimerManager):
 		self.send_limit = config["Options"]["MaxSendKbps"]
 		L_MEV = [("menu-si-sendlimit", self.send_limit),
 				 ("menu-si-recvlimit", self.recv_limit)]
-		print ">>> cb_config_loaded", config["Options"]
 		
 		for limitmenu, value in L_MEV:
 			other = True
 			for speed in [0] + SPEED_LIMIT_VALUES:
 				menuitem = self["%s-%s" % (limitmenu, speed)]
 				menuitem.set_active(speed == value)
-				print "#", limitmenu, _("%s kB/s") % (speed,), (speed == value), speed, value
-				other = False
+				if speed == value:
+					other = False
 			self["%s-other" % (limitmenu,)].set_active(other)
 		
 	def cb_syncthing_error(self, daemon, message):
@@ -989,13 +988,36 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.recv_limit != speed:
-			print "cb_menu_recvlimit", self.recv_limit, speed
 			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.send_limit != speed:
-			print "cb_menu_sendlimit", self.send_limit, speed
 			self.change_setting_n_restart("Options/MaxSendKbps", speed)
+	
+	def cb_menu_recvlimit_other(self, menuitem):
+		return self.cb_menu_limit_other(menuitem, self.recv_limit)
+	
+	def cb_menu_sendlimit_other(self, menuitem):
+		return self.cb_menu_limit_other(menuitem, self.send_limit)
+	
+	def cb_menu_limit_other(self, menuitem, speed):
+		# Common for cb_menu_recvlimit_other and cb_menu_sendlimit_other
+		#
+		# Removes checkbox, if speed is not considered as 'other'
+		# Displays configuration dialog
+		# Detect if checkbox was changed by user
+		checked_by_user = (
+			(speed in [0] + SPEED_LIMIT_VALUES 
+				and menuitem.get_active())
+			or
+			(not speed in [0] + SPEED_LIMIT_VALUES 
+				and not menuitem.get_active())
+			)
+		if checked_by_user:
+			# Display daemon settings dialog and (un)check box back to
+			# its correct state
+			self.cb_menu_daemon_settings(None)
+			menuitem.set_active(not menuitem.get_active())
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box

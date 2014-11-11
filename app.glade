@@ -492,7 +492,7 @@
 							<property name="can_focus">False</property>
 							<property name="label" translatable="yes">_Other</property>
 							<property name="use_underline">True</property>
-							<signal name="toggled" handler="cb_menu_daemon_settings" swapped="no"/>
+							<signal name="toggled" handler="cb_menu_recvlimit_other" swapped="no"/>
 						</object>
 					</child>
 					<child>
@@ -534,7 +534,7 @@
 							<property name="can_focus">False</property>
 							<property name="label" translatable="yes">_Other</property>
 							<property name="use_underline">True</property>
-							<signal name="toggled" handler="cb_menu_daemon_settings" swapped="no"/>
+							<signal name="toggled" handler="cb_menu_sendlimit_other" swapped="no"/>
 						</object>
 					</child>
 					<child>
@@ -727,13 +727,15 @@
 <object class="GtkImage" id="menu-si-recvlimit-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
-	<property name="stock">gtk-go-down</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">go-down</property>
 </object>
 
 <object class="GtkImage" id="menu-si-sendlimit-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
-	<property name="stock">gtk-go-up</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">go-up</property>
 </object>
 
 
