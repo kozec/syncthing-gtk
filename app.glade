@@ -436,20 +436,6 @@
 			<property name="can_focus">False</property>
 		</object>
 	</child>
-
-	<child>
-		<object class="GtkImageMenuItem" id="menu-si-show-id">
-			<property name="visible">True</property>
-			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">Show _ID</property>
-			<property name="use_underline">True</property>
-			<property name="image">menu-si-show-id-image</property>
-			<property name="use_stock">False</property>
-			<property name="sensitive">False</property>
-			<property name="always_show_image">True</property>
-			<signal name="activate" handler="cb_menu_show_id" swapped="no"/>
-		</object>
-	</child>
 	
 	<child>
 		<object class="GtkImageMenuItem" id="menu-si-shutdown">
@@ -553,6 +539,20 @@
 		<object class="GtkSeparatorMenuItem" id="menu-si-separator2">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkImageMenuItem" id="menu-si-show-id">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Show _ID</property>
+			<property name="use_underline">True</property>
+			<property name="image">menu-si-show-id-image</property>
+			<property name="use_stock">False</property>
+			<property name="sensitive">False</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_show_id" swapped="no"/>
 		</object>
 	</child>
 	
