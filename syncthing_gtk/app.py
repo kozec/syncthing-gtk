@@ -259,7 +259,7 @@ class App(Gtk.Application, TimerManager):
 		self.close_connect_dialog()
 		self.display_connect_dialog(_("Starting Syncthing daemon"))
 		# Start daemon
-		self.start_deamon_ui()
+		self.start_deamon()
 	
 	def start_deamon(self):
 		if self.process == None:
