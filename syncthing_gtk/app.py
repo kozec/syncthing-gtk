@@ -806,10 +806,13 @@ class App(Gtk.Application, TimerManager):
 			self.watcher.clear()
 		self.daemon.reconnect()
 	
-	# --- Callbacks ---
-	def cb_exit(self, *a):
+	def quit(self, *a):
 		if self.process != None:
-			if self.config["autokill_daemon"] == 2:	# Ask
+			if IS_WINDOWS:
+				# Always kill subprocess on windows
+				self.process.kill()
+				self.process = None
+			elif self.config["autokill_daemon"] == 2:	# Ask
 				d = Gtk.MessageDialog(
 					self["window"],
 					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -827,7 +830,12 @@ class App(Gtk.Application, TimerManager):
 				d.show_all()
 				return
 			elif self.config["autokill_daemon"] == 1: # Yes
-				self.process.kill()
+				self.process.terminate()
+				self.process = None
+		self.release()
+	
+	# --- Callbacks ---
+	def cb_exit(self, *a):
 		self.quit()
 	
 	def cb_about(self, *a):
@@ -1091,6 +1099,7 @@ class App(Gtk.Application, TimerManager):
 		if response == RESPONSE_SLAIN_DAEMON:
 			if not self.process is None:
 				self.process.terminate()
+				self.process = None
 		if checkbox.get_active():
 			self.config["autokill_daemon"] = (1 if response == RESPONSE_SLAIN_DAEMON else 0)
 		self.process = None
