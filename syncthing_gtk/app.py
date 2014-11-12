@@ -153,6 +153,10 @@ class App(Gtk.Application, TimerManager):
 			self["window"].destroy()
 			self["window"] = w
 			self["window"].connect("delete-event", self.cb_delete_event)
+		elif IS_WINDOWS:
+			# Add border around window-menu button, as Windows user probably
+			# has no idea that it is clickable
+			self["window-menu"].set_relief(Gtk.ReliefStyle.HALF)
 		
 		# Fix for margin arounnd Gtk.Paned handle suddednly missing after
 		# upgrade to GTK 3.14
@@ -686,8 +690,9 @@ class App(Gtk.Application, TimerManager):
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_DEFAULT)
 			self.daemon.request_events()
 		if not self["window"].is_visible():
-			# self["window"].show_all()
 			self["window"].show()
+			if IS_WINDOWS and not self.config["window_position"] is None:
+				self["window"].move(*self.config["window_position"] )
 			if self.connect_dialog != None:
 				self.connect_dialog.show()
 		else:
@@ -697,6 +702,8 @@ class App(Gtk.Application, TimerManager):
 		""" Hides main windows and 'Connecting' dialog, if displayed """
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
+		if IS_WINDOWS:
+			self.config["window_position"] = self["window"].get_position()
 		self["window"].hide()
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
@@ -921,10 +928,13 @@ class App(Gtk.Application, TimerManager):
 		self.restart()
 		GLib.idle_add(self.daemon.restart)
 	
-	# --- Callbacks ---
-	def cb_exit(self, *a):
+	def quit(self, *a):
 		if self.process != None:
-			if self.config["autokill_daemon"] == 2:	# Ask
+			if IS_WINDOWS:
+				# Always kill subprocess on windows
+				self.process.kill()
+				self.process = None
+			elif self.config["autokill_daemon"] == 2:	# Ask
 				d = Gtk.MessageDialog(
 					self["window"],
 					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -942,7 +952,12 @@ class App(Gtk.Application, TimerManager):
 				d.show_all()
 				return
 			elif self.config["autokill_daemon"] == 1: # Yes
-				self.process.kill()
+				self.process.terminate()
+				self.process = None
+		self.release()
+	
+	# --- Callbacks ---
+	def cb_exit(self, *a):
 		self.quit()
 	
 	def cb_about(self, *a):
@@ -1242,6 +1257,7 @@ class App(Gtk.Application, TimerManager):
 		if response == RESPONSE_SLAIN_DAEMON:
 			if not self.process is None:
 				self.process.terminate()
+				self.process = None
 		if checkbox.get_active():
 			self.config["autokill_daemon"] = (1 if response == RESPONSE_SLAIN_DAEMON else 0)
 		self.process = None

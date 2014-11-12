@@ -6,15 +6,8 @@ if __name__ == "__main__":
 	path = "."
 	if not os.path.exists("./app.glade"):
 		# Usually
-		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			path, keytype = _winreg.QueryValueEx(key, "InstallPath")
-			path = str(path)
-		except WindowsError:
-			# This is pretty bad and shouldn't really happen. Just use default path
-			# in that case
-			path = "C:\\Program Files\\SyncthingGTK"
-		pass
+		from syncthing_gtk.tools import get_install_path
+		path = get_install_path()
 	if "-h" in sys.argv or "--help" in sys.argv:
 		print "Usage: %s [-h | [-w] [-s]]" % (sys.argv[0],)
 		print "  -h   Display this help message and exit"
