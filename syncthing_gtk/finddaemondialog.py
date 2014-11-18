@@ -102,7 +102,7 @@ class FindDaemonDialog(EditorDialog):
 		# Create downloader and connect events
 		sd = StDownloader(self.target, tag)
 		sd.connect("error", self.cb_download_error)
-		sd.connect("download-starting", self.cb_download_start)
+		sd.connect("version", self.cb_version)
 		sd.connect("download-progress", self.cb_progress)
 		sd.connect("download-finished", self.cb_extract_start)
 		sd.connect("extraction-progress", self.cb_progress)
@@ -113,7 +113,7 @@ class FindDaemonDialog(EditorDialog):
 		self["pbDownload"].set_visible(True)
 		self["vsyncthing_binary"].set_sensitive(False)
 		self["btBrowse"].set_sensitive(False)
-		sd.start()
+		sd.get_version()
 	
 	def cb_btQuit_clicked(self, *a):
 		""" Handler for 'Quit' button """
@@ -168,8 +168,9 @@ class FindDaemonDialog(EditorDialog):
 		self["vsyncthing_binary"].set_sensitive(True)
 		self["btBrowse"].set_sensitive(True)
 	
-	def cb_download_start(self, downloader, version):
+	def cb_version(self, downloader, version):
 		self["lblDownloadProgress"].set_markup("Downloading %s..." % (version, ))
+		downloader.download()
 	
 	def cb_extract_start(self, *a):
 		self["lblDownloadProgress"].set_markup("Extracting...")

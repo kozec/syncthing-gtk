@@ -24,14 +24,18 @@ class StDownloader(GObject.GObject):
 	sd.connect(...
 	...
 	...
-	# Start download
-	sd.start()
+	# Determine version
+	sd.get_version()
+	
+	# (somewhere in 'version' signal callback) 
+	sd.download()
 	
 	Signals:
-		download-starting(version)
-			emitted after current syncthing version is determined, when
-			download of latest package is starting. Version argument is
-			string with version number beign downloaded.
+		version(version)
+			emitted after current syncthing version is determined.
+			Version argument is string.
+		download-starting()
+			emitted when download of package is starting
 		download-progress(progress)
 			emitted durring download. Progress goes from 0.0 to 1.0
 		download-finished()
@@ -46,7 +50,8 @@ class StDownloader(GObject.GObject):
 	"""
 	
 	__gsignals__ = {
-			b"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"version"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"download-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
 			b"download-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"extraction-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
@@ -64,10 +69,17 @@ class StDownloader(GObject.GObject):
 		GObject.GObject.__init__(self)
 		self.target = target
 		self.platform = platform
+		self.version = None
+		self.dll_url = None
+		self.dll_size = None
 	
-	def start(self):
-		""" Starts download """
-		# Determine latest release
+	def get_version(self):
+		"""
+		Determines latest version and prepares stuff needed for
+		download.
+		Emits 'version' signal on success.
+		Handler for 'version' signal should call download method.
+		"""
 		uri = "https://api.github.com/repos/syncthing/syncthing/releases?per_page=2"
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_latest, None)
@@ -78,37 +90,46 @@ class StDownloader(GObject.GObject):
 	
 	def _cb_read_latest(self, f, result, buffer, *a):
 		# Extract release version from response
-		version, dll_url, dll_size = None, None, None
-		tmpfile = None
 		try:
 			success, data, etag = f.load_contents_finish(result)
 			if not success: raise Exception("Gio download failed")
 			data = json.loads(data)[0]
-			version = data["name"]
+			self.version = data["name"]
 			for asset in data["assets"]:
 				if self.platform in asset["name"]:
-					dll_url = asset["browser_download_url"]
-					dll_size = int(asset["size"])
+					self.dll_url = asset["browser_download_url"]
+					self.dll_size = int(asset["size"])
 					break
 			del f
-			if dll_url is None:
+			if self.dll_url is None:
 				raise Exception("No release to download")
-			suffix = ".%s" % (".".join(dll_url.split(".")[-2:]),)
-			if suffix.endswith(".zip") : suffix = ".zip"
-			tmpfile = tempfile.NamedTemporaryFile(mode="wb",
-				prefix="syncthing-package.", suffix=suffix, delete=False)
 		except Exception, e:
 			print >>sys.stderr, traceback.format_exc()
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
-		
-		f = Gio.File.new_for_uri(dll_url)
-		self.emit("download-starting", version)
-		f.read_async(GLib.PRIORITY_DEFAULT, None, self._cb_open_archive,
-				(tmpfile, dll_size))
+		# Everything is done, emit version signal
+		self.emit("version", self.version)
 	
-	def _cb_open_archive(self, f, result, (tmpfile, dll_size)):
+	
+	def download(self):
+		try:
+			suffix = ".%s" % (".".join(self.dll_url.split(".")[-2:]),)
+			if suffix.endswith(".zip") :
+				suffix = ".zip"	
+			tmpfile = tempfile.NamedTemporaryFile(mode="wb",
+				prefix="syncthing-package.", suffix=suffix, delete=False)
+		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
+			self.emit("error", e, _("Failed to create temporaly file."))
+			return
+		f = Gio.File.new_for_uri(self.dll_url)
+		f.read_async(GLib.PRIORITY_DEFAULT, None, self._cb_open_archive,
+				(tmpfile,))
+		self.emit("download-starting")
+	
+	
+	def _cb_open_archive(self, f, result, (tmpfile,)):
 		stream = None
 		try:
 			stream = f.read_finish(result)
@@ -118,9 +139,9 @@ class StDownloader(GObject.GObject):
 			self.emit("error", e, _("Download failed."))
 			return
 		stream.read_bytes_async(CHUNK_SIZE, GLib.PRIORITY_DEFAULT, None,
-				self._cb_download, (tmpfile, 0, dll_size,))
+				self._cb_download, (tmpfile, 0))
 	
-	def _cb_download(self, stream, result, (tmpfile, downloaded, dll_size)):
+	def _cb_download(self, stream, result, (tmpfile, downloaded)):
 		try:
 			# Get response from async call
 			response = stream.read_bytes_finish(result)
@@ -132,8 +153,8 @@ class StDownloader(GObject.GObject):
 				downloaded += response.get_size()
 				tmpfile.write(response.get_data())
 				stream.read_bytes_async(CHUNK_SIZE, GLib.PRIORITY_DEFAULT, None,
-						self._cb_download, (tmpfile, downloaded, dll_size))
-				self.emit("download-progress", float(downloaded) / float(dll_size))
+						self._cb_download, (tmpfile, downloaded))
+				self.emit("download-progress", float(downloaded) / float(self.dll_size))
 			else:
 				# EOF. Re-open tmpfile as tar and prepare to extract
 				# binary

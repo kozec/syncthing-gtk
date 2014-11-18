@@ -313,13 +313,13 @@ class DownloadSTPage(Page):
 		# Create downloader and connect events
 		self.sd = StDownloader(self.target, tag)
 		self.sd.connect("error", self.on_download_error)
-		self.sd.connect("download-starting", self.on_download_start)
+		self.sd.connect("version", self.on_version)
 		self.sd.connect("download-progress", self.on_progress)
 		self.sd.connect("download-finished", self.on_extract_start)
 		self.sd.connect("extraction-progress", self.on_progress)
 		self.sd.connect("extraction-finished", self.on_extract_finished)
 		# Start downloading
-		self.sd.start()
+		self.sd.get_version()
 	
 	def on_download_error(self, downloader, error, message):
 		"""
@@ -335,8 +335,9 @@ class DownloadSTPage(Page):
 			message, False)
 		return
 	
-	def on_download_start(self, dowloader, version):
+	def on_version(self, dowloader, version):
 		self.version.set_markup("Downloading %s..." % (version, ))
+		dowloader.download()
 	
 	def on_extract_start(self, *a):
 		self.version.set_markup("Extracting...")
