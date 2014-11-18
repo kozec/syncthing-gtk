@@ -55,6 +55,11 @@ class Daemon(GObject.GObject, TimerManager):
 							Daemon.UNEXPECTED for all other cases
 				message:	generated error message
 		
+		config-loaded(config)
+			Emited while connection do daemon is being created, when
+			configuration is loaded from daemon.
+				config:		decoded /rest/config YAML file
+		
 		connection-error (reason, message)
 			Emited if connection to daemon fails.
 				reason:		Daemon.REFUSED if connection is refused and
@@ -208,6 +213,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"config-saved"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
+			b"config-loaded"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
@@ -386,7 +392,11 @@ class Daemon(GObject.GObject, TimerManager):
 			"", ""
 			]).encode("utf-8")
 		# Send it out and wait for response
-		con.get_output_stream().write_all(get_str, None)
+		try:
+			con.get_output_stream().write_all(get_str, None)
+		except Exception, e:
+			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
+			return
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
 			(con, command, epoch, callback, error_callback, callback_data, []))
 	
@@ -504,7 +514,11 @@ class Daemon(GObject.GObject, TimerManager):
 				json_str
 				]).encode("utf-8")
 		# Send it out and wait for response
-		con.get_output_stream().write_all(post_str, None)
+		try:
+			con.get_output_stream().write_all(post_str, None)
+		except Exception, e:
+			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
+			return
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
 			(con, command, data, epoch, callback, error_callback, callback_data, []))
 	
@@ -875,6 +889,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self._rest_request("system", self._syncthing_cb_system)
 			self._request_last_seen()
 			self.check_config()
+			self.emit('config-loaded', config)
 	
 	def _syncthing_cb_config_error(self, exception, command):
 		self.cancel_all()
