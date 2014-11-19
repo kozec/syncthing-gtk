@@ -55,6 +55,7 @@ class RIBar(RevealerClass):
 			self._label = Gtk.Label()
 			self._label.set_size_request(300, -1)
 			self._label.set_markup(label)
+			self._label.set_alignment(0, 0.5)
 			self._label.set_line_wrap(True)
 			self._infobar.get_content_area().add(self._label)
 		# Buttons
