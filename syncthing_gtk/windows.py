@@ -9,7 +9,7 @@ from syncthing_gtk import windows
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 from gi.repository import Gio, GLib, GObject
-import os, codecs, msvcrt, win32pipe
+import os, codecs, msvcrt, win32pipe, _winreg
 
 def fix_localized_system_error_messages():
 	"""
@@ -91,3 +91,83 @@ class WinPopenReader:
 		
 		def get_data(self):
 			return self._data
+
+def WinConfiguration():
+	from syncthing_gtk.configuration import _Configuration as Configuration
+	from syncthing_gtk.configuration import serializer
+	class _WinConfiguration(Configuration):
+		"""
+		Configuration implementation for Windows - stores values
+		in registry
+		"""
+		
+		#@ Overrides
+		def load(self):
+			if os.path.exists(self.get_config_file()):
+				# Copy file-based cofiguration to registry and remove
+				# configuration folder
+				#
+				# TODO: Remove this later
+				print "Note: Converting old configuration to registry..."
+				Configuration.load(self)
+				self.convert_values()
+				self.check_values()
+				self.save()
+				try:
+					os.unlink(self.get_config_file())
+					try:
+						os.rmdir(self.get_config_dir())
+					except Exception, e:
+						# May happen, no problem here
+						pass
+				except Exception, e:
+					# Shouldn't happen, report problem here
+					print >>sys.stderr, "Warning: Failed to remove old config file"
+					print >>sys.stderr, e
+				return
+			self.values = {}
+			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			for key in Configuration.REQUIRED_KEYS:
+				tp, trash = Configuration.REQUIRED_KEYS[key]
+				try:
+					self.values[key] = self._read(r, key, tp)
+				except WindowsError:
+					# Not found
+					pass
+			_winreg.CloseKey(r)
+		
+		#@ Overrides
+		def save(self):
+			r = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			for key in Configuration.REQUIRED_KEYS:
+				tp, trash = Configuration.REQUIRED_KEYS[key]
+				value = self.values[key]
+				self._store(r, key, tp, value)
+			_winreg.CloseKey(r)
+		
+		def _store(self, r, name, tp, value):
+			""" Stores value in registry, handling special types """
+			if tp in (unicode, str):
+				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, str(value))
+			elif tp in (int, bool):
+				_winreg.SetValueEx(r, name, 0, _winreg.REG_DWORD, int(value))
+			elif tp in (list, tuple):
+				_winreg.SetValueEx(r, "%s_size" % (name,), 0, _winreg.REG_DWORD, len(value))
+				for i in xrange(0, len(value)):
+					self._store(r, "%s_%s" % (name, i), type(value[i]), value[i])
+			else:
+				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, serializer(value))
+		
+		def _read(self, r, name, tp):
+			""" Reads value from registry, handling special types """
+			if tp in (list, tuple):
+				size, trash = _winreg.QueryValueEx(r, "%s_size" % (name,))
+				value = []
+				for i in xrange(0, size):
+					value.append(self._read(r, "%s_%s" % (name, i), None))
+				return value
+			else:
+				value, keytype = _winreg.QueryValueEx(r, name)
+				return value
+		
+	return _WinConfiguration
