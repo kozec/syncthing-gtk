@@ -11,6 +11,7 @@ from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
+from syncthing_gtk.tools import can_upgrade_binary
 import os, sys, socket, random, string, traceback, platform
 from xml.dom import minidom
 
@@ -265,6 +266,11 @@ class FindDaemonPage(Page):
 					print "FOUND"
 					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
 					self.parent.config["syncthing_binary"] = bin_path
+					if not can_upgrade_binary(bin_path):
+						# Don't try enable autoupdate if binary is in
+						# non-writable location (autoupdate is enabled
+						# by default on Windows only)
+						self.parent.config["st_autoupdate"] = False
 					self.parent.set_page_complete(self, True)
 					self.label.set_markup(
 							_("<b>Syncthing daemon binary found.</b>") +
@@ -313,13 +319,13 @@ class DownloadSTPage(Page):
 		# Create downloader and connect events
 		self.sd = StDownloader(self.target, tag)
 		self.sd.connect("error", self.on_download_error)
-		self.sd.connect("download-starting", self.on_download_start)
+		self.sd.connect("version", self.on_version)
 		self.sd.connect("download-progress", self.on_progress)
 		self.sd.connect("download-finished", self.on_extract_start)
 		self.sd.connect("extraction-progress", self.on_progress)
 		self.sd.connect("extraction-finished", self.on_extract_finished)
 		# Start downloading
-		self.sd.start()
+		self.sd.get_version()
 	
 	def on_download_error(self, downloader, error, message):
 		"""
@@ -335,8 +341,9 @@ class DownloadSTPage(Page):
 			message, False)
 		return
 	
-	def on_download_start(self, dowloader, version):
+	def on_version(self, dowloader, version):
 		self.version.set_markup("Downloading %s..." % (version, ))
+		dowloader.download()
 	
 	def on_extract_start(self, *a):
 		self.version.set_markup("Extracting...")

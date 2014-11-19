@@ -78,6 +78,13 @@ class RIBar(RevealerClass):
 	def _cb_response(self, ib, response_id):
 		self.emit("response", response_id)
 	
+	def disable_close_button(self):
+		self._infobar.set_show_close_button(False)
+	
+	def add_widget(self, widget, expand=False, fill=True):
+		self._infobar.get_content_area().pack_start(widget, expand, fill, 1)
+		widget.show()
+	
 	def add_button(self, button, response_id):
 		self._infobar.add_action_widget(button, response_id)
 		self._infobar.show_all()

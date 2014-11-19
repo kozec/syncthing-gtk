@@ -9,9 +9,14 @@ or other ~/.config equivalent
 
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
+from datetime import datetime
+import dateutil.parser
 import os, sys, json
 
-class Configuration(object):
+
+LONG_AGO = datetime.fromtimestamp(1)
+
+class _Configuration(object):
 	"""
 	Configuration object implementation.
 	Use like dict to save / access values
@@ -30,6 +35,8 @@ class Configuration(object):
 		"notification_for_update"	: (bool, True),
 		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),
+		"st_autoupdate"				: (bool, False),
+		"last_updatecheck"			: (datetime, LONG_AGO),
 		"window_position"			: (tuple, None),
 	}
 	
@@ -38,37 +45,51 @@ class Configuration(object):
 		"syncthing_binary"			: (str, "C:\\Program Fies\\Syncthing\\syncthing.exe"),
 		"autokill_daemon"			: (int, 1),
 		"use_old_header"			: (bool, True),
+		"st_autoupdate"				: (bool, True),
 	}
 	
 	def __init__(self):
-		self._load()
+		try:
+			self.load()
+		except Exception, e:
+			print >>sys.stderr, "Warning: Failed to load configuration; Creating new one"
+			print >>sys.stderr, "  exception was:", e
+			self.create()
+		
+		# Convert objects serialized as string back to object
+		self.convert_values()
+		# Check if everything is in place, add default value
+		# where value is missing
+		if self.check_values():
+			# check_values returns True if any default value is added
+			print "SAVE"
+			self.save()
 	
-	def _load(self):
-		confdir = os.path.join(get_config_dir(), "syncthing-gtk")
-		if not os.path.exists(confdir):
+	def load(self):
+		# Check & create directory
+		if not os.path.exists(self.get_config_dir()):
 			try:
-				os.makedirs(confdir)
+				os.makedirs(self.get_config_dir())
 			except Exception, e:
 				print >>sys.stderr, "Fatal: Cannot create configuration directory"
 				print >>sys.stderr, e
 				sys.exit(1)
-		self._conffile = os.path.join(confdir, "config.json")
-		try:
-			self._values = json.loads(file(self._conffile, "r").read())
-			if self._check_values():
-				self._save()
-		except Exception, e:
-			print >>sys.stderr, "Warning: Failed to load configuration; Creating new one"
-			print >>sys.stderr, "  exception was:", e
-			self._create()
+		# Load json
+		self.values = json.loads(file(self.get_config_file(), "r").read())
 	
-	def _create(self):
+	def get_config_dir(self):
+		return os.path.join(get_config_dir(), "syncthing-gtk")
+	
+	def get_config_file(self):
+		return os.path.join(self.get_config_dir(), "config.json")
+	
+	def create(self):
 		""" Creates new, empty configuration """
-		self._values = {}
-		self._check_values()
-		self._save()
+		self.values = {}
+		self.check_values()
+		self.save()
 	
-	def _check_values(self):
+	def check_values(self):
 		"""
 		Check if all required values are in place and fill by default
 		whatever is missing.
@@ -78,39 +99,79 @@ class Configuration(object):
 		needs_to_save = False
 		for key in Configuration.REQUIRED_KEYS:
 			tp, default = Configuration.REQUIRED_KEYS[key]
-			if not self._check_type(key, tp):
+			if not self.check_type(key, tp):
 				if IS_WINDOWS and key in Configuration.WINDOWS_OVERRIDE:
 					tp, default = Configuration.WINDOWS_OVERRIDE[key]
-				self._values[key] = default
+				self.values[key] = default
 				needs_to_save = True
 		return needs_to_save
 	
-	def _check_type(self, key, tp):
-		""" Returns True if value is set and type match """
-		if not key in self._values:
-			return False
-		if type(self._values[key]) in (str, unicode) and tp in (str, unicode):
-			# This case is little special
-			return True
-		return type(self._values[key]) == tp
+	def convert_values(self):
+		"""
+		Converts all objects serialized as string back to object
+		"""
+		for key in Configuration.REQUIRED_KEYS:
+			if key in self.values:
+				tp, trash = Configuration.REQUIRED_KEYS[key]
+				try:
+					if tp == datetime and type(self.values[key]) in (str, unicode):
+						# Parse datetime
+						self.values[key] = dateutil.parser.parse(self.values[key])
+					elif tp == tuple and type(self.values[key]) == list:
+						# Convert list to tuple
+						self.values[key] = tuple(self.values[key])
+					elif tp == bool and type(self.values[key]) in (int, long):
+						# Convert bools
+						self.values[key] = bool(self.values[key])
+				except Exception, e:
+					print >>sys.stderr, "Warning: Failed to parse configuration value '%s'. Using default." % (key,)
+					print >>sys.stderr, e
+					# Value will be re-created by check_values method
+					del self.values[key]
 	
-	def _save(self):
+	def check_type(self, key, tp):
+		"""
+		Returns True if value is set and type match.
+		Auto-converts objects serialized as string back to objects
+		"""
+		if not key in self.values:
+			return False
+		# Handle special cases
+		if type(self.values[key]) in (str, unicode) and tp in (str, unicode):
+			return True
+		# Return value
+		return type(self.values[key]) == tp
+	
+	def save(self):
 		""" Saves configuration file """
-		file(self._conffile, "w").write(json.dumps(
-			self._values, sort_keys=True, indent=4, separators=(',', ': ')
+		file(self.get_config_file(), "w").write(json.dumps(
+			self.values, sort_keys=True, indent=4,
+			separators=(',', ': '), default=serializer
 			))
 	
 	def __iter__(self):
-		for k in self._values:
+		for k in self.values:
 			yield k
 	
 	def __getitem__(self, key):
-		return self._values[key]
+		return self.values[key]
 	
 	def __setitem__(self, key, value):
-		self._values[key] = value
-		self._save()
+		self.values[key] = value
+		self.save()
 	
 	def __contains__(self, key):
-		""" Returns true if there is such widget """
-		return key in self._values
+		""" Returns true if there is such value """
+		return key in self.values
+
+def serializer(obj):
+	""" Handles serialization where json can't do it by itself """
+	if hasattr(obj, "isoformat"):
+		# datetime object
+		return obj.isoformat()
+	raise TypeError("Can't serialize object of type %s" % (type(obj),))
+
+Configuration = _Configuration
+if IS_WINDOWS:
+	from syncthing_gtk.windows import WinConfiguration
+	Configuration = WinConfiguration()
