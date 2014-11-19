@@ -154,12 +154,6 @@ class App(Gtk.Application, TimerManager):
 				# Do not use the HeaderBar.
 				pass
 		
-		# Fix for margin arounnd Gtk.Paned handle suddednly missing after
-		# upgrade to GTK 3.14
-		if (Gtk.get_major_version(), Gtk.get_minor_version()) > (3, 12):
-			self["folderlist"].props.margin_right = 6
-			self["devicelist"].props.margin_left = 6
-		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
 				 ("menu-si-recvlimit", self.cb_menu_recvlimit)]
