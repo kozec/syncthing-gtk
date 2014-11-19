@@ -130,17 +130,28 @@ class App(Gtk.Application, TimerManager):
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu-button"].set_sensitive(False)
-		if THE_HELL or not self.use_headerbar:
-			# If running under Ubuntu, do not use a HeaderBar.
-			# The Ubuntu default GTK engine handles windows with HeaderBar in a weird way.
-			# This can be also forced by parameter '-s' in command line.
+		if not self.use_headerbar:
+			# Configuration orders not use the HeaderBar or
+			# parameter '-s' on the command line is active.
 			pass
 		else:
-			# Normal window creation, including the HeaderBar.
-			# Destroy the legacy bar.
-			self.set_app_menu(self["app-menu"])
-			self["window"].set_titlebar(self["header"])
-			self["bar_the_hell"].destroy()
+			# Choose by platform ...
+			if THE_HELL:
+				# If running under Ubuntu, do not use a HeaderBar.
+				# The Ubuntu default GTK engine handles windows with HeaderBar in a weird way.
+				pass
+			elif IS_WINDOWS:
+				# Do not use the HeaderBar.
+				pass
+			elif IS_GNOME:
+				# Normal window creation, including the HeaderBar.
+				# Destroy the legacy bar.
+				self.set_app_menu(self["app-menu"])
+				self["window"].set_titlebar(self["header"])
+				self["bar_the_hell"].destroy()
+			else:
+				# Do not use the HeaderBar.
+				pass
 		
 		# Fix for margin arounnd Gtk.Paned handle suddednly missing after
 		# upgrade to GTK 3.14
