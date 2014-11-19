@@ -61,7 +61,11 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide and self.config["minimize_on_start"]
 		self.process = None
+		# Check if configuration orders us not use the HeaderBar
+		# or parameter '-s' on the command line is active
+		# or the platform is Unity.
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"] and not THE_HELL
+		
 		self.watcher = None
 		self.daemon = None
 		self.notifications = None
@@ -84,6 +88,7 @@ class App(Gtk.Application, TimerManager):
 	def do_startup(self, *a):
 		Gtk.Application.do_startup(self, *a)
 		self.setup_widgets()
+		self.setup_actions()
 		self.setup_statusicon()
 		if self.setup_connection():
 			self.daemon.reconnect()
@@ -99,67 +104,41 @@ class App(Gtk.Application, TimerManager):
 			if not self.daemon is None:
 				self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 		self.first_activation = False
-	
+
+	def setup_actions(self):
+		def add_simple_action(name, callback):
+			action = Gio.SimpleAction.new(name, None)
+			action.connect('activate', callback)
+			self.add_action(action)
+			return action
+		add_simple_action('webui', self.cb_menu_webui)
+		add_simple_action('daemon_output', self.cb_menu_daemon_output).set_enabled(False)
+		add_simple_action('preferences', self.cb_menu_ui_settings)
+		add_simple_action('about', self.cb_about)
+		add_simple_action('quit', self.cb_exit)
+
+		add_simple_action('add_folder', self.cb_menu_add_folder)
+		add_simple_action('add_device', self.cb_menu_add_device)
+		add_simple_action('daemon_preferences', self.cb_menu_daemon_settings)
+		add_simple_action('show_id', self.cb_menu_show_id)
+		add_simple_action('daemon_shutdown', self.cb_menu_shutdown)
+		add_simple_action('daemon_restart', self.cb_menu_restart)
+
 	def setup_widgets(self):
 		# Load glade file
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)
 		# Setup window
-		self["edit-menu"].set_sensitive(False)
-		if THE_HELL or not self.use_headerbar:
-			# Modify window if running under Ubuntu; Ubuntu default GTK
-			# engine handles windows with header in... weird way.
-			# This can be also forced by -s parameter in command line.
-			
-			# Unparent some stuff
-			for u in ("content", "window-menu-icon"):
-				self[u].get_parent().remove(self[u])
-			
-			# Create window
-			w = Gtk.Window()
-			w.set_size_request(*self["window"].get_size_request())
-			w.set_default_size(*self["window"].get_default_size())
-			w.set_icon(self["window"].get_icon())
-			w.set_has_resize_grip(True)
-			w.set_resizable(True)
-			
-			# Create toolbar
-			bar = Gtk.Toolbar()
-			bar.get_style_context().add_class(Gtk.STYLE_CLASS_PRIMARY_TOOLBAR)
-			window_menu = Gtk.ToolButton()
-			window_menu.set_icon_widget(self["window-menu-icon"])
-			window_menu.connect("clicked", self.cb_menu_popup, self["window-menu-menu"])
-			middle_item = Gtk.ToolItem()
-			middle_label = Gtk.Label()
-			middle_item.set_expand(True)
-			middle_label.set_label("")
-			middle_item.add(middle_label)
-			edit_menu = Gtk.ToolButton.new(Gtk.Image.new_from_icon_name("emblem-system-symbolic", 1))
-			edit_menu.connect("clicked", self.cb_menu_popup, self["edit-menu-menu"])
-			self["server-name"] = middle_label
-			
-			# Pack & set
-			bar.add(window_menu)
-			bar.add(middle_item)
-			bar.add(edit_menu)
-			self["content"].pack_start(bar, False, False, 0)
-			self["content"].reorder_child(bar, 0)
-			self["content"].show_all()
-			w.add(self["content"])
-			self["window"].destroy()
-			self["window"] = w
-			self["window"].connect("delete-event", self.cb_delete_event)
-		elif IS_WINDOWS:
-			# Add border around window-menu button, as Windows user probably
-			# has no idea that it is clickable
-			self["window-menu"].set_relief(Gtk.ReliefStyle.HALF)
-		
-		# Fix for margin arounnd Gtk.Paned handle suddednly missing after
-		# upgrade to GTK 3.14
-		if (Gtk.get_major_version(), Gtk.get_minor_version()) > (3, 12):
-			self["folderlist"].props.margin_right = 5
-			self["devicelist"].props.margin_left = 5
+		self["edit-menu-button"].set_sensitive(False)
+
+		if self.use_headerbar:
+			# Window creation, including the HeaderBar.
+			# Destroy the legacy bar.
+			self.set_app_menu(self["app-menu"])
+			self["window"].set_titlebar(self["header"])
+			self["bar_the_hell"].destroy()
+			self["separator_the_hell"].destroy()
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
@@ -243,9 +222,9 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
 	
-	def start_deamon_ui(self):
+	def start_daemon_ui(self):
 		"""
-		Does same thing as start_deamon.
+		Does same thing as start_daemon.
 		Additionaly displays 'Starting Daemon' message and swaps
 		menu items in notification icon menu.
 		"""
@@ -256,21 +235,21 @@ class App(Gtk.Application, TimerManager):
 		self.close_connect_dialog()
 		self.display_connect_dialog(_("Starting Syncthing daemon"))
 		# Start daemon
-		self.start_deamon()
-	
-	def start_deamon(self):
-		if self.process == None:
+		self.start_daemon()
+
+	def start_daemon(self):
+		if self.process is None:
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
 			self.process.start()
-			self["menu-daemon-output"].set_sensitive(True)
+			self.lookup_action('daemon_output').set_enabled(True)
 	
 	def cb_syncthing_connected(self, *a):
 		self.clear()
 		self.close_connect_dialog()
 		self.set_status(True)
-		self["edit-menu"].set_sensitive(True)
+		self["edit-menu-button"].set_sensitive(True)
 		self["menu-si-shutdown"].set_sensitive(True)
 		self["menu-si-show-id"].set_sensitive(True)
 		self["menu-si-recvlimit"].set_sensitive(True)
@@ -310,7 +289,7 @@ class App(Gtk.Application, TimerManager):
 					elif self.config["autostart_daemon"] == 1:
 						# ... or already gave persmission ...
 						self.display_connect_dialog(_("Starting Syncthing daemon"))
-						self.start_deamon()
+						self.start_daemon()
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
@@ -442,8 +421,9 @@ class App(Gtk.Application, TimerManager):
 			device.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
 			device.invert_header(True)
 			device.set_color_hex(COLOR_OWN_DEVICE)
-			self["header"].set_subtitle(device.get_title())
-			if "server-name" in self:
+			if self.use_headerbar:
+				self["header"].set_subtitle(device.get_title())
+			else:
 				self["server-name"].set_markup("<b>%s</b>" % (device.get_title(),))
 			# Modify values
 			device.clear_values()
@@ -846,7 +826,7 @@ class App(Gtk.Application, TimerManager):
 		self.folders = {}
 	
 	def restart(self):
-		self["edit-menu"].set_sensitive(False)
+		self["edit-menu-button"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
 		self["menu-si-recvlimit"].set_sensitive(False)
@@ -1177,7 +1157,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_resume(self, event, *a):
 		""" Handler for 'Resume' menu item """
-		self.start_deamon_ui()
+		self.start_daemon_ui()
 	
 	def cb_menu_webui(self, *a):
 		""" Handler for 'Open WebUI' menu item """
@@ -1245,7 +1225,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_connect_dialog_response(self, dialog, response, checkbox):
 		# Common for 'Daemon is not running' and 'Connecting to daemon...'
 		if response == RESPONSE_START_DAEMON:
-			self.start_deamon_ui()
+			self.start_daemon_ui()
 			if not checkbox is None and checkbox.get_active():
 				self.config["autostart_daemon"] = 1
 		else: # if response <= 0 or response == RESPONSE_QUIT:
