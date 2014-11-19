@@ -25,9 +25,6 @@ COLOR_FOLDER_STOPPED	= "#87000B"
 COLOR_NEW				= "#A0A0A0"
 SI_FRAMES				= 4 # Number of animation frames for status icon
 
-# Infobar position
-RIBAR_POSITION = 0 if not THE_HELL else 1
-
 # Response IDs
 RESPONSE_RESTART		= 256
 RESPONSE_FIX_FOLDER_ID	= 257
@@ -64,7 +61,7 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide and self.config["minimize_on_start"]
 		self.process = None
-		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
+		self.use_headerbar = use_headerbar and not self.config["use_old_header"] and not THE_HELL
 		self.watcher = None
 		self.daemon = None
 		self.notifications = None
@@ -348,7 +345,7 @@ class App(Gtk.Application, TimerManager):
 				)
 			self["infobar"] = r
 			self["content"].pack_start(r, False, False, 0)
-			self["content"].reorder_child(r, RIBAR_POSITION)
+			self["content"].reorder_child(r, 0 if self.use_headerbar else 1)
 			r.connect("close", self.cb_infobar_close)
 			r.connect("response", self.cb_infobar_response)
 			r.show()
@@ -379,6 +376,7 @@ class App(Gtk.Application, TimerManager):
 			self["%s-other" % (limitmenu,)].set_active(other)
 		
 	def cb_syncthing_error(self, daemon, message):
+		""" Daemon argument is not used """
 		if message in self.error_messages:
 			# Same error is already displayed
 			print >>sys.stderr, "(repeated)", message
@@ -600,7 +598,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def show_error_box(self, ribar, additional_data={}):
 		self["content"].pack_start(ribar, False, False, 0)
-		self["content"].reorder_child(ribar, RIBAR_POSITION)
+		self["content"].reorder_child(ribar, 0 if self.use_headerbar else 1)
 		ribar.connect("close", self.cb_infobar_close)
 		ribar.connect("response", self.cb_infobar_response, additional_data)
 		ribar.show()
