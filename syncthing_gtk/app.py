@@ -64,7 +64,18 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide and self.config["minimize_on_start"]
 		self.process = None
+		# Check if configuration orders us not use the HeaderBar or
+		# parameter '-s' on the command line is active.
 		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
+
+		# Only use HeaderBar under GNOME and WINDOWS.
+		#if not IS_GNOME and not IS_WINDOWS:
+		#	self.use_headerbar = False
+
+		# Only use HeaderBar under GNOME.
+		if not IS_GNOME:
+			self.use_headerbar = False
+
 		self.watcher = None
 		self.daemon = None
 		self.notifications = None
@@ -130,29 +141,14 @@ class App(Gtk.Application, TimerManager):
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu-button"].set_sensitive(False)
-		if not self.use_headerbar:
-			# Configuration orders not use the HeaderBar or
-			# parameter '-s' on the command line is active.
-			pass
-		else:
-			# Choose by platform ...
-			if THE_HELL:
-				# If running under Ubuntu, do not use a HeaderBar.
-				# The Ubuntu default GTK engine handles windows with HeaderBar in a weird way.
-				pass
-			elif IS_WINDOWS:
-				# Do not use the HeaderBar.
-				pass
-			elif IS_GNOME:
-				# Normal window creation, including the HeaderBar.
-				# Destroy the legacy bar.
-				self.set_app_menu(self["app-menu"])
-				self["window"].set_titlebar(self["header"])
-				self["bar_the_hell"].destroy()
-				self["separator_the_hell"].destroy()
-			else:
-				# Do not use the HeaderBar.
-				pass
+
+		if self.use_headerbar:
+			# Window creation, including the HeaderBar.
+			# Destroy the legacy bar.
+			self.set_app_menu(self["app-menu"])
+			self["window"].set_titlebar(self["header"])
+			self["bar_the_hell"].destroy()
+			self["separator_the_hell"].destroy()
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
@@ -434,8 +430,9 @@ class App(Gtk.Application, TimerManager):
 			device.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
 			device.invert_header(True)
 			device.set_color_hex(COLOR_OWN_DEVICE)
-			self["header"].set_subtitle(device.get_title())
-			if THE_HELL or not self.use_headerbar:
+			if self.use_headerbar:
+				self["header"].set_subtitle(device.get_title())
+			else:
 				self["server-name"].set_markup("<b>%s</b>" % (device.get_title(),))
 			# Modify values
 			device.clear_values()
