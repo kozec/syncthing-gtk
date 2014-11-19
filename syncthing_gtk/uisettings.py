@@ -10,14 +10,15 @@ from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
 from syncthing_gtk.tools import IS_WINDOWS, is_ran_on_startup, \
-		set_run_on_startup, get_executable
+		set_run_on_startup, get_executable, get_config_dir
 import os
 
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vnotification_for_update",
-		"vnotification_for_folder", "vnotification_for_error"
+		"vnotification_for_folder", "vnotification_for_error",
+		"vst_autoupdate", "vsyncthing_binary",
 	]
 
 class UISettingsDialog(EditorDialog):
@@ -28,6 +29,10 @@ class UISettingsDialog(EditorDialog):
 	
 	def run(self):
 		return self["dialog"].run()
+	
+	def cb_btBrowse_clicked(self, *a):
+		""" Display file browser dialog to browse for syncthing binary """
+		browse_for_binary(self["editor"], self, "vsyncthing_binary")
 	
 	#@Overrides
 	def load_data(self):
@@ -99,7 +104,9 @@ class UISettingsDialog(EditorDialog):
 	#@Overrides
 	def on_data_loaded(self):
 		self.values = self.config
-		self.checks = {}
+		self.checks = {
+			"vsyncthing_binary" : lambda p : os.path.isfile(p) and os.access(p, os.X_OK)
+		}
 		return self.display_values(VALUES)
 	
 	#@Overrides
@@ -125,3 +132,46 @@ class UISettingsDialog(EditorDialog):
 				self.app.notifications = None
 			if self.app.config["notification_for_update"] or self.app.config["notification_for_error"]:
 				self.app.notifications = Notifications(self.app, self.app.daemon)
+
+def browse_for_binary(parent_window, settings_dialog, value):
+	"""
+	Display file browser dialog to browse for syncthing binary.
+	Used here and by FindDaemonDialog as well.
+	"""
+	# Prepare dialog
+	d = Gtk.FileChooserDialog(
+		_("Browse for Syncthing binary"),
+		parent_window,
+		Gtk.FileChooserAction.OPEN,
+		(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+		Gtk.STOCK_OK, Gtk.ResponseType.OK))
+	# Prepare filter
+	f = Gtk.FileFilter()
+	if IS_WINDOWS:
+		f.set_name("Executables")
+		f.add_pattern("*.exe")
+	else:
+		f.set_name("Binaries")
+		f.add_mime_type("application/x-executable")
+		f.add_mime_type("application/x-shellscript")
+	d.add_filter(f)
+	# Set default path
+	confdir = os.path.join(get_config_dir(), "syncthing")
+	prevvalue = str(settings_dialog[value].get_text()).strip()
+	if prevvalue and os.path.exists(os.path.split(prevvalue)[0]):
+		d.set_current_folder(os.path.split(prevvalue)[0])
+	elif os.path.exists(confdir):
+		d.set_current_folder(confdir)
+	elif IS_WINDOWS:
+		if "CommonProgramFiles" in os.environ:
+			d.set_current_folder(os.environ["CommonProgramFiles"])
+		elif os.path.exists("C:\\Program Files"):
+			d.set_current_folder("C:\\Program Files")
+		# Else nothing, just start whatever you like
+	else:
+		d.set_current_folder("/usr/bin")
+	
+	# Get response
+	if d.run() == Gtk.ResponseType.OK:
+		settings_dialog[value].set_text(d.get_filename())
+	d.destroy()

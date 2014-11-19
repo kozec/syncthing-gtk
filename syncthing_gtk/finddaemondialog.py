@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import EditorDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
+from syncthing_gtk.uisettings import browse_for_binary
 import os, platform
 _ = lambda (a) : a
 
@@ -55,28 +56,7 @@ class FindDaemonDialog(EditorDialog):
 	### UI callbacks
 	def cb_btBrowse_clicked(self, *a):
 		""" Display file browser dialog to browse for syncthing binary """
-		# Prepare dialog
-		d = Gtk.FileChooserDialog(
-			_("Browse for Syncthing binary"),
-			self["editor"],
-			Gtk.FileChooserAction.OPEN,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			Gtk.STOCK_OK, Gtk.ResponseType.OK))
-		# Prepare filter
-		f = Gtk.FileFilter()
-		if IS_WINDOWS:
-			f.set_name("Executables")
-			f.add_pattern("*.exe")
-		else:
-			f.set_name("Binaries")
-			f.add_mime_type("application/x-executable")
-			f.add_mime_type("application/x-shellscript")
-		d.add_filter(f)
-        
-        # Get response
-		if d.run() == Gtk.ResponseType.OK:
-			self["vsyncthing_binary"].set_text(d.get_filename())
-		d.destroy()
+		browse_for_binary(self["editor"], self, "vsyncthing_binary")
 	
 	def cb_btDownload_clicked(self, *a):
 		"""
@@ -131,9 +111,7 @@ class FindDaemonDialog(EditorDialog):
 	#@Overrides
 	def on_data_loaded(self):
 		self.values = self.config
-		self.checks = {
-			"vsyncthing_binary" : lambda p : os.path.isfile(p) and os.access(p, os.X_OK)
-			}
+		self.checks = {}
 		return self.display_values(VALUES)
 	
 	#@Overrides

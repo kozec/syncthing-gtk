@@ -9,7 +9,12 @@ or other ~/.config equivalent
 
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
+from datetime import datetime
+import dateutil.parser
 import os, sys, json
+
+
+LONG_AGO = datetime.fromtimestamp(1)
 
 class Configuration(object):
 	"""
@@ -30,6 +35,8 @@ class Configuration(object):
 		"notification_for_update"	: (bool, True),
 		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),
+		"st_autoupdate"				: (bool, False),
+		"last_updatecheck"			: (datetime, LONG_AGO),
 		"window_position"			: (tuple, None),
 	}
 	
@@ -38,6 +45,7 @@ class Configuration(object):
 		"syncthing_binary"			: (str, "C:\\Program Fies\\Syncthing\\syncthing.exe"),
 		"autokill_daemon"			: (int, 1),
 		"use_old_header"			: (bool, True),
+		"st_autoupdate"				: (bool, True),
 	}
 	
 	def __init__(self):
@@ -54,7 +62,9 @@ class Configuration(object):
 				sys.exit(1)
 		self._conffile = os.path.join(confdir, "config.json")
 		try:
+			# Load json
 			self._values = json.loads(file(self._conffile, "r").read())
+			# Parse objects serialized as string
 			if self._check_values():
 				self._save()
 		except Exception, e:
@@ -86,18 +96,33 @@ class Configuration(object):
 		return needs_to_save
 	
 	def _check_type(self, key, tp):
-		""" Returns True if value is set and type match """
+		"""
+		Returns True if value is set and type match.
+		Auto-converts objects serialized as string back to objects
+		"""
 		if not key in self._values:
 			return False
+		# Handle special cases
 		if type(self._values[key]) in (str, unicode) and tp in (str, unicode):
-			# This case is little special
 			return True
+		# Parse objects
+		try:
+			if type(self._values[key]) in (str, unicode) and tp == datetime:
+				# Parse datetime
+				self._values[key] = dateutil.parser.parse(self._values[key])
+				return True
+		except Exception, e:
+			print >>sys.stderr, "Warning: Failed to parse configuration value '%s'. Using default." % (key,)
+			print >>sys.stderr, e
+			return False
+		# Return value
 		return type(self._values[key]) == tp
 	
 	def _save(self):
 		""" Saves configuration file """
 		file(self._conffile, "w").write(json.dumps(
-			self._values, sort_keys=True, indent=4, separators=(',', ': ')
+			self._values, sort_keys=True, indent=4,
+			separators=(',', ': '), default=serializer
 			))
 	
 	def __iter__(self):
@@ -114,3 +139,10 @@ class Configuration(object):
 	def __contains__(self, key):
 		""" Returns true if there is such widget """
 		return key in self._values
+
+def serializer(obj):
+	""" Handles serialization where json can't do it by itself """
+	if hasattr(obj, "isoformat"):
+		# datetime object
+		return obj.isoformat()
+	raise TypeError("Can't serialize object of type %s" % (type(obj),))
