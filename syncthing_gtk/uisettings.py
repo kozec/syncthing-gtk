@@ -132,6 +132,8 @@ class UISettingsDialog(EditorDialog):
 				self.app.notifications = None
 			if self.app.config["notification_for_update"] or self.app.config["notification_for_error"]:
 				self.app.notifications = Notifications(self.app, self.app.daemon)
+		# Restart or cancel updatecheck
+		self.app.check_for_upgrade()
 
 def browse_for_binary(parent_window, settings_dialog, value):
 	"""

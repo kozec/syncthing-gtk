@@ -9,7 +9,8 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gio, Gdk
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
-import os, webbrowser, sys, pprint, re
+from datetime import datetime
+import os, webbrowser, sys, pprint, shutil, re
 
 _ = lambda (a) : a
 
@@ -40,6 +41,8 @@ RESPONSE_SPARE_DAEMON	= 273
 # RI's
 REFRESH_INTERVAL_DEFAULT	= 1
 REFRESH_INTERVAL_TRAY		= 5
+
+UPDATE_CHECK_INTERVAL = 12 * 60 * 60
 
 # Speed values in outcoming/incoming speed limit menus
 SPEED_LIMIT_VALUES = [ 10, 25, 50, 75, 100, 200, 500, 750, 1000, 2000, 5000 ]
@@ -269,6 +272,132 @@ class App(Gtk.Application, TimerManager):
 			self.process.start()
 			self["menu-daemon-output"].set_sensitive(True)
 	
+	def check_for_upgrade(self, *a):
+		self.cancel_timer("updatecheck")
+		if not self.config["st_autoupdate"]:
+			# Disabled, don't even bother
+			return
+		if self.process == None:
+			# Upgrading if executable is not launched by Syncthing-GTK
+			# may fail in too many ways.
+			return
+		if (datetime.now() - self.config["last_updatecheck"]).total_seconds() < UPDATE_CHECK_INTERVAL:
+			# Too soon, check again in 10 minutes
+			self.timer("updatecheck", 60 * 10, self.check_for_upgrade)
+			return
+		# Prepare
+		target = "%s.new" % (self.config["syncthing_binary"],)
+		target_dir = os.path.split(target)[0]
+		# Check for write access to parent directory
+		if not can_upgrade_binary(self.config["syncthing_binary"]):
+			self.cb_syncthing_error(None, "Warning: No write access to daemon binary; Skipping update check.")
+			return
+		# Determine platform
+		suffix, tag = StDownloader.determine_platform()
+		if suffix is None or tag is None:
+			# Shouldn't really happen at this point
+			print >>sys.stderr, "Warning: Cannot update: Unsupported platform"
+			return
+		
+		# Define callbacks
+		def cb_cu_error(*a):
+			# Version check failed. Try it again later
+			self.timer("updatecheck", 1 * 60 * 60, self.check_for_upgrade)
+		
+		def cb_cu_progress(sd, progress, pb):
+			pb.set_fraction(progress)
+		
+		def cb_cu_extract_start(sd, l, pb):
+			l.set_text(_("Extracting update..."))
+			pb.set_fraction(0.0)
+		
+		def cb_cu_extract_finished(sd, r, l, pb):
+			pb.hide()
+			l.set_text(_("Restarting daemon..."))
+			self.daemon.restart()
+			self.timer(None, 2, r.close)
+		
+		def cb_cu_download_fail(sd, exception, message, r):
+			print >>sys.stderr, exception
+			r.close()
+			self.cb_syncthing_error(None, _("Failed to download upgrade: %s") % (message))
+			return cb_cu_error()
+		
+		def cb_cu_version(sd, version):
+			needs_upgrade = False
+			try:
+				needs_upgrade = not compare_version(
+					self.devices[self.daemon.get_my_id()]["version"],
+					version)
+			except Exception:
+				# May happen if connection to daemon is lost while version
+				# check is running
+				return cb_cu_error()
+			if DEBUG: print "Updatecheck:", needs_upgrade
+			if needs_upgrade:
+				pb = Gtk.ProgressBar()
+				l = Gtk.Label(_("Downloading Syncthing %s") % (version,))
+				l.set_alignment(0, 0.5)
+				box = Gtk.VBox()
+				box.pack_start(l, True, True, 0)
+				box.pack_start(pb, False, True, 1)
+				box.show_all()
+				r = RIBar(box, Gtk.MessageType.INFO)
+				r.disable_close_button()
+				self.show_info_box(r)
+				sd.connect("error", cb_cu_download_fail, r)
+				sd.connect("download-progress", cb_cu_progress, pb)
+				sd.connect("extraction-progress", cb_cu_progress, pb)
+				sd.connect("download-finished", cb_cu_extract_start, l, pb)
+				sd.connect("extraction-finished", cb_cu_extract_finished, r, l, pb)
+				sd.download()
+			else:
+				# No upgrade is needed. Schedule another check on later time
+				self.timer("updatecheck", UPDATE_CHECK_INTERVAL, self.check_for_upgrade)
+		
+		# Check version
+		sd = StDownloader(target, tag)
+		sd.connect("error", cb_cu_error)
+		sd.connect("version", cb_cu_version)
+		sd.get_version()
+	
+	def swap_updated_binary(self):
+		"""
+		Switches newly downloaded binary with old one.
+		Called while daemon is restarting after upgrade is downloaded.
+		"""
+		bin = self.config["syncthing_binary"]
+		old_bin = bin + ".old"
+		new_bin = bin + ".new"
+		# Move old from way
+		try:
+			shutil.move(bin, old_bin)
+		except Exception, e:
+			print >>sys.stderr, "Warning: Failed to upgrade daemon binary: Failed to rename old binary"
+			print >>sys.stderr, e
+			return
+		# Place new
+		try:
+			shutil.move(new_bin, bin)
+		except Exception, e:
+			print >>sys.stderr, "Warning: Failed to upgrade daemon binary: Failed to rename new binary"
+			print >>sys.stderr, e
+			# Return old back to place
+			try:
+				shutil.move(old_bin, bin)
+			except Exception, e:
+				# This really shouldn't happen, in more than one sense
+				print >>sys.stderr, "Error: Failed to upgrade daemon binary: Failed to rename backup"
+				print >>sys.stderr, e
+			return
+		# Remove old
+		try:
+			os.unlink(old_bin)
+		except Exception, e:
+			# Not exactly fatal
+			print >>sys.stderr, "Warning: Failed to remove backup binary durring backup"
+			print >>sys.stderr, e	
+	
 	def cb_syncthing_connected(self, *a):
 		self.clear()
 		self.close_connect_dialog()
@@ -347,12 +476,7 @@ class App(Gtk.Application, TimerManager):
 				( RIBar.build_button(_("_Restart"), "view-refresh"), RESPONSE_RESTART)
 				)
 			self["infobar"] = r
-			self["content"].pack_start(r, False, False, 0)
-			self["content"].reorder_child(r, RIBAR_POSITION)
-			r.connect("close", self.cb_infobar_close)
-			r.connect("response", self.cb_infobar_response)
-			r.show()
-			r.set_reveal_child(True)
+			self.show_info_box(r)
 	
 	def cb_syncthing_config_saved(self, *a):
 		# Ask daemon to reconnect and reload entire UI
@@ -462,6 +586,8 @@ class App(Gtk.Application, TimerManager):
 				f = self.folders[folder]
 				if device in f["devices"]:
 					f["shared"] = ", ".join([ n.get_title() for n in f["devices"] if n != device ])
+			# Check for new version, if enabled
+			self.check_for_upgrade()
 	
 	def cb_syncthing_system_data(self, daemon, mem, cpu, announce):
 		if self.daemon.get_my_id() in self.devices:
@@ -599,13 +725,16 @@ class App(Gtk.Application, TimerManager):
 			self.cancel_timer("icon")
 	
 	def show_error_box(self, ribar, additional_data={}):
+		self.show_info_box(ribar, additional_data)
+		self.error_boxes.append(ribar)
+	
+	def show_info_box(self, ribar, additional_data=None):
 		self["content"].pack_start(ribar, False, False, 0)
 		self["content"].reorder_child(ribar, RIBAR_POSITION)
 		ribar.connect("close", self.cb_infobar_close)
 		ribar.connect("response", self.cb_infobar_response, additional_data)
 		ribar.show()
 		ribar.set_reveal_child(True)
-		self.error_boxes.append(ribar)
 	
 	def animate_status(self):
 		""" Handles icon animation """
@@ -1279,6 +1408,10 @@ class App(Gtk.Application, TimerManager):
 		if not self.process is None:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
+			if self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
+				# New daemon version is downloaded and ready to use.
+				# Switch to this version before restarting
+				self.swap_updated_binary()
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)

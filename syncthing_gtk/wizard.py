@@ -11,6 +11,7 @@ from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
+from syncthing_gtk.tools import can_upgrade_binary
 import os, sys, socket, random, string, traceback, platform
 from xml.dom import minidom
 
@@ -265,6 +266,11 @@ class FindDaemonPage(Page):
 					print "FOUND"
 					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
 					self.parent.config["syncthing_binary"] = bin_path
+					if not can_upgrade_binary(bin_path):
+						# Don't try enable autoupdate if binary is in
+						# non-writable location (autoupdate is enabled
+						# by default on Windows only)
+						self.parent.config["st_autoupdate"] = False
 					self.parent.set_page_complete(self, True)
 					self.label.set_markup(
 							_("<b>Syncthing daemon binary found.</b>") +

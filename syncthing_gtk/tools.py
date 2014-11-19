@@ -357,3 +357,37 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 				print >>sys.stderr, "Warning: Failed to remove autostart entry:", e
 				return False
 	return True
+
+def can_upgrade_binary(binary_path):
+	"""
+	Returns True if binary seems to be writable and placed in writable
+	directory. Result may be wrong on Windows, but it's still more
+	accurate that os.access, that respondes with complete fabulation --
+	https://mail.python.org/pipermail/python-list/2011-May/604395.html
+	"""
+	if IS_WINDOWS:
+		# Try to open file in same directory. It's not good idea trying
+		# to open very same file as Windows throws IOError if file is
+		# already open somewhere else (i.e. it's binary that is runing)
+		try:
+			path = binary_path + ".new"
+			if os.path.exists(path):
+				f = file(path, "r+b")
+				f.close()
+			else:
+				f = file(path, "wb")
+				f.close()
+				os.unlink(path)
+			# return Maybe
+			return True
+		except Exception, e:
+			print e
+			return False
+	else:
+		# Life is just simpler on Unix
+		if not os.access(binary_path, os.W_OK):
+			return False
+		path = os.path.split(binary_path)[0]
+		if not os.access(path, os.W_OK):
+			return False
+		return True
