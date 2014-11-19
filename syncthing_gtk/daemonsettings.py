@@ -12,8 +12,8 @@ _ = lambda (a) : a
 
 VALUES = [ "vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
 		"vStartBrowser", "vMaxSendKbpsEnabled", "vMaxSendKbps",
-		"vURAccepted", "vLocalAnnPort", "vGlobalAnnEnabled",
-		"vGlobalAnnServer"
+		"vMaxRecvKbpsEnabled", "vMaxRecvKbps", "vURAccepted",
+		"vLocalAnnPort", "vGlobalAnnEnabled", "vGlobalAnnServer"
 		]
 
 
@@ -28,6 +28,8 @@ class DaemonSettingsDialog(EditorDialog):
 			return ",".join([ x.strip() for x in self.values[key]])
 		elif key == "MaxSendKbpsEnabled":
 			return (self.values["MaxSendKbps"] != 0)
+		elif key == "MaxRecvKbpsEnabled":
+			return (self.values["MaxRecvKbps"] != 0)
 		else:
 			return EditorDialog.get_value(self, key)
 	
@@ -37,6 +39,7 @@ class DaemonSettingsDialog(EditorDialog):
 			self.values[key] = [ x.strip() for x in value.split(",") ]
 		elif key == "URAccepted":
 			self.values[key] = 1 if value else 0
+			"""
 		elif key == "MaxSendKbpsEnabled":
 			if value:
 				if self.values["MaxSendKbps"] <= 0:
@@ -44,6 +47,14 @@ class DaemonSettingsDialog(EditorDialog):
 			else:
 				self.values["MaxSendKbps"] = 0
 			self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
+		elif key == "MaxRecvKbpsEnabled":
+			if value:
+				if self.values["MaxRecvKbps"] <= 0:
+					self.values["MaxRecvKbps"] = 1
+			else:
+				self.values["MaxRecvKbps"] = 0
+			self.find_widget_by_id("vMaxRecvKbps").get_adjustment().set_value(self.values["MaxRecvKbps"])
+			"""
 		else:
 			return EditorDialog.set_value(self, key, value)
 
@@ -56,6 +67,7 @@ class DaemonSettingsDialog(EditorDialog):
 	#@Overrides
 	def update_special_widgets(self, *a):
 		self["vMaxSendKbps"].set_sensitive(self.get_value("MaxSendKbpsEnabled"))
+		self["vMaxRecvKbps"].set_sensitive(self.get_value("MaxRecvKbpsEnabled"))
 		self["lblvLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
 		self["vLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
 		self["lblvGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))

@@ -246,6 +246,21 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
 	
+	def start_deamon_ui(self):
+		"""
+		Does same thing as start_deamon.
+		Additionaly displays 'Starting Daemon' message and swaps
+		menu items in notification icon menu.
+		"""
+		# Swap menu items in notification menu
+		self["menu-si-shutdown"].set_visible(True)
+		self["menu-si-resume"].set_visible(False)
+		# Display message
+		self.close_connect_dialog()
+		self.display_connect_dialog(_("Starting Syncthing daemon"))
+		# Start daemon
+		self.start_deamon()
+	
 	def start_deamon(self):
 		if self.process == None:
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
@@ -271,9 +286,14 @@ class App(Gtk.Application, TimerManager):
 				_("Syncthing is probably restarting or has been shut down."))
 		if reason == Daemon.SHUTDOWN:
 			message = _("Syncthing has been shut down.")
+			self["menu-si-shutdown"].set_visible(False)
+			self["menu-si-resume"].set_visible(True)			
 		elif reason == Daemon.RESTART:
 			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
 		self.display_connect_dialog(message)
+		if reason == Daemon.SHUTDOWN:
+			# Add 'Start daemon again' button to dialog
+			self.connect_dialog.add_button("Start Again", RESPONSE_START_DAEMON)
 		self.set_status(False)
 		self.restart()
 	
@@ -348,15 +368,14 @@ class App(Gtk.Application, TimerManager):
 		self.send_limit = config["Options"]["MaxSendKbps"]
 		L_MEV = [("menu-si-sendlimit", self.send_limit),
 				 ("menu-si-recvlimit", self.recv_limit)]
-		print ">>> cb_config_loaded", config["Options"]
 		
 		for limitmenu, value in L_MEV:
 			other = True
 			for speed in [0] + SPEED_LIMIT_VALUES:
 				menuitem = self["%s-%s" % (limitmenu, speed)]
 				menuitem.set_active(speed == value)
-				print "#", limitmenu, _("%s kB/s") % (speed,), (speed == value), speed, value
-				other = False
+				if speed == value:
+					other = False
 			self["%s-other" % (limitmenu,)].set_active(other)
 		
 	def cb_syncthing_error(self, daemon, message):
@@ -702,7 +721,7 @@ class App(Gtk.Application, TimerManager):
 				Gtk.MessageType.INFO, 0, "-")
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
-			self.connect_dialog.connect("response", self.cb_exit)
+			self.connect_dialog.connect("response", self.cb_connect_dialog_response, None)
 			if self.is_visible():
 				self.connect_dialog.show_all()
 		def set_label(d, message):
@@ -742,7 +761,7 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.add_button("_Start",   RESPONSE_START_DAEMON)
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
-			self.connect_dialog.connect("response", self.cb_run_daemon_response, cb)
+			self.connect_dialog.connect("response", self.cb_connect_dialog_response, cb)
 			if self.is_visible():
 				self.connect_dialog.show_all()
 			else:
@@ -909,8 +928,7 @@ class App(Gtk.Application, TimerManager):
 		self.restart()
 		GLib.idle_add(self.daemon.restart)
 	
-	# --- Callbacks ---
-	def cb_exit(self, *a):
+	def quit(self, *a):
 		if self.process != None:
 			if IS_WINDOWS:
 				# Always kill subprocess on windows
@@ -1005,13 +1023,36 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.recv_limit != speed:
-			print "cb_menu_recvlimit", self.recv_limit, speed
 			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.send_limit != speed:
-			print "cb_menu_sendlimit", self.send_limit, speed
 			self.change_setting_n_restart("Options/MaxSendKbps", speed)
+	
+	def cb_menu_recvlimit_other(self, menuitem):
+		return self.cb_menu_limit_other(menuitem, self.recv_limit)
+	
+	def cb_menu_sendlimit_other(self, menuitem):
+		return self.cb_menu_limit_other(menuitem, self.send_limit)
+	
+	def cb_menu_limit_other(self, menuitem, speed):
+		# Common for cb_menu_recvlimit_other and cb_menu_sendlimit_other
+		#
+		# Removes checkbox, if speed is not considered as 'other'
+		# Displays configuration dialog
+		# Detect if checkbox was changed by user
+		checked_by_user = (
+			(speed in [0] + SPEED_LIMIT_VALUES 
+				and menuitem.get_active())
+			or
+			(not speed in [0] + SPEED_LIMIT_VALUES 
+				and not menuitem.get_active())
+			)
+		if checked_by_user:
+			# Display daemon settings dialog and (un)check box back to
+			# its correct state
+			self.cb_menu_daemon_settings(None)
+			menuitem.set_active(not menuitem.get_active())
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
@@ -1136,6 +1177,10 @@ class App(Gtk.Application, TimerManager):
 		self.process = None	# Prevent app from restarting daemon
 		self.daemon.shutdown()
 	
+	def cb_menu_resume(self, event, *a):
+		""" Handler for 'Resume' menu item """
+		self.start_deamon_ui()
+	
 	def cb_menu_webui(self, *a):
 		""" Handler for 'Open WebUI' menu item """
 		print "Opening '%s' in browser" % (self.daemon.get_webui_url(),)
@@ -1199,12 +1244,11 @@ class App(Gtk.Application, TimerManager):
 		else:
 			self.open_boxes.discard(box["id"])
 	
-	def cb_run_daemon_response(self, dialog, response, checkbox):
+	def cb_connect_dialog_response(self, dialog, response, checkbox):
+		# Common for 'Daemon is not running' and 'Connecting to daemon...'
 		if response == RESPONSE_START_DAEMON:
-			self.start_deamon()
-			self.close_connect_dialog()
-			self.display_connect_dialog(_("Starting Syncthing daemon"))
-			if checkbox.get_active():
+			self.start_deamon_ui()
+			if not checkbox is None and checkbox.get_active():
 				self.config["autostart_daemon"] = 1
 		else: # if response <= 0 or response == RESPONSE_QUIT:
 			self.cb_exit()
