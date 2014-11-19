@@ -107,9 +107,13 @@ class Configuration(object):
 			return True
 		# Parse objects
 		try:
-			if type(self._values[key]) in (str, unicode) and tp == datetime:
+			if tp == datetime and type(self._values[key]) in (str, unicode):
 				# Parse datetime
 				self._values[key] = dateutil.parser.parse(self._values[key])
+				return True
+			if tp == tuple and type(self._values[key]) == list:
+				# Convert list to tuple
+				self._values[key] = tuple(self._values[key])
 				return True
 		except Exception, e:
 			print >>sys.stderr, "Warning: Failed to parse configuration value '%s'. Using default." % (key,)
