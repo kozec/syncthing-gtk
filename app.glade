@@ -20,6 +20,7 @@
 				<object class="GtkBox" id="bar_the_hell">
 				    <property name="visible">True</property>
 				    <property name="can_focus">False</property>
+					<property name="orientation">horizontal</property>
 					<property name="spacing">6</property>
 				    <child>
 				      <object class="GtkMenuButton" id="left-menu-button">
@@ -59,7 +60,14 @@
 				        <property name="position">2</property>
 				      </packing>
 				    </child>
-				  </object>
+				</object>
+			</child>
+			<child>
+				<object class="GtkSeparator" id="separator_the_hell">
+					<property name="visible">True</property>
+				    <property name="can_focus">False</property>
+					<property name="orientation">horizontal</property>
+				</object>
 			</child>
 			<!-- /Ubuntu -->
 			<child>

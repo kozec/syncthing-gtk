@@ -149,6 +149,7 @@ class App(Gtk.Application, TimerManager):
 				self.set_app_menu(self["app-menu"])
 				self["window"].set_titlebar(self["header"])
 				self["bar_the_hell"].destroy()
+				self["separator_the_hell"].destroy()
 			else:
 				# Do not use the HeaderBar.
 				pass
