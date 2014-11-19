@@ -276,15 +276,19 @@ class App(Gtk.Application, TimerManager):
 		self.cancel_timer("updatecheck")
 		if not self.config["st_autoupdate"]:
 			# Disabled, don't even bother
+			if DEBUG: print "updatecheck: disabled"
 			return
 		if self.process == None:
 			# Upgrading if executable is not launched by Syncthing-GTK
 			# may fail in too many ways.
+			print >>sys.stderr, "Warning: Skiping updatecheck: Daemon not launched by me"
 			return
 		if (datetime.now() - self.config["last_updatecheck"]).total_seconds() < UPDATE_CHECK_INTERVAL:
 			# Too soon, check again in 10 minutes
 			self.timer("updatecheck", 60 * 10, self.check_for_upgrade)
+			if DEBUG: print "updatecheck: too soon"
 			return
+		if DEBUG: print "Checking for updates..."
 		# Prepare
 		target = "%s.new" % (self.config["syncthing_binary"],)
 		target_dir = os.path.split(target)[0]
