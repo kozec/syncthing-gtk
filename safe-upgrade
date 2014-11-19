@@ -1,0 +1,9 @@
+# This file is parsed every time when Syncthing-GTK checks for daemon upgrade to
+# prevent it from upgrading to unsupported version. As long as latest syncthing
+# version is larger than version number written in this file, upgrade will be
+# ignored.
+# Empty lines and lines begining with # are ignored here.
+#
+# Checking for upgrade is enabled by default on Windows.
+
+v0.10.6
