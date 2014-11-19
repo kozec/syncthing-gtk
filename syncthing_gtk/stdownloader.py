@@ -159,7 +159,7 @@ class StDownloader(GObject.GObject):
 				# EOF. Re-open tmpfile as tar and prepare to extract
 				# binary
 				self.emit("download-finished")
-				stream.close()
+				stream.close(None)
 				tmpfile.close()
 				GLib.idle_add(self._open_achive, tmpfile.name)
 		except Exception, e:
