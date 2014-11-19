@@ -64,17 +64,10 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.first_activation = hide and self.config["minimize_on_start"]
 		self.process = None
-		# Check if configuration orders us not use the HeaderBar or
-		# parameter '-s' on the command line is active.
-		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
-
-		# Only use HeaderBar under GNOME and WINDOWS.
-		#if not IS_GNOME and not IS_WINDOWS:
-		#	self.use_headerbar = False
-
-		# Only use HeaderBar under GNOME.
-		if not IS_GNOME:
-			self.use_headerbar = False
+		# Check if configuration orders us not use the HeaderBar
+		# or parameter '-s' on the command line is active
+		# or the platform is Unity.
+		self.use_headerbar = use_headerbar and not self.config["use_old_header"] and not THE_HELL
 
 		self.watcher = None
 		self.daemon = None
