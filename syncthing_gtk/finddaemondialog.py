@@ -93,6 +93,7 @@ class FindDaemonDialog(EditorDialog):
 		self["pbDownload"].set_visible(True)
 		self["vsyncthing_binary"].set_sensitive(False)
 		self["btBrowse"].set_sensitive(False)
+		self["btSave"].set_sensitive(False)
 		sd.get_version()
 	
 	def cb_btQuit_clicked(self, *a):
@@ -145,6 +146,7 @@ class FindDaemonDialog(EditorDialog):
 		self["pbDownload"].set_visible(False)
 		self["vsyncthing_binary"].set_sensitive(True)
 		self["btBrowse"].set_sensitive(True)
+		self["btSave"].set_sensitive(True)
 	
 	def cb_version(self, downloader, version):
 		self["lblDownloadProgress"].set_markup("Downloading %s..." % (version, ))
