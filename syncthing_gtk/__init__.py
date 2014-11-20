@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-DEBUG = True
+DEBUG = False
 
 import tools
 from timermgr			import TimerManager

@@ -37,7 +37,7 @@
 				    <child>
 				      <object class="GtkLabel" id="server-name">
 				        <property name="visible">True</property>
-				        <property name="label" translatable="yes">label</property>
+				        <property name="label" translatable="no"> </property>
 				      </object>
 				      <packing>
 				        <property name="expand">True</property>
