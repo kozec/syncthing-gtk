@@ -8,6 +8,8 @@ to given location.
 
 from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
+from syncthing_gtk import DEBUG
+from syncthing_gtk.tools import compare_version
 import os, sys, stat, json, traceback, platform
 import tempfile, tarfile, zipfile
 _ = lambda (a) : a
@@ -69,37 +71,109 @@ class StDownloader(GObject.GObject):
 		GObject.GObject.__init__(self)
 		self.target = target
 		self.platform = platform
+		# Latest Syncthing version known to be compatibile with
+		# Syncthing-GTK. This is just hardcoded minimal version,
+		# actual value will be determined later
+		self.latest_compat = "v0.10.0"
 		self.version = None
 		self.dll_url = None
 		self.dll_size = None
 	
 	def get_version(self):
 		"""
-		Determines latest version and prepares stuff needed for
+		Determines latest usable version and prepares stuff needed for
 		download.
 		Emits 'version' signal on success.
 		Handler for 'version' signal should call download method.
 		"""
-		uri = "https://api.github.com/repos/syncthing/syncthing/releases?per_page=2"
+		uri = "https://api.github.com/repos/kozec/syncthing-gui/tags"
 		f = Gio.File.new_for_uri(uri)
-		f.load_contents_async(None, self._cb_read_latest, None)
+		f.load_contents_async(None, self._cb_read_compatibility, None)
 	
 	def get_target(self):
 		""" Returns download target """
 		return self.target
 	
-	def _cb_read_latest(self, f, result, buffer, *a):
-		# Extract release version from response
+	def _cb_read_compatibility(self, f, result, buffer, *a):
+		# Extract compatibility info from version tags in response
+		from syncthing_gtk.app import INTERNAL_VERSION
 		try:
 			success, data, etag = f.load_contents_finish(result)
 			if not success: raise Exception("Gio download failed")
-			data = json.loads(data)[0]
-			self.version = data["name"]
-			for asset in data["assets"]:
-				if self.platform in asset["name"]:
-					self.dll_url = asset["browser_download_url"]
-					self.dll_size = int(asset["size"])
+			data = json.loads(data)
+			tags_by_commit = {}
+			commits_by_version = {}
+			# Go over all tags and store them in form that is
+			# easier to work with
+			for tag in data:
+				name = tag["name"]
+				sha = tag["commit"]["sha"]
+				if name.startswith("v"):
+					commits_by_version[name] = sha
+				if not sha in tags_by_commit:
+					tags_by_commit[sha] = []
+				tags_by_commit[sha].append(name)
+			
+			# Determine last Syncthing-GTK version that is not newer
+			# than INTERNAL_VERSION and last Syncthing release supported
+			# by it
+			for version in sorted(commits_by_version.keys()):
+				if not compare_version(INTERNAL_VERSION, version):
+					# Newer than internal
+					if DEBUG:
+						print "STDownloader: Ignoring newer Syncthing-GTK version", version
+				else:
+					for tag in tags_by_commit[commits_by_version[version]]:
+						if tag.startswith("Syncthing_"):
+							# ST-GTK version has ST version attached.
+							# Check if this is newer than last known
+							# compatibile version
+							st_ver = tag.split("_")[-1]
+							if compare_version(st_ver, self.latest_compat):
+								if DEBUG:
+									print "STDownloader: Got newer compatibile Syncthing version", st_ver
+								self.latest_compat = st_ver
+			
+			if DEBUG: print "STDownloader: Latest compatibile Syncthing version:", self.latest_compat
+		
+		except Exception, e:
+			print >>sys.stderr, traceback.format_exc()
+			self.emit("error", e,
+				_("Failed to determine latest Syncthing version."))
+			return
+		
+		# After latest compatibile ST version is determined, determine
+		# latest actually existing version. This should be usualy same,
+		# but checking is better than downloading non-existant file.
+		uri = "https://api.github.com/repos/syncthing/syncthing/releases"
+		f = Gio.File.new_for_uri(uri)
+		f.load_contents_async(None, self._cb_read_latest, None)
+	
+	def _cb_read_latest(self, f, result, buffer, *a):
+		# Extract release version from response
+		latest_ver = None
+		try:
+			success, data, etag = f.load_contents_finish(result)
+			if not success: raise Exception("Gio download failed")
+			# Go over all available versions until compatibile one
+			# is found
+			data = json.loads(data)
+			for release in data:
+				version = release["tag_name"]
+				if latest_ver is None:
+					latest_ver = version
+				if compare_version(self.latest_compat, version):
+					# Compatibile
+					if DEBUG: print "STDownloader: Found compatibile Syncthing version:", version
+					self.version = version
+					for asset in release["assets"]:
+						if self.platform in asset["name"]:
+							self.dll_url = asset["browser_download_url"]
+							self.dll_size = int(asset["size"])
+							break
 					break
+				else:
+					if DEBUG: print "STDownloader: Ignoring too new Syncthing version:", version
 			del f
 			if self.dll_url is None:
 				raise Exception("No release to download")
@@ -108,6 +182,10 @@ class StDownloader(GObject.GObject):
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
+		# Check if latest version is not larger than latest supported
+		if latest_ver != self.version:
+			print "Note: Not using latest, unsupported Syncthing version", \
+				latest_ver, "; Using", self.version, "instead"
 		# Everything is done, emit version signal
 		self.emit("version", self.version)
 	

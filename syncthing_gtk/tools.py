@@ -233,7 +233,9 @@ def parse_version(ver):
 
 def compare_version(a, b):
 	"""
-	Parses a and b as version strings. Rreturns True, if a >= b
+	Parses a and b as version strings.
+	Returns True, if a >= b
+	Returns False, if b > a
 	"""
 	return parse_version(a) >= parse_version(b)
 
