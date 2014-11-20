@@ -13,7 +13,8 @@
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="orientation">vertical</property>
-			<!-- Ubuntu -->
+			
+			<!-- Traditional header -->
 			<child>
 				<object class="GtkBox" id="bar_the_hell">
 				    <property name="visible">True</property>
@@ -68,51 +69,56 @@
 					<property name="orientation">horizontal</property>
 				</object>
 			</child>
-			<!-- /Ubuntu -->
+			<!-- /Traditional header -->
+			
+			<!-- Panels -->
 			<child>
-						<object class="GtkPaned" id="split">
-							<property name="visible">True</property>
-							<property name="can_focus">True</property>
-							<property name="position">500</property>
-							<property name="position_set">True</property>
-							<!-- Left panel -->
-							<child>
-								<object class="GtkBox" id="folderlist">
-									<property name="visible">True</property>
-									<property name="can_focus">False</property>
-									<property name="orientation">vertical</property>
-									<property name="border_width">6</property>
-									<!-- Script adds widgets here -->
-								</object>
-								<packing>
-									<property name="resize">False</property>
-									<property name="shrink">True</property>
-								</packing>
-							</child>
-							<!-- Right panel -->
-							<child>
-								<object class="GtkBox" id="devicelist">
-									<property name="visible">True</property>
-									<property name="can_focus">False</property>
-									<property name="orientation">vertical</property>
-									<property name="border_width">6</property>
-									<!-- Script adds widgets here -->
-								</object> <!-- /GtkBox -->
-								<packing>
-									<property name="resize">False</property>
-									<property name="shrink">True</property>
-								</packing>
-							</child>
-						</object>
-						<packing>
-					        <property name="expand">True</property>
-					        <property name="fill">True</property>
-						</packing>
+			<object class="GtkPaned" id="split">
+				<property name="visible">True</property>
+				<property name="can_focus">True</property>
+				<property name="position">500</property>
+				<property name="position_set">True</property>
+				<!-- Left panel -->
+				<child>
+					<object class="GtkBox" id="folderlist">
+						<property name="visible">True</property>
+						<property name="can_focus">False</property>
+						<property name="orientation">vertical</property>
+						<property name="border_width">6</property>
+						<!-- Script adds widgets here -->
+					</object>
+					<packing>
+						<property name="resize">False</property>
+						<property name="shrink">True</property>
+					</packing>
+				</child>
+				<!-- Right panel -->
+				<child>
+					<object class="GtkBox" id="devicelist">
+						<property name="visible">True</property>
+						<property name="can_focus">False</property>
+						<property name="orientation">vertical</property>
+						<property name="border_width">6</property>
+						<!-- Script adds widgets here -->
+					</object> <!-- /GtkBox -->
+					<packing>
+						<property name="resize">False</property>
+						<property name="shrink">True</property>
+					</packing>
+				</child>
+			</object>
+			<packing>
+				<property name="expand">True</property>
+				<property name="fill">True</property>
+			</packing>
 			</child>
+			<!-- /Panels -->
 		</object>
 	</child>
 	<!-- /Window content -->
 </object>
+<!-- /Main window -->
+
 <!-- Header Bar -->
 <object class="GtkHeaderBar" id="header">
 	<property name="visible">True</property>
@@ -138,21 +144,9 @@
 	</packing>
 	</child>
 </object>
-<object class="GtkImage" id="menu-image">
-	<property name="visible">True</property>
-	<property name="icon_name">open-menu-symbolic</property>
-</object>
-<object class="GtkImage" id="syncthing-image_the_hell">
-	<property name="visible">True</property>
-	<property name="pixbuf">icons/st-logo-16.png</property>
-</object>
-<object class="GtkImage" id="menu-image_the_hell">
-	<property name="visible">True</property>
-	<property name="icon_name">emblem-system-symbolic</property>
-</object>
-<!-- /Main window -->
+<!-- /Header Bar -->
 
-<!-- Application menu (left one) -->
+<!-- Application popover menu (left one) -->
 <menu id="app-menu">
 	<section>
 		<item>
@@ -181,6 +175,9 @@
 		</item>
 	</section>
 </menu>
+<!-- /Application popover menu (left one) -->
+
+<!-- Application menu (left one) -->
 <object class="GtkMenu" id="app-menu-icons">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
@@ -252,8 +249,9 @@
 		</object>
 	</child>
 </object>
+<!-- /Application menu (left one) -->
 
-<!-- Edit menu (Right one) -->
+<!-- Edit popover menu (Right one) -->
 <menu id="edit-menu">
 	<section>
 		<item>
@@ -286,6 +284,9 @@
 		</item>
 	</section>
 </menu>
+<!-- /Edit popover menu (Right one) -->
+
+<!-- Edit menu (Right one) -->
 <object class="GtkMenu" id="edit-menu-icons">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
@@ -381,6 +382,7 @@
 		</object>
 	</child>
 </object>
+<!-- Edit menu (Right one) -->
 
 <!-- Popup menu for folder -->
 <object class="GtkMenu" id="popup-menu-folder">
@@ -694,7 +696,21 @@
 	</child>
 </object>
 
-<!-- Menu images -->
+<!-- Menu & button images -->
+
+<object class="GtkImage" id="menu-image">
+	<property name="visible">True</property>
+	<property name="icon_name">open-menu-symbolic</property>
+</object>
+<object class="GtkImage" id="syncthing-image_the_hell">
+	<property name="visible">True</property>
+	<property name="pixbuf">icons/st-logo-16.png</property>
+</object>
+<object class="GtkImage" id="menu-image_the_hell">
+	<property name="visible">True</property>
+	<property name="icon_name">emblem-system-symbolic</property>
+</object>
+
 <object class="GtkImage" id="menu-add-folder-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
@@ -800,12 +816,6 @@
 	<property name="icon_name">view-refresh</property>
 </object>
 
-<object class="GtkImage" id="info-button-image">
-	<property name="visible">True</property>
-	<property name="can_focus">False</property>
-	<property name="stock">gtk-refresh</property>
-</object>
-
 <object class="GtkImage" id="menu-popup-edit-ignored-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
@@ -823,27 +833,27 @@
 <object class="GtkImage" id="menu-popup-rescan-folder-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
-	<property name="stock">gtk-refresh</property>
+	<property name="icon-name">view-refresh</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-browse-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
-	<property name="stock">gtk-open</property>
+	<property name="icon-name">folder-open</property>
 </object>
 
 <object class="GtkImage" id="menu-si-recvlimit-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
-	<property name="icon_size">1</property>
-	<property name="icon_name">go-down</property>
+	<property name="icon-size">1</property>
+	<property name="icon-name">go-down</property>
 </object>
 
 <object class="GtkImage" id="menu-si-sendlimit-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
-	<property name="icon_size">1</property>
-	<property name="icon_name">go-up</property>
+	<property name="icon-size">1</property>
+	<property name="icon-name">go-up</property>
 </object>
 
 
