@@ -14,7 +14,7 @@ from editordialog		import EditorDialog
 from deviceeditor		import DeviceEditorDialog
 from foldereditor		import FolderEditorDialog
 from daemonsettings		import DaemonSettingsDialog
-from statusicon			import StatusIcon, THE_HELL, HAS_INDICATOR
+from statusicon			import StatusIcon, HAS_INDICATOR
 from uisettings			import UISettingsDialog
 from configuration		import Configuration
 from iddialog			import IDDialog

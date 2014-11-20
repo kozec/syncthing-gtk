@@ -4,21 +4,21 @@ Syncthing-GTK - DaemonSettingsDialog
 
 Universal dialog handler for all Syncthing settings and editing
 """
-
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
-from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY, THE_HELL
-from syncthing_gtk.tools import IS_WINDOWS, is_ran_on_startup, \
-		set_run_on_startup, get_executable, get_config_dir
+from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
+from syncthing_gtk.tools import IS_WINDOWS, IS_UNITY, \
+		is_ran_on_startup, set_run_on_startup, get_executable, \
+		get_config_dir
 import os
 
 _ = lambda (a) : a
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
-		"vautostart", "vuse_old_header", "vnotification_for_update",
-		"vnotification_for_folder", "vnotification_for_error",
-		"vst_autoupdate", "vsyncthing_binary",
+		"vautostart", "vuse_old_header", "vicons_in_menu",
+		"vnotification_for_update", "vnotification_for_folder",
+		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
 	]
 
 class UISettingsDialog(EditorDialog):
@@ -38,7 +38,7 @@ class UISettingsDialog(EditorDialog):
 	def load_data(self):
 		# Don't load data from syncthing daemon, it knows nothing...
 		copy = { k : self.app.config[k] for k in self.app.config }
-		if THE_HELL:
+		if IS_UNITY:
 			self["vuse_old_header"].set_visible(False)
 			self["vuse_old_header"].set_no_show_all(True)
 		if not HAS_DESKTOP_NOTIFY:
@@ -111,7 +111,11 @@ class UISettingsDialog(EditorDialog):
 	
 	#@Overrides
 	def update_special_widgets(self, *a):
-		pass
+		if self["vuse_old_header"].get_active():
+			self["vicons_in_menu"].set_sensitive(False)
+			self["vicons_in_menu"].set_active(True)
+		else:
+			self["vicons_in_menu"].set_sensitive(True)
 	
 	#@Overrides
 	def on_save_reuqested(self):

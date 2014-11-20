@@ -6,11 +6,12 @@ Syncthing-GTK - StatusIcon
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, GObject
+from syncthing_gtk.tools import IS_UNITY
 import os, sys
 
 # Why the hell does ubuntu use own notifications system?
 THE_HELL, HAS_INDICATOR = False, False
-if "XDG_CURRENT_DESKTOP" in os.environ and os.environ["XDG_CURRENT_DESKTOP"] == "Unity":
+if IS_UNITY:
 	THE_HELL = True
 	try:
 		from gi.repository import AppIndicator3 as appindicator

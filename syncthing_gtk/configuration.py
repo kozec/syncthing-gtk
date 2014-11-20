@@ -8,7 +8,7 @@ or other ~/.config equivalent
 """
 
 from __future__ import unicode_literals
-from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
+from syncthing_gtk.tools import *
 from datetime import datetime
 import dateutil.parser
 import os, sys, json
@@ -32,6 +32,7 @@ class _Configuration(object):
 		"minimize_on_start"			: (bool, False),
 		"use_inotify"				: (list, []),
 		"use_old_header"			: (bool, False),
+		"icons_in_menu"				: (bool, True),
 		"notification_for_update"	: (bool, True),
 		"notification_for_folder"	: (bool, False),
 		"notification_for_error"	: (bool, True),

@@ -14,11 +14,10 @@ import re, os, sys, __main__
 
 _ = lambda (a) : a
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
+IS_GNOME, IS_UNITY = False, False
 if "XDG_CURRENT_DESKTOP" in os.environ:
-	XDG_CURRENT_DESKTOP = os.environ["XDG_CURRENT_DESKTOP"]
-else:
-	XDG_CURRENT_DESKTOP = None
-IS_GNOME = not IS_WINDOWS and XDG_CURRENT_DESKTOP == "GNOME"
+	IS_GNOME = (XDG_CURRENT_DESKTOP == "GNOME")
+	IS_UNITY = (XDG_CURRENT_DESKTOP == "Unity")
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
 DESKTOP_FILE = """[Desktop Entry]

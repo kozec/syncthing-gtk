@@ -124,6 +124,26 @@
 	<property name="visible">True</property>
 	<property name="show-close-button">True</property>
 	<child>
+		<object class="GtkMenuButton" id="app-menu-button">
+			<property name="visible">True</property>
+			<property name="relief">none</property>
+			<property name="menu-model">app-menu</property>
+			<style>
+			  <class name="image-button"/>
+			</style>
+			<child>
+				<object class="GtkImage" id="app-menu-button-icon">
+					<property name="visible">True</property>
+					<property name="pixbuf">icons/st-logo-24.png</property>
+					<property name="icon-size">1</property>
+				</object>
+			</child>
+		</object>
+		<packing>
+			<property name="pack-type">start</property>
+		</packing>
+	</child>
+	<child>
 		<object class="GtkLabel" id="lines">
 			<property name="visible">False</property>
 		</object>

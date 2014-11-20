@@ -70,7 +70,7 @@ class App(Gtk.Application, TimerManager):
 		# Check if configuration orders us not use the HeaderBar
 		# or parameter '-s' on the command line is active
 		# or the platform is Unity.
-		self.use_headerbar = use_headerbar and not self.config["use_old_header"] and not THE_HELL
+		self.use_headerbar = use_headerbar and not self.config["use_old_header"] and not IS_UNITY
 		
 		self.watcher = None
 		self.daemon = None
@@ -100,7 +100,7 @@ class App(Gtk.Application, TimerManager):
 			self.daemon.reconnect()
 	
 	def do_activate(self, *a):
-		if not self.first_activation or (THE_HELL and not HAS_INDICATOR):
+		if not self.first_activation or (IS_UNITY and not HAS_INDICATOR):
 			if self.wizard is None:
 				# Show main window
 				self.show()
@@ -142,10 +142,19 @@ class App(Gtk.Application, TimerManager):
 		if self.use_headerbar:
 			# Window creation, including the HeaderBar.
 			# Destroy the legacy bar.
-			self.set_app_menu(self["app-menu"])
 			self["window"].set_titlebar(self["header"])
 			self["bar_the_hell"].destroy()
 			self["separator_the_hell"].destroy()
+			if IS_GNOME:
+				self.set_app_menu(self["app-menu"])
+				self["app-menu-button"].destroy()
+			elif self.config["icons_in_menu"]:
+				# Use old menus with icon even with HeaderBar.
+				# Not available in Gnome
+				self["app-menu-button"].set_popup(self["app-menu-icons"])
+				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
+			if IS_WINDOWS:
+				self["app-menu-button"].set_relief(Gtk.ReliefStyle.HALF)
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
@@ -168,7 +177,7 @@ class App(Gtk.Application, TimerManager):
 	def setup_statusicon(self):
 		self.statusicon = StatusIcon(self.iconpath, self["si-menu"])
 		self.statusicon.connect("clicked", self.cb_statusicon_click)
-		if THE_HELL and HAS_INDICATOR:
+		if IS_UNITY and HAS_INDICATOR:
 			self["menu-si-show"].set_visible(True)
 	
 	def setup_connection(self):
