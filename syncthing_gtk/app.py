@@ -148,7 +148,12 @@ class App(Gtk.Application, TimerManager):
 			self["window"].set_titlebar(self["header"])
 			self["bar_the_hell"].destroy()
 			self["separator_the_hell"].destroy()
-			if IS_GNOME:
+			if (Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12):
+				# Weird stuff happens with old Gnome on Fedora
+				self["app-menu-button"].set_popup(self["app-menu-icons"])
+				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
+				self["menu-image"].set_from_icon_name("emblem-system-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
+			elif IS_GNOME:
 				self.set_app_menu(self["app-menu"])
 				self["app-menu-button"].destroy()
 			elif self.config["icons_in_menu"]:

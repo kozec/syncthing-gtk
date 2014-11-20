@@ -18,6 +18,11 @@ IS_GNOME, IS_UNITY = False, False
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
 	IS_UNITY = (os.environ["XDG_CURRENT_DESKTOP"] == "Unity")
+if "DESKTOP_SESSION" in os.environ:
+	if os.environ["DESKTOP_SESSION"] == "gnome":
+		# Fedora...
+		IS_GNOME = True
+
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
 DESKTOP_FILE = """[Desktop Entry]
