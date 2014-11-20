@@ -70,7 +70,10 @@ class App(Gtk.Application, TimerManager):
 		# Check if configuration orders us not use the HeaderBar
 		# or parameter '-s' on the command line is active
 		# or the platform is Unity.
-		self.use_headerbar = use_headerbar and not self.config["use_old_header"] and not IS_UNITY
+		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
+		# User setting is not visible under Unity/Gnome
+		if IS_UNITY: self.use_headerbar = False
+		if IS_GNOME: self.use_headerbar = True
 		
 		self.watcher = None
 		self.daemon = None

@@ -8,9 +8,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
-from syncthing_gtk.tools import IS_WINDOWS, IS_UNITY, \
-		is_ran_on_startup, set_run_on_startup, get_executable, \
-		get_config_dir
+from syncthing_gtk.tools import *
 import os
 
 _ = lambda (a) : a
@@ -38,9 +36,11 @@ class UISettingsDialog(EditorDialog):
 	def load_data(self):
 		# Don't load data from syncthing daemon, it knows nothing...
 		copy = { k : self.app.config[k] for k in self.app.config }
-		if IS_UNITY:
+		if IS_UNITY or IS_GNOME:
 			self["vuse_old_header"].set_visible(False)
 			self["vuse_old_header"].set_no_show_all(True)
+			self["vicons_in_menu"].set_visible(False)
+			self["vicons_in_menu"].set_no_show_all(True)
 		if not HAS_DESKTOP_NOTIFY:
 			# Disable notifications settings if required
 			# library is not available
