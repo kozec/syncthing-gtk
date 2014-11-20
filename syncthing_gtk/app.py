@@ -137,6 +137,7 @@ class App(Gtk.Application, TimerManager):
 		self.builder.connect_signals(self)
 		# Setup window
 		self["edit-menu-button"].set_sensitive(False)
+		self["right-menu-button"].set_sensitive(False)
 
 		if self.use_headerbar:
 			# Window creation, including the HeaderBar.
@@ -386,6 +387,7 @@ class App(Gtk.Application, TimerManager):
 		self.close_connect_dialog()
 		self.set_status(True)
 		self["edit-menu-button"].set_sensitive(True)
+		self["right-menu-button"].set_sensitive(True)
 		self["menu-si-shutdown"].set_sensitive(True)
 		self["menu-si-show-id"].set_sensitive(True)
 		self["menu-si-recvlimit"].set_sensitive(True)
@@ -963,6 +965,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def restart(self):
 		self["edit-menu-button"].set_sensitive(False)
+		self["right-menu-button"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
 		self["menu-si-recvlimit"].set_sensitive(False)
