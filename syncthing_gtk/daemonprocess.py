@@ -41,6 +41,7 @@ class DaemonProcess(GObject.GObject):
 	
 	def start(self):
 		os.environ["STNORESTART"] = "1"	# see syncthing --help
+		os.environ["STNOUPGRADE"] = "1"	# hopefully implemented later
 		try:
 			self._cancel = Gio.Cancellable()
 			if IS_WINDOWS:
