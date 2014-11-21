@@ -529,7 +529,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_left">10</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">If enabled, Syncthing-GTK will automaticaly check for new daemon releases and replace binary with latest version.</property>
+                    <property name="label" translatable="yes">If enabled, Syncthing-GTK will automatically check for new daemon releases and replace binary with latest version.</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
                   </object>

@@ -896,7 +896,7 @@ class App(Gtk.Application, TimerManager):
 					_("Start it now?")
 					)
 				)
-			cb = Gtk.CheckButton(_("Always start daemon automaticaly"))
+			cb = Gtk.CheckButton(_("Always start daemon automatically"))
 			self.connect_dialog.get_content_area().pack_end(cb, False, False, 2)
 			self.connect_dialog.add_button("_Start",   RESPONSE_START_DAEMON)
 			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
