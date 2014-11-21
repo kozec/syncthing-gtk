@@ -177,8 +177,9 @@ class App(Gtk.Application, TimerManager):
 				submenu.add(menuitem)
 			self[limitmenu].show_all()
 		
-		# SPEED_LIMIT_VALUES
+		# Set window title in way that even Gnome can understand
 		self["window"].set_title(_("Syncthing GTK"))
+		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
 		self["window"].connect("realize", self.cb_realized)
 		self.add_window(self["window"])
 	
