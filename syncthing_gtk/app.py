@@ -483,11 +483,15 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_config_saved(self, *a):
 		# Ask daemon to reconnect and reload entire UI
-		self.cancel_all() # timers
-		if not self.watcher is None:
-			self.watcher.clear()
-		self.daemon.reconnect()
-	
+		def runlater():
+			self.cancel_all() # timers
+			if not self.watcher is None:
+				self.watcher.clear()
+			self.daemon.reconnect()
+		# Can't reconnect right away as daemon instance probably
+		# still waits for response from syncthing daemon
+		self.timer(None, 1, runlater)
+
 	def cb_config_loaded(self, daemon, config):
 		# Called after connection to daemon is initialized;
 		# Used to change indicating UI components

@@ -8,6 +8,7 @@ Base class and universal handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject
 from syncthing_gtk.tools import ints
+from syncthing_gtk.daemon import ConnectionRestarted
 import os, sys
 _ = lambda (a) : a
 
@@ -384,14 +385,21 @@ class EditorDialog(GObject.GObject):
 		"""
 		raise RuntimeError("Override this!")
 	
-	def syncthing_cb_post_error(self, *a):
+	def syncthing_cb_post_error(self, exception, *a):
 		# TODO: Unified error message
-		print a
+		if isinstance(exception, ConnectionRestarted):
+			# Should be ok, this restart is triggered
+			# by App handler for 'config-saved' event.
+			return self.syncthing_cb_post_config()
+		# print a
 		d = Gtk.MessageDialog(
 			self["editor"],
 			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 			Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE,
-			_("Failed to save configuration."))
+			"%s\n%s" % (
+				_("Failed to save configuration."),
+				str(exception)
+			))
 		d.run()
 		d.hide()
 		d.destroy()

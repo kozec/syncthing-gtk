@@ -427,14 +427,14 @@ class Daemon(GObject.GObject, TimerManager):
 			headers = headers.split("\r\n")
 			code = int(headers[0].split(" ")[1])
 			if code == 401:
-				self._rest_error(HTTPAuthException("Not Authorized"), epoch, command, callback, error_callback, callback_data)
+				self._rest_error(HTTPAuthException(), epoch, command, callback, error_callback, callback_data)
 				return
 			elif code != 200:
-				self._rest_error(HTTPException("HTTP error %s" % (code,)), epoch, command, callback, error_callback, callback_data)
+				self._rest_error(HTTPCode(code, response), epoch, command, callback, error_callback, callback_data)
 				return
 		except Exception, e:
 			# That probably wasn't HTTP
-			self._rest_error(HTTPException("Invalid HTTP response"), epoch, command, callback, error_callback, callback_data)
+			self._rest_error(HTTPError("Invalid HTTP response"), epoch, command, callback, error_callback, callback_data)
 			return
 		# Parse response and call callback
 		try:
@@ -573,12 +573,15 @@ class Daemon(GObject.GObject, TimerManager):
 			headers, response = response.split("\r\n\r\n", 1)
 			headers = headers.split("\r\n")
 			code = int(headers[0].split(" ")[1])
-			if code != 200:
-				self._rest_post_error(HTTPException("HTTP error %s" % (code,), response), epoch, command, data, callback, error_callback, callback_data)
+			if code == 500:
+				self._rest_error(HTTPCode(500, response), epoch, command, callback, error_callback, callback_data)
+				return
+			elif code != 200:
+				self._rest_post_error(HTTPCode(code, response), epoch, command, data, callback, error_callback, callback_data)
 				return
 		except Exception:
 			# That probably wasn't HTTP
-			self._rest_post_error(HTTPException("Invalid HTTP response"), epoch, command, data, callback, error_callback, callback_data)
+			self._rest_post_error(HTTPError("Invalid HTTP response"), epoch, command, data, callback, error_callback, callback_data)
 			return
 		if "CSRF Error" in response:
 			# My cookie is too old; Throw it away and try again
@@ -1153,11 +1156,24 @@ class Daemon(GObject.GObject, TimerManager):
 
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(InvalidConfigurationException): pass
-class HTTPException(RuntimeError):
-	def __init__(self, message, response=None):
+class HTTPError(RuntimeError):
+	def __init__(self, message):
 		RuntimeError.__init__(self, message)
+class HTTPCode(HTTPError):
+	def __init__(self, code, response=None):
+		HTTPError.__init__(self, "HTTP error %s" % (code,))
+		self.code = code
 		self.response = response
-class HTTPAuthException(HTTPException): pass
+	def __str__(self):
+		if self.response is None:
+			return "HTTP/%s" % (self.code,)
+		else:
+			return "HTTP/%s: %s" % (self.code, self.response)
+class HTTPAuthException(HTTPCode):
+	def __init__(self, code, response=None):
+		HTTPCode.__init__(self, 401)
+	def __str__(self):
+		return "HTTP/401 Unauthorized"
 class ConnectionRestarted(Exception):
 	def __init__(self):
 		Exception.__init__(self, "Connection was restarted after request")

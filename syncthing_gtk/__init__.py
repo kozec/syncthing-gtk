@@ -5,8 +5,7 @@ import tools
 from timermgr			import TimerManager
 from daemonprocess		import DaemonProcess
 from daemon				import Daemon, InvalidConfigurationException, \
-							TLSUnsupportedException, HTTPException, \
-							HTTPAuthException, ConnectionRestarted
+							TLSUnsupportedException, ConnectionRestarted
 from watcher			import Watcher, HAS_INOTIFY
 from notifications		import Notifications, HAS_DESKTOP_NOTIFY
 from infobox			import InfoBox

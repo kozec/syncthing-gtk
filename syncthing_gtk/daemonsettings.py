@@ -39,22 +39,23 @@ class DaemonSettingsDialog(EditorDialog):
 			self.values[key] = [ x.strip() for x in value.split(",") ]
 		elif key == "URAccepted":
 			self.values[key] = 1 if value else 0
-			"""
 		elif key == "MaxSendKbpsEnabled":
 			if value:
 				if self.values["MaxSendKbps"] <= 0:
 					self.values["MaxSendKbps"] = 1
+					self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
 			else:
 				self.values["MaxSendKbps"] = 0
-			self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
+				print "MaxSendKbpsEnabled : MaxSendKbps zeroed"
+				self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
 		elif key == "MaxRecvKbpsEnabled":
 			if value:
 				if self.values["MaxRecvKbps"] <= 0:
 					self.values["MaxRecvKbps"] = 1
+					self.find_widget_by_id("vMaxRecvKbps").get_adjustment().set_value(self.values["MaxRecvKbps"])
 			else:
 				self.values["MaxRecvKbps"] = 0
-			self.find_widget_by_id("vMaxRecvKbps").get_adjustment().set_value(self.values["MaxRecvKbps"])
-			"""
+				self.find_widget_by_id("vMaxRecvKbps").get_adjustment().set_value(self.values["MaxRecvKbps"])
 		else:
 			return EditorDialog.set_value(self, key, value)
 
