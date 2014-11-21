@@ -99,7 +99,15 @@ if 'build' in sys.argv:
 		)
 	# Copy some theme icons
 	sizes = ["16x16", "24x24", "32x32", "scalable"]
-	icons = {	"status"  : ["image-missing"],
+	icons = {	"status"  : [
+					"image-missing",
+					"dialog-information",
+					"dialog-warning",
+					"dialog-error",
+					"checkbox-symbolic",
+					"checkbox-mixed-symbolic",
+					"checkbox-checked-symbolic",
+				],
 				"mimetypes" :	[ "text-html" ],
 				"emblems" :		[ "emblem-system-symbolic" ],
 				"apps" :		[ "utilities-terminal" ],
