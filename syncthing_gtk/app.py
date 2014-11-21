@@ -336,6 +336,7 @@ class App(Gtk.Application, TimerManager):
 				# check is running
 				return cb_cu_error()
 			if DEBUG: print "Updatecheck:", needs_upgrade
+			self.config["last_updatecheck"] = datetime.now()
 			if needs_upgrade:
 				pb = Gtk.ProgressBar()
 				l = Gtk.Label(_("Downloading Syncthing %s") % (version,))
