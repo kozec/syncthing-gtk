@@ -146,3 +146,12 @@ if 'build' in sys.argv:
 			os.path.join(src_path, theme, "index.theme"),
 			os.path.join(target_path, theme, "index.theme")
 		)
+	print "Copying glib schemas"
+	if not os.path.exists("./build/exe.win32-2.7/share/glib-2.0/schemas"):
+		target_path = "./build/exe.win32-2.7/share/glib-2.0/schemas"
+		src_path = os.path.join(gnome_dll_path, "share/glib-2.0/schemas")
+		os.makedirs(target_path)
+		for file in os.listdir(src_path):
+			src = os.path.join(src_path, file)
+			target = os.path.join(target_path, file)
+			shutil.copy(src, target)
