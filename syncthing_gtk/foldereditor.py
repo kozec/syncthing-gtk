@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
 from syncthing_gtk import EditorDialog, HAS_INOTIFY
-import re, sys
+import os, sys, re
 _ = lambda (a) : a
 
 COLOR_NEW				= "#A0A0A0"
@@ -36,6 +36,26 @@ class FolderEditorDialog(EditorDialog):
 			)
 		self.id = id
 		self.is_new = is_new
+	
+	def on_btBrowse_clicked(self, *a):
+		"""
+		Display folder browser dialog to browse for folder... folder.
+		Oh god, this new terminology sucks...
+		"""
+		if not self.is_new: return
+		# Prepare dialog
+		d = Gtk.FileChooserDialog(
+			_("Select Folder for new Folder"),	# fuck me...
+			self["editor"],
+			Gtk.FileChooserAction.SELECT_FOLDER,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			Gtk.STOCK_OK, Gtk.ResponseType.OK))
+		# Set default path to home directory
+		d.set_current_folder(os.path.expanduser("~"))
+		# Get response
+		if d.run() == Gtk.ResponseType.OK:
+			self["vPath"].set_text(d.get_filename())
+		d.destroy()
 	
 	#@Overrides
 	def get_value(self, key):
@@ -105,6 +125,7 @@ class FolderEditorDialog(EditorDialog):
 				self.values = [ x for x in self.config["Folders"] if x["ID"] == self.id ][0]
 				self.checks = {}
 				self["vPath"].set_sensitive(False)
+				self["btBrowse"].set_sensitive(False)
 		except KeyError, e:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
