@@ -152,7 +152,7 @@ def WinConfiguration():
 			elif tp in (int, bool):
 				_winreg.SetValueEx(r, name, 0, _winreg.REG_DWORD, int(value))
 			elif tp in (list, tuple):
-				if not value is value:	# None is default value for window_position
+				if not value is None:	# None is default value for window_position
 					_winreg.SetValueEx(r, "%s_size" % (name,), 0, _winreg.REG_DWORD, len(value))
 					for i in xrange(0, len(value)):
 						self._store(r, "%s_%s" % (name, i), type(value[i]), value[i])
