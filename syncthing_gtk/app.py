@@ -423,7 +423,7 @@ class App(Gtk.Application, TimerManager):
 			self["menu-si-resume"].set_visible(True)			
 		elif reason == Daemon.RESTART:
 			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
-		self.display_connect_dialog(message)
+		self.display_connect_dialog(message, quit_button = reason != Daemon.RESTART)
 		if reason == Daemon.SHUTDOWN:
 			# Add 'Start daemon again' button to dialog
 			self.connect_dialog.add_button("Start Again", RESPONSE_START_DAEMON)
@@ -847,7 +847,7 @@ class App(Gtk.Application, TimerManager):
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
-	def display_connect_dialog(self, message):
+	def display_connect_dialog(self, message, quit_button=True):
 		"""
 		Displays 'Be patient, i'm trying to connect here' dialog, or updates
 		it's message if said dialog is already displayed.
@@ -858,7 +858,8 @@ class App(Gtk.Application, TimerManager):
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 				Gtk.MessageType.INFO, 0, "-")
-			self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
+			if quit_button:
+				self.connect_dialog.add_button("gtk-quit", RESPONSE_QUIT)
 			# There is only one response available on this dialog
 			self.connect_dialog.connect("response", self.cb_connect_dialog_response, None)
 			if self.is_visible():
