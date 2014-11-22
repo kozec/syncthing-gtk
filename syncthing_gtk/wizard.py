@@ -2,7 +2,7 @@
 """
 Syncthing-GTK - 1st run wizard
 
-Basicaly runs syncthing daemon with -generate option and setups some
+Basically runs Syncthing daemon with -generate option and setups some
 values afterwards.
 """
 
@@ -86,7 +86,7 @@ class Wizard(Gtk.Assistant):
 	
 	def find_widget(self, compare_fn, parent=None):
 		"""
-		Recursively searchs for widget, returning first one
+		Recursively searches for widget, returning first one
 		for which compare_fn(widget) returns True
 		"""
 		if parent is None : parent = self
@@ -137,7 +137,7 @@ class Wizard(Gtk.Assistant):
 	def show_output(self, *a):
 		"""
 		Displays DaemonOutput window with error messages captured
-		durring key generation.
+		during key generation.
 		"""
 		d = DaemonOutputDialog(self, None)
 		d.show_with_lines(self.lines, self)
@@ -195,17 +195,17 @@ class IntroPage(Page):
 
 class FindDaemonPage(Page):
 	# Next page, "Download Daemon" is displayed only if needed.
-	# When that happens, it becames page with longest title and  wizard
-	# window changes size to accomodate to this change. And i don't like
+	# When that happens, it becomes page with longest title and wizard
+	# window changes size to accommodate this change. And i don't like
 	# that.
 	# To prevent this 'window jumping', padding is added here, so
 	# this page is always one with longest name.
 	TITLE = _("Find Daemon") + "                 "
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	def init_page(self):
-		""" Displayed while syncthing binary is being searched for """
+		""" Displayed while Syncthing binary is being searched for """
 		self.label = WrappedLabel(
-			_("<b>Searching for syncthing daemon.</b>") +
+			_("<b>Searching for Syncthing daemon.</b>") +
 			"\n\n" +
 			_("Please wait...")
 		)
@@ -228,7 +228,7 @@ class FindDaemonPage(Page):
 	
 	def search(self, paths):
 		"""
-		Called repeatedly throught GLib.idle_add, until binary is found
+		Called repeatedly through GLib.idle_add, until binary is found
 		or all possible paths are tried.
 		"""
 		try:
@@ -236,7 +236,7 @@ class FindDaemonPage(Page):
 		except IndexError:
 			# Out of possible paths. Not found
 			if True or IS_WINDOWS:	# TODO: Just for testing
-				# On Windows, don't say anything and download syncthing
+				# On Windows, don't say anything and download Syncthing
 				# directly
 				p = DownloadSTPage()
 				self.parent.insert_and_go(p)
@@ -251,8 +251,8 @@ class FindDaemonPage(Page):
 						_('download latest binary') + '</a>'
 				return self.parent.error(self,
 						_("Syncthing daemon not found."),
-						(_("Please, use package manager to install syncthing package") + " " +
-						 _("or %s from syncthing page and save it") + " " +
+						(_("Please, use package manager to install the Syncthing package") + " " +
+						 _("or %s from Syncthing page and save it") + " " +
 						 _("to your %s or any other directory in PATH")) %
 							(dll_link, local_bin_folder_link,),
 						False)
@@ -267,8 +267,8 @@ class FindDaemonPage(Page):
 					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
 					self.parent.config["syncthing_binary"] = bin_path
 					if not can_upgrade_binary(bin_path):
-						# Don't try enable autoupdate if binary is in
-						# non-writable location (autoupdate is enabled
+						# Don't try enable auto-update if binary is in
+						# non-writable location (auto-update is enabled
 						# by default on Windows only)
 						self.parent.config["st_autoupdate"] = False
 					self.parent.set_page_complete(self, True)
@@ -291,7 +291,7 @@ class DownloadSTPage(Page):
 	TITLE = _("Download Daemon")
 	
 	def init_page(self):
-		""" Displayed while wizard downloads and extraacts daemon """
+		""" Displayed while wizard downloads and extracts daemon """
 		self.label = WrappedLabel(_("<b>Downloading Syncthing daemon.</b>"))
 		self.version = WrappedLabel(_("Please wait..."))
 		self.pb = Gtk.ProgressBar()
@@ -302,7 +302,7 @@ class DownloadSTPage(Page):
 		self.attach(self.pb,		0, 2, 1, 1)
 	
 	def prepare(self):
-		# Determine which syncthing to use
+		# Determine which Syncthing to use
 		suffix, tag = StDownloader.determine_platform()
 		# Report error on unsupported platforms
 		if suffix is None or tag is None:
@@ -365,7 +365,7 @@ class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	TITLE = _("Generate Keys")
 	def init_page(self):
-		""" Displayed while syncthing binary is being searched for """
+		""" Displayed while Syncthing binary is being searched for """
 		self.label = WrappedLabel(
 			_("<b>Syncthing is generating RSA key and certificate.</b>") +
 			"\n\n" +
@@ -378,7 +378,7 @@ class GenerateKeysPage(Page):
 	
 	def start_binary(self):
 		"""
-		Starts syncthing binary with -generate parameter and waits until
+		Starts Syncthing binary with -generate parameter and waits until
 		key generation is finished
 		"""
 		self.parent.output_line("syncthing-gtk: Configuration directory: '%s'" % (self.parent.st_configdir,))
@@ -402,7 +402,7 @@ class GenerateKeysPage(Page):
 		self.cb_daemon_exit(dproc, -1)
 	
 	def cb_daemon_exit(self, dproc, exit_code):
-		""" Called when syncthing finishes """
+		""" Called when Syncthing finishes """
 		if exit_code == 0:
 			# Finished without problem, advance to next page
 			self.parent.set_page_complete(self, True)
@@ -417,24 +417,24 @@ class HttpSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.CONTENT
 	TITLE = _("Setup WebUI")
 	def init_page(self):
-		""" Let's user to set webui settings """
+		""" Permits user to set WebUI settings """
 		# Wall of text
 		label = WrappedLabel(
 			_("<b>WebUI setup</b>") +
 			"\n\n" +
-			_("Syncthing can be controlled remotely using WebUI and "
+			_("Syncthing can be managed remotely using WebUI and "
 			  "even if you are going to use Syncthing-GTK, WebUI needs "
 			  "to be enabled, as Syncthing-GTK uses it to communicate "
-			  "with syncthing daemon.") +
+			  "with the Syncthing daemon.") +
 			"\n\n" +
-			_("If you prefer to be able to control syncthing remotely, "
-			  "over internet or on your local network, select <b>listen "
+			_("If you prefer to be able to manage Syncthing remotely, "
+			  "over the internet or on your local network, select <b>listen "
 			  "on all interfaces</b> and set username and password to "
-			  "protect syncthing from unauthorized access.") +
+			  "protect Syncthing from unauthorized access.") +
 			"\n" +
 			_("Otherwise, select <b>listen on localhost</b>, so only "
 			  "users and programs on this computer will be able to "
-			  "interact with syncthing.") +
+			  "interact with Syncthing.") +
 			"\n"
 		)
 		# Radiobuttons
@@ -516,7 +516,7 @@ class SaveSettingsPage(Page):
 		Tries to open TCP port to check it availability.
 		It this fails, checks next ports, until MAX_PORT is reached.
 		When MAX_PORT is reached, it's safe to assume that something
-		completly wrong is happening and to display error.
+		completely wrong is happening and an error should be displayed.
 		"""
 		if port >= MAX_PORT:
 			# Remove config.xml that I just created
@@ -571,7 +571,7 @@ class SaveSettingsPage(Page):
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			return self.parent.error(self,
-				_("Failed to load syncthing configuration"),
+				_("Failed to load Syncthing configuration"),
 				str(e),
 				True)
 		try:
@@ -596,16 +596,16 @@ class SaveSettingsPage(Page):
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			return self.parent.error(self,
-				_("Failed to modify syncthing configuration"),
+				_("Failed to modify Syncthing configuration"),
 				str(e),
 				True)
 		try:
-			# Write xml back to file
+			# Write XML back to file
 			file(self.parent.st_configfile, "w").write(xml.toxml())
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			return self.parent.error(self,
-				_("Failed to save syncthing configuration"),
+				_("Failed to save Syncthing configuration"),
 				str(e),
 				True)
 		self.parent.set_page_complete(self, True)
@@ -628,7 +628,7 @@ class LastPage(GenerateKeysPage):
 		self.attach(label, 0, 0, 1, 1)
 	
 	def prepare(self):
-		# Configure main app to manage syncthing daemon by default
+		# Configure main app to manage Syncthing daemon by default
 		self.parent.config["autostart_daemon"] = 1
 		self.parent.config["autokill_daemon"] = 1
 		self.parent.config["minimize_on_start"] = False
