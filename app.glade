@@ -576,7 +576,7 @@
 	
 	<child>
 		<object class="GtkImageMenuItem" id="menu-si-recvlimit">
-			<property name="label" translatable="yes">_Incomig Rate Limit</property>
+			<property name="label" translatable="yes">_Incoming Rate Limit</property>
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
 			<property name="use_underline">True</property>
