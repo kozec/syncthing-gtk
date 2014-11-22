@@ -36,7 +36,15 @@ class AboutDialog(object):
 		self.dialog = self.builder.get_object("dialog")
 		# Set version info
 		app_ver = pkg_resources.require("syncthing-gtk")[0].version
-		self.dialog.set_version(app_ver)
+		if app is None:
+			self.dialog.set_version(app_ver)
+		else:
+			try:
+				self.dialog.set_version("%s (Daemon %s)" % (app_ver,
+					app.get_daemon_version()))
+			except:
+				# Daemon version yet not known
+				self.dialog.set_version(app_ver)
 	
 	def on_dialog_response(self, *a):
 		self.close()
