@@ -43,7 +43,7 @@ class _Configuration(object):
 	
 	# Overrides some default values on Windows
 	WINDOWS_OVERRIDE = {
-		"syncthing_binary"			: (str, "C:\\Program Fies\\Syncthing\\syncthing.exe"),
+		"syncthing_binary"			: (str, "C:\\Program Files\\Syncthing\\syncthing.exe"),
 		"autokill_daemon"			: (int, 1),
 		"use_old_header"			: (bool, True),
 		"st_autoupdate"				: (bool, True),

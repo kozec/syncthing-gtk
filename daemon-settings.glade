@@ -181,7 +181,6 @@
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
                 <property name="adjustment">adjMaxSendKbps</property>
-                <property name="value">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -325,7 +324,7 @@
                   <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">_Incoimg Rate Limit (KiB/s)</property>
+                    <property name="label" translatable="yes">_Incoming Rate Limit (KiB/s)</property>
                     <property name="use_underline">True</property>
                     <property name="mnemonic_widget">vMaxRecvKbpsEnabled</property>
                     <attributes>
@@ -346,7 +345,6 @@
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
                 <property name="adjustment">adjMaxRecvKbps</property>
-                <property name="value">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
