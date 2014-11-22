@@ -753,7 +753,7 @@ class App(Gtk.Application, TimerManager):
 		self.sync_animation += 1
 		if self.sync_animation >= SI_FRAMES:
 			self.sync_animation = 0
-		self.timer("icon", 1, self.animate_status)
+		self.timer("icon", 0.1, self.animate_status)
 	
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
