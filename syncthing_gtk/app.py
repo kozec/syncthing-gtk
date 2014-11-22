@@ -328,9 +328,7 @@ class App(Gtk.Application, TimerManager):
 		def cb_cu_version(sd, version):
 			needs_upgrade = False
 			try:
-				needs_upgrade = not compare_version(
-					self.devices[self.daemon.get_my_id()]["version"],
-					version)
+				needs_upgrade = not compare_version(self.get_daemon_version(), version)
 			except Exception:
 				# May happen if connection to daemon is lost while version
 				# check is running
@@ -847,6 +845,13 @@ class App(Gtk.Application, TimerManager):
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
+	def get_daemon_version(self):
+		"""
+		Returns version of connected daemon.
+		May throw error if connection is not yet established.
+		"""
+		return self.devices[self.daemon.get_my_id()]["version"]
+	
 	def display_connect_dialog(self, message, quit_button=True):
 		"""
 		Displays 'Be patient, i'm trying to connect here' dialog, or updates
@@ -1102,7 +1107,7 @@ class App(Gtk.Application, TimerManager):
 		self.quit()
 	
 	def cb_about(self, *a):
-		AboutDialog(self.gladepath).show(self["window"])
+		AboutDialog(self, self.gladepath).show(self["window"])
 	
 	def cb_delete_event(self, *e):
 		# Hide main window

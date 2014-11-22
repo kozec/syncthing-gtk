@@ -21,7 +21,7 @@ if __name__ == "__main__":
 		windows.fix_localized_system_error_messages()
 	if "-a" in sys.argv:
 		from syncthing_gtk import AboutDialog
-		AboutDialog(".").run([])
+		AboutDialog(None, ".").run([])
 	elif "-1" in sys.argv:
 		from syncthing_gtk import Wizard
 		Wizard(

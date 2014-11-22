@@ -25,7 +25,7 @@ if __name__ == "__main__":
 	
 	if "-a" in sys.argv:
 		from syncthing_gtk import AboutDialog
-		AboutDialog(path).run([])
+		AboutDialog(None, path).run([])
 	elif "-1" in sys.argv:
 		from syncthing_gtk import Wizard
 		Wizard(
