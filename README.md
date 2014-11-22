@@ -37,3 +37,4 @@ Packages:
 Related links:
 - http://syncthing.net
 - https://discourse.syncthing.net/t/syncthing-gtk-gui-for-syncthing/709
+- https://discourse.syncthing.net/t/lxle-a-respin-of-lubuntu-now-has-syncthing-included-by-default/1392
