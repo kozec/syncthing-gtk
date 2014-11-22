@@ -5,7 +5,7 @@ GTK3 &amp; python based GUI and notification area icon for Syncthing
 
 <a href="http://i.imgur.com/eX250tQ.png"><img src="http://i.imgur.com/N36wmBM.png"></a> &nbsp; <a href="http://i.imgur.com/RTRgRdC.png"><img src="http://i.imgur.com/43mmnC7.png"></a> &nbsp; <a href="http://i.imgur.com/OZ4xEeH.jpg"><img src="http://i.imgur.com/KDBYekd.png"></a>
 
-Supported syncthing features:
+Supported Syncthing features:
 - Everything what WebUI can display
 - Adding / editing / deleting nodes
 - Adding / editing / deleting repositories
@@ -22,11 +22,11 @@ Additional features:
 Dependencies:  
 - python 2.7, gtk3 and <a href=https://live.gnome.org/PyGObject>PyGObject</a>
 - <a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version),
-- <a href="http://syncthing.net">syncthing</a> 0.10 or newer
+- <a href="http://syncthing.net">Syncthing</a> 0.10 or newer
 
 Optional Dependencies:  
 - <a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> for instant synchronization.
-- libnotofy for desktop notifications.
+- libnotify for desktop notifications.
 
 Packages:
 - Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
