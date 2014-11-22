@@ -27,7 +27,7 @@ COLOR_FOLDER_SCANNING	= "#2A89C8"
 COLOR_FOLDER_IDLE		= "#2AAB61"
 COLOR_FOLDER_STOPPED	= "#87000B"
 COLOR_NEW				= "#A0A0A0"
-SI_FRAMES				= 4 # Number of animation frames for status icon
+SI_FRAMES				= 12 # Number of animation frames for status icon
 
 # Response IDs
 RESPONSE_RESTART		= 256
