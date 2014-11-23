@@ -27,7 +27,7 @@ COLOR_FOLDER_SCANNING	= "#2A89C8"
 COLOR_FOLDER_IDLE		= "#2AAB61"
 COLOR_FOLDER_STOPPED	= "#87000B"
 COLOR_NEW				= "#A0A0A0"
-SI_FRAMES				= 4 # Number of animation frames for status icon
+SI_FRAMES				= 12 # Number of animation frames for status icon
 
 # Response IDs
 RESPONSE_RESTART		= 256
@@ -753,7 +753,7 @@ class App(Gtk.Application, TimerManager):
 		self.sync_animation += 1
 		if self.sync_animation >= SI_FRAMES:
 			self.sync_animation = 0
-		self.timer("icon", 1, self.animate_status)
+		self.timer("icon", 0.1, self.animate_status)
 	
 	def fatal_error(self, text):
 		# TODO: Better way to handle this

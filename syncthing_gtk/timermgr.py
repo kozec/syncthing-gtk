@@ -18,15 +18,19 @@ class TimerManager(object):
 		GLib.timeout_add_seconds with small wrapping to allow named
 		timers to be canceled by reset() call
 		"""
+		method = GLib.timeout_add_seconds
+		if delay < 1 and delay > 0:
+			method = GLib.timeout_add
+			delay = delay * 1000.0
 		if name is None:
 			# No wrapping is needed, call GLib directly
-			GLib.timeout_add_seconds(delay, callback, *data)
+			method(delay, callback, *data)
 		else:
 			if name in self._timers:
 				# Cancel old timer
 				GLib.source_remove(self._timers[name])
 			# Create new one
-			self._timers[name] = GLib.timeout_add_seconds(delay, self._callback, name, callback, *data)
+			self._timers[name] = method(delay, self._callback, name, callback, *data)
 	
 	def timer_active(self, name):
 		""" Returns True if named timer is active """
