@@ -318,8 +318,9 @@ class Daemon(GObject.GObject, TimerManager):
 				.getElementsByTagName("gui")[0].getAttribute("tls")
 		except Exception, e:
 			pass
+		self._tls = False
 		if tls.lower() == "true":
-			raise TLSUnsupportedException("TLS Unsupported")
+			self._tls = True
 		try:
 			self._address = xml.getElementsByTagName("configuration")[0] \
 							.getElementsByTagName("gui")[0] \
@@ -367,7 +368,7 @@ class Daemon(GObject.GObject, TimerManager):
 			callback(json_data, callback_data... )
 			error_callback(exception, command, callback_data... )
 		"""
-		sc = Gio.SocketClient()
+		sc = Gio.SocketClient(tls=self._tls, tls_validation_flags=0)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
 			(command, self._epoch, callback, error_callback, callback_data))
 	
@@ -378,6 +379,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
+			print e
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
@@ -470,7 +472,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
-		sc = Gio.SocketClient()
+		sc = Gio.SocketClient(tls=self._tls)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
 			(command, data, self._epoch, callback, error_callback, callback_data))
 	
