@@ -22,6 +22,7 @@ Additional features:
 Dependencies:  
 - python 2.7, gtk3 and <a href=https://live.gnome.org/PyGObject>PyGObject</a>
 - <a href="http://labix.org/python-dateutil">python-dateutil</a> (Python&lt;3.0 version),
+- <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>,
 - <a href="http://syncthing.net">Syncthing</a> 0.10 or newer
 
 Optional Dependencies:  
