@@ -172,7 +172,7 @@ class App(Gtk.Application, TimerManager):
 			for speed in SPEED_LIMIT_VALUES:
 				menuitem = Gtk.CheckMenuItem(_("%s kB/s") % (speed,))
 				item_id = "%s-%s" % (limitmenu, speed)
-				menuitem.connect('toggled', eventhandler, speed)
+				menuitem.connect('activate', eventhandler, speed)
 				self[item_id] = menuitem
 				submenu.add(menuitem)
 			self[limitmenu].show_all()
@@ -1173,10 +1173,12 @@ class App(Gtk.Application, TimerManager):
 		e.show(self["window"])
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
+		print "cb_menu_recvlimit", menuitem, speed
 		if menuitem.get_active() and self.recv_limit != speed:
 			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
+		print "cb_menu_sendlimit", menuitem, speed
 		if menuitem.get_active() and self.send_limit != speed:
 			self.change_setting_n_restart("Options/MaxSendKbps", speed)
 	
