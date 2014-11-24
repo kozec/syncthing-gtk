@@ -907,6 +907,10 @@ class Daemon(GObject.GObject, TimerManager):
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
 			return
+		elif isinstance(exception, ConnectionRestarted):
+			# Happens on Windows. Just try again.
+			GLib.idle_add(self._request_config)
+			return
 		self.emit("connection-error", Daemon.UNKNOWN, exception.message)
 	
 	def _syncthing_cb_config_in_sync(self, data):
