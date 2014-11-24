@@ -15,6 +15,7 @@ Section
 	File build\exe.win32-2.7\syncthing-gtk.exe
 	File build\exe.win32-2.7\library.zip
 	File build\exe.win32-2.7\*.glade
+	File build\exe.win32-2.7\__version__
 	File /r build\exe.win32-2.7\icons
 	# Check if random file that should be part of libraries zip exists
 	# and download&extract zip if not

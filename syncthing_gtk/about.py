@@ -5,8 +5,8 @@ Syncthing-GTK - About dialog
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib
-from syncthing_gtk import DEBUG
-import os, tempfile, pkg_resources
+from syncthing_gtk.tools import IS_WINDOWS
+import os, sys, tempfile
 _ = lambda (a) : a
 
 class AboutDialog(object):
@@ -34,17 +34,30 @@ class AboutDialog(object):
 		self.builder.add_from_file(os.path.join(self.gladepath, "about.glade"))
 		self.builder.connect_signals(self)
 		self.dialog = self.builder.get_object("dialog")
-		# Set version info
-		app_ver = pkg_resources.require("syncthing-gtk")[0].version
-		if app is None:
-			self.dialog.set_version(app_ver)
-		else:
-			try:
-				self.dialog.set_version("%s (Daemon %s)" % (app_ver,
-					app.get_daemon_version()))
-			except:
-				# Daemon version yet not known
-				self.dialog.set_version(app_ver)
+		# Get app version
+		app_ver = "unknown"
+		try:
+			if IS_WINDOWS:
+				# pkg_resources will not work on cx_Frozen package
+				from syncthing_gtk.tools import get_install_path
+				vfile = file(os.path.join(get_install_path(), "__version__"), "r")
+				app_ver = vfile.read().strip(" \t\r\n")
+			else:
+				import pkg_resources
+				app_ver = pkg_resources.require("syncthing-gtk")[0].version
+		except:
+			# pkg_resources is not available or __version__ file missing
+			# There is no reason to crash on this.
+			pass
+		# Get daemon version
+		try:
+			daemon_ver = app.get_daemon_version()
+			app_ver = "%s (Daemon %s)" % (app_ver, daemon_ver)
+		except:
+			# App is None or daemon version is not yet known
+			pass
+		# Display versions in UI
+		self.dialog.set_version(app_ver)
 	
 	def on_dialog_response(self, *a):
 		self.close()

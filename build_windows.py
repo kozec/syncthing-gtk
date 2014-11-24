@@ -6,8 +6,12 @@ Do './build_windows.py build' to build exe, then call
 
 import os, site, sys, shutil
 from cx_Freeze import setup, Executable
+from cx_Freeze.freezer import Freezer, VersionInfo
+from win32verstamp import stamp
+from setup import get_version as _get_version
 
 gnome_dll_path = "/Python27/Lib/site-packages/gnome"
+build_dir = "./build/exe.win32-2.7/"
 
 # List of dlls that cx_freeze can't detect automaticaly
 missing_dll = [	'libgtk-3-0.dll',
@@ -74,10 +78,28 @@ executables = [
 	)
 ]
 
+
+get_version = lambda : "%s-win32" % (_get_version(),)
+
+# Monkey-patch _AddVersionResource in cx_Freeze so win32verstamp will
+# not bitch about non-numeric version
+RE_NUMBER = re.compile(r'v?([0-9]+).*')
+extract_number = lambda x : RE_NUMBER.match(x).group(1) if \
+		RE_NUMBER.match(x) else "0"
+win32version = lambda x : ".".join([ extract_number(i) for i in x.split(".") ])
+Freezer._AddVersionResource = lambda self, filename : \
+	stamp(filename, VersionInfo(
+			win32version(self.metadata.version),
+			comments = self.metadata.long_description,
+			description = self.metadata.description,
+			company = self.metadata.author,
+			product = self.metadata.name
+	))
+
 setup(
 	name = "Syncthing GTK",
 	author = "Kozec",
-	version = "0.4.3",
+	version = get_version(),
 	description = "Windows port of Sycnthing GTK",
 	options = dict(
 		build_exe = dict(
@@ -95,7 +117,7 @@ if 'build' in sys.argv:
 		print "replacing", l
 		shutil.copy(
 			os.path.join(gnome_dll_path, l),
-			os.path.join("./build/exe.win32-2.7", l)
+			os.path.join(build_dir, l)
 		)
 	# Copy some theme icons
 	sizes = ["16x16", "24x24", "32x32", "scalable"]
@@ -133,7 +155,7 @@ if 'build' in sys.argv:
 				],
 		}
 	themes = ["Adwaita"]
-	target_path = "./build/exe.win32-2.7/share/icons/"
+	target_path = os.path.join(build_dir, "share/icons/")
 	src_path = os.path.join(gnome_dll_path, "share/icons/")
 	for theme in themes:
 		for size in sizes:
@@ -155,11 +177,14 @@ if 'build' in sys.argv:
 			os.path.join(target_path, theme, "index.theme")
 		)
 	print "Copying glib schemas"
-	if not os.path.exists("./build/exe.win32-2.7/share/glib-2.0/schemas"):
-		target_path = "./build/exe.win32-2.7/share/glib-2.0/schemas"
+	if not os.path.exists(os.path.join(build_dir, "/share/glib-2.0/schemas")):
+		target_path = os.path.join(build_dir, "share/glib-2.0/schemas")
 		src_path = os.path.join(gnome_dll_path, "share/glib-2.0/schemas")
-		os.makedirs(target_path)
-		for file in os.listdir(src_path):
-			src = os.path.join(src_path, file)
-			target = os.path.join(target_path, file)
+		if not os.path.exists(target_path):
+			os.makedirs(target_path)
+		for filename in os.listdir(src_path):
+			src = os.path.join(src_path, filename)
+			target = os.path.join(target_path, filename)
 			shutil.copy(src, target)
+	print "Storing version"
+	file(os.path.join(build_dir, "__version__"), "w").write(get_version())
