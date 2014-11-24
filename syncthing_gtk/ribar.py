@@ -132,9 +132,10 @@ class RIBar(RevealerClass):
 		self.set_value(key, value)
 	
 	@staticmethod
-	def build_button(label, icon_name=None, icon_widget=None):
+	def build_button(label, icon_name=None, icon_widget=None, use_stock=False):
 		""" Builds button situable for action area """
-		b = Gtk.Button.new_with_label(label)
+		b = Gtk.Button.new_from_stock(label) if use_stock \
+			else Gtk.Button.new_with_label(label)
 		b.set_use_underline(True)
 		if not icon_name is None:
 			icon_widget = Gtk.Image()

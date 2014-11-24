@@ -37,6 +37,8 @@ RESPONSE_QUIT			= 260
 RESPONSE_START_DAEMON	= 271
 RESPONSE_SLAIN_DAEMON	= 272
 RESPONSE_SPARE_DAEMON	= 273
+RESPONSE_UR_ALLOW		= 274
+RESPONSE_UR_FORBID		= 275
 
 # RI's
 REFRESH_INTERVAL_DEFAULT	= 1
@@ -85,6 +87,8 @@ class App(Gtk.Application, TimerManager):
 		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
 		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
 		self.send_limit = -1			# -//-
+		self.ur_question_shown = False	# Used to prevent showing 'Do you wan't usage reporting'
+										# question more than once until ST-GTK is restarted.
 		self.wizard = None
 		self.widgets = {}
 		self.error_boxes = []
@@ -269,6 +273,29 @@ class App(Gtk.Application, TimerManager):
 			self.process.connect('exit', self.cb_daemon_exit)
 			self.process.start()
 			self.lookup_action('daemon_output').set_enabled(True)
+	
+	def ask_for_ur(self, *a):
+		if self.ur_question_shown:
+			# Don't ask twice until ST-GTK restart
+			return
+		markup = "".join([
+			"<b>%s</b>" % (_("Allow Anonymous Usage Reporting?"),),
+			"\n",
+			_("The encrypted usage report is sent daily."), " ",
+			_("It is used to track common platforms, folder sizes and app versions."), " ",
+			_("If the reported data set is changed you will be prompted with this dialog again."),
+			"\n",
+			_("The aggregated statistics are publicly available at"), " ",
+			"<a href='https://data.syncthing.net'>https://data.syncthing.net.</a>",
+			"."
+		])
+		r = RIBar(markup, Gtk.MessageType.QUESTION)
+		r.add_button(RIBar.build_button("gtk-yes", use_stock=True), RESPONSE_UR_ALLOW)
+		r.add_button(RIBar.build_button("gtk-no", use_stock=True), RESPONSE_UR_FORBID)
+		self.show_info_box(r)
+		
+		self.ur_question_shown = True
+		# User response is handled in App.cb_infobar_response
 	
 	def check_for_upgrade(self, *a):
 		self.cancel_timer("updatecheck")
@@ -507,6 +534,10 @@ class App(Gtk.Application, TimerManager):
 				if speed == value:
 					other = False
 			self["%s-other" % (limitmenu,)].set_active(other)
+		
+		if config["Options"]["URAccepted"] == 0:
+			# User did not responded to usage reporting yet. Ask
+			self.ask_for_ur()
 		
 	def cb_syncthing_error(self, daemon, message):
 		""" Daemon argument is not used """
@@ -1034,50 +1065,53 @@ class App(Gtk.Application, TimerManager):
 		this error will not cause retrying process as well.
 		"""
 		# ^^ Longest comment in entire project
-		self.daemon.read_config(self.csnr_config_read, self.csnr_error, setting_name, value, retry_on_error)
-	
-	def csnr_error(self, e, trash, setting_name, value, retry_on_error):
-		"""
-		Error handler for change_setting_n_restart method
-		"""
-		print >>sys.stderr, "change_setting_n_restart: Failed to read configuration:", e
-		if retry_on_error:
-			print >>sys.stderr, "Retrying..."
-			self.change_setting_n_restart(setting_name, value, True)
-		else:
+		
+		# Callbacks
+		def csnr_error(e, trash, setting_name, value, retry_on_error):
+			"""
+			Error handler for change_setting_n_restart method
+			"""
+			print >>sys.stderr, "change_setting_n_restart: Failed to read configuration:", e
+			if retry_on_error:
+				print >>sys.stderr, "Retrying..."
+				change_setting_n_restart(setting_name, value, True)
+			else:
+				print >>sys.stderr, "Giving up."
+		
+		def csnr_save_error(e, *a):
+			"""
+			Another error handler for change_setting_n_restart method.
+			This one just reports failure.
+			"""
+			print >>sys.stderr, "change_setting_n_restart: Failed to store configuration:", e
 			print >>sys.stderr, "Giving up."
-	
-	def csnr_save_error(self, e, *a):
-		"""
-		Another error handler for change_setting_n_restart method.
-		This one just reports failure.
-		"""
-		print >>sys.stderr, "change_setting_n_restart: Failed to store configuration:", e
-		print >>sys.stderr, "Giving up."
-	
-	def csnr_config_read(self, config, setting_name, value, retry_on_error):
-		"""
-		Handler for change_setting_n_restart
-		Modifies recieved config and post it back.
-		"""
-		c, setting = config, setting_name
-		while "/" in setting:
-			key, setting = setting.split("/", 1)
-			c = c[key]
-		c[setting] = value
-		self.daemon.write_config(config, self.csnr_config_saved, self.csnr_save_error, setting_name, value)
-	
-	def csnr_config_saved(self, setting_name, value):
-		"""
-		Handler for change_setting_n_restart
-		Reports good stuff and restarts daemon.
-		"""
-		print "Configuration value '%s' set to '%s'" % (setting_name, value)
-		message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
-		self.display_connect_dialog(message)
-		self.set_status(False)
-		self.restart()
-		GLib.idle_add(self.daemon.restart)
+		
+		def csnr_config_read(config, setting_name, value, retry_on_error):
+			"""
+			Handler for change_setting_n_restart
+			Modifies recieved config and post it back.
+			"""
+			c, setting = config, setting_name
+			while "/" in setting:
+				key, setting = setting.split("/", 1)
+				c = c[key]
+			c[setting] = value
+			self.daemon.write_config(config, csnr_config_saved, csnr_save_error, setting_name, value)
+		
+		def csnr_config_saved(setting_name, value):
+			"""
+			Handler for change_setting_n_restart
+			Reports good stuff and restarts daemon.
+			"""
+			print "Configuration value '%s' set to '%s'" % (setting_name, value)
+			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
+			self.display_connect_dialog(message)
+			self.set_status(False)
+			self.restart()
+			GLib.idle_add(self.daemon.restart)
+		
+		# Call
+		self.daemon.read_config(csnr_config_read, csnr_error, setting_name, value, retry_on_error)
 	
 	def quit(self, *a):
 		if self.process != None:
@@ -1358,6 +1392,8 @@ class App(Gtk.Application, TimerManager):
 			self.error_boxes.remove(bar)
 	
 	def cb_infobar_response(self, bar, response_id, additional_data={}):
+		# TODO: Split this, I don't like handling different things in
+		# one method
 		if response_id == RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
@@ -1384,6 +1420,12 @@ class App(Gtk.Application, TimerManager):
 			e = DeviceEditorDialog(self, True, additional_data["nid"])
 			e.load()
 			e.show(self["window"])
+		elif response_id == RESPONSE_UR_ALLOW:
+			# Allow Usage reporting
+			self.change_setting_n_restart("Options/URAccepted", 1)
+		elif response_id == RESPONSE_UR_FORBID:
+			# Allow Usage reporting
+			self.change_setting_n_restart("Options/URAccepted", -1)
 		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):
