@@ -592,7 +592,7 @@
 							<property name="can_focus">False</property>
 							<property name="label" translatable="yes">_Unlimited</property>
 							<property name="use_underline">True</property>
-							<signal name="toggled" handler="cb_menu_recvlimit" swapped="no"/>
+							<signal name="activate" handler="cb_menu_recvlimit" swapped="no"/>
 						</object>
 					</child>
 					<child>
@@ -601,7 +601,7 @@
 							<property name="can_focus">False</property>
 							<property name="label" translatable="yes">_Other</property>
 							<property name="use_underline">True</property>
-							<signal name="toggled" handler="cb_menu_recvlimit_other" swapped="no"/>
+							<signal name="activate" handler="cb_menu_recvlimit_other" swapped="no"/>
 						</object>
 					</child>
 					<child>
@@ -634,7 +634,7 @@
 							<property name="can_focus">False</property>
 							<property name="label" translatable="yes">_Unlimited</property>
 							<property name="use_underline">True</property>
-							<signal name="toggled" handler="cb_menu_sendlimit" swapped="no"/>
+							<signal name="activate" handler="cb_menu_sendlimit" swapped="no"/>
 						</object>
 					</child>
 					<child>
@@ -643,7 +643,7 @@
 							<property name="can_focus">False</property>
 							<property name="label" translatable="yes">_Other</property>
 							<property name="use_underline">True</property>
-							<signal name="toggled" handler="cb_menu_sendlimit_other" swapped="no"/>
+							<signal name="activate" handler="cb_menu_sendlimit_other" swapped="no"/>
 						</object>
 					</child>
 					<child>

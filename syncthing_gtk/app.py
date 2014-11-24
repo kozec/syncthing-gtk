@@ -172,7 +172,7 @@ class App(Gtk.Application, TimerManager):
 			for speed in SPEED_LIMIT_VALUES:
 				menuitem = Gtk.CheckMenuItem(_("%s kB/s") % (speed,))
 				item_id = "%s-%s" % (limitmenu, speed)
-				menuitem.connect('toggled', eventhandler, speed)
+				menuitem.connect('activate', eventhandler, speed)
 				self[item_id] = menuitem
 				submenu.add(menuitem)
 			self[limitmenu].show_all()
@@ -840,7 +840,12 @@ class App(Gtk.Application, TimerManager):
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
 		if IS_WINDOWS:
-			self.config["window_position"] = self["window"].get_position()
+			x, y = self["window"].get_position()
+			if x < 0 : x = 0
+			if y < 0 : y = 0
+			# Yes, it is possible for window to have negative position
+			# on Windows...
+			self.config["window_position"] = (x, y)
 		self["window"].hide()
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
@@ -944,10 +949,10 @@ class App(Gtk.Application, TimerManager):
 		box.connect('right-click', self.cb_popup_menu_folder)
 		box.connect('enter-notify-event', self.cb_box_mouse_enter)
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
-		self["folderlist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
 		self["folderlist"].show_all()
+		self["folderlist"].pack_start(box, False, False, 3)
 		self.folders[id] = box
 		return box
 	
@@ -976,10 +981,10 @@ class App(Gtk.Application, TimerManager):
 		box.connect('right-click', self.cb_popup_menu_device)
 		box.connect('enter-notify-event', self.cb_box_mouse_enter)
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
-		self["devicelist"].pack_start(box, False, False, 3)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
 		self["devicelist"].show_all()
+		self["devicelist"].pack_start(box, False, False, 3)
 		self.devices[id] = box
 		return box
 	

@@ -267,9 +267,8 @@ if IS_WINDOWS:
 			_winreg.CloseKey(key)
 			return path
 		except WindowsError:
-			# This is really shouldn't happen. Just use default path
-			# and expect thing to crash
-			return "C:\\Program Files\\SyncthingGTK"
+			# This is really shouldn't happen. Use executable path.
+			os.path.dirname(sys.executable)
 		
 	get_install_path = _get_install_path
 
