@@ -840,7 +840,12 @@ class App(Gtk.Application, TimerManager):
 		if self.connect_dialog != None:
 			self.connect_dialog.hide()
 		if IS_WINDOWS:
-			self.config["window_position"] = self["window"].get_position()
+			x, y = self["window"].get_position()
+			if x < 0 : x = 0
+			if y < 0 : y = 0
+			# Yes, it is possible for window to have negative position
+			# on Windows...
+			self.config["window_position"] = (x, y)
 		self["window"].hide()
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
