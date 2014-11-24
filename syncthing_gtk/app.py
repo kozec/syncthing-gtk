@@ -1173,12 +1173,10 @@ class App(Gtk.Application, TimerManager):
 		e.show(self["window"])
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
-		print "cb_menu_recvlimit", menuitem, speed
 		if menuitem.get_active() and self.recv_limit != speed:
 			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
-		print "cb_menu_sendlimit", menuitem, speed
 		if menuitem.get_active() and self.send_limit != speed:
 			self.change_setting_n_restart("Options/MaxSendKbps", speed)
 	
