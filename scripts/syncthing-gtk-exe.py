@@ -22,6 +22,7 @@ if __name__ == "__main__":
 	
 	from syncthing_gtk import windows
 	windows.fix_localized_system_error_messages()
+	windows.dont_use_localization_in_gtk()
 	
 	if "-a" in sys.argv:
 		from syncthing_gtk import AboutDialog

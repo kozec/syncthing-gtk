@@ -30,6 +30,16 @@ def fix_localized_system_error_messages():
 	
 	codecs.register_error("strict", handle_error)
 
+def dont_use_localization_in_gtk():
+	"""
+	Set's LANGUAGE environment variable to en_US, preventing
+	use of localized labels on GTK stock menus and widgets.
+	
+	This will prevent interface from being 'half-translated' until
+	real translation support is done.
+	"""
+	os.environ['LANGUAGE'] = 'en_US'
+
 class WinPopenReader:
 	"""
 	Reads from PIPE using GLib timers or idle_add. Emulates part of
