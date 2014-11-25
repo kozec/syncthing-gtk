@@ -258,6 +258,7 @@ class Daemon(GObject.GObject, TimerManager):
 	REFUSED			= 1
 	NOT_AUTHORIZED	= 2
 	OLD_VERSION		= 3
+	TLS_UNSUPPORTED	= 4
 	UNKNOWN			= 255
 	
 	def __init__(self):
@@ -318,8 +319,9 @@ class Daemon(GObject.GObject, TimerManager):
 				.getElementsByTagName("gui")[0].getAttribute("tls")
 		except Exception, e:
 			pass
+		self._tls = False
 		if tls.lower() == "true":
-			raise TLSUnsupportedException("TLS Unsupported")
+			self._tls = True
 		try:
 			self._address = xml.getElementsByTagName("configuration")[0] \
 							.getElementsByTagName("gui")[0] \
@@ -367,7 +369,7 @@ class Daemon(GObject.GObject, TimerManager):
 			callback(json_data, callback_data... )
 			error_callback(exception, command, callback_data... )
 		"""
-		sc = Gio.SocketClient()
+		sc = Gio.SocketClient(tls=self._tls, tls_validation_flags=0)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
 			(command, self._epoch, callback, error_callback, callback_data))
 	
@@ -378,6 +380,9 @@ class Daemon(GObject.GObject, TimerManager):
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
+			print e
+			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
+				e = TLSUnsupportedException(e.message)
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
@@ -470,7 +475,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
-		sc = Gio.SocketClient()
+		sc = Gio.SocketClient(tls=self._tls)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
 			(command, data, self._epoch, callback, error_callback, callback_data))
 	
@@ -481,6 +486,8 @@ class Daemon(GObject.GObject, TimerManager):
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
+			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
+				e = TLSUnsupportedException(e.message)
 			self._rest_post_error(e, epoch, command, data, callback, error_callback, *callback_data)
 			return
 		if epoch < self._epoch :
@@ -907,9 +914,15 @@ class Daemon(GObject.GObject, TimerManager):
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
 			return
+		elif isinstance(exception, TLSUnsupportedException):
+			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message)
+			return
 		elif isinstance(exception, ConnectionRestarted):
 			# Happens on Windows. Just try again.
 			GLib.idle_add(self._request_config)
+			return
+		elif isinstance(exception, TLSUnsupportedException):
+			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message)
 			return
 		self.emit("connection-error", Daemon.UNKNOWN, exception.message)
 	
@@ -1127,8 +1140,11 @@ class Daemon(GObject.GObject, TimerManager):
 		return self._my_id
 	
 	def get_webui_url(self):
-		""" Returns webiu url in http://127.0.0.1:8080 format """
-		return "http://%s" % self._address
+		""" Returns webiu url in http(s)://127.0.0.1:8080 format """
+		return "%s://%s" % (
+			"https" if self._tls else "http",
+			self._address
+		)
 	
 	def get_address(self):
 		""" Returns tuple address on which daemon listens on. """
@@ -1159,7 +1175,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if DEBUG: print "Set refresh interval to", i
 
 class InvalidConfigurationException(RuntimeError): pass
-class TLSUnsupportedException(InvalidConfigurationException): pass
+class TLSUnsupportedException(RuntimeError): pass
 class HTTPError(RuntimeError):
 	def __init__(self, message):
 		RuntimeError.__init__(self, message)
