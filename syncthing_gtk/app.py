@@ -982,7 +982,7 @@ class App(Gtk.Application, TimerManager):
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
-		box.show_all()
+		GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
 		self["folderlist"].pack_start(box, False, False, 3)
 		self.folders[id] = box
 		return box
@@ -1014,7 +1014,7 @@ class App(Gtk.Application, TimerManager):
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
 		box.set_vexpand(False)
 		box.set_open(id in self.open_boxes)
-		box.show_all()
+		GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
 		self["devicelist"].pack_start(box, False, False, 3)
 		self.devices[id] = box
 		return box
