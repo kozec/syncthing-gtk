@@ -15,6 +15,8 @@ _ = lambda (a) : a
 COLOR_NEW				= "#A0A0A0"
 # Regexp to check if folder id is valid
 RE_FOLDER_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
+# Regexp to generate folder id from filename
+RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
 VALUES = [ "vID", "vPath", "vReadOnly", "vIgnorePerms", "vDevices",
 	"vVersioning", "vKeepVersions", "vRescanIntervalS", "vMaxAge",
 	"vVersionsPath", "vINotify"
@@ -55,6 +57,15 @@ class FolderEditorDialog(EditorDialog):
 		# Get response
 		if d.run() == Gtk.ResponseType.OK:
 			self["vPath"].set_text(d.get_filename())
+			if len(self["vID"].get_text().strip()) == 0:
+				# ID is empty, fill it with last path element
+				try:
+					lpl = os.path.split(d.get_filename())[-1]
+					id = RE_GEN_ID.search(lpl).group(0).lower()
+					self["vID"].set_text(id)
+				except AttributeError:
+					# Can't regexp anything
+					pass
 		d.destroy()
 	
 	#@Overrides
