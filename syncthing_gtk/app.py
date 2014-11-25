@@ -193,13 +193,6 @@ class App(Gtk.Application, TimerManager):
 		# Create Daemon instance (loads and parses config)
 		try:
 			self.daemon = Daemon()
-		except TLSUnsupportedException, e:
-			self.fatal_error("%s\n%s" % (
-				_("Sorry, connecting to HTTPS is not supported."),
-				_("Disable HTTPS in WebUI and try again.")
-				))
-			sys.exit(1)
-			return False
 		except InvalidConfigurationException, e:
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
@@ -448,12 +441,14 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		else: # Daemon.UNKNOWN, Daemon.NOT_AUTHORIZED
+		else:
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
 			if reason == Daemon.NOT_AUTHORIZED:
 				message = _("Cannot authorize with daemon failed. Please, use WebUI to generate API key or disable password authentication.")
 			elif reason == Daemon.OLD_VERSION:
 				message = _("Your syncthing daemon is too old.\nPlease, upgrade syncthing package at least to version %s and try again.") % (self.daemon.get_min_version(),)
+			elif reason == Daemon.TLS_UNSUPPORTED:
+				message = _("Sorry, connecting to HTTPS is not supported on this platform.\nPlease, use WebUI to disable HTTPS try again.")
 			else: # Daemon.UNKNOWN
 				message = "%s\n\n%s %s" % (
 						_("Connection to daemon failed. Check your configuration and try again."),

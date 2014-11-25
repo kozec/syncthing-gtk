@@ -258,6 +258,7 @@ class Daemon(GObject.GObject, TimerManager):
 	REFUSED			= 1
 	NOT_AUTHORIZED	= 2
 	OLD_VERSION		= 3
+	TLS_UNSUPPORTED	= 4
 	UNKNOWN			= 255
 	
 	def __init__(self):
@@ -380,6 +381,8 @@ class Daemon(GObject.GObject, TimerManager):
 				raise Exception("Unknown error")
 		except Exception, e:
 			print e
+			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
+				e = TLSUnsupportedException(e.message)
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
@@ -483,6 +486,8 @@ class Daemon(GObject.GObject, TimerManager):
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
+			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
+				e = TLSUnsupportedException(e.message)
 			self._rest_post_error(e, epoch, command, data, callback, error_callback, *callback_data)
 			return
 		if epoch < self._epoch :
@@ -909,6 +914,9 @@ class Daemon(GObject.GObject, TimerManager):
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
 			return
+		elif isinstance(exception, TLSUnsupportedException):
+			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message)
+			return
 		self.emit("connection-error", Daemon.UNKNOWN, exception.message)
 	
 	def _syncthing_cb_config_in_sync(self, data):
@@ -1125,8 +1133,11 @@ class Daemon(GObject.GObject, TimerManager):
 		return self._my_id
 	
 	def get_webui_url(self):
-		""" Returns webiu url in http://127.0.0.1:8080 format """
-		return "http://%s" % self._address
+		""" Returns webiu url in http(s)://127.0.0.1:8080 format """
+		return "%s://%s" % (
+			"https" if self._tls else "http",
+			self._address
+		)
 	
 	def get_address(self):
 		""" Returns tuple address on which daemon listens on. """
@@ -1157,7 +1168,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if DEBUG: print "Set refresh interval to", i
 
 class InvalidConfigurationException(RuntimeError): pass
-class TLSUnsupportedException(InvalidConfigurationException): pass
+class TLSUnsupportedException(RuntimeError): pass
 class HTTPError(RuntimeError):
 	def __init__(self, message):
 		RuntimeError.__init__(self, message)
