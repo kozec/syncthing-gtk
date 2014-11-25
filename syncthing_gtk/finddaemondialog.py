@@ -78,7 +78,10 @@ class FindDaemonDialog(EditorDialog):
 				))
 			return
 		# Determine target file & directory
-		self.target = os.path.join(get_config_dir(), "syncthing", "syncthing%s" % (suffix,))
+		self.target = os.path.join(
+			os.path.expanduser(StDownloader.get_target_folder()),
+			"syncthing%s" % (suffix,)
+			)
 		# Create downloader and connect events
 		sd = StDownloader(self.target, tag)
 		sd.connect("error", self.cb_download_error)

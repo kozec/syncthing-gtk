@@ -9,7 +9,7 @@ to given location.
 from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
 from syncthing_gtk import DEBUG
-from syncthing_gtk.tools import compare_version
+from syncthing_gtk.tools import compare_version, IS_WINDOWS
 import os, sys, stat, json, traceback, platform
 import tempfile, tarfile, zipfile
 _ = lambda (a) : a
@@ -78,6 +78,24 @@ class StDownloader(GObject.GObject):
 		self.version = None
 		self.dll_url = None
 		self.dll_size = None
+	
+	@staticmethod
+	def get_target_folder(*a):
+		"""
+		Returns target directory where Syncthing binary will
+		be downloaded.
+		That's %APPDATA%/syncthing on Windows or one of ~/bin, ~/.bin
+		or ~/.local/bin, whatever already exists. If none of folders
+		are existing on Linux, ~/.local/bin will be created.
+		
+		Path will contain ~ on Linux and needs to be expanded.
+		"""
+		if IS_WINDOWS:
+			return os.path.join(get_config_dir(), "syncthing")
+		for p in ("~/bin", "~/.bin"):
+			if os.path.exists(os.path.expanduser(p)):
+				return p
+		return "~/.local/bin"
 	
 	def get_version(self):
 		"""

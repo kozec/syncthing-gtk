@@ -40,8 +40,8 @@ class Wizard(Gtk.Assistant):
 		self.st_configfile = os.path.join(get_config_dir(), "syncthing", "config.xml")
 		# Window setup
 		self.set_position(Gtk.WindowPosition.CENTER)
-		self.set_size_request(650, -1)
-		self.set_default_size(650, 300)
+		self.set_size_request(720, -1)
+		self.set_default_size(720, 300)
 		self.set_deletable(True)
 		self.set_icon_from_file(os.path.join(self.iconpath, "st-logo-24.png"))
 		self.set_title("%s %s" % (_("Syncthing-GTK"), _("First run wizard")))
@@ -66,17 +66,24 @@ class Wizard(Gtk.Assistant):
 		self.set_page_title(page, page.TITLE)
 		return index
 	
-	def insert_and_go(self, page):
+	def insert(self, page):
 		"""
-		Inserts new page after currently displayed
-		and switches to it.
+		Inserts new page after currently displayed.
 		"""
 		index = self.get_current_page()
 		index = self.insert_page(page, index + 1)
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
 		self.set_page_title(page, page.TITLE)
-		self.set_current_page(index)
+		return index
+	
+	def insert_and_go(self, page):
+		"""
+		Inserts new page after currently displayed
+		and switches to it.
+		"""
+		index = self.insert(page)
+		self.set_current_page(index)		
 		return index
 	
 	def prepare_page(self, another_self, page):
@@ -133,6 +140,7 @@ class Wizard(Gtk.Assistant):
 			button.connect("clicked", lambda *a : self.show_output())
 		
 		page.show_all()
+		return page
 	
 	def show_output(self, *a):
 		"""
@@ -214,7 +222,11 @@ class FindDaemonPage(Page):
 	def prepare(self):
 		paths = [ "./" ]
 		paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
-		self.binaries = ("syncthing", "syncthing.x86", "syncthing.x86_64")
+		suffix, trash = StDownloader.determine_platform()
+		self.binaries = ["syncthing", "syncthing%s" % (suffix,)]
+		if suffix == "x64":
+			# Allow 32bit binary on 64bit
+			self.binaries += ["syncthing.x86"]
 		if IS_WINDOWS:
 			paths += [ "c:/Program Files/syncthing",
 				"c:/Program Files (x86)/syncthing",
@@ -235,27 +247,40 @@ class FindDaemonPage(Page):
 			path, paths = paths[0], paths[1:]
 		except IndexError:
 			# Out of possible paths. Not found
-			if True or IS_WINDOWS:	# TODO: Just for testing
+			if IS_WINDOWS:
 				# On Windows, don't say anything and download Syncthing
 				# directly
-				p = DownloadSTPage()
-				self.parent.insert_and_go(p)
+				self.parent.insert_and_go(DownloadSTPage())
 				return False
 			else:
-				# On Linux, generate and display error page and give up
-				# TODO: Download on Linux as well?
-				local_bin_folder = "~/.local/bin"
-				local_bin_folder_link = '<a href="file://%s">%s</a>' % (
-						os.path.expanduser(local_bin_folder), local_bin_folder)
+				# On Linux, generate and display error page
+				target_folder_link = '<a href="file://%s">%s</a>' % (
+						os.path.expanduser(StDownloader.get_target_folder()),
+						StDownloader.get_target_folder())
 				dll_link = '<a href="https://github.com/syncthing/syncthing/releases">' + \
 						_('download latest binary') + '</a>'
-				return self.parent.error(self,
+				page = self.parent.error(self,
 						_("Syncthing daemon not found."),
 						(_("Please, use package manager to install the Syncthing package") + " " +
-						 _("or %s from Syncthing page and save it") + " " +
-						 _("to your %s or any other directory in PATH")) %
-							(dll_link, local_bin_folder_link,),
+						 _("or %s from Syncthing page and save it to your %s directory.") +
+						 "\n\n" +
+						 _("Alternatively, Syncthing-GTK can download Syncthing binary "
+						   "to %s and keep it up-to-date, but this option is meant as "
+						   "last resort and generally not suggested.")
+						 ) % (dll_link, target_folder_link, target_folder_link), +
 						False)
+				# Attach [ ] Download Syncthing checkbox
+				cb = Gtk.CheckButton(_("_Download Syncthing binary"), use_underline=True)
+				cb.connect("toggled", lambda cb, *a : self.parent.set_page_complete(page, cb.get_active()))
+				page.attach(cb,	0, 2, 2, 1)
+				# Attach [ ] Autoupdate checkbox
+				cb = Gtk.CheckButton(_("Auto_update downloaded binary"), use_underline=True)
+				cb.connect("toggled", lambda cb, *a : self.parent.config.set("st_autoupdate", cb.get_active()))
+				page.attach(cb,	0, 3, 2, 1)
+				page.show_all()
+				# Add Download page
+				self.parent.insert(DownloadSTPage())
+				return
 		
 		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)
@@ -315,7 +340,10 @@ class DownloadSTPage(Page):
 				False)
 			return
 		# Determine target file & directory
-		self.target = os.path.join(get_config_dir(), "syncthing", "syncthing%s" % (suffix,))
+		self.target = os.path.join(
+			os.path.expanduser(StDownloader.get_target_folder()),
+			"syncthing%s" % (suffix,)
+			)
 		# Create downloader and connect events
 		self.sd = StDownloader(self.target, tag)
 		self.sd.connect("error", self.on_download_error)

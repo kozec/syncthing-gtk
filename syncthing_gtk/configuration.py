@@ -154,12 +154,15 @@ class _Configuration(object):
 		for k in self.values:
 			yield k
 	
-	def __getitem__(self, key):
+	def get(self, key):
 		return self.values[key]
 	
-	def __setitem__(self, key, value):
+	def set(self, key, value):
 		self.values[key] = value
 		self.save()
+	
+	__getitem__ = get
+	__setitem__ = set
 	
 	def __contains__(self, key):
 		""" Returns true if there is such value """
