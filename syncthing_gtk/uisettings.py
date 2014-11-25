@@ -9,6 +9,7 @@ from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
 from syncthing_gtk.tools import *
+from syncthing_gtk.configuration import LONG_AGO
 import os
 
 _ = lambda (a) : a
@@ -82,6 +83,11 @@ class UISettingsDialog(EditorDialog):
 			if self["rbOnExitTerminate"].get_active() : return self.set_value(key[1:], 1)
 			elif self["rbOnExitLeave"].get_active() : return self.set_value(key[1:], 0)
 			else: return self.set_value(key[1:], 2)	# vOnExitAsk
+		elif key == "vst_autoupdate":
+			# Reset updatecheck timer when autoupdate is turned on
+			if self["vst_autoupdate"].get_active():
+				self.values["last_updatecheck"] = LONG_AGO
+			return EditorDialog.store_value(self, key, w)
 		else:
 			return EditorDialog.store_value(self, key, w)
 	
