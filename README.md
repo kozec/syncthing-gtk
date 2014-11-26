@@ -30,7 +30,8 @@ Optional Dependencies:
 - libnotify for desktop notifications.
 
 Packages:
-- Ubuntu: in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
+- Ubuntu (deb-based distros): in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
+- SUSE, Fedora (rpm-based distros): in <a href="http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk">OpenSUSE Build Service</a>. You can install <a href="http://software.opensuse.org/package/syncthing">Syncthing Package</a> first.
 - Arch Linux: <a href="https://aur.archlinux.org/packages/syncthing-gtk/">AUR</a>
 - Windows: Get <a href="https://github.com/kozec/syncthing-gui/releases/latest">latest installer from here</a>
 - Or, in worst case scenario, download <a href="https://github.com/kozec/syncthing-gui/releases/latest">latest tarball</a>, extract it and run syncthing-gtk.py.
