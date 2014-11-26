@@ -4,7 +4,7 @@ Do './build_windows.py build' to build exe, then call
 'makensis syncthing-gtk.nsis' to create instalation package.
 """
 
-import os, site, sys, shutil
+import os, site, sys, shutil, re
 from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
 from win32verstamp import stamp
