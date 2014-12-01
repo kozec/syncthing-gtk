@@ -31,6 +31,8 @@ class DaemonSettingsDialog(EditorDialog):
 				# For Syncthing < 0.9.10
 				return self.values["GlobalAnnServer"]
 			return ", ".join([ x.strip() for x in self.values["GlobalAnnServers"]])
+		elif key == "URAccepted":
+			return (self.values["URAccepted"] == 1)
 		elif key == "MaxSendKbpsEnabled":
 			return (self.values["MaxSendKbps"] != 0)
 		elif key == "MaxRecvKbpsEnabled":
@@ -51,7 +53,7 @@ class DaemonSettingsDialog(EditorDialog):
 				else:
 					self.values["GlobalAnnServer"] = ""
 		elif key == "URAccepted":
-			self.values[key] = 1 if value else 0
+			self.values[key] = 1 if value else -1
 		elif key == "MaxSendKbpsEnabled":
 			if value:
 				if self.values["MaxSendKbps"] <= 0:

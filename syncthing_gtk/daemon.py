@@ -1077,7 +1077,6 @@ class Daemon(GObject.GObject, TimerManager):
 		def run_before(data, *a):
 			self.check_config()
 			callback(*calbackdata)
-		print config
 		self._rest_post("config", config, run_before, error_callback, *calbackdata)
 	
 	def read_stignore(self, folder_id, callback, error_callback=None, *calbackdata):
