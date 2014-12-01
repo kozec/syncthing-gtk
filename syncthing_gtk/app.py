@@ -96,6 +96,8 @@ class App(Gtk.Application, TimerManager):
 		self.folders = {}
 		self.devices = {}
 		self.open_boxes = set([])		# Holds set of expanded device/folder boxes
+		self.devices_never_loaded = True
+		self.folders_never_loaded = True
 		self.sync_animation = 0
 	
 	def do_startup(self, *a):
@@ -614,6 +616,11 @@ class App(Gtk.Application, TimerManager):
 			device.add_value("announce",	"announce.png",	_("Announce Server"),	"")
 			device.add_value("version",	"version.png",	_("Version"),			"?")
 			device.show_all()
+			# Expand my own device box right after startup
+			if self.devices_never_loaded:
+				self.open_boxes.add(device["id"])
+				device.set_open(True)
+				self.devices_never_loaded = True
 			# Remove my own device from "Shared with" value in all shared directories
 			# ( https://github.com/syncthing/syncthing/issues/915 )
 			for folder in self.folders:
@@ -979,7 +986,8 @@ class App(Gtk.Application, TimerManager):
 		box.connect('enter-notify-event', self.cb_box_mouse_enter)
 		box.connect('leave-notify-event', self.cb_box_mouse_leave)
 		box.set_vexpand(False)
-		box.set_open(id in self.open_boxes)
+		box.set_open(id in self.open_boxes or self.folders_never_loaded)
+		self.folders_never_loaded = False
 		GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
 		self["folderlist"].pack_start(box, False, False, 3)
 		self.folders[id] = box
