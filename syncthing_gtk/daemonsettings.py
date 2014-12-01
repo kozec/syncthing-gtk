@@ -13,7 +13,7 @@ _ = lambda (a) : a
 VALUES = [ "vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
 		"vStartBrowser", "vMaxSendKbpsEnabled", "vMaxSendKbps",
 		"vMaxRecvKbpsEnabled", "vMaxRecvKbps", "vURAccepted",
-		"vLocalAnnPort", "vGlobalAnnEnabled", "vGlobalAnnServer"
+		"vLocalAnnPort", "vGlobalAnnEnabled", "vGlobalAnnServers"
 		]
 
 
@@ -25,7 +25,12 @@ class DaemonSettingsDialog(EditorDialog):
 	#@Overrides
 	def get_value(self, key):
 		if key == "ListenAddress":
-			return ",".join([ x.strip() for x in self.values[key]])
+			return ", ".join([ x.strip() for x in self.values[key]])
+		elif key == "GlobalAnnServers":
+			if "GlobalAnnServer" in self.values:
+				# For Syncthing < 0.9.10
+				return self.values["GlobalAnnServer"]
+			return ", ".join([ x.strip() for x in self.values["GlobalAnnServers"]])
 		elif key == "MaxSendKbpsEnabled":
 			return (self.values["MaxSendKbps"] != 0)
 		elif key == "MaxRecvKbpsEnabled":
@@ -37,6 +42,14 @@ class DaemonSettingsDialog(EditorDialog):
 	def set_value(self, key, value):
 		if key == "ListenAddress":
 			self.values[key] = [ x.strip() for x in value.split(",") ]
+		elif key == "GlobalAnnServers":
+			self.values[key] = [ x.strip() for x in value.split(",") ]
+			if "GlobalAnnServer" in self.values:
+				# For Syncthing < 0.9.10
+				if len(self.values[key]) > 0:
+					self.values["GlobalAnnServer"] = self.values[key][0]
+				else:
+					self.values["GlobalAnnServer"] = ""
 		elif key == "URAccepted":
 			self.values[key] = 1 if value else 0
 		elif key == "MaxSendKbpsEnabled":
@@ -71,8 +84,8 @@ class DaemonSettingsDialog(EditorDialog):
 		self["vMaxRecvKbps"].set_sensitive(self.get_value("MaxRecvKbpsEnabled"))
 		self["lblvLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
 		self["vLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
-		self["lblvGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))
-		self["vGlobalAnnServer"].set_sensitive(self.get_value("GlobalAnnEnabled"))
+		self["lblvGlobalAnnServers"].set_sensitive(self.get_value("GlobalAnnEnabled"))
+		self["vGlobalAnnServers"].set_sensitive(self.get_value("GlobalAnnEnabled"))
 	
 	#@Overrides
 	def on_save_reuqested(self):

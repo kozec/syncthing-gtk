@@ -202,9 +202,9 @@ class Daemon(GObject.GObject, TimerManager):
 			from daemon.
 				ram_ussage:	memory ussage in bytes
 				cpu_ussage:	CPU ussage in percent (0.0 to 100.0)
-				announce:	Daemon.CONNECTED if daemon is connected to annoucnce server
-							Daemon.OFFLINE if is not
-							Daemon.DISABLED if announce server is disabled
+				announce:	Dict with list of { announce_server : value }
+							or None if announce is disabled
+							Value is True if daemon is connected to server
 	"""
 	
 	
@@ -241,13 +241,8 @@ class Daemon(GObject.GObject, TimerManager):
 			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"startup-complete"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int)),
+			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, object)),
 		}
-	
-	# Constants for 'announce' parameter of system-data-updated event
-	CONNECTED	= 1
-	OFFLINE		= 0
-	DISABLED	= -1
 	
 	# Constants for 'reason' parameter of disconnected event
 	UNEXPECTED	= 0 # connection closed by daemon
@@ -812,9 +807,14 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				self._rest_request("version", self._syncthing_cb_version)
 		
-		announce = Daemon.DISABLED
+		announce = None
 		if "extAnnounceOK" in data:
-			announce = Daemon.CONNECTED if data["extAnnounceOK"] else Daemon.OFFLINE
+			if hasattr(data["extAnnounceOK"], "keys"):
+				# Dict, Syncthing >= 0.10.9
+				announce = data["extAnnounceOK"]
+			else:
+				# Boolean, older Syncthing
+				announce = { 'default' : bool(data["extAnnounceOK"]) }
 		
 		self.emit('system-data-updated',
 			data["sys"], float(data["cpuPercent"]),
@@ -1077,6 +1077,7 @@ class Daemon(GObject.GObject, TimerManager):
 		def run_before(data, *a):
 			self.check_config()
 			callback(*calbackdata)
+		print config
 		self._rest_post("config", config, run_before, error_callback, *calbackdata)
 	
 	def read_stignore(self, folder_id, callback, error_callback=None, *calbackdata):

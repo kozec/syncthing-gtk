@@ -629,12 +629,15 @@ class App(Gtk.Application, TimerManager):
 			device = self.devices[self.daemon.get_my_id()]
 			device["ram"] = sizeof_fmt(mem)
 			device["cpu"] = "%3.2f%%" % (cpu)
-			if announce == -1:
+			if announce is None or len(announce) == 0:
 				device["announce"] = _("disabled")
-			elif announce == 1:
-				device["announce"] = _("Online") 
+			elif len(announce) == 1:
+				device["announce"] = _("Online") if announce.values()[0] else _("offline")
 			else:
-				device["announce"] = _("offline")
+				device["announce"] = _("%s/%s online") % (
+						len([ x for x in announce.values() if x ]),
+						len(announce)
+					)
 	
 	def cb_syncthing_device_added(self, daemon, nid, name, data):
 		self.show_device(nid, name,
