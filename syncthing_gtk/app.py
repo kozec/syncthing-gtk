@@ -15,7 +15,7 @@ import os, webbrowser, sys, pprint, shutil, re
 _ = lambda (a) : a
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.5"
+INTERNAL_VERSION		= "v0.5.2"
 
 COLOR_DEVICE			= "#9246B1"
 COLOR_DEVICE_SYNCING	= "#2A89C8"
