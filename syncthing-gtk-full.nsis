@@ -16,7 +16,7 @@ Section
 	# Write out installation location
 	WriteRegStr HKCU SOFTWARE\${APP_NAME} 'InstallPath' '$INSTDIR'
 	# Create shortcut
-	CreateShortCut "$SMPROGRAMS\Syncthing GTK.lnk" "$INSTDIR\syncthing-gtk.exe" "" "$INSTDIR\icons\st-logo-128.ico"
+	CreateShortCut "$SMPROGRAMS\Syncthing GTK.lnk" "$INSTDIR\syncthing-gtk.exe" ""
 	# Create uninstaller
 	WriteUninstaller $INSTDIR\uninstaller.exe
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
