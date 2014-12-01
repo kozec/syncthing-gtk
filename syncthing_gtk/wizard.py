@@ -128,7 +128,7 @@ class Wizard(Gtk.Assistant):
 		page.attach(l_message,	0, 1, 2, 1)
 		# Bugreport link
 		if display_bugreport_link:
-			github_link = '<a href="https://github.com/kozec/syncthing-gui/issues">GitHub</a>'
+			github_link = '<a href="https://github.com/syncthing/syncthing-gtk/issues">GitHub</a>'
 			l_bugreport = WrappedLabel(
 				_("Please, check error log and fill bug report on %s.") % (github_link,)
 			)

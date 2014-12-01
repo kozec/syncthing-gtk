@@ -104,7 +104,7 @@ class StDownloader(GObject.GObject):
 		Emits 'version' signal on success.
 		Handler for 'version' signal should call download method.
 		"""
-		uri = "https://api.github.com/repos/kozec/syncthing-gui/tags"
+		uri = "https://api.github.com/repos/syncthing/syncthing-gtk/tags"
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_compatibility, None)
 	

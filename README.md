@@ -1,4 +1,4 @@
-syncthing-gui
+Syncthing-GTK
 =============
 
 GTK3 &amp; python based GUI and notification area icon for Syncthing

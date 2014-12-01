@@ -33,7 +33,7 @@ if __name__ == "__main__" : setup(
 	name = 'syncthing-gtk',
 	version = get_version(),
 	description = 'GTK3 GUI for Syncthing',
-	url = 'https://github.com/kozec/syncthing-gui',
+	url = 'https://github.com/syncthing/syncthing-gtk',
 	packages = ['syncthing_gtk'],
 	data_files = [
 		('share/syncthing-gtk', glob.glob("*.glade") ),
