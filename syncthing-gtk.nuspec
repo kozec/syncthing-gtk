@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>syncthing-gtk</id>
+    <title>Syncthing GTK</title>
+    <version>0.5.2</version>
+    <authors>syncthing,kozec</authors>
+    <owners>GeoffreyFrogeye</owners>
+    <summary>GUI and notification area icon for Syncthing</summary>
+    <description>GTK3 &amp; python based GUI and notification area icon for [Syncthing](http://syncthing.net/), that is an open, trustworthy and decentralized syncing service.
+
+Supported Syncthing features:
+
+- Everything what WebUI can display
+- Adding / editing / deleting nodes
+- Adding / editing / deleting repositories
+- Restart / shutdown server
+- Editing daemon settings
+
+Additional features:
+
+- First run wizard for initial configuration
+- Running Syncthing daemon in background
+- Half-automatic setup for new nodes and repositories
+- Filesystem watching and instant synchronization using inotify
+- Desktop notifications</description>
+    <projectUrl>https://github.com/syncthing/syncthing-gtk</projectUrl>
+    <tags>syncthing-gtk admin</tags>
+    <iconUrl>https://cdn.rawgit.com/syncthing/syncthing-gtk/379492b914cf1e9e317e3488a2147fdb8b55f4ab/icons/st-logo-128.png</iconUrl>
+    <copyright></copyright>
+    <licenseUrl>https://github.com/syncthing/syncthing-gtk/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <releaseNotes>- Updated URL for Syncthing updater
+- Support for Syncthing >=0.10.9
+
+Cosmetics:
+
+- Automaticaly open topmost repo/device boxes when starting
+
+Fixes:
+
+- Anonymous usage reporting correctly stored, but incorrectly represented in UI
+- Bugged icon in Windows installer</releaseNotes>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

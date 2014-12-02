@@ -1,2 +1,3 @@
 *.pyc
 syncthing.exe
+*.nupkg
