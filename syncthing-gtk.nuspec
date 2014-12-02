@@ -5,7 +5,7 @@
     <id>syncthing-gtk</id>
     <title>Syncthing GTK</title>
     <version>0.5.2</version>
-    <authors>kozec</authors>
+    <authors>kozec syncthing</authors>
     <owners>GeoffreyFrogeye</owners>
     <summary>GUI and notification area icon for Syncthing</summary>
     <description>
