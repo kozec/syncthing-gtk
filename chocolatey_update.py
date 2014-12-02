@@ -1,4 +1,4 @@
-#!/c/Python/python.exe
+#!/c/Python27/python.exe
 """
 Update Chocolatey package from GitHub releases informations.
 
@@ -8,15 +8,21 @@ Requirements:
 - Having warmup and nuget.commandline installed ("cinst warmup nuget.commandline")
 - Having the API key configured ("nuget SetApiKey [API_KEY_HERE] -source http://chocolatey.org/" "https://chocolatey.org/account")
 - Being a maintainer of the syncthing-gtk package on Chocolatey
-- Running this with Python3 (because of easier control of utf8 strings)
 """
 
 
-import re, os, urllib.request, json
+from __future__ import unicode_literals, print_function
+
+import re, os, json
+try:
+       from urllib import request # Py3
+except ImportError:
+       import urllib2 as request  # Py2
+       from io import open
 
 print("Retrieving last version...")
 
-releasesString = urllib.request.urlopen("https://api.github.com/repos/syncthing/syncthing-gtk/releases").read().decode('utf-8')
+releasesString = request.urlopen("https://api.github.com/repos/syncthing/syncthing-gtk/releases").read().decode('utf-8')
 releases = json.loads(releasesString)
 
 lastRelease = releases[0] # Improve if needed
