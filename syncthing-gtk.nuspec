@@ -5,11 +5,10 @@
     <id>syncthing-gtk</id>
     <title>Syncthing GTK</title>
     <version>0.5.2</version>
-    <authors>kozec syncthing</authors>
+    <authors>syncthing,kozec</authors>
     <owners>GeoffreyFrogeye</owners>
     <summary>GUI and notification area icon for Syncthing</summary>
-    <description>
-GTK3 &amp; python based GUI and notification area icon for [Syncthing](http://syncthing.net/), that is an open, trustworthy and decentralized syncing service.
+    <description>GTK3 &amp; python based GUI and notification area icon for [Syncthing](http://syncthing.net/), that is an open, trustworthy and decentralized syncing service.
 
 Supported Syncthing features:
 
@@ -25,8 +24,7 @@ Additional features:
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
 - Filesystem watching and instant synchronization using inotify
-- Desktop notifications
-    </description>
+- Desktop notifications</description>
     <projectUrl>https://github.com/syncthing/syncthing-gtk</projectUrl>
     <tags>syncthing-gtk admin</tags>
     <iconUrl>https://cdn.rawgit.com/syncthing/syncthing-gtk/379492b914cf1e9e317e3488a2147fdb8b55f4ab/icons/st-logo-128.png</iconUrl>
