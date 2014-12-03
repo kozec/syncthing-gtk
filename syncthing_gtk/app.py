@@ -681,6 +681,7 @@ class App(Gtk.Application, TimerManager):
 					# Update color & header
 					device.set_status(_("Connected"))
 					device.set_color_hex(COLOR_DEVICE_CONNECTED)
+					device["online"] = True
 					# Update visible values
 					device.show_values("sync", "dl.rate", "up.rate", "version")
 					device.hide_values("last-seen")
@@ -688,9 +689,11 @@ class App(Gtk.Application, TimerManager):
 					# Update color & header
 					device.set_status(_("Disconnected"))
 					device.set_color_hex(COLOR_DEVICE)
+					device["online"] = False
 					# Update visible values
 					device.hide_values("sync", "dl.rate", "up.rate", "version")
 					device.show_values("last-seen")
+		self.set_status(True)
 	
 	def cb_syncthing_device_sync_progress(self, daemon, device_id, sync):
 		if device_id in self.devices:
@@ -749,24 +752,52 @@ class App(Gtk.Application, TimerManager):
 			folder.add_value("error", "dialog-error", _("Error"), message)
 			folder.show_value('error')
 	
+	def any_device_online(self):
+		"""
+		Returns True if there is at least one device connected to daemon
+		"""
+		for box in self.devices.values():
+			if box["online"] and box["id"] != self.daemon.get_my_id():
+				return True
+		return False
+	
 	def set_status(self, is_connected):
 		""" Sets icon and text on first line of popup menu """
 		if is_connected:
 			if self.daemon.syncing():
+				# Daemon is online and at work
 				sr = self.daemon.get_syncing_list()
 				if len(sr) == 1:
 					self["menu-si-status"].set_label(_("Synchronizing '%s'") % (sr[0],))
 				else:
 					self["menu-si-status"].set_label(_("Synchronizing %s folders") % (len(sr),))
 				self.animate_status()
-			else:
+			elif self.any_device_online():
+				# Daemon is online and idle
 				self.statusicon.set("si-idle", _("Idle"))
 				self["menu-si-status"].set_label(_("Idle"))
 				self.cancel_timer("icon")
+			else:
+				# Daemon is online, but there is no remote device connected
+				self.statusicon.set("si-unknown", _("All devices offline"))
+				self["menu-si-status"].set_label(_("All devices offline"))
+				self.cancel_timer("icon")
 		else:
+			# Still connecting to syncthing daemon
 			self.statusicon.set("si-unknown", _("Connecting to Syncthing daemon..."))
 			self["menu-si-status"].set_label(_("Connecting to Syncthing daemon..."))
 			self.cancel_timer("icon")
+	
+	def animate_status(self):
+		""" Handles icon animation """
+		if self.timer_active("icon"):
+			# Already animating
+			return
+		self.statusicon.set("si-syncing-%s" % (self.sync_animation,))
+		self.sync_animation += 1
+		if self.sync_animation >= SI_FRAMES:
+			self.sync_animation = 0
+		self.timer("icon", 0.1, self.animate_status)
 	
 	def show_error_box(self, ribar, additional_data={}):
 		self.show_info_box(ribar, additional_data)
@@ -779,17 +810,6 @@ class App(Gtk.Application, TimerManager):
 		ribar.connect("response", self.cb_infobar_response, additional_data)
 		ribar.show()
 		ribar.set_reveal_child(True)
-	
-	def animate_status(self):
-		""" Handles icon animation """
-		if self.timer_active("icon"):
-			# Already animating
-			return
-		self.statusicon.set("si-syncing-%s" % (self.sync_animation,))
-		self.sync_animation += 1
-		if self.sync_animation >= SI_FRAMES:
-			self.sync_animation = 0
-		self.timer("icon", 0.1, self.animate_status)
 	
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
@@ -1012,6 +1032,7 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("bytes_in", 0)
 		box.add_hidden_value("bytes_out", 0)
 		box.add_hidden_value("time", 0)
+		box.add_hidden_value("online", False)
 		box.set_color_hex(COLOR_DEVICE)
 		box.set_bg_color(*self.box_background)
 		box.set_text_color(*self.box_text_color)
