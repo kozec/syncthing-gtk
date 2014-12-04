@@ -6,7 +6,7 @@
     <title>Syncthing GTK</title>
     <version>0.5.2</version>
     <authors>syncthing,kozec</authors>
-    <owners>GeoffreyFrogeye</owners>
+    <owners>GeoffreyFrogeye,kozec</owners>
     <summary>GUI and notification area icon for Syncthing</summary>
     <description>GTK3 &amp; python based GUI and notification area icon for [Syncthing](http://syncthing.net/), that is an open, trustworthy and decentralized syncing service.
 
