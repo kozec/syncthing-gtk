@@ -147,6 +147,9 @@ if 'build' in sys.argv:
 					"window-minimize-symbolic",
 					"list-add-symbolic",
 					"list-remove-symbolic",
+					"pan-up-symbolic",
+					"pan-start-symbolic",
+					"pan-end-symbolic",
 					"pan-down-symbolic",
 				],
 				"devices" : [
