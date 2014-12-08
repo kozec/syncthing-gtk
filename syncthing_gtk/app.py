@@ -17,9 +17,10 @@ _ = lambda (a) : a
 # Internal version used by updater (if enabled)
 INTERNAL_VERSION		= "v0.5.2"
 
-COLOR_DEVICE			= "#9246B1"
+COLOR_DEVICE			= "#707070"
 COLOR_DEVICE_SYNCING	= "#2A89C8"
 COLOR_DEVICE_CONNECTED	= "#2A89C8"
+COLOR_DEVICE_OFFLINE	= "#707070"
 COLOR_OWN_DEVICE		= "#C0C0C0"
 COLOR_FOLDER			= "#9246B1"
 COLOR_FOLDER_SYNCING	= "#2A89C8"
@@ -710,7 +711,7 @@ class App(Gtk.Application, TimerManager):
 				else:
 					# Update color & header
 					device.set_status(_("Disconnected"))
-					device.set_color_hex(COLOR_DEVICE)
+					device.set_color_hex(COLOR_DEVICE_OFFLINE)
 					device["online"] = False
 					# Update visible values
 					device.hide_values("sync", "dl.rate", "up.rate", "version")
@@ -723,7 +724,7 @@ class App(Gtk.Application, TimerManager):
 			device = self.devices[device_id]
 			device["sync"] = "%3.f%%" % (sync * 100.0)
 			if not device["connected"]:
-				device.set_color_hex(COLOR_DEVICE)
+				device.set_color_hex(COLOR_DEVICE_OFFLINE)
 				device.set_status(_("Disconnected"))
 			elif sync >= 0.0 and sync < 0.99:
 				device.set_color_hex(COLOR_DEVICE_SYNCING)
