@@ -26,6 +26,7 @@ COLOR_FOLDER_SYNCING	= "#2A89C8"
 COLOR_FOLDER_SCANNING	= "#2A89C8"
 COLOR_FOLDER_IDLE		= "#2AAB61"
 COLOR_FOLDER_STOPPED	= "#87000B"
+COLOR_FOLDER_OFFLINE	= "#707070"
 COLOR_NEW				= "#A0A0A0"
 SI_FRAMES				= 12 # Number of animation frames for status icon
 
@@ -714,6 +715,7 @@ class App(Gtk.Application, TimerManager):
 					# Update visible values
 					device.hide_values("sync", "dl.rate", "up.rate", "version")
 					device.show_values("last-seen")
+		self.update_folders()
 		self.set_status(True)
 	
 	def cb_syncthing_device_sync_progress(self, daemon, device_id, sync):
@@ -761,6 +763,7 @@ class App(Gtk.Application, TimerManager):
 			folder = self.folders[rid]
 			folder.set_color_hex(color)
 			folder.set_status(text, percentage)
+			self.update_folders()
 			self.set_status(True)
 	
 	def cb_syncthing_folder_stopped(self, daemon, rid, message):
@@ -819,6 +822,25 @@ class App(Gtk.Application, TimerManager):
 		if self.sync_animation >= SI_FRAMES:
 			self.sync_animation = 0
 		self.timer("icon", 0.1, self.animate_status)
+	
+	def update_folders(self):
+		"""
+		Sets status of any 'idle' folder that has no devices online to
+		'offline' and back if one of devices got connected.
+		"""
+		for rid in self.folders:
+			online = False
+			folder = self.folders[rid]
+			for device in folder["devices"]:
+				online = online or device["online"]
+			if online and folder.compare_color_hex(COLOR_FOLDER_OFFLINE):
+				# Folder was marked as offline but is back online now
+				folder.set_status(_("Idle"))
+				folder.set_color_hex(COLOR_FOLDER_IDLE)
+			elif not online and folder.compare_color_hex(COLOR_FOLDER_IDLE):
+				# Folder is offline and in Idle state (not scanning)
+				folder.set_status(_("Offline"))
+				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 	
 	def show_error_box(self, ribar, additional_data={}):
 		self.show_info_box(ribar, additional_data)

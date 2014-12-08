@@ -29,6 +29,7 @@ class InfoBox(Gtk.Container):
 		self.child = None
 		self.header = None
 		self.str_title = None
+		self.str_status = None
 		self.header_inverted = False
 		self.values = {}
 		self.value_widgets = {}
@@ -321,6 +322,7 @@ class InfoBox(Gtk.Container):
 		self.set_title(self.str_title)
 	
 	def set_status(self, t, percentage=0.0):
+		self.str_status = t
 		if percentage > 0.0 and percentage < 1.0:
 			percent = percentage * 100.0
 			self.status.set_markup('<span font_weight="bold" font_size="large" color="white">%s (%.f%%)</span>' % (t, percent))
@@ -329,19 +331,43 @@ class InfoBox(Gtk.Container):
 			self.status.set_markup('<span font_weight="bold" font_size="large" color="white">%s</span>' % t)
 			if DEBUG : print "%s state changed to %s" % (self.str_title, t)
 	
-	def set_color_hex(self, hx):
-		""" Expects AABBCC or #AABBCC format """
+	def get_status(self):
+		return self.str_status
+	
+	@classmethod
+	def hex2color(self, hx):
+		"""
+		Converts color from AABBCC or #AABBCC format to tuple of floats
+		"""
 		hx = hx.lstrip('#')
 		l = len(hx)
 		color = [ float(int(hx[i:i+l/3], 16)) / 255.0 for i in range(0, l, l/3) ]
 		while len(color) < 4:
 			color.append(1.0)
-		self.set_color(*color)
+		return color
+	
+	def set_color_hex(self, hx):
+		""" Expects AABBCC or #AABBCC format """
+		self.set_color(*InfoBox.hex2color(hx))
 		
 	def set_color(self, r, g, b, a):
 		""" Expects floats """
 		self.color = (r, g, b, a)
 		self.recolor()
+	
+	def compare_color_hex(self, hx):
+		"""
+		Returns True if specified color is same as color currently used.
+		Expects floats.
+		"""
+		return self.compare_color(*InfoBox.hex2color(hx))
+	
+	def compare_color(self, r, g, b, a):
+		"""
+		Returns True if specified color is same as color currently used.
+		Expects floats.
+		"""
+		return (self.color == (r, g, b, a))
 	
 	def set_bg_color(self, r, g, b, a):
 		""" Expects floats """
