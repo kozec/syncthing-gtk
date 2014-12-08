@@ -1,8 +1,10 @@
 # Initial stuff
 !define APP_NAME SyncthingGTK
-!define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.4.3.zip"
+!define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.5.3.zip"
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
-OutFile "${APP_NAME}-win32-installer.exe"
+!include "build\version.nsh"
+
+OutFile "${APP_NAME}-${VERSION}-installer.exe"
 InstallDir $PROGRAMFILES\${APP_NAME}
 
 Page directory
@@ -19,7 +21,7 @@ Section
 	File /r build\exe.win32-2.7\icons
 	# Check if random file that should be part of libraries zip exists
 	# and download&extract zip if not
-	IfFileExists $INSTDIR\libgmodule-2.0-0.dll SkipDownload DoDownload
+	IfFileExists $INSTDIR\share\glib-2.0\schemas\org.gtk.Settings.FileChooser.gschema.xml SkipDownload DoDownload
 DoDownload:
 	NSISdl::download ${LIBRARIES_URL} $TEMP\${LIBRARIES_FILE}
 	ZipDLL::extractall $TEMP\${LIBRARIES_FILE} $INSTDIR

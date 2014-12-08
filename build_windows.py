@@ -188,3 +188,4 @@ if 'build' in sys.argv:
 			shutil.copy(src, target)
 	print "Storing version"
 	file(os.path.join(build_dir, "__version__"), "w").write(get_version())
+	file(os.path.join(build_dir, "..", "version.nsh"), "w").write('!define VERSION "%s"' % (get_version(),))
