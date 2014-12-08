@@ -450,7 +450,7 @@ class App(Gtk.Application, TimerManager):
 		self.set_status(False)
 		self.restart()
 	
-	def cb_syncthing_con_error(self, daemon, reason, message):
+	def cb_syncthing_con_error(self, daemon, reason, message, exception):
 		if reason == Daemon.REFUSED:
 			# If connection is refused, handler just displays dialog with "please wait" message
 			# and lets Daemon object to retry connection
@@ -489,6 +489,27 @@ class App(Gtk.Application, TimerManager):
 					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
 					message
 					)
+			if not exception is None and hasattr(exception, 'full_response'):
+				# Anything derived from HTTPError, where full server
+				# response is attached
+				ex = Gtk.Expander(label=_("More info"))
+				tbuf = Gtk.TextBuffer()
+				try:
+					tbuf.set_text(u'Server response:\n\'%s\'' % (exception.full_response,))
+				except Exception:
+					# May happen when full_response can't be decoded
+					try:
+						tbuf.set_text(u'Server response:\n\'%s\'' % ((exception.full_response,),))
+					except Exception:
+						# Shouldn't really happen
+						tbuf.set_text("<unparsable mess of data>")
+				tview = Gtk.TextView(buffer=tbuf)
+				swin = Gtk.ScrolledWindow()
+				swin.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+				swin.add_with_viewport(tview)
+				ex.add(swin)
+				d.get_message_area().pack_end(ex, True, True, 1)
+				ex.show_all()
 			d.run()
 			d.hide()
 			d.destroy()

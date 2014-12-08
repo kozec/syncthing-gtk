@@ -60,7 +60,7 @@ class Daemon(GObject.GObject, TimerManager):
 			configuration is loaded from daemon.
 				config:		decoded /rest/config YAML file
 		
-		connection-error (reason, message)
+		connection-error (reason, message, exception)
 			Emited if connection to daemon fails.
 				reason:		Daemon.REFUSED if connection is refused and
 							daemon probably offline. Connection will be
@@ -69,6 +69,7 @@ class Daemon(GObject.GObject, TimerManager):
 							Connection can be reinitiated by calling
 							reconnect() in this case.
 				message:	generated error message
+				exception:	Exeception that caused problem or None
 		
 		my-id-changed (my_id, replaced)
 			Emited when ID is retrieved from device or when ID changes
@@ -214,7 +215,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"disconnected"			: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
 			b"config-loaded"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
+			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
@@ -427,14 +428,14 @@ class Daemon(GObject.GObject, TimerManager):
 			headers = headers.split("\r\n")
 			code = int(headers[0].split(" ")[1])
 			if code == 401:
-				self._rest_error(HTTPAuthException(), epoch, command, callback, error_callback, callback_data)
+				self._rest_error(HTTPAuthException("".join(buffer)), epoch, command, callback, error_callback, callback_data)
 				return
 			elif code != 200:
-				self._rest_error(HTTPCode(code, response), epoch, command, callback, error_callback, callback_data)
+				self._rest_error(HTTPCode(code, response, "".join(buffer)), epoch, command, callback, error_callback, callback_data)
 				return
 		except Exception, e:
 			# That probably wasn't HTTP
-			self._rest_error(HTTPError("Invalid HTTP response"), epoch, command, callback, error_callback, callback_data)
+			self._rest_error(InvalidHTTPResponse("".join(buffer)), epoch, command, callback, error_callback, callback_data)
 			return
 		# Parse response and call callback
 		try:
@@ -576,14 +577,14 @@ class Daemon(GObject.GObject, TimerManager):
 			headers = headers.split("\r\n")
 			code = int(headers[0].split(" ")[1])
 			if code == 500:
-				self._rest_error(HTTPCode(500, response), epoch, command, callback, error_callback, callback_data)
+				self._rest_error(HTTPCode(500, response, "".join(buffer)), epoch, command, callback, error_callback, callback_data)
 				return
 			elif code != 200:
-				self._rest_post_error(HTTPCode(code, response), epoch, command, data, callback, error_callback, callback_data)
+				self._rest_post_error(HTTPCode(code, response, "".join(buffer)), epoch, command, data, callback, error_callback, callback_data)
 				return
 		except Exception:
 			# That probably wasn't HTTP
-			self._rest_post_error(HTTPError("Invalid HTTP response"), epoch, command, data, callback, error_callback, callback_data)
+			self._rest_post_error(InvalidHTTPResponse("".join(buffer)), epoch, command, data, callback, error_callback, callback_data)
 			return
 		if "CSRF Error" in response:
 			# My cookie is too old; Throw it away and try again
@@ -839,7 +840,7 @@ class Daemon(GObject.GObject, TimerManager):
 			# Syncting version too low. Cancel everything and report error
 			self.cancel_all()
 			self._epoch += 1
-			self.emit("connection-error", Daemon.OLD_VERSION, "")
+			self.emit("connection-error", Daemon.OLD_VERSION, "", None)
 			return
 		if self._my_id != None:
 			device = self._get_device_data(self._my_id)
@@ -907,24 +908,24 @@ class Daemon(GObject.GObject, TimerManager):
 			if exception.code in (0, 39, 34):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
 				epoch = self._epoch
-				self.emit("connection-error", Daemon.REFUSED, exception.message)
+				self.emit("connection-error", Daemon.REFUSED, exception.message, exception)
 				if epoch == self._epoch:
 					self.timer("config", self._refresh_interval, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 				return
 		elif isinstance(exception, HTTPAuthException):
-			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message)
+			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message, exception)
 			return
 		elif isinstance(exception, TLSUnsupportedException):
-			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message)
+			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message, exception)
 			return
 		elif isinstance(exception, ConnectionRestarted):
 			# Happens on Windows. Just try again.
 			GLib.idle_add(self._request_config)
 			return
 		elif isinstance(exception, TLSUnsupportedException):
-			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message)
+			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message, exception)
 			return
-		self.emit("connection-error", Daemon.UNKNOWN, exception.message)
+		self.emit("connection-error", Daemon.UNKNOWN, exception.message, exception)
 	
 	def _syncthing_cb_config_in_sync(self, data):
 		"""
@@ -1176,24 +1177,33 @@ class Daemon(GObject.GObject, TimerManager):
 
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(RuntimeError): pass
+
 class HTTPError(RuntimeError):
-	def __init__(self, message):
+	def __init__(self, message, full_response):
 		RuntimeError.__init__(self, message)
+		self.full_response = full_response
+
+class InvalidHTTPResponse(HTTPError):
+	def __init__(self, full_response):
+		HTTPError.__init__(self, "Invalid HTTP response", full_response)
+
 class HTTPCode(HTTPError):
-	def __init__(self, code, response=None):
-		HTTPError.__init__(self, "HTTP error %s" % (code,))
+	def __init__(self, code, message, full_response):
+		HTTPError.__init__(self, "HTTP error %s" % (code,), message, full_response)
 		self.code = code
-		self.response = response
+		self.message = message
 	def __str__(self):
-		if self.response is None:
+		if self.message is None:
 			return "HTTP/%s" % (self.code,)
 		else:
-			return "HTTP/%s: %s" % (self.code, self.response)
+			return "HTTP/%s: %s" % (self.code, self.message)
+
 class HTTPAuthException(HTTPCode):
-	def __init__(self, code, response=None):
-		HTTPCode.__init__(self, 401)
+	def __init__(self, full_response):
+		HTTPCode.__init__(self, 401, None, full_response)
 	def __str__(self):
 		return "HTTP/401 Unauthorized"
+
 class ConnectionRestarted(Exception):
 	def __init__(self):
 		Exception.__init__(self, "Connection was restarted after request")
