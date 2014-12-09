@@ -194,12 +194,12 @@ def init_logging(verbose, debug):
 	logging.basicConfig(format="%(levelname)s %(name)-13s %(message)s")
 	logger = logging.getLogger()
 	# Rename levels
-	logging.addLevelName(10, "D")
-	logging.addLevelName(20, "I")
-	logging.addLevelName(30, "W")
-	logging.addLevelName(40, "E")
+	logging.addLevelName(10, "D")	# Debug
+	logging.addLevelName(20, "I")	# Info
+	logging.addLevelName(30, "W")	# Warning
+	logging.addLevelName(40, "E")	# Error
 	# Create additional, "verbose" level
-	logging.addLevelName(15, "V")
+	logging.addLevelName(15, "V")	# Verbose
 	# Add 'logging.verbose' method
 	def verbose_fn(self, msg, *args, **kwargs):
 		return self.log(15, msg, *args, **kwargs)
