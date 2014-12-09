@@ -101,6 +101,7 @@ class _Configuration(object):
 		for key in Configuration.REQUIRED_KEYS:
 			tp, default = Configuration.REQUIRED_KEYS[key]
 			if not self.check_type(key, tp):
+				log.verbose("Configuration key %s is missing. Using default", key)
 				if IS_WINDOWS and key in Configuration.WINDOWS_OVERRIDE:
 					tp, default = Configuration.WINDOWS_OVERRIDE[key]
 				self.values[key] = default
@@ -139,6 +140,8 @@ class _Configuration(object):
 			return False
 		# Handle special cases
 		if type(self.values[key]) in (str, unicode) and tp in (str, unicode):
+			return True
+		if tp in (tuple,) and self.values[key] == None:
 			return True
 		# Return value
 		return type(self.values[key]) == tp
