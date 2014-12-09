@@ -201,9 +201,9 @@ def init_logging(verbose, debug):
 	# Create additional, "verbose" level
 	logging.addLevelName(15, "V")
 	# Add 'logging.verbose' method
-	def verbose(self, msg, *args, **kwargs):
+	def verbose_fn(self, msg, *args, **kwargs):
 		return self.log(15, msg, *args, **kwargs)
-	logging.Logger.verbose = verbose
+	logging.Logger.verbose = verbose_fn
 	# Set logging level
 	if debug:		# everything
 		logger.setLevel(0)
