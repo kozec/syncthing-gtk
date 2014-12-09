@@ -9,8 +9,9 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
 from syncthing_gtk import EditorDialog
-import sys
+import sys, logging
 _ = lambda (a) : a
+log = logging.getLogger("DeviceEditor")
 
 COLOR_NEW				= "#A0A0A0"
 VALUES = [ "vDeviceID", "vName", "vAddresses", "vCompression",
@@ -62,10 +63,10 @@ class DeviceEditorDialog(EditorDialog):
 					self.set_value("DeviceID", self.id)
 			else:
 				self.values = [ x for x in self.config["Devices"] if x["DeviceID"] == self.id ][0]
-		except KeyError:
+		except KeyError, e:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
-			print >>sys.stderr, e
+			log.exception(e)
 			self.close()
 			return
 		return self.display_values(VALUES)

@@ -1,6 +1,4 @@
 #!/usr/bin/env python2
-DEBUG = False
-
 import tools
 from timermgr			import TimerManager
 from daemonprocess		import DaemonProcess

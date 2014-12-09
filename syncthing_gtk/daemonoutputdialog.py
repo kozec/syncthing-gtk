@@ -7,7 +7,6 @@ Displays output from daemon subprocess
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio
-from syncthing_gtk import DEBUG
 import os, tempfile
 _ = lambda (a) : a
 

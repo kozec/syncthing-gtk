@@ -16,10 +16,10 @@ try:
 except ImportError:
 	pass
 if HAS_INOTIFY:
-	from syncthing_gtk import DEBUG
 	from gi.repository import GLib
-	import os, sys
-
+	import os, sys, logging
+	log = logging.getLogger("Watcher")
+	
 	class WatcherCls(object):
 		""" Watches for filesystem changes and reports them to daemon """
 		def __init__(self, app, daemon):
@@ -36,7 +36,7 @@ if HAS_INOTIFY:
 				pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
 				pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True
 			)
-			if DEBUG: print "Watching", path
+			log.verbose("Watching %s", path)
 		
 		def remove(self, path):
 			""" Cancels watching on specified directory """
@@ -50,7 +50,7 @@ if HAS_INOTIFY:
 			self.wds = {}
 			for x in wds_v:
 				self.wm.rm_watch(x, rec=True, quiet=True)
-			if DEBUG: print "Cleared all watches"
+			log.verbose("Cleared all watches")
 		
 		def kill(self):
 			""" Cancels & deallocates everything """
@@ -87,9 +87,6 @@ if HAS_INOTIFY:
 			elif event.mask & pyinotify.IN_DELETE != 0:
 				# Moved in = created
 				self._report_created(event.pathname)
-			#else:
-			#	# Whatever
-			#	print event.maskname, event.pathname
 		
 		def _process_events(self):
 			""" Called from GLib.idle_add """
@@ -102,19 +99,19 @@ if HAS_INOTIFY:
 		
 		def _report_created(self, path):
 			folder_id, relpath = self.app.get_folder_n_path(path)
-			if DEBUG: print "CREATED", folder_id, path, ">", relpath
+			log.debug("File Created %s %s > %s", folder_id, path, relpath)
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_changed(self, path):
 			folder_id, relpath = self.app.get_folder_n_path(path)
-			if DEBUG: print "CHANGED", folder_id, path, ">", relpath
+			log.debug("File Changed %s %s > %s", folder_id, path, relpath)
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_deleted(self, path):
 			folder_id, relpath = self.app.get_folder_n_path(path)
-			if DEBUG: print "DELETED", folder_id, path, ">", relpath
+			log.debug("File Deleted %s %s > %s", folder_id, path, relpath)
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 	

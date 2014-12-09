@@ -10,9 +10,10 @@ from gi.repository import GLib
 from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
-import re, os, sys, __main__
-
+import re, os, sys, logging, __main__
 _ = lambda (a) : a
+log = logging.getLogger("tools.py")
+
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
 IS_GNOME, IS_UNITY = False, False
 if "XDG_CURRENT_DESKTOP" in os.environ:
@@ -73,7 +74,7 @@ def check_device_id(nid):
 			try:
 				l = luhn_b32generate(p)
 			except Exception, e:
-				print e
+				log.exception(e)
 				return False
 			g = "%s%s" % (p, l)
 			if g != nid[i*14:(i+1)*14]:
@@ -184,6 +185,32 @@ def delta_to_string(d):
 	if d.seconds > 5:
 		return _("%s seconds from now") % (d.seconds,)
 	return _("in a moment")
+
+def init_logging(verbose, debug):
+	"""
+	Initializes logging, sets custom logging format and adds one
+	logging level with name and method to call.
+	"""
+	logging.basicConfig(format="%(levelname)s %(name)-13s %(message)s")
+	logger = logging.getLogger()
+	# Rename levels
+	logging.addLevelName(10, "D")
+	logging.addLevelName(20, "I")
+	logging.addLevelName(30, "W")
+	logging.addLevelName(40, "E")
+	# Create additional, "verbose" level
+	logging.addLevelName(15, "V")
+	# Add 'logging.verbose' method
+	def verbose(self, msg, *args, **kwargs):
+		return self.log(15, msg, *args, **kwargs)
+	logging.Logger.verbose = verbose
+	# Set logging level
+	if debug:		# everything
+		logger.setLevel(0)
+	elif verbose:	# everything but debug
+		logger.setLevel(11)
+	else:			# INFO and worse
+		logger.setLevel(20)
 
 def check_daemon_running():
 	""" Returns True if syncthing daemon is running """
@@ -361,7 +388,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 			except Exception, e:
 				# IO errors or out of disk space... Not really
 				# expected, but may happen
-				print >>sys.stderr, "Warning: Failed to create autostart entry:", e
+				log.warning("Failed to create autostart entry: %s", e)
 				return False
 		else:
 			try:
@@ -369,7 +396,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 					os.unlink(desktopfile)
 			except Exception, e:
 				# IO or access error
-				print >>sys.stderr, "Warning: Failed to remove autostart entry:", e
+				log.warning("Failed to remove autostart entry: %s", e)
 				return False
 	return True
 
@@ -396,7 +423,7 @@ def can_upgrade_binary(binary_path):
 			# return Maybe
 			return True
 		except Exception, e:
-			print e
+			log.exception(e)
 			return False
 	else:
 		# Life is just simpler on Unix

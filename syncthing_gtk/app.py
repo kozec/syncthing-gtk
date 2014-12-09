@@ -10,9 +10,9 @@ from gi.repository import Gtk, Gio, Gdk
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
 from datetime import datetime
-import os, webbrowser, sys, pprint, shutil, re
-
+import os, webbrowser, sys, logging, shutil, re
 _ = lambda (a) : a
+log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
 INTERNAL_VERSION		= "v0.5.2"
@@ -298,19 +298,19 @@ class App(Gtk.Application, TimerManager):
 		self.cancel_timer("updatecheck")
 		if not self.config["st_autoupdate"]:
 			# Disabled, don't even bother
-			if DEBUG: print "updatecheck: disabled"
+			log.info("updatecheck: disabled")
 			return
 		if self.process == None:
 			# Upgrading if executable is not launched by Syncthing-GTK
 			# may fail in too many ways.
-			print >>sys.stderr, "Warning: Skiping updatecheck: Daemon not launched by me"
+			log.warning("Skiping updatecheck: Daemon not launched by me")
 			return
 		if (datetime.now() - self.config["last_updatecheck"]).total_seconds() < UPDATE_CHECK_INTERVAL:
 			# Too soon, check again in 10 minutes
 			self.timer("updatecheck", 60 * 10, self.check_for_upgrade)
-			if DEBUG: print "updatecheck: too soon"
+			log.info("updatecheck: too soon")
 			return
-		if DEBUG: print "Checking for updates..."
+		log.info("Checking for updates...")
 		# Prepare
 		target = "%s.new" % (self.config["syncthing_binary"],)
 		target_dir = os.path.split(target)[0]
@@ -322,7 +322,7 @@ class App(Gtk.Application, TimerManager):
 		suffix, tag = StDownloader.determine_platform()
 		if suffix is None or tag is None:
 			# Shouldn't really happen at this point
-			print >>sys.stderr, "Warning: Cannot update: Unsupported platform"
+			log.warning("Cannot update: Unsupported platform")
 			return
 		
 		# Define callbacks
@@ -344,7 +344,7 @@ class App(Gtk.Application, TimerManager):
 			self.timer(None, 2, r.close)
 		
 		def cb_cu_download_fail(sd, exception, message, r):
-			print >>sys.stderr, exception
+			log.error("Download failed: %s", exception)
 			r.close()
 			self.cb_syncthing_error(None, _("Failed to download upgrade: %s") % (message))
 			return cb_cu_error()
@@ -357,7 +357,7 @@ class App(Gtk.Application, TimerManager):
 				# May happen if connection to daemon is lost while version
 				# check is running
 				return cb_cu_error()
-			if DEBUG: print "Updatecheck:", needs_upgrade
+			log.info("Updatecheck: needs_upgrade = %s", needs_upgrade)
 			self.config["last_updatecheck"] = datetime.now()
 			if needs_upgrade:
 				pb = Gtk.ProgressBar()
@@ -398,30 +398,30 @@ class App(Gtk.Application, TimerManager):
 		try:
 			shutil.move(bin, old_bin)
 		except Exception, e:
-			print >>sys.stderr, "Warning: Failed to upgrade daemon binary: Failed to rename old binary"
-			print >>sys.stderr, e
+			log.warning("Failed to upgrade daemon binary: Failed to rename old binary")
+			log.warning(e)
 			return
 		# Place new
 		try:
 			shutil.move(new_bin, bin)
 		except Exception, e:
-			print >>sys.stderr, "Warning: Failed to upgrade daemon binary: Failed to rename new binary"
-			print >>sys.stderr, e
+			log.warning("Failed to upgrade daemon binary: Failed to rename new binary")
+			log.warning(e)
 			# Return old back to place
 			try:
 				shutil.move(old_bin, bin)
 			except Exception, e:
 				# This really shouldn't happen, in more than one sense
-				print >>sys.stderr, "Error: Failed to upgrade daemon binary: Failed to rename backup"
-				print >>sys.stderr, e
+				log.error("Failed to upgrade daemon binary: Failed to rename backup")
+				log.exception(e)
 			return
 		# Remove old
 		try:
 			os.unlink(old_bin)
 		except Exception, e:
 			# Not exactly fatal
-			print >>sys.stderr, "Warning: Failed to remove backup binary durring backup"
-			print >>sys.stderr, e	
+			log.warning("Failed to remove backup binary durring backup")
+			log.warning(e)
 	
 	def cb_syncthing_connected(self, *a):
 		self.clear()
@@ -563,9 +563,9 @@ class App(Gtk.Application, TimerManager):
 		""" Daemon argument is not used """
 		if message in self.error_messages:
 			# Same error is already displayed
-			print >>sys.stderr, "(repeated)", message
+			log.info("(repeated) %s", message)
 			return
-		print >>sys.stderr, message
+		log.info(message)
 		if "Unexpected folder ID" in message:
 			# Handled by event, don't display twice
 			return
@@ -857,7 +857,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def fatal_error(self, text):
 		# TODO: Better way to handle this
-		print >>sys.stderr, text
+		log.error(text)
 		d = Gtk.MessageDialog(
 				None,
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -963,7 +963,7 @@ class App(Gtk.Application, TimerManager):
 		it's message if said dialog is already displayed.
 		"""
 		if self.connect_dialog == None:
-			if DEBUG: print "Creating connect_dialog"
+			log.debug("Creating connect_dialog")
 			self.connect_dialog = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -987,7 +987,7 @@ class App(Gtk.Application, TimerManager):
 					c.set_markup(message)
 					return True
 			return False
-		if DEBUG: print "Settinig connect_dialog label", message[0:15]
+		log.verbose("Settinig connect_dialog label %s" % message[0:15])
 		set_label(self.connect_dialog.get_content_area(), message)
 	
 	def display_run_daemon_dialog(self):
@@ -996,7 +996,7 @@ class App(Gtk.Application, TimerManager):
 		dialog.
 		"""
 		if self.connect_dialog == None: # Don't override already existing dialog
-			if DEBUG: print "Creating run_daemon_dialog"
+			log.debug("Creating run_daemon_dialog")
 			self.connect_dialog = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -1142,20 +1142,20 @@ class App(Gtk.Application, TimerManager):
 			"""
 			Error handler for change_setting_n_restart method
 			"""
-			print >>sys.stderr, "change_setting_n_restart: Failed to read configuration:", e
+			log.error("change_setting_n_restart: Failed to read configuration: %s", e)
 			if retry_on_error:
-				print >>sys.stderr, "Retrying..."
+				log.error("Retrying...")
 				change_setting_n_restart(setting_name, value, True)
 			else:
-				print >>sys.stderr, "Giving up."
+				log.error("Giving up.")
 		
 		def csnr_save_error(e, *a):
 			"""
 			Another error handler for change_setting_n_restart method.
 			This one just reports failure.
 			"""
-			print >>sys.stderr, "change_setting_n_restart: Failed to store configuration:", e
-			print >>sys.stderr, "Giving up."
+			log.error("change_setting_n_restart: Failed to store configuration: %s", e)
+			log.error("Giving up.")
 		
 		def csnr_config_read(config, setting_name, value, retry_on_error):
 			"""
@@ -1174,7 +1174,7 @@ class App(Gtk.Application, TimerManager):
 			Handler for change_setting_n_restart
 			Reports good stuff and restarts daemon.
 			"""
-			print "Configuration value '%s' set to '%s'" % (setting_name, value)
+			log.verbose("Configuration value '%s' set to '%s'", setting_name, value)
 			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
 			self.display_connect_dialog(message)
 			self.set_status(False)
@@ -1379,7 +1379,6 @@ class App(Gtk.Application, TimerManager):
 		"""
 		Asks user if he really wants to do what he just asked to do
 		"""
-		print mode, id
 		d = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -1439,7 +1438,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_webui(self, *a):
 		""" Handler for 'Open WebUI' menu item """
-		print "Opening '%s' in browser" % (self.daemon.get_webui_url(),)
+		log.info("Opening '%s' in browser", self.daemon.get_webui_url())
 		webbrowser.open(self.daemon.get_webui_url())
 	
 	def cb_menu_daemon_output(self, *a):

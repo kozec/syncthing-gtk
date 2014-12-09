@@ -24,9 +24,9 @@ if HAS_DESKTOP_NOTIFY:
 	from syncthing_gtk.tools import parsetime
 	from dateutil import tz
 	from datetime import datetime
-	from syncthing_gtk import DEBUG
-	import os, sys
+	import os, sys, logging
 	_ = lambda (a) : a
+	log = logging.getLogger("Notifications")
 	
 	class NotificationsCls(TimerManager):
 		""" Watches for filesystem changes and reports them to daemon """
@@ -47,7 +47,7 @@ if HAS_DESKTOP_NOTIFY:
 				self.icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.app.iconpath, "st-logo-64.png"))
 				self.error_icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.app.iconpath, "error-64.png"))
 			except Exception, e:
-				print >>sys.stderr, "Failed to load icon:", e
+				log.error("Failed to load icon: %s", e)
 			# Make deep connection with daemon
 			self.signals = [
 				self.daemon.connect("connected", self.cb_syncthing_connected)
@@ -58,20 +58,19 @@ if HAS_DESKTOP_NOTIFY:
 					self.daemon.connect("folder-rejected", self.cb_syncthing_folder_rejected),
 					self.daemon.connect("device-rejected", self.cb_syncthing_device_rejected)
 				]
-				if DEBUG: print "Error notifications enabled"
+				log.verbose("Error notifications enabled")
 			if self.app.config["notification_for_update"]:
 				self.signals += [
 					self.daemon.connect('item-started', self.cb_syncthing_item_started),
 					self.daemon.connect('item-updated', self.cb_syncthing_item_updated),
 				]
-				if DEBUG: print "File update notifications enabled"
+				log.verbose("File update notifications enabled")
 			if self.app.config["notification_for_folder"]:
 				self.signals += [
 					self.daemon.connect('folder-sync-progress', self.cb_syncthing_folder_progress),
 					self.daemon.connect('folder-sync-finished', self.cb_syncthing_folder_finished)
 					]
-				#if DEBUG: 
-				print "Folder notifications enabled"
+				log.verbose("Folder notifications enabled")
 		
 		def info(self, text, icon=None):
 			n = Notify.Notification.new(
@@ -100,7 +99,7 @@ if HAS_DESKTOP_NOTIFY:
 			""" Removes all event handlers and frees some stuff """
 			for s in self.signals:
 				self.daemon.handler_disconnect(s)
-			if DEBUG: print "Notifications killed"
+			log.info("Notifications killed")
 		
 		def cb_syncthing_connected(self, *a):
 			# Clear download list

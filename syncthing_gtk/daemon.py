@@ -10,13 +10,14 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
-from syncthing_gtk import TimerManager, DEBUG
+from syncthing_gtk import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
 from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, sys, time
+import json, os, sys, time, logging
+log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
 MIN_VERSION = "0.10"
@@ -325,7 +326,7 @@ class Daemon(GObject.GObject, TimerManager):
 							.firstChild.nodeValue
 			# TODO: https?
 		except Exception, e:
-			print >>sys.stderr, e
+			log.exception(e)
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
 		try:
 			self._api_key = xml.getElementsByTagName("configuration")[0] \
@@ -376,7 +377,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
-			print e
+			log.exception(e)
 			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
 				e = TLSUnsupportedException(e.message)
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
@@ -384,7 +385,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if epoch < self._epoch :
 			# Too late, throw it away
 			con.close(None)
-			if DEBUG : print "Discarded old connection for", command
+			log.verbose("Discarded old connection for %s", command)
 		# Build GET request
 		get_str = "\r\n".join([
 			"GET /rest/%s HTTP/1.0" % command,
@@ -413,7 +414,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if epoch < self._epoch :
 			# Too late, throw it away
 			con.close(None)
-			if DEBUG : print "Discarded old response for", command
+			log.verbose("Discarded old response for %s", command)
 		# Repeat read_bytes_async until entire response is readed in buffer
 		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
@@ -462,11 +463,10 @@ class Daemon(GObject.GObject, TimerManager):
 				error_callback(exception, command)
 		elif epoch == self._epoch:
 			try:
-				print >>sys.stderr, "Request '%s' failed (%s) Repeating..." % (command, exception)
+				log.error("Request '%s' failed (%s); Repeating...", command, exception)
 			except UnicodeDecodeError:
 				# Windows...
-				print >>sys.stderr, "Request '%s' failed; Repeating..." % (command,)
-				print >>sys.stderr, exception
+				log.error("Request '%s' failed; Repeating...", command)
 			self.timer(None, 1, self._rest_request, command, callback, error_callback, *callback_data)
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
@@ -489,11 +489,11 @@ class Daemon(GObject.GObject, TimerManager):
 		if epoch < self._epoch :
 			# Too late, throw it away
 			con.close(None)
-			if DEBUG : print "Discarded old connection for POST ", command
+			log.verbose("Discarded old connection for POST %s", command)
 		post_str = None
 		if self._CSRFtoken is None and self._api_key is None:
 			# Request CSRF token first
-			if DEBUG: print "Requesting cookie"
+			log.verbose("Requesting cookie")
 			post_str = "\r\n".join([
 				"GET / HTTP/1.0",
 				"Host: %s" % self._address,
@@ -537,7 +537,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if epoch < self._epoch :
 			# Too late, throw it away
 			con.close(None)
-			if DEBUG : print "Discarded old response for POST ", command
+			log.verbose("Discarded old response for POST %s", command)
 		# Repeat _rest_post_response until entire response is readed in buffer
 		buffer.append(response.get_data().decode("utf-8"))
 		if response.get_size() > 0:
@@ -555,7 +555,7 @@ class Daemon(GObject.GObject, TimerManager):
 					for c in d.split(":", 1)[1].split(";"):
 						if c.strip().startswith("CSRF-Token="):
 							self._CSRFtoken = c.split("=", 1)[1].strip(" \r\n")
-							if DEBUG: print "Got new cookie:", self._CSRFtoken
+							log.verbose("Got new cookie: %s", self._CSRFtoken)
 							break
 					if self._CSRFtoken != None:
 						break
@@ -563,8 +563,7 @@ class Daemon(GObject.GObject, TimerManager):
 				# This is pretty fatal and likely to fail again,
 				# so request is not repeated automaticaly
 				if error_callback == None:
-					print >>sys.stderr, ""
-					print >>sys.stderr, "Error: Request '%s' failed: Error: failed to get CSRF cookie from daemon" % (command,)
+					log.error("Request '%s' failed: Error: failed to get CSRF cookie from daemon", command)
 				else:
 					self._rest_post_error(Exception("Failed to get CSRF cookie"), epoch, command, data, callback, error_callback, callback_data)
 				return
@@ -588,7 +587,7 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		if "CSRF Error" in response:
 			# My cookie is too old; Throw it away and try again
-			if DEBUG: print "Throwing away my cookie :("
+			log.verbose("Throwing away my cookie :(")
 			self._CSRFtoken = None
 			self._rest_post(command, data, callback, error_callback, *callback_data)
 			return
@@ -618,11 +617,10 @@ class Daemon(GObject.GObject, TimerManager):
 				error_callback(exception, command, data)
 		elif epoch != self._epoch:
 			try:
-				print >>sys.stderr, "Post '%s' failed (%s) Repeating..." % (command, exception)
+				log.error("Post '%s' failed (%s) Repeating...", command, exception)
 			except UnicodeDecodeError:
 				# Windows...
-				print >>sys.stderr, "Post '%s' failed; Repeating..." % (command,)
-				print >>sys.stderr, exception
+				log.error("Post '%s' failed; Repeating...", command)
 			self.timer(None, 1, self._rest_post, command, data, callback, error_callback, callback_data)
 	
 	def _request_config(self, *a):
@@ -799,7 +797,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if self._my_id != data["myID"]:
 			if self._my_id != None:
 				# Can myID be ever changed?
-				print >>sys.stderr, "Warning: My ID was changed on the fly"
+				log.warning("My ID has been changed on the fly")
 			self._my_id = data["myID"]
 			self.emit('my-id-changed', self._my_id)
 			version = get_header(data[HTTP_HEADERS], "X-Syncthing-Version")
@@ -1021,7 +1019,7 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
 		else:
-			print "Unhandled event type:", e
+			log.warning("Unhandled event type: %s", e)
 	
 	### External stuff ###
 	
@@ -1168,12 +1166,12 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		if self.cancel_timer("event"):
 			self._request_events()
-			if DEBUG: print "Forced to request events"
+			log.verbose("Forced to request events")
 	
 	def set_refresh_interval(self, i):
 		""" Sets interval used mainly by event quering timer """
 		self._refresh_interval = i
-		if DEBUG: print "Set refresh interval to", i
+		log.verbose("Set refresh interval to %s", i)
 
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(RuntimeError): pass

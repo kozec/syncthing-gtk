@@ -6,7 +6,6 @@ Infobar wrapped in Revealer, for greater justice
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, GLib, GObject, Pango
-from syncthing_gtk import DEBUG
 import os
 _ = lambda (a) : a
 RevealerClass = Gtk.Revealer

@@ -12,10 +12,12 @@ from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
 from syncthing_gtk.tools import can_upgrade_binary
-import os, sys, socket, random, string, traceback, platform
+import os, sys, socket, random, string
+import logging, traceback, platform
 from xml.dom import minidom
-
 _ = lambda (a) : a
+log = logging.getLogger("Wizard")
+
 DEFAULT_PORT = 8080
 MAX_PORT = 8100
 
@@ -98,8 +100,6 @@ class Wizard(Gtk.Assistant):
 		"""
 		if parent is None : parent = self
 		for w in parent.get_children():
-			if isinstance(w, Gtk.Button):
-				print w.get_label()
 			if compare_fn(w): return w
 			if isinstance(w, Gtk.Container):
 				r = self.find_widget(compare_fn, w)
@@ -109,7 +109,7 @@ class Wizard(Gtk.Assistant):
 	def output_line(self, line):
 		""" Called for every line that wizard or daemon process outputs """
 		self.lines.append(line)
-		print line
+		log.info(line)
 	
 	def error(self, page, title, message, display_bugreport_link):
 		"""
@@ -235,7 +235,7 @@ class FindDaemonPage(Page):
 			self.binaries = ("syncthing.exe",)
 		if "PATH" in os.environ:
 			paths += os.environ["PATH"].split(":")
-		print "Searching for syncthing binary..."
+		log.info("Searching for syncthing binary...")
 		GLib.idle_add(self.search, paths)
 	
 	def search(self, paths):
@@ -284,11 +284,11 @@ class FindDaemonPage(Page):
 		
 		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)
-			print " ...", bin_path,
+			log.info(" ... %s", bin_path)
 			if os.path.isfile(bin_path):
 				if os.access(bin_path, os.X_OK):
 					# File exists and is executable
-					print "FOUND"
+					log.info("Binary found in %s", bin_path)
 					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
 					self.parent.config["syncthing_binary"] = bin_path
 					if not can_upgrade_binary(bin_path):
@@ -306,9 +306,7 @@ class FindDaemonPage(Page):
 						)
 					return
 				else:
-					print "not executable"
-			else:
-				print "not found"
+					log.info("Binary in %s is not not executable", bin_path)
 		GLib.idle_add(self.search, paths)
 
 class DownloadSTPage(Page):

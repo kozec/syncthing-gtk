@@ -8,14 +8,18 @@ def sigint(*a):
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigint)
 	if "-h" in sys.argv or "--help" in sys.argv:
-		print "Usage: %s [-h | [-w] [-s]]" % (sys.argv[0],)
+		print "Usage: %s [options]" % (sys.argv[0],)
 		print "  -h   Display this help message and exit"
-		print "  -w   Display window / don't start minimized"
-		print "  -s   Use classic window header instead of Gtk.HeaderBar"
+		print "  -w   Display window (don't start minimized)"
+		print "  -s   Use classic window header"
+		print "  -v   Be verbose"
+		print "  -vv  Be more verbose (debug mode)"
 		print "  -1   Run 'first start wizard' and exit"
 		print "  -a   Display about dialog and exits"
 		sys.exit(0)
-	from syncthing_gtk.tools import IS_WINDOWS
+	
+	from syncthing_gtk.tools import init_logging, IS_WINDOWS
+	init_logging("-v" in sys.argv, "-vv" in sys.argv)
 	if IS_WINDOWS:
 		from syncthing_gtk import windows
 		windows.fix_localized_system_error_messages()

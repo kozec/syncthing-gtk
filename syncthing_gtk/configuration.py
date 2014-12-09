@@ -11,8 +11,8 @@ from __future__ import unicode_literals
 from syncthing_gtk.tools import *
 from datetime import datetime
 import dateutil.parser
-import os, sys, json
-
+import os, sys, json, logging
+log = logging.getLogger("Configuration")
 
 LONG_AGO = datetime.fromtimestamp(1)
 
@@ -53,8 +53,8 @@ class _Configuration(object):
 		try:
 			self.load()
 		except Exception, e:
-			print >>sys.stderr, "Warning: Failed to load configuration; Creating new one"
-			print >>sys.stderr, "  exception was:", e
+			log.warning("Failed to load configuration; Creating new one.")
+			log.warning("Reason: %s", e)
 			self.create()
 		
 		# Convert objects serialized as string back to object
@@ -63,7 +63,7 @@ class _Configuration(object):
 		# where value is missing
 		if self.check_values():
 			# check_values returns True if any default value is added
-			print "SAVE"
+			log.info("Saving configuration...")
 			self.save()
 	
 	def load(self):
@@ -72,8 +72,8 @@ class _Configuration(object):
 			try:
 				os.makedirs(self.get_config_dir())
 			except Exception, e:
-				print >>sys.stderr, "Fatal: Cannot create configuration directory"
-				print >>sys.stderr, e
+				log.error("Cannot create configuration directory")
+				log.exception(e)
 				sys.exit(1)
 		# Load json
 		self.values = json.loads(file(self.get_config_file(), "r").read())
@@ -125,8 +125,8 @@ class _Configuration(object):
 						# Convert bools
 						self.values[key] = bool(self.values[key])
 				except Exception, e:
-					print >>sys.stderr, "Warning: Failed to parse configuration value '%s'. Using default." % (key,)
-					print >>sys.stderr, e
+					log.warning("Failed to parse configuration value '%s'. Using default.", key)
+					log.warning(e)
 					# Value will be re-created by check_values method
 					del self.values[key]
 	

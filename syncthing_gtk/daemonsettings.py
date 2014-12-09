@@ -61,7 +61,6 @@ class DaemonSettingsDialog(EditorDialog):
 					self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
 			else:
 				self.values["MaxSendKbps"] = 0
-				print "MaxSendKbpsEnabled : MaxSendKbps zeroed"
 				self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
 		elif key == "MaxRecvKbpsEnabled":
 			if value:

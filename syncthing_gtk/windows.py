@@ -9,7 +9,8 @@ from syncthing_gtk import windows
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 from gi.repository import Gio, GLib, GObject
-import os, codecs, msvcrt, win32pipe, _winreg
+import os, logging, codecs, msvcrt, win32pipe, _winreg
+log = logging.getLogger("windows.py")
 
 def fix_localized_system_error_messages():
 	"""
@@ -118,7 +119,7 @@ def WinConfiguration():
 				# configuration folder
 				#
 				# TODO: Remove this later
-				print "Note: Converting old configuration to registry..."
+				log.info("Converting old configuration to registry...")
 				Configuration.load(self)
 				self.convert_values()
 				self.check_values()
@@ -132,8 +133,8 @@ def WinConfiguration():
 						pass
 				except Exception, e:
 					# Shouldn't happen, report problem here
-					print >>sys.stderr, "Warning: Failed to remove old config file"
-					print >>sys.stderr, e
+					log.warning("Failed to remove old config file")
+					log.warning(e)
 				return
 			self.values = {}
 			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")

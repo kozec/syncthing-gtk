@@ -7,7 +7,6 @@ Dialog with Device ID and generated QR code
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
-from syncthing_gtk import DEBUG
 import os, tempfile
 _ = lambda (a) : a
 

@@ -6,9 +6,9 @@ Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango
-from syncthing_gtk import DEBUG
-import os, math
+import os, logging, math
 _ = lambda (a) : a
+log = logging.getLogger("InfoBox")
 
 COLOR_CHANGE_TIMER	= 10	# ms
 COLOR_CHANGE_STEP	= 0.05
@@ -326,10 +326,10 @@ class InfoBox(Gtk.Container):
 		if percentage > 0.0 and percentage < 1.0:
 			percent = percentage * 100.0
 			self.status.set_markup('<span font_weight="bold" font_size="large" color="white">%s (%.f%%)</span>' % (t, percent))
-			if DEBUG : print "%s state changed to %s (%s%%)" % (self.str_title, t, percent)
+			log.debug("%s state changed to %s (%s%%)", self.str_title, t, percent)
 		else:
 			self.status.set_markup('<span font_weight="bold" font_size="large" color="white">%s</span>' % t)
-			if DEBUG : print "%s state changed to %s" % (self.str_title, t)
+			log.debug("%s state changed to %s", self.str_title, t)
 	
 	def get_status(self):
 		return self.str_status

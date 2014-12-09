@@ -7,10 +7,11 @@ Runs syncthing daemon process as subprocess of application
 
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
-from syncthing_gtk import DEBUG
 from syncthing_gtk.tools import IS_WINDOWS
 from collections import deque
-import os, sys
+import os, sys, logging
+log = logging.getLogger("DaemonProcess")
+
 HAS_SUBPROCESS = hasattr(Gio, "Subprocess")
 if IS_WINDOWS:
 	# POpen is used on Windows
@@ -79,7 +80,7 @@ class DaemonProcess(GObject.GObject):
 			response = proc.read_bytes_finish(results)
 		except Exception, e:
 			if not self._cancel.is_cancelled():
-				print e
+				log.exception(e)
 				GLib.idle_add(self._stdout.read_bytes_async, 256, 1, None, self._cb_read)
 			return
 		response = response.get_data().decode('utf-8')
@@ -113,10 +114,10 @@ class DaemonProcess(GObject.GObject):
 		"""
 		try:
 			r = proc.wait_check_finish(results)
-			print "Subprocess finished", proc.get_exit_status()
+			log.info("Subprocess finished with code %s", proc.get_exit_status())
 		except GLib.GError:
 			# Exited with exit code
-			print "Subprocess exited", proc.get_exit_status()
+			log.info("Subprocess exited with code %s", proc.get_exit_status())
 		self.emit('exit', proc.get_exit_status())
 		if IS_WINDOWS: self._stdout.close()
 		self._cancel.cancel()

@@ -5,9 +5,9 @@ Syncthing-GTK - Ignore Pattern Editor
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib
-from syncthing_gtk import DEBUG
-import os, sys, re
+import os, sys, re, logging
 _ = lambda (a) : a
+log = logging.getLogger("IgnoreEditor")
 
 class IgnoreEditor(object):
 	""" Standard looking about dialog """
@@ -75,7 +75,7 @@ class IgnoreEditor(object):
 	def cb_data_failed(self, *a):
 		# This should be next to impossible, so simply closing dialog
 		# should be enought of "solution"
-		print >>sys.stderr, "Failed to load .stignore data:", a
+		log.error("Failed to load .stignore data: %s", a)
 		self.close()
 	
 	def cb_data_loaded(self, text):

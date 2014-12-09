@@ -8,11 +8,11 @@ to given location.
 
 from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
-from syncthing_gtk import DEBUG
 from syncthing_gtk.tools import compare_version, IS_WINDOWS
-import os, sys, stat, json, traceback, platform
-import tempfile, tarfile, zipfile
+import os, sys, stat, json, platform
+import tempfile, tarfile, zipfile, logging
 _ = lambda (a) : a
+log = logging.getLogger("StDownloader")
 
 CHUNK_SIZE = 102400
 
@@ -138,8 +138,7 @@ class StDownloader(GObject.GObject):
 			for version in sorted(commits_by_version.keys()):
 				if not compare_version(INTERNAL_VERSION, version):
 					# Newer than internal
-					if DEBUG:
-						print "STDownloader: Ignoring newer Syncthing-GTK version", version
+					log.verbose("STDownloader: Ignoring newer Syncthing-GTK version %s", version)
 				else:
 					for tag in tags_by_commit[commits_by_version[version]]:
 						if tag.startswith("Syncthing_"):
@@ -148,14 +147,13 @@ class StDownloader(GObject.GObject):
 							# compatibile version
 							st_ver = tag.split("_")[-1]
 							if compare_version(st_ver, self.latest_compat):
-								if DEBUG:
-									print "STDownloader: Got newer compatibile Syncthing version", st_ver
+								log.verbose("STDownloader: Got newer compatibile Syncthing version %s", st_ver)
 								self.latest_compat = st_ver
 			
-			if DEBUG: print "STDownloader: Latest compatibile Syncthing version:", self.latest_compat
+			log.verbose("STDownloader: Latest compatibile Syncthing version: %s", self.latest_compat)
 		
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
@@ -182,7 +180,7 @@ class StDownloader(GObject.GObject):
 					latest_ver = version
 				if compare_version(self.latest_compat, version):
 					# Compatibile
-					if DEBUG: print "STDownloader: Found compatibile Syncthing version:", version
+					log.verbose("STDownloader: Found compatibile Syncthing version: %s", version)
 					self.version = version
 					for asset in release["assets"]:
 						if self.platform in asset["name"]:
@@ -191,19 +189,19 @@ class StDownloader(GObject.GObject):
 							break
 					break
 				else:
-					if DEBUG: print "STDownloader: Ignoring too new Syncthing version:", version
+					log.verbose("STDownloader: Ignoring too new Syncthing version: %s", version)
 			del f
 			if self.dll_url is None:
 				raise Exception("No release to download")
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
 		# Check if latest version is not larger than latest supported
 		if latest_ver != self.version:
-			print "Note: Not using latest, unsupported Syncthing version", \
-				latest_ver, "; Using", self.version, "instead"
+			log.info("Not using latest, unsupported Syncthing version %s; Using %s instead",
+					latest_ver, self.version)
 		# Everything is done, emit version signal
 		self.emit("version", self.version)
 	
@@ -216,7 +214,7 @@ class StDownloader(GObject.GObject):
 			tmpfile = tempfile.NamedTemporaryFile(mode="wb",
 				prefix="syncthing-package.", suffix=suffix, delete=False)
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e, _("Failed to create temporaly file."))
 			return
 		f = Gio.File.new_for_uri(self.dll_url)
@@ -231,7 +229,7 @@ class StDownloader(GObject.GObject):
 			stream = f.read_finish(result)
 			del f
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
 		stream.read_bytes_async(CHUNK_SIZE, GLib.PRIORITY_DEFAULT, None,
@@ -259,7 +257,7 @@ class StDownloader(GObject.GObject):
 				tmpfile.close()
 				GLib.idle_add(self._open_achive, tmpfile.name)
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
 	
@@ -292,7 +290,7 @@ class StDownloader(GObject.GObject):
 						GLib.idle_add(self._extract, (archive, compressed, output, 0, tinfo.size))
 						return
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
@@ -323,7 +321,7 @@ class StDownloader(GObject.GObject):
 				self.emit("extraction-progress", 1.0)
 				self.emit("extraction-finished")
 		except Exception, e:
-			print >>sys.stderr, traceback.format_exc()
+			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return

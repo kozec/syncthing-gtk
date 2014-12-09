@@ -9,8 +9,9 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject
 from syncthing_gtk.tools import ints
 from syncthing_gtk.daemon import ConnectionRestarted
-import os, sys
+import os, sys, logging
 _ = lambda (a) : a
+log = logging.getLogger("EditorDialog")
 
 class EditorDialog(GObject.GObject):
 	"""
@@ -124,7 +125,7 @@ class EditorDialog(GObject.GObject):
 		if key in self.values:
 			return self.values[key]
 		else:
-			print "Warning: get_value: Value %s not found" % (key,)
+			log.warning("get_value: Value %s not found", key)
 			raise ValueNotFoundError(key)
 	
 	def set_value(self, key, value):
@@ -204,7 +205,7 @@ class EditorDialog(GObject.GObject):
 					self.display_value(key, widget)
 				except ValueNotFoundError:
 					# Value not found, probably old daemon version
-					print >>sys.stderr, "Warning: display_values: Value", key, "not found"
+					log.warning("display_values: Value %s not found", key)
 					widget.set_sensitive(False)
 		return True
 		
@@ -227,7 +228,7 @@ class EditorDialog(GObject.GObject):
 		elif isinstance(w, Gtk.CheckButton):
 			w.set_active(self.get_value(key.lstrip("v")))
 		else:
-			print >>sys.stderr, "Warning: display_value: %s class cannot handle widget %s, key %s" % (self.__class__.__name__, w, key)
+			log.warning("display_value: %s class cannot handle widget %s, key %s", self.__class__.__name__, w, key)
 			if not w is None: w.set_sensitive(False)
 	
 	def ui_value_changed(self, w, *a):
@@ -373,7 +374,7 @@ class EditorDialog(GObject.GObject):
 	
 	def syncthing_cb_post_config(self, *a):
 		# No return value for this call, let's hope for the best
-		print "Configuration (probably) saved"
+		log.info("Configuration (probably) saved")
 		# Close editor
 		self["editor"].set_sensitive(True)
 		self.on_saved()
@@ -391,7 +392,6 @@ class EditorDialog(GObject.GObject):
 			# Should be ok, this restart is triggered
 			# by App handler for 'config-saved' event.
 			return self.syncthing_cb_post_config()
-		# print a
 		d = Gtk.MessageDialog(
 			self["editor"],
 			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,

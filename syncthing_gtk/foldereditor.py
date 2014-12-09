@@ -9,8 +9,9 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
 from syncthing_gtk import EditorDialog, HAS_INOTIFY
-import os, sys, re
+import os, sys, re, logging
 _ = lambda (a) : a
+log = logging.getLogger("FolderEditor")
 
 COLOR_NEW				= "#A0A0A0"
 # Regexp to check if folder id is valid
@@ -140,7 +141,7 @@ class FolderEditorDialog(EditorDialog):
 		except KeyError, e:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
-			print >>sys.stderr, e
+			log.exception(e)
 			self.close()
 			return False
 		if not HAS_INOTIFY:
