@@ -35,7 +35,7 @@ releaseNotes = lastRelease['body'].replace('\r', '').replace(':\n-', ':\n\n-')
 
 for asset in lastRelease['assets']:
 	print(asset['name'])
-	if re.match(r'.+win32-full-installer.exe', asset['name']):
+	if re.match(r'.+win32(-full)?-installer.exe', asset['name']):
 		# url = "https://cdn.rawgit.com/syncthing/syncthing-gtk/releases/download/"+lastRelease['name']+"/"+asset['name']
 		url = asset['browser_download_url']
 assert(url != ''), "ERR No fitting script found"
