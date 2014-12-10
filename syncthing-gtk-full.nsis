@@ -9,6 +9,7 @@
 
 OutFile "${APP_NAME}-${VERSION}-full-installer.exe"
 InstallDir $PROGRAMFILES\${APP_NAME}
+Caption "Syncthing-GTK Setup"
 
 Page directory
 Page instfiles
