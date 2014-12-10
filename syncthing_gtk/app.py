@@ -1214,6 +1214,7 @@ class App(Gtk.Application, TimerManager):
 	
 	# --- Callbacks ---
 	def cb_exit(self, *a):
+		self.statusicon.hide()
 		self.quit()
 	
 	def cb_about(self, *a):

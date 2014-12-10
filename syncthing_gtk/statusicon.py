@@ -64,6 +64,17 @@ class StatusIcon(GObject.GObject):
 	def _cb_rclick(self, si, button, time):
 		self._popupmenu.popup(None, None, None, None, button, time)
 	
+	def hide(self):
+		"""
+		Hides status icon. This is workaround for Windows not doing this
+		automatically when process exits and is not generaly needed on
+		X/Unity
+		"""
+		if THE_HELL and HAS_INDICATOR:
+			pass
+		else:
+			self._si.set_visible(False)
+	
 	def set(self, icon, text=None):
 		# TODO: That text part on ubuntu...
 		if text == None:
