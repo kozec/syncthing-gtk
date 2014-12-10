@@ -1,4 +1,6 @@
-# Initial stuff
+# Required plugins: NSISdl, ZipDLL, FindProcDLL (by hnedka)
+
+## Initial stuff
 !define APP_NAME SyncthingGTK
 !define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.4.3.zip"
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
@@ -13,6 +15,13 @@ Page instfiles
 
 # Install
 Section
+	# Check if app is already running
+	FindProcDLL::FindProc "syncthing-gtk.exe"
+	IntCmp $R0 1 0 NotRunning
+		MessageBox MB_OK|MB_ICONEXCLAMATION "Syncthing-GTK is running. Please close it first." /SD IDOK
+		Abort
+NotRunning:
+	# Set output path
 	SetOutPath $INSTDIR
 	# Install everything
 	File /r build\exe.win32-2.7\*
@@ -43,6 +52,11 @@ SectionEnd
 
 # Uninstall
 Section "Uninstall"
+	FindProcDLL::FindProc "syncthing-gtk.exe"
+	IntCmp $R0 1 0 NotRunning
+		MessageBox MB_OK|MB_ICONEXCLAMATION "Syncthing-GTK is running. Please close it first." /SD IDOK
+		Abort
+NotRunning:
 	Delete $INSTDIR\uninstaller.exe
 	Delete $INSTDIR\*
 	RMDir /r $INSTDIR
