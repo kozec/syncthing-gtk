@@ -24,9 +24,6 @@ def fix_localized_system_error_messages():
 	"""
 	
 	def handle_error(error):
-		if error.encoding != "ascii":
-			# Don't interfere with others
-			raise error
 		return (u'?', error.end)
 	
 	codecs.register_error("strict", handle_error)
