@@ -1,18 +1,27 @@
 # Required plugins: NSISdl, ZipDLL, FindProcDLL (by hnedka)
 
 ## Initial stuff
+!include MUI2.nsh
 !define APP_NAME SyncthingGTK
 !define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.4.3.zip"
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
-
+!define MUI_FINISHPAGE_RUN "$INSTDIR\syncthing-gtk.exe"
 !include "build\version.nsh"
 
 OutFile "${APP_NAME}-${VERSION}-full-installer.exe"
 InstallDir $PROGRAMFILES\${APP_NAME}
-Caption "Syncthing-GTK Setup"
+Name "Syncthing-GTK"
 
-Page directory
-Page instfiles
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+!insertmacro MUI_LANGUAGE "English"
 
 # Install
 Section
