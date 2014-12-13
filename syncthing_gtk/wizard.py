@@ -308,6 +308,7 @@ class FindDaemonPage(Page):
 				else:
 					log.info("Binary in %s is not not executable", bin_path)
 		GLib.idle_add(self.search, paths)
+		return False
 
 class DownloadSTPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
@@ -421,6 +422,7 @@ class GenerateKeysPage(Page):
 		self.process.connect('exit', self.cb_daemon_exit)
 		self.process.connect('failed', self.cb_daemon_start_failed)
 		self.process.start()
+		return False
 	
 	def cb_daemon_start_failed(self, dproc, exception):
 		self.parent.output_line("syncthing-gtk: Daemon startup failed")
@@ -596,10 +598,11 @@ class SaveSettingsPage(Page):
 			xml = minidom.parseString(config)
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
-			return self.parent.error(self,
+			self.parent.error(self,
 				_("Failed to load Syncthing configuration"),
 				str(e),
 				True)
+			return False
 		try:
 			# Prepare elements
 			gui = xml.getElementsByTagName("configuration")[0] \
@@ -621,21 +624,24 @@ class SaveSettingsPage(Page):
 			au.firstChild.replaceWholeText("0")
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
-			return self.parent.error(self,
+			self.parent.error(self,
 				_("Failed to modify Syncthing configuration"),
 				str(e),
 				True)
+			return False
 		try:
 			# Write XML back to file
 			file(self.parent.st_configfile, "w").write(xml.toxml())
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
-			return self.parent.error(self,
+			self.parent.error(self,
 				_("Failed to save Syncthing configuration"),
 				str(e),
 				True)
+			return False
 		self.parent.set_page_complete(self, True)
 		self.parent.next_page()
+		return False
 
 class LastPage(GenerateKeysPage):
 	TYPE = Gtk.AssistantPageType.SUMMARY
