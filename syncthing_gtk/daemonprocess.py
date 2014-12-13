@@ -157,3 +157,7 @@ class DaemonProcess(GObject.GObject):
 	def get_output(self):
 		""" Returns process output as iterable list of lines """
 		return self._lines
+	
+	def get_commandline(self):
+		""" Returns commandline used to start process """
+		return self.commandline

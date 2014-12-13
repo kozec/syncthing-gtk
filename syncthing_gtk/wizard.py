@@ -11,7 +11,7 @@ from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
-from syncthing_gtk.tools import can_upgrade_binary
+from syncthing_gtk.tools import can_upgrade_binary, compare_version
 import os, sys, socket, random, string
 import logging, traceback, platform
 from xml.dom import minidom
@@ -217,34 +217,37 @@ class FindDaemonPage(Page):
 			"\n\n" +
 			_("Please wait...")
 		)
+		self.paths = []
+		self.version_string = "v0.0"
+		self.ignored_version = None
 		self.attach(self.label, 0, 0, 1, 1)
 	
 	def prepare(self):
-		paths = [ "./" ]
-		paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
+		self.paths = [ "./" ]
+		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
 		suffix, trash = StDownloader.determine_platform()
 		self.binaries = ["syncthing", "syncthing%s" % (suffix,)]
 		if suffix == "x64":
 			# Allow 32bit binary on 64bit
 			self.binaries += ["syncthing.x86"]
 		if IS_WINDOWS:
-			paths += [ "c:/Program Files/syncthing",
+			self.paths += [ "c:/Program Files/syncthing",
 				"c:/Program Files (x86)/syncthing",
 				self.parent.st_configdir
 				]
 			self.binaries = ("syncthing.exe",)
 		if "PATH" in os.environ:
-			paths += os.environ["PATH"].split(":")
+			self.paths += os.environ["PATH"].split(":")
 		log.info("Searching for syncthing binary...")
-		GLib.idle_add(self.search, paths)
+		GLib.idle_add(self.search)
 	
-	def search(self, paths):
+	def search(self):
 		"""
 		Called repeatedly through GLib.idle_add, until binary is found
 		or all possible paths are tried.
 		"""
 		try:
-			path, paths = paths[0], paths[1:]
+			path, self.paths = self.paths[0], self.paths[1:]
 		except IndexError:
 			# Out of possible paths. Not found
 			if IS_WINDOWS:
@@ -254,21 +257,35 @@ class FindDaemonPage(Page):
 				return False
 			else:
 				# On Linux, generate and display error page
+				from syncthing_gtk.app import MIN_ST_VERSION
 				target_folder_link = '<a href="file://%s">%s</a>' % (
 						os.path.expanduser(StDownloader.get_target_folder()),
 						StDownloader.get_target_folder())
 				dll_link = '<a href="https://github.com/syncthing/syncthing/releases">' + \
 						_('download latest binary') + '</a>'
-				page = self.parent.error(self,
-						_("Syncthing daemon not found."),
-						(_("Please, use package manager to install the Syncthing package") + " " +
-						 _("or %s from Syncthing page and save it to your %s directory.") +
-						 "\n\n" +
-						 _("Alternatively, Syncthing-GTK can download Syncthing binary "
-						   "to %s and keep it up-to-date, but this option is meant as "
-						   "last resort and generally not suggested.")
-						 ) % (dll_link, target_folder_link, target_folder_link), +
-						False)
+				message, title = "", None
+				if self.ignored_version == None:
+					# No binary was found
+					title = _("Syncthing daemon not found.")
+					message += _("Please, use package manager to install the Syncthing package") + " "
+					message += _("or %s from Syncthing page and save it to your %s directory.") % \
+								(dll_link, target_folder_link)
+				else:
+					# Binary was found, but it was too old to be ussable
+					title = _("Syncthing daemon is too old.")
+					message += _("Syncthing-GTK needs Syncthing daemon %s or newer, but only %s") % \
+							(MIN_ST_VERSION, self.ignored_version) + " "
+					message += _("were found.")
+					message += "\n\n"
+				message += _("Please, use package manager to install the Syncthing package") + " "
+				message += _("or %s from Syncthing page and save it to your %s directory.") % \
+							(dll_link, target_folder_link)
+				message += "\n\n"
+				message += _("Alternatively, Syncthing-GTK can download Syncthing binary") + " "
+				message += _("to %s and keep it up-to-date, but this option is meant as") % \
+							(target_folder_link,) + " "
+				message += _("last resort and generally not suggested.")
+				page = self.parent.error(self, title, message, False)
 				# Attach [ ] Download Syncthing checkbox
 				cb = Gtk.CheckButton(_("_Download Syncthing binary"), use_underline=True)
 				cb.connect("toggled", lambda cb, *a : self.parent.set_page_complete(page, cb.get_active()))
@@ -287,28 +304,60 @@ class FindDaemonPage(Page):
 			log.info(" ... %s", bin_path)
 			if os.path.isfile(bin_path):
 				if os.access(bin_path, os.X_OK):
-					# File exists and is executable
+					# File exists and is executable, run it and parse
+					# version string from output
 					log.info("Binary found in %s", bin_path)
 					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
-					self.parent.config["syncthing_binary"] = bin_path
-					if not can_upgrade_binary(bin_path):
-						# Don't try enable auto-update if binary is in
-						# non-writable location (auto-update is enabled
-						# by default on Windows only)
-						self.parent.config["st_autoupdate"] = False
-					self.parent.set_page_complete(self, True)
-					self.label.set_markup(
-							_("<b>Syncthing daemon binary found.</b>") +
-							"\n\n" +
-							_("Binary path:") +
-							" " +
-							bin_path
-						)
-					return
+					p = DaemonProcess([ bin_path, '-version' ])
+					p.connect('line', self.cb_process_output)
+					p.connect('exit', self.cb_process_exit)
+					p.connect('failed', self.cb_process_exit)
+					p.start()
+					return False
 				else:
 					log.info("Binary in %s is not not executable", bin_path)
-		GLib.idle_add(self.search, paths)
-		return False
+		return True
+	
+	def cb_process_output(self, process, line):
+		"""
+		Called when daemon binary outputs line while it's being asked
+		for version string.
+		"""
+		try:
+			# Parse version string
+			v = line.split(" ")[1]
+			if v.startswith("v"):
+				self.version_string = v
+		except Exception:
+			# Not line with version string, probably some other output
+			pass
+	
+	def cb_process_exit(self, process, *a):
+		""" Called after daemon binary outputs version and exits """
+		from syncthing_gtk.app import MIN_ST_VERSION
+		bin_path = process.get_commandline()[0]
+		if compare_version(self.version_string, MIN_ST_VERSION):
+			# Daemon binary exists, is executable and meets
+			# version requirements. That's good, btw.
+			self.parent.config["syncthing_binary"] = bin_path
+			if not can_upgrade_binary(bin_path):
+				# Don't try enable auto-update if binary is in
+				# non-writable location (auto-update is enabled
+				# by default on Windows only)
+				self.parent.config["st_autoupdate"] = False
+			self.parent.set_page_complete(self, True)
+			self.label.set_markup(
+					_("<b>Syncthing daemon binary found.</b>") +
+					"\n\n" +
+					_("Binary path:") + " " + bin_path + "\n" +
+					_("Version:") + " " + self.version_string
+				)
+		else:
+			# Found daemon binary too old to be ussable.
+			# Just ignore it and try to find better one.
+			log.info("Binary in %s is too old", bin_path)
+			self.ignored_version = self.version_string
+			GLib.idle_add(self.search)
 
 class DownloadSTPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
