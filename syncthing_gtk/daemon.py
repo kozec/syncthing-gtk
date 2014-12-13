@@ -658,6 +658,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if 'ok' in data:
 			if self._connected:
 				self._connected = False
+				self._epoch += 1
 				self.emit("disconnected", reason, None)
 			self.cancel_all()
 	

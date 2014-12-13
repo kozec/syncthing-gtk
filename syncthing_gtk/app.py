@@ -449,6 +449,11 @@ class App(Gtk.Application, TimerManager):
 		if reason == Daemon.SHUTDOWN:
 			# Add 'Start daemon again' button to dialog
 			self.connect_dialog.add_button("Start Again", RESPONSE_START_DAEMON)
+		elif IS_WINDOWS and not self.process is None:
+			# Restart daemon process if connection is lost on Windows
+			self.process.kill()
+			self.process = None
+			self.start_daemon()
 		self.set_status(False)
 		self.restart()
 	
