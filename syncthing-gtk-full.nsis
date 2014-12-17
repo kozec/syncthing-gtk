@@ -38,6 +38,7 @@ NotRunning:
 	# Write out installation location
 	WriteRegStr HKCU SOFTWARE\${APP_NAME} 'InstallPath' '$INSTDIR'
 	# Create shortcut
+	SetShellVarContext all
 	CreateShortCut "$SMPROGRAMS\Syncthing GTK.lnk" "$INSTDIR\syncthing-gtk.exe" ""
 	# Create uninstaller
 	WriteUninstaller $INSTDIR\uninstaller.exe
@@ -67,8 +68,13 @@ Section "Uninstall"
 		MessageBox MB_OK|MB_ICONEXCLAMATION "Syncthing-GTK is running. Please close it first." /SD IDOK
 		Abort
 NotRunning:
+	# Remove files
 	Delete $INSTDIR\uninstaller.exe
 	Delete $INSTDIR\*
 	RMDir /r $INSTDIR
+	# Remove shortcut
+	SetShellVarContext all
+	Delete "$SMPROGRAMS\Syncthing GTK.lnk"
+	# Remove uninstall entry
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK"
 SectionEnd
