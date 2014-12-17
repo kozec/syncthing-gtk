@@ -10,34 +10,9 @@ if __name__ == "__main__":
 	path = "/usr/share/syncthing-gtk"
 	if os.path.exists("/usr/local/share/syncthing-gtk"):
 		path = "/usr/local/share/syncthing-gtk"
-	if "-h" in sys.argv or "--help" in sys.argv:
-		print "Usage: %s [options]" % (sys.argv[0],)
-		print "  -h   Display this help message and exit"
-		print "  -w   Display window (don't start minimized)"
-		print "  -s   Use classic window header"
-		print "  -v   Be verbose"
-		print "  -vv  Be more verbose (debug mode)"
-		print "  -1   Run 'first start wizard' and exit"
-		print "  -a   Display about dialog and exits"
-		sys.exit(0)
 	
 	from syncthing_gtk.tools import init_logging
-	init_logging("-v" in sys.argv, "-vv" in sys.argv)
-	if "-a" in sys.argv:
-		from syncthing_gtk import AboutDialog
-		AboutDialog(None, path).run([])
-	elif "-1" in sys.argv:
-		from syncthing_gtk import Wizard
-		Wizard(
-			path,
-			os.path.join(path, "icons"),
-			None
-			).run([])
-	else:
-		from syncthing_gtk import App
-		App(
-			"-w" not in sys.argv,
-			"-s" not in sys.argv,
-			path,
-			os.path.join(path, "icons")
-		).run([])
+	init_logging()
+	
+	from syncthing_gtk import App
+	App(".", "./icons").run(sys.argv)
