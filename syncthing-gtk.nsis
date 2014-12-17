@@ -23,13 +23,21 @@ Name "Syncthing-GTK"
 
 !insertmacro MUI_LANGUAGE "English"
 
+!macro ExitST-GTK
+	push $1
+	ReadRegStr $1 HKCU SOFTWARE\${APP_NAME} 'InstallPath'
+	DetailPrint "Asking Syncthing-GTK to quit..."
+	ExecWait "$1\syncthing-gtk.exe --quit"
+	FindProcDLL::WaitProcEnd "syncthing-gtk.exe" -1
+	pop $1
+!macroend
+
 # Install
 Section
 	# Check if app is already running
 	FindProcDLL::FindProc "syncthing-gtk.exe"
 	IntCmp $R0 1 0 NotRunning
-		MessageBox MB_OK|MB_ICONEXCLAMATION "Syncthing-GTK is running. Please close it first." /SD IDOK
-		Abort
+		!insertmacro ExitST-GTK
 NotRunning:
 	# Set output path
 	SetOutPath $INSTDIR
@@ -75,8 +83,7 @@ SectionEnd
 Section "Uninstall"
 	FindProcDLL::FindProc "syncthing-gtk.exe"
 	IntCmp $R0 1 0 NotRunning
-		MessageBox MB_OK|MB_ICONEXCLAMATION "Syncthing-GTK is running. Please close it first." /SD IDOK
-		Abort
+		!insertmacro ExitST-GTK
 NotRunning:
 	# Remove files
 	Delete $INSTDIR\uninstaller.exe

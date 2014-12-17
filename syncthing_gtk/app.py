@@ -136,7 +136,7 @@ class App(Gtk.Application, TimerManager):
 	def do_command_line(self, cl):
 		Gtk.Application.do_command_line(self, cl)
 		if cl.get_options_dict().contains("quit"):
-			self.quit()
+			self.cb_exit()
 		else:
 			self.activate()
 		return 0
