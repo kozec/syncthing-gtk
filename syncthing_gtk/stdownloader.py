@@ -17,6 +17,9 @@ log = logging.getLogger("StDownloader")
 CHUNK_SIZE = 102400
 
 class StDownloader(GObject.GObject):
+	ST_GTK_URL	= "https://api.github.com/repos/syncthing/syncthing-gtk/tags"
+	ST_URL		= "https://api.github.com/repos/syncthing/syncthing/releases"
+
 	"""
 	Downloads, extracts and saves syncthing daemon to given location.
 	
@@ -104,13 +107,21 @@ class StDownloader(GObject.GObject):
 		Emits 'version' signal on success.
 		Handler for 'version' signal should call download method.
 		"""
-		uri = "https://api.github.com/repos/syncthing/syncthing-gtk/tags"
+		uri = StDownloader.ST_GTK_URL
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_compatibility, None)
 	
 	def get_target(self):
 		""" Returns download target """
 		return self.target
+	
+	def force_version(self, version):
+		self.latest_compat = version
+		log.verbose("STDownloader: Forced Syncthing version: %s", self.latest_compat)
+		
+		uri = StDownloader.ST_URL
+		f = Gio.File.new_for_uri(uri)
+		f.load_contents_async(None, self._cb_read_latest, None)
 	
 	def _cb_read_compatibility(self, f, result, buffer, *a):
 		# Extract compatibility info from version tags in response
@@ -161,7 +172,7 @@ class StDownloader(GObject.GObject):
 		# After latest compatibile ST version is determined, determine
 		# latest actually existing version. This should be usualy same,
 		# but checking is better than downloading non-existant file.
-		uri = "https://api.github.com/repos/syncthing/syncthing/releases"
+		uri = StDownloader.ST_URL
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_latest, None)
 	
@@ -186,6 +197,7 @@ class StDownloader(GObject.GObject):
 						if self.platform in asset["name"]:
 							self.dll_url = asset["browser_download_url"]
 							self.dll_size = int(asset["size"])
+							log.debug("STDownloader: URL: %s", self.dll_url)
 							break
 					break
 				else:

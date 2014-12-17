@@ -74,16 +74,15 @@ class App(Gtk.Application, TimerManager):
 		self.builder = None
 		self.rightclick_box = None
 		self.config = Configuration()
+		self.process = None
 		self.hide_window = self.config["minimize_on_start"]
 		self.exit_after_wizard = False
-		self.process = None
-		# Check if configuration orders us not use the HeaderBar
-		# or parameter '-s' on the command line is active
-		# or the platform is Unity.
-		self.use_headerbar = not self.config["use_old_header"]
+		# Can be changed by --force-update=vX.Y.Z argument
+		self.force_update_version = None
+		# Determine if header bar should be shown
 		# User setting is not visible under Unity/Gnome
-		if IS_UNITY: self.use_headerbar = False
-		if IS_GNOME: self.use_headerbar = True
+		self.use_headerbar = \
+			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME)
 		
 		self.watcher = None
 		self.daemon = None
@@ -137,8 +136,13 @@ class App(Gtk.Application, TimerManager):
 		Gtk.Application.do_command_line(self, cl)
 		if cl.get_options_dict().contains("quit"):
 			self.cb_exit()
-		else:
-			self.activate()
+			return 0
+		if cl.get_options_dict().contains("force-update"):
+			self.force_update_version = \
+				cl.get_options_dict().lookup_value("force-update").get_string()
+			if not self.force_update_version.startswith("v"):
+				self.force_update_version = "v%s" % (self.force_update_version,)
+		self.activate()
 		return 0
 	
 	def do_activate(self, *a):
@@ -165,6 +169,9 @@ class App(Gtk.Application, TimerManager):
 		aso("debug",	b"d", "Be more verbose (debug mode)")
 		aso("wizard",	b"1", "Run 'first start wizard' and exit")
 		aso("about",	b"a", "Display about dialog and exit")
+		self.add_main_option("force-update", 0, GLib.OptionFlags.HIDDEN,
+				GLib.OptionArg.STRING,
+				"Force updater to download specific daemon version")
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
@@ -352,11 +359,12 @@ class App(Gtk.Application, TimerManager):
 			# may fail in too many ways.
 			log.warning("Skiping updatecheck: Daemon not launched by me")
 			return
-		if (datetime.now() - self.config["last_updatecheck"]).total_seconds() < UPDATE_CHECK_INTERVAL:
-			# Too soon, check again in 10 minutes
-			self.timer("updatecheck", 60 * 10, self.check_for_upgrade)
-			log.info("updatecheck: too soon")
-			return
+		if self.force_update_version is None:
+			if (datetime.now() - self.config["last_updatecheck"]).total_seconds() < UPDATE_CHECK_INTERVAL:
+				# Too soon, check again in 10 minutes
+				self.timer("updatecheck", 60 * 10, self.check_for_upgrade)
+				log.info("updatecheck: too soon")
+				return
 		log.info("Checking for updates...")
 		# Prepare
 		target = "%s.new" % (self.config["syncthing_binary"],)
@@ -404,6 +412,9 @@ class App(Gtk.Application, TimerManager):
 				# May happen if connection to daemon is lost while version
 				# check is running
 				return cb_cu_error()
+			if not self.force_update_version is None:
+				needs_upgrade = True
+				self.force_update_version = None
 			log.info("Updatecheck: needs_upgrade = %s", needs_upgrade)
 			self.config["last_updatecheck"] = datetime.now()
 			if needs_upgrade:
@@ -431,13 +442,17 @@ class App(Gtk.Application, TimerManager):
 		sd = StDownloader(target, tag)
 		sd.connect("error", cb_cu_error)
 		sd.connect("version", cb_cu_version)
-		sd.get_version()
+		if self.force_update_version is None:
+			sd.get_version()
+		else:
+			sd.force_version(self.force_update_version)
 	
 	def swap_updated_binary(self):
 		"""
 		Switches newly downloaded binary with old one.
 		Called while daemon is restarting after upgrade is downloaded.
 		"""
+		log.info("Found .new file, updating daemon binary")
 		bin = self.config["syncthing_binary"]
 		old_bin = bin + ".old"
 		new_bin = bin + ".new"
@@ -496,6 +511,9 @@ class App(Gtk.Application, TimerManager):
 		if reason == Daemon.SHUTDOWN:
 			# Add 'Start daemon again' button to dialog
 			self.connect_dialog.add_button("Start Again", RESPONSE_START_DAEMON)
+		elif reason == Daemon.RESTART:
+			# Nothing, just preventing next branch from running
+			pass
 		elif IS_WINDOWS and not self.process is None:
 			# Restart daemon process if connection is lost on Windows
 			self.process.kill()
