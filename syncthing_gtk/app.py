@@ -59,24 +59,28 @@ class App(Gtk.Application, TimerManager):
 	Hide parameter controlls if app should be minimized to status icon
 	after start.
 	"""
-	def __init__(self, hide=True, use_headerbar=True,
-						gladepath="/usr/share/syncthing-gtk",
+	def __init__(self, gladepath="/usr/share/syncthing-gtk",
 						iconpath="/usr/share/syncthing-gtk/icons"):
 		Gtk.Application.__init__(self,
 				application_id="me.kozec.syncthingtk",
-				flags=Gio.ApplicationFlags.FLAGS_NONE)
+				flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
 		TimerManager.__init__(self)
+		# Setup Gtk.Application
+		self.setup_commandline()
+		self.connect('handle-local-options', self.do_local_options)
+		# Set variables
 		self.gladepath = gladepath
 		self.iconpath = iconpath
 		self.builder = None
 		self.rightclick_box = None
 		self.config = Configuration()
-		self.first_activation = hide and self.config["minimize_on_start"]
+		self.hide_window = self.config["minimize_on_start"]
+		self.exit_after_wizard = False
 		self.process = None
 		# Check if configuration orders us not use the HeaderBar
 		# or parameter '-s' on the command line is active
 		# or the platform is Unity.
-		self.use_headerbar = use_headerbar and not self.config["use_old_header"]
+		self.use_headerbar = not self.config["use_old_header"]
 		# User setting is not visible under Unity/Gnome
 		if IS_UNITY: self.use_headerbar = False
 		if IS_GNOME: self.use_headerbar = True
@@ -109,21 +113,57 @@ class App(Gtk.Application, TimerManager):
 		self.setup_widgets()
 		self.setup_actions()
 		self.setup_statusicon()
-		if self.setup_connection():
-			self.daemon.reconnect()
+		if self.wizard == None:
+			if self.setup_connection():
+				self.daemon.reconnect()
+	
+	def do_local_options(self, trash, lo):
+		set_logging_level(
+				lo.contains("verbose"),
+				lo.contains("debug")
+			)
+		if lo.contains("header"): self.use_headerbar = False
+		if lo.contains("window"): self.hide_window = False
+		if lo.contains("wizard"):
+			self.exit_after_wizard = True
+			self.show_wizard()
+		elif lo.contains("about"):
+			ad = AboutDialog(self, self.gladepath)
+			ad.run([])
+			sys.exit(0)
+		return 0
+		
+	def do_command_line(self, cl):
+		Gtk.Application.do_command_line(self, cl)
+		print "do_cl", self.hide_window
+		self.activate()
+		return 0
 	
 	def do_activate(self, *a):
-		if not self.first_activation or (IS_UNITY and not HAS_INDICATOR):
+		print "do_activate,", a
+		if not self.hide_window or (IS_UNITY and not HAS_INDICATOR):
 			if self.wizard is None:
 				# Show main window
 				self.show()
-		elif self.first_activation:
+		elif self.hide_window:
 			print
 			print _("Syncthing-GTK started and running in notification area")
 			if not self.daemon is None:
 				self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
-		self.first_activation = False
-
+		self.hide_window = False
+	
+	def setup_commandline(self):
+		def aso(lname, sname, desc):	# add_simple_option
+			self.add_main_option(lname, sname, GLib.OptionFlags.IN_MAIN,
+				GLib.OptionArg.NONE, desc)
+		
+		aso("window",	b"w", "Display window (don't start minimized)")
+		aso("header",	b"s", "Use classic window header")
+		aso("verbose",	b"v", "Be verbose")
+		aso("debug",	b"d", "Be more verbose (debug mode)")
+		aso("wizard",	b"1", "Run 'first start wizard' and exit")
+		aso("about",	b"a", "Display about dialog and exit")
+	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
 			action = Gio.SimpleAction.new(name, None)
@@ -207,10 +247,7 @@ class App(Gtk.Application, TimerManager):
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
 			self.hide()
-			self.wizard = Wizard(self.gladepath, self.iconpath, self.config)
-			self.wizard.connect('cancel', self.cb_wizard_finished)
-			self.wizard.connect('close', self.cb_wizard_finished)
-			self.wizard.show()
+			self.show_wizard()
 			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
@@ -249,6 +286,12 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
+	
+	def show_wizard(self):
+		self.wizard = Wizard(self.gladepath, self.iconpath, self.config)
+		self.wizard.connect('cancel', self.cb_wizard_finished)
+		self.wizard.connect('close', self.cb_wizard_finished)
+		self.wizard.show()
 	
 	def start_daemon_ui(self):
 		"""
@@ -1536,7 +1579,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_wizard_finished(self, wizard, *a):
 		self.wizard = None
-		if wizard.is_finished():
+		if wizard.is_finished() and not self.exit_after_wizard:
 			# Good, try connecting again
 			wizard.hide()
 			wizard.destroy()

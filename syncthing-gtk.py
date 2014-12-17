@@ -7,35 +7,13 @@ def sigint(*a):
 
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigint)
-	if "-h" in sys.argv or "--help" in sys.argv:
-		print "Usage: %s [options]" % (sys.argv[0],)
-		print "  -h   Display this help message and exit"
-		print "  -w   Display window (don't start minimized)"
-		print "  -s   Use classic window header"
-		print "  -v   Be verbose"
-		print "  -vv  Be more verbose (debug mode)"
-		print "  -1   Run 'first start wizard' and exit"
-		print "  -a   Display about dialog and exits"
-		sys.exit(0)
 	
 	from syncthing_gtk.tools import init_logging, IS_WINDOWS
-	init_logging("-v" in sys.argv, "-vv" in sys.argv)
+	init_logging()
 	if IS_WINDOWS:
 		from syncthing_gtk import windows
 		windows.fix_localized_system_error_messages()
 		windows.dont_use_localization_in_gtk()
-	if "-a" in sys.argv:
-		from syncthing_gtk import AboutDialog
-		AboutDialog(None, ".").run([])
-	elif "-1" in sys.argv:
-		from syncthing_gtk import Wizard
-		Wizard(
-			".", "./icons", None
-			).run([])
-	else:
-		from syncthing_gtk import App
-		App(
-			"-w" not in sys.argv,
-			"-s" not in sys.argv,
-			".", "./icons"
-		).run([])
+	
+	from syncthing_gtk import App
+	App(".", "./icons").run(sys.argv)

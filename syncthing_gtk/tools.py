@@ -186,7 +186,7 @@ def delta_to_string(d):
 		return _("%s seconds from now") % (d.seconds,)
 	return _("in a moment")
 
-def init_logging(verbose, debug):
+def init_logging():
 	"""
 	Initializes logging, sets custom logging format and adds one
 	logging level with name and method to call.
@@ -201,10 +201,13 @@ def init_logging(verbose, debug):
 	# Create additional, "verbose" level
 	logging.addLevelName(15, "V")	# Verbose
 	# Add 'logging.verbose' method
-	def verbose_fn(self, msg, *args, **kwargs):
+	def verbose(self, msg, *args, **kwargs):
 		return self.log(15, msg, *args, **kwargs)
-	logging.Logger.verbose = verbose_fn
-	# Set logging level
+	logging.Logger.verbose = verbose
+
+def set_logging_level(verbose, debug):
+	""" Sets logging level """
+	logger = logging.getLogger()
 	if debug:		# everything
 		logger.setLevel(0)
 	elif verbose:	# everything but debug
