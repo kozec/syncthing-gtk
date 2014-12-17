@@ -135,12 +135,13 @@ class App(Gtk.Application, TimerManager):
 		
 	def do_command_line(self, cl):
 		Gtk.Application.do_command_line(self, cl)
-		print "do_cl", self.hide_window
-		self.activate()
+		if cl.get_options_dict().contains("quit"):
+			self.quit()
+		else:
+			self.activate()
 		return 0
 	
 	def do_activate(self, *a):
-		print "do_activate,", a
 		if not self.hide_window or (IS_UNITY and not HAS_INDICATOR):
 			if self.wizard is None:
 				# Show main window
@@ -159,6 +160,7 @@ class App(Gtk.Application, TimerManager):
 		
 		aso("window",	b"w", "Display window (don't start minimized)")
 		aso("header",	b"s", "Use classic window header")
+		aso("quit",		b"q", "Quit running instance (if any)")
 		aso("verbose",	b"v", "Be verbose")
 		aso("debug",	b"d", "Be more verbose (debug mode)")
 		aso("wizard",	b"1", "Run 'first start wizard' and exit")
