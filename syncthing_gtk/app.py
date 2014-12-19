@@ -1004,6 +1004,11 @@ class App(Gtk.Application, TimerManager):
 				self.connect_dialog.show()
 		else:
 			self["window"].present()
+		if IS_WINDOWS:
+			# Change window size by 1px - this will cause bugged
+			# window border to reappear
+			self["window"].get_children()[0].set_visible(False)
+			GLib.idle_add(self["window"].get_children()[0].set_visible, True)
 	
 	def hide(self):
 		""" Hides main windows and 'Connecting' dialog, if displayed """
