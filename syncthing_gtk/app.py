@@ -158,9 +158,20 @@ class App(Gtk.Application, TimerManager):
 		self.hide_window = False
 	
 	def setup_commandline(self):
-		def aso(lname, sname, desc):	# add_simple_option
-			self.add_main_option(lname, sname, GLib.OptionFlags.IN_MAIN,
-				GLib.OptionArg.NONE, desc)
+		def aso(long_name, short_name, description,
+				flags=GLib.OptionFlags.IN_MAIN,
+				arg=GLib.OptionArg.NONE):
+			""" add_simple_option, adds program argument in simple way """
+			o = GLib.OptionEntry()
+			o.long_name = long_name
+			o.short_name = short_name
+			o.description = description
+			o.flags = flags
+			o.arg = arg
+			# print x
+			self.add_main_option_entries([o])
+			#self.add_main_option(lname, sname, GLib.OptionFlags.IN_MAIN,
+			#	GLib.OptionArg.NONE, desc)
 		
 		aso("window",	b"w", "Display window (don't start minimized)")
 		aso("header",	b"s", "Use classic window header")
@@ -169,9 +180,9 @@ class App(Gtk.Application, TimerManager):
 		aso("debug",	b"d", "Be more verbose (debug mode)")
 		aso("wizard",	b"1", "Run 'first start wizard' and exit")
 		aso("about",	b"a", "Display about dialog and exit")
-		self.add_main_option("force-update", 0, GLib.OptionFlags.HIDDEN,
-				GLib.OptionArg.STRING,
-				"Force updater to download specific daemon version")
+		aso("force-update", 0,
+				"Force updater to download specific daemon version",
+				GLib.OptionFlags.HIDDEN, GLib.OptionArg.STRING)
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
