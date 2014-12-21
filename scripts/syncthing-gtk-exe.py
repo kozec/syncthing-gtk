@@ -20,4 +20,4 @@ if __name__ == "__main__":
 	windows.dont_use_localization_in_gtk()
 	
 	from syncthing_gtk import App
-	App(".", "./icons").run(sys.argv)
+	App(path, os.path.join(path, "icons")).run(sys.argv)
