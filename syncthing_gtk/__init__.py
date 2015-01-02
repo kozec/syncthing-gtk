@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 import tools
-from timermgr			import TimerManager
+from timermanager		import TimerManager
 from daemonprocess		import DaemonProcess
 from daemon				import Daemon, InvalidConfigurationException, \
 							TLSUnsupportedException, ConnectionRestarted
@@ -12,10 +12,10 @@ from deviceeditor		import DeviceEditorDialog
 from foldereditor		import FolderEditorDialog
 from daemonsettings		import DaemonSettingsDialog
 from statusicon			import StatusIcon, HAS_INDICATOR
-from uisettings			import UISettingsDialog
+from uisettingsdialog	import UISettingsDialog
 from configuration		import Configuration
 from iddialog			import IDDialog
-from about				import AboutDialog
+from aboutdialog		import AboutDialog
 from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
 from daemonoutputdialog	import DaemonOutputDialog

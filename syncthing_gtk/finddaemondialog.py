@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import EditorDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
-from syncthing_gtk.uisettings import browse_for_binary
+from syncthing_gtk.uisettingsdialog import browse_for_binary
 import os, platform
 _ = lambda (a) : a
 
