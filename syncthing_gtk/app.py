@@ -236,18 +236,9 @@ class App(Gtk.Application, TimerManager):
 		elif IS_WINDOWS:
 			# Use Aero glass effect on Windows
 			from syncthing_gtk import windows
-			windows.enable_aero_glass(self["window"])
+			windows.enable_aero_glass(self["window"], self["split"], self.iconpath)
 			self["server-name"].override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0.99))
-			f = Gtk.Frame()
-			p = self["split"].get_parent()
-			p.remove(self["split"])
-			p.add(f)
-			f.add(self["split"])
-			f.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*hex2color("E0EAF7FE")) )
-			f.set_border_width(3)
-			f.set_shadow_type(Gtk.ShadowType.IN)
-			f.set_vexpand(True)
-			f.set_visible(True)
+			self["separator_the_hell"].set_visible(False)
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
