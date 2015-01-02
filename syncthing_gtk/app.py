@@ -233,6 +233,28 @@ class App(Gtk.Application, TimerManager):
 				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
 			if IS_WINDOWS:
 				self["app-menu-button"].set_relief(Gtk.ReliefStyle.HALF)
+		elif IS_WINDOWS:
+			# Use Aero glass effect on Windows
+			import ctypes
+			from ctypes import c_int
+			class MARGINS(ctypes.Structure):
+				_fields_ = [("cxLeftWidth", c_int),
+						  ("cxRightWidth", c_int),
+						  ("cyTopHeight", c_int),
+						  ("cyBottomHeight", c_int)
+						 ]
+			margins = MARGINS(-1, -1, -1, -1)
+			dwm = ctypes.windll.dwmapi
+			self["window"].realize()
+			
+			ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
+			ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
+			gpointer = ctypes.pythonapi.PyCapsule_GetPointer(self["window"].get_window().__gpointer__, None)  
+			gdkdll = ctypes.CDLL ("libgdk-3-0.dll")
+			hwnd = gdkdll.gdk_win32_window_get_handle(gpointer)
+			dwm.DwmExtendFrameIntoClientArea(hwnd, ctypes.byref(margins))
+			col = "00000000" # Transparent
+			self["window"].override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*hex2color(col)))
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),

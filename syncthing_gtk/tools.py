@@ -106,6 +106,17 @@ def ints(s):
 		if len(s) == 0 : return 0
 	return int(s)
 
+def hex2color(hx):
+	"""
+	Converts color from AABBCC or #AABBCC format to tuple of floats
+	"""
+	hx = hx.lstrip('#')
+	l = len(hx)
+	color = [ float(int(hx[i:i+l/3], 16)) / 255.0 for i in range(0, l, l/3) ]
+	while len(color) < 4:
+		color.append(1.0)
+	return color
+
 def get_header(headers, key):
 	"""
 	Returns value of single header parsed from headers array or None

@@ -6,6 +6,7 @@ Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango
+from tools import hex2color
 import os, logging, math
 _ = lambda (a) : a
 log = logging.getLogger("InfoBox")
@@ -334,21 +335,9 @@ class InfoBox(Gtk.Container):
 	def get_status(self):
 		return self.str_status
 	
-	@classmethod
-	def hex2color(self, hx):
-		"""
-		Converts color from AABBCC or #AABBCC format to tuple of floats
-		"""
-		hx = hx.lstrip('#')
-		l = len(hx)
-		color = [ float(int(hx[i:i+l/3], 16)) / 255.0 for i in range(0, l, l/3) ]
-		while len(color) < 4:
-			color.append(1.0)
-		return color
-	
 	def set_color_hex(self, hx):
 		""" Expects AABBCC or #AABBCC format """
-		self.set_color(*InfoBox.hex2color(hx))
+		self.set_color(*hex2color(hx))
 		
 	def set_color(self, r, g, b, a):
 		""" Expects floats """
@@ -360,7 +349,7 @@ class InfoBox(Gtk.Container):
 		Returns True if specified color is same as color currently used.
 		Expects floats.
 		"""
-		return self.compare_color(*InfoBox.hex2color(hx))
+		return self.compare_color(*hex2color(hx))
 	
 	def compare_color(self, r, g, b, a):
 		"""
