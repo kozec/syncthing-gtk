@@ -747,7 +747,7 @@ class Daemon(GObject.GObject, TimerManager):
 				device_data[key] = data[id][key]
 			
 			# Send "device-connected" signal, if device was disconnected until now
-			if not device_data["connected"]:
+			if not device_data["connected"] and nid != self._my_id:
 				device_data["connected"] = True
 				self.emit("device-connected", nid)
 			# Send "device-data-changed" signal
