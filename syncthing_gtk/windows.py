@@ -8,7 +8,9 @@ from syncthing_gtk import windows
 
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
-from gi.repository import Gio, GLib, GObject
+from gi.repository import Gtk, Gdk, Gio, GLib, GObject
+from ctypes import c_int, CDLL, Structure, windll, pythonapi
+from ctypes import c_void_p, py_object, byref
 import os, logging, codecs, msvcrt, win32pipe, _winreg
 log = logging.getLogger("windows.py")
 
@@ -180,3 +182,26 @@ def WinConfiguration():
 				return value
 		
 	return _WinConfiguration
+
+def enable_aero_glass(window):
+	"""
+	Enables Aero Glass effect on main application Window and changes
+	some colors to make text readable on transparent background.
+	"""
+	class MARGINS(Structure):
+		_fields_ = [("cxLeftWidth", c_int),
+				  ("cxRightWidth", c_int),
+				  ("cyTopHeight", c_int),
+				  ("cyBottomHeight", c_int)
+				 ]
+	margins = MARGINS(1, 1, 1, -1)
+	dwm = windll.dwmapi
+	window.realize()
+	
+	pythonapi.PyCapsule_GetPointer.restype = c_void_p
+	pythonapi.PyCapsule_GetPointer.argtypes = [py_object]
+	gpointer = pythonapi.PyCapsule_GetPointer(window.get_window().__gpointer__, None)  
+	gdkdll = CDLL ("libgdk-3-0.dll")
+	hwnd = gdkdll.gdk_win32_window_get_handle(gpointer)
+	dwm.DwmExtendFrameIntoClientArea(hwnd, byref(margins))
+	window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0,0,0,0))
