@@ -6,7 +6,7 @@ Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango
-from tools import hex2color
+from tools import hex2color, IS_WINDOWS
 import os, logging, math
 _ = lambda (a) : a
 log = logging.getLogger("InfoBox")
@@ -72,7 +72,7 @@ class InfoBox(Gtk.Container):
 		hbox.pack_start(self.icon, False, False, 0)
 		hbox.pack_start(self.title, True, True, 0)
 		hbox.pack_start(self.status, False, False, 0)
-		hbox.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
+		# hbox.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(*self.color))
 		eb.add(hbox)
 		# Update stuff
 		self.header_box = hbox
@@ -276,6 +276,9 @@ class InfoBox(Gtk.Container):
 		self.hilight_factor changes.
 		"""
 		self.real_color = tuple([ min(1.0, x + HILIGHT_INTENSITY * math.sin(self.hilight_factor)) for x in self.color])
+		if IS_WINDOWS and self.real_color[3] == 1.0:
+			# Prevents weird transparency bug with aero glass
+			self.real_color = tuple( list(self.real_color[0:3]) + [0.99] )
 		gdkcol = Gdk.RGBA(*self.real_color)
 		self.header.override_background_color(Gtk.StateType.NORMAL, gdkcol)
 		try:
@@ -341,6 +344,9 @@ class InfoBox(Gtk.Container):
 		
 	def set_color(self, r, g, b, a):
 		""" Expects floats """
+		if IS_WINDOWS and a == 1.0:
+			# Prevents weird transparency bug with aero glass
+			a = 0.99
 		self.color = (r, g, b, a)
 		self.recolor()
 	
