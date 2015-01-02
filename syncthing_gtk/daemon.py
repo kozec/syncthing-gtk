@@ -112,15 +112,15 @@ class Daemon(GObject.GObject, TimerManager):
 				id:			id of device
 				addresses:	list of device addresses
 		
-		device-data-changed (id, address, version, dl_rate, up_rate, bytes_in, bytes_out)
+		device-data-changed (id, address, version, inbps, outbps, inbytes, outbytes)
 			Emited when device data changes
 				id:			id of device
 				address:	address of remote device
 				version:	daemon version of remote device
-				dl_rate:	download rate
-				up_rate:	upload rate
-				bytes_in:	total number of bytes downloaded
-				bytes_out:	total number of bytes uploaded
+				inbps:		download rate
+				outbps:	upload rate
+				inbytes:	total number of bytes downloaded
+				outbytes:	total number of bytes uploaded
 		
 		last-seen-changed (id, last_seen)
 			Emited when daemon reported 'last seen' value for device changes
@@ -349,9 +349,9 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns dict with device data, creating it if needed """
 		if not nid in self._device_data:
 			self._device_data[nid] = {
-					"bytes_in" : 0, "bytes_out" : 0, "time" : time.time(),
-					"dl_rate" : 0, "up_rate" : 0 , "version" : "?",
-					"completion" : {}, "connected" : False,
+					"InBytesTotal" : 0, "OutBytesTotal" : 0,
+					"inbps" : 0, "outbps" : 0 , "ClientVersion" : "?",
+					"Address": "", "completion" : {}, "connected" : False,
 				}
 		return self._device_data[nid]
 	
@@ -717,48 +717,54 @@ class Daemon(GObject.GObject, TimerManager):
 		# Other errors are ignored and events are pulled again after prolonged delay
 		self.timer("event", self._refresh_interval * 5, self._request_events)
 	
-	def _syncthing_cb_connections(self, connections):
-		totals = {"dl_rate" : 0.0, "up_rate" : 0.0 }	# Total up/down rate
-		current_time = time.time()
-		for nid in connections:
-			if nid != "total" and nid != HTTP_HEADERS:
-				# Grab / create cached data
-				device = self._get_device_data(nid)
-				time_delta = current_time - device["time"]
-				# Compute transfer rate
-				for key, ui_key, data_key in ( ("bytes_in", "dl_rate", "InBytesTotal"), ("bytes_out", "up_rate", "OutBytesTotal") ):
-					if device[key] != 0:
-						if time_delta > 0: # Don't divide by zero
-							bytes_delta = connections[nid][data_key] - device[key]
-							bps = float(bytes_delta) / time_delta  # B/s
-							device[ui_key] = bps
-							totals[ui_key] += bps
-					device[key] = connections[nid][data_key]
-				device["time"] = current_time
-				if not device["connected"]:
-					device["connected"] = True
-					self.emit("device-connected", nid)
-				device["version"] = connections[nid]["ClientVersion"]
-				self.emit("device-data-changed", nid, 
-					connections[nid]["Address"],
-					device["version"],
-					device["dl_rate"], device["up_rate"],
-					device["bytes_in"], device["bytes_out"])
+	def _syncthing_cb_connections(self, data, prev_time):
+		now = time.time()
+		td = now - prev_time
+		
+		for id in data:
+			# Load device data
+			if id == HTTP_HEADERS:
+				# Special key added by rest_request method
+				continue
+			nid = id
+			if id == "total":
+				# Use my own device for totals, if it is already known
+				# It it is not known, just skip totals for now
+				if self._my_id is None:
+					continue
+				nid = self._my_id
+			device_data = self._get_device_data(nid)
+			
+			# Compute rates
+			try:
+				data[id]["inbps"] = max(0.0, (data[id]["InBytesTotal"] - device_data["InBytesTotal"]) / td);
+				data[id]["outbps"] = max(0.0, (data[id]["OutBytesTotal"] - device_data["OutBytesTotal"]) / td);
+			except Exception:
+				data[id]["inbps"] = 0.0
+				data[id]["outbps"] = 0.0
+			# Store updated device_data
+			for key in data[id]:
+				device_data[key] = data[id][key]
+				print id, key, device_data[key]
+			
+			# Send "device-connected" signal, if device was disconnected until now
+			if not device_data["connected"]:
+				device_data["connected"] = True
+				self.emit("device-connected", nid)
+			# Send "device-data-changed" signal
+			self.emit("device-data-changed", nid, 
+				device_data["Address"],
+				device_data["ClientVersion"],
+				device_data["inbps"],
+				device_data["outbps"],
+				device_data["InBytesTotal"],
+				device_data["OutBytesTotal"])
+			# Request even more data for remote devices
+			if nid != self._my_id:
 				self._request_completion(nid)
 		
-		if self._my_id != None:
-			device = self._get_device_data(self._my_id)
-			device["dl_rate"] =	totals["dl_rate"]
-			device["up_rate"] =	totals["up_rate"]
-			device["bytes_in"] =	connections["total"]["InBytesTotal"]
-			device["bytes_out"] =	connections["total"]["OutBytesTotal"]
-			self.emit("device-data-changed", self._my_id, 
-				None,
-				device["version"],
-				device["dl_rate"], device["up_rate"],
-				device["bytes_in"], device["bytes_out"])
-	
-		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections)
+		# ... repeat until pronounced dead
+		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections, None, now)
 	
 	def _syncthing_cb_last_seen(self, data):
 		for nid in data:
@@ -843,13 +849,13 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		if self._my_id != None:
 			device = self._get_device_data(self._my_id)
-			if version != device["version"]:
-				device["version"] = version
+			if version != device["ClientVersion"]:
+				device["ClientVersion"] = version
 				self.emit("device-data-changed", self._my_id, 
 					None,
-					device["version"],
-					device["dl_rate"], device["up_rate"],
-					device["bytes_in"], device["bytes_out"])
+					device["ClientVersion"],
+					device["inbps"], device["outbps"],
+					device["InBytesTotal"], device["OutBytesTotal"])
 	
 	def _syncthing_cb_folder_data(self, data, rid):
 		state = data['state']
@@ -895,7 +901,7 @@ class Daemon(GObject.GObject, TimerManager):
 			
 			self._rest_request("events?limit=1", self._init_event_pooling)	# Requests most recent event only
 			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
-			self._rest_request("connections", self._syncthing_cb_connections)
+			self._rest_request("connections", self._syncthing_cb_connections, None, time.time())
 			self._rest_request("system", self._syncthing_cb_system)
 			self._request_last_seen()
 			self.check_config()

@@ -715,8 +715,8 @@ class App(Gtk.Application, TimerManager):
 			device.clear_values()
 			device.add_value("ram",		"ram.png",		_("RAM Utilization"),	"")
 			device.add_value("cpu",		"cpu.png",		_("CPU Utilization"),	"")
-			device.add_value("dl_rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)")
-			device.add_value("up_rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)")
+			device.add_value("inbps",	"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)")
+			device.add_value("outbps",	"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)")
 			device.add_value("announce",	"announce.png",	_("Announce Server"),	"")
 			device.add_value("version",	"version.png",	_("Version"),			"?")
 			device.show_all()
@@ -757,15 +757,15 @@ class App(Gtk.Application, TimerManager):
 		)
 	
 	def cb_syncthing_device_data_changed(self, daemon, nid, address, client_version,
-			dl_rate, up_rate, bytes_in, bytes_out):
+			inbps, outbps, inbytes, outbytes):
 		if nid in self.devices:	# Should be always
 			device = self.devices[nid]
 			# Update strings
 			device["address"] = address
 			device["version"] = client_version
 			# Update rates
-			device['dl_rate'] = "%sps (%s)" % (sizeof_fmt(dl_rate), sizeof_fmt(bytes_in))
-			device['up_rate'] = "%sps (%s)" % (sizeof_fmt(up_rate), sizeof_fmt(bytes_out))
+			device['inbps'] = "%s/s (%s)" % (sizeof_fmt(inbps), sizeof_fmt(inbytes))
+			device['outbps'] = "%s/s (%s)" % (sizeof_fmt(outbps), sizeof_fmt(outbytes))
 	
 	def cb_syncthing_last_seen_changed(self, daemon, nid, dt):
 		if nid in self.devices:	# Should be always
@@ -787,7 +787,7 @@ class App(Gtk.Application, TimerManager):
 					device.set_color_hex(COLOR_DEVICE_CONNECTED)
 					device["online"] = True
 					# Update visible values
-					device.show_values("sync", "dl.rate", "up.rate", "version")
+					device.show_values("sync", "inbps", "oubps", "version")
 					device.hide_values("last-seen")
 				else:
 					# Update color & header
@@ -795,7 +795,7 @@ class App(Gtk.Application, TimerManager):
 					device.set_color_hex(COLOR_DEVICE_OFFLINE)
 					device["online"] = False
 					# Update visible values
-					device.hide_values("sync", "dl.rate", "up.rate", "version")
+					device.hide_values("sync", "inbps", "outbps", "version")
 					device.show_values("last-seen")
 		self.update_folders()
 		self.set_status(True)
@@ -1151,8 +1151,8 @@ class App(Gtk.Application, TimerManager):
 		box.add_value("address",	"address.png",	_("Address"),			"?")
 		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
 		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
-		box.add_value("dl.rate",	"dl_rate.png",	_("Download Rate"),		"0 bps (0 B)", visible=False)
-		box.add_value("up.rate",	"up_rate.png",	_("Upload Rate"),		"0 bps (0 B)", visible=False)
+		box.add_value("inbps",		"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
+		box.add_value("outbps",		"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
 		box.add_value("introducer",	"thumb_up.png",	_("Introducer"),		_("Yes") if introducer else _("No"))
 		box.add_value("version",	"version.png",	_("Version"),			"?", visible=False)
 		box.add_value('last-seen',	"clock.png",	_("Last Seen"),			_("Never"))
