@@ -1159,8 +1159,6 @@ class App(Gtk.Application, TimerManager):
 		box.add_hidden_value("id", id)
 		box.add_hidden_value("connected", False)
 		box.add_hidden_value("completion", {})
-		box.add_hidden_value("bytes_in", 0)
-		box.add_hidden_value("bytes_out", 0)
 		box.add_hidden_value("time", 0)
 		box.add_hidden_value("online", False)
 		box.set_color_hex(COLOR_DEVICE)

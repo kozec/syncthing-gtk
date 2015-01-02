@@ -745,7 +745,6 @@ class Daemon(GObject.GObject, TimerManager):
 			# Store updated device_data
 			for key in data[id]:
 				device_data[key] = data[id][key]
-				print id, key, device_data[key]
 			
 			# Send "device-connected" signal, if device was disconnected until now
 			if not device_data["connected"]:
