@@ -749,7 +749,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if self._my_id != None:
 			device = self._get_device_data(self._my_id)
 			device["dl_rate"] =	totals["dl_rate"]
-			device["up_rate"] =	totals["dl_rate"]
+			device["up_rate"] =	totals["up_rate"]
 			device["bytes_in"] =	connections["total"]["InBytesTotal"]
 			device["bytes_out"] =	connections["total"]["OutBytesTotal"]
 			self.emit("device-data-changed", self._my_id, 
