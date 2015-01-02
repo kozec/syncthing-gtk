@@ -12,7 +12,7 @@ class TimerManager(object):
 	def __init__(self):
 		self._timers = {}
 	
-	def timer(self, name, delay, callback, *data):
+	def timer(self, name, delay, callback, *data, **kwdata):
 		"""
 		Runs callback after specified number of seconds. Uses
 		GLib.timeout_add_seconds with small wrapping to allow named
@@ -24,13 +24,13 @@ class TimerManager(object):
 			delay = delay * 1000.0
 		if name is None:
 			# No wrapping is needed, call GLib directly
-			method(delay, callback, *data)
+			method(delay, callback, *data, **kwdata)
 		else:
 			if name in self._timers:
 				# Cancel old timer
 				GLib.source_remove(self._timers[name])
 			# Create new one
-			self._timers[name] = method(delay, self._callback, name, callback, *data)
+			self._timers[name] = method(delay, self._callback, name, callback, *data, **kwdata)
 	
 	def timer_active(self, name):
 		""" Returns True if named timer is active """
@@ -52,11 +52,11 @@ class TimerManager(object):
 			GLib.source_remove(self._timers[x])
 		self._timers = {}
 	
-	def _callback(self, name, callback, *data):
+	def _callback(self, name, callback, *data, **kwdata):
 		"""
 		Removes name from list of active timers and calls real callback.
 		"""
 		del self._timers[name]
-		callback(*data)
+		callback(*data, **kwdata)
 		return False
 	
