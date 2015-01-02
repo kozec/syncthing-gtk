@@ -243,6 +243,7 @@ def enable_aero_glass(window, root_element, iconpath):
 			cr.paint()
 			# Draw background
 			scale = max(
+					1.0,
 					float(allocation.width - 2) / float(self.background.get_width()),
 					float(allocation.height - 2) / float(self.background.get_height()))
 			cr.rectangle(2, 2, allocation.width - 4, allocation.height - 4)
@@ -279,4 +280,12 @@ def enable_aero_glass(window, root_element, iconpath):
 	sc = Gtk.StyleContext()
 	sc.add_provider_for_screen(screen, cssprovider,
 			Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	
+
+def make_dragable(window, widget):
+	""" Makes window dragable by draging specified widget """
+	# Make window dragable by header
+	def on_header_drag(w, event):
+		if event.button == 1:
+			window.begin_move_drag(event.button, 
+				event.x_root, event.y_root, event.time)
+	widget.connect("button-press-event", on_header_drag)

@@ -16,50 +16,56 @@
 			
 			<!-- Traditional header -->
 			<child>
-				<object class="GtkBox" id="bar_the_hell">
-				    <property name="visible">True</property>
-				    <property name="can_focus">False</property>
-					<property name="orientation">horizontal</property>
-					<property name="border_width">6</property>
-					<property name="spacing">6</property>
-				    <child>
-				      <object class="GtkMenuButton" id="left-menu-button">
+				<object class="GtkEventBox" id="eb_the_hell">
+				  <property name="visible">True</property>
+				  <property name="can_focus">False</property>
+				  <child>
+					<object class="GtkBox" id="bar_the_hell">
 						<property name="visible">True</property>
-						<property name="valign">center</property>
-						<property name="image">syncthing-image_the_hell</property>
-						<property name="popup">app-menu-icons</property>
-				      </object>
-				      <packing>
-				        <property name="expand">False</property>
-				        <property name="fill">True</property>
-				        <property name="position">0</property>
-				      </packing>
-				    </child>
-				    <child>
-				      <object class="GtkLabel" id="server-name">
-				        <property name="visible">True</property>
-				        <property name="label" translatable="no"> </property>
-				      </object>
-				      <packing>
-				        <property name="expand">True</property>
-				        <property name="fill">True</property>
-				        <property name="position">1</property>
-				      </packing>
-				    </child>
-				    <child>
-				      <object class="GtkMenuButton" id="right-menu-button">
-				        <property name="visible">True</property>
-						<property name="valign">center</property>
-						<property name="image">menu-image_the_hell</property>
-						<property name="popup">edit-menu-icons</property>
-				      </object>
-				      <packing>
-				        <property name="expand">False</property>
-				        <property name="fill">True</property>
-				        <property name="pack_type">end</property>
-				        <property name="position">2</property>
-				      </packing>
-				    </child>
+						<property name="can_focus">False</property>
+						<property name="orientation">horizontal</property>
+						<property name="border_width">6</property>
+						<property name="spacing">6</property>
+						<child>
+						  <object class="GtkMenuButton" id="left-menu-button">
+							<property name="visible">True</property>
+							<property name="valign">center</property>
+							<property name="image">syncthing-image_the_hell</property>
+							<property name="popup">app-menu-icons</property>
+						  </object>
+						  <packing>
+							<property name="expand">False</property>
+							<property name="fill">True</property>
+							<property name="position">0</property>
+						  </packing>
+						</child>
+						<child>
+						  <object class="GtkLabel" id="server-name">
+							<property name="visible">True</property>
+							<property name="label" translatable="no"> </property>
+						  </object>
+						  <packing>
+							<property name="expand">True</property>
+							<property name="fill">True</property>
+							<property name="position">1</property>
+						  </packing>
+						</child>
+						<child>
+						  <object class="GtkMenuButton" id="right-menu-button">
+							<property name="visible">True</property>
+							<property name="valign">center</property>
+							<property name="image">menu-image_the_hell</property>
+							<property name="popup">edit-menu-icons</property>
+						  </object>
+						  <packing>
+							<property name="expand">False</property>
+							<property name="fill">True</property>
+							<property name="pack_type">end</property>
+							<property name="position">2</property>
+						  </packing>
+						</child>
+					</object>
+				  </child>
 				</object>
 			</child>
 			<child>

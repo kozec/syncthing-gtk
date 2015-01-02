@@ -239,6 +239,7 @@ class App(Gtk.Application, TimerManager):
 			windows.enable_aero_glass(self["window"], self["split"], self.iconpath)
 			self["server-name"].override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0.99))
 			self["separator_the_hell"].set_visible(False)
+			windows.make_dragable(self["window"], self["eb_the_hell"])
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
