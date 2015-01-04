@@ -744,7 +744,8 @@ class Daemon(GObject.GObject, TimerManager):
 				data[id]["outbps"] = 0.0
 			# Store updated device_data
 			for key in data[id]:
-				device_data[key] = data[id][key]
+				if key != "ClientVersion" or data[id][key] != "":	# Happens for 'total'
+					device_data[key] = data[id][key]
 			
 			# Send "device-connected" signal, if device was disconnected until now
 			if not device_data["connected"] and nid != self._my_id:
