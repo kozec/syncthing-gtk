@@ -9,9 +9,9 @@ from syncthing_gtk import windows
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS, hex2color
 from gi.repository import Gtk, Gdk, Gio, GLib, GObject
-from ctypes import c_int, CDLL, Structure, windll, pythonapi
-from ctypes import c_void_p, py_object, byref
-import os, logging, cairo, codecs, msvcrt, win32pipe, _winreg
+from ctypes import *
+import os, sys, logging, cairo, codecs, _winreg
+import msvcrt, win32pipe, win32gui, win32con
 
 log = logging.getLogger("windows.py")
 
@@ -184,11 +184,94 @@ def WinConfiguration():
 		
 	return _WinConfiguration
 
+class WeirdLookingFrame(Gtk.Frame):
+	""" Used by enable_aero_glass method """
+	BORDER_COLOR_1 = hex2color("596979FE")
+	BORDER_COLOR_2 = hex2color("000050FE")
+	# BORDER_COLOR_2 = hex2color("FF0000FE")
+	def __init__(self, child, iconpath):
+		Gtk.Frame.__init__(self)
+		self.background = cairo.ImageSurface.create_from_png(os.path.join(
+				iconpath, "..", "images", "aero-glass-background.png"))
+		self.set_shadow_type(Gtk.ShadowType.NONE)
+		self.add(child)
+		self.additional_border = 10
+		self.y_offset = -20
+	
+	def draw_line(self, cr, x1, y1, x2, y2):
+		cr.move_to(x1, y1)
+		cr.line_to(x2, y2)
+		cr.stroke()
+	
+	def do_size_allocate(self, allocation):
+		child_allocation = Gdk.Rectangle()
+		allocation.x += self.additional_border
+		allocation.y += self.y_offset
+		allocation.width  -= 2 * self.additional_border
+		allocation.height -= self.additional_border + self.y_offset
+		child_allocation.x = allocation.x + self.get_border_width()
+		child_allocation.y = allocation.y + self.get_border_width()
+		child_allocation.width  = allocation.width - 2 * self.get_border_width()
+		child_allocation.height = allocation.height - 2 * self.get_border_width()
+ 
+		self.set_allocation(allocation)
+ 
+		if self.get_has_window():
+			if self.get_realized():
+				self.get_window().move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
+		
+		for c in self.get_children():
+			if not c is None and c.get_visible():
+				c.size_allocate(child_allocation)
+
+	def do_draw(self, cr):
+		allocation = self.get_allocation()
+		# Draw outer border
+		cr.save()
+		cr.set_line_width(1)
+		cr.set_source_rgba(*WeirdLookingFrame.BORDER_COLOR_1)
+		self.draw_line(cr, 1, 0, allocation.width - 1, 0)
+		self.draw_line(cr, 0, 1, 0, allocation.height - 1)
+		self.draw_line(cr, allocation.width, 1, allocation.width, allocation.height - 1)
+		self.draw_line(cr, 1, allocation.height, allocation.width - 1, allocation.height)
+		# Draw inner border
+		cr.set_source_rgba(*WeirdLookingFrame.BORDER_COLOR_2)
+		cr.rectangle(1, 1, allocation.width - 2, allocation.height - 2)
+		cr.clip()
+		cr.paint()
+		# Draw background
+		scale = max(
+				1.0,
+				float(allocation.width - 2) / float(self.background.get_width()),
+				float(allocation.height - 2) / float(self.background.get_height()))
+		cr.rectangle(2, 2, allocation.width - 4, allocation.height - 4)
+		cr.clip()
+		cr.scale(scale, scale)
+		cr.translate(1, 1)
+		cr.set_source_surface(self.background, 0, 0)
+		cr.paint()
+		cr.restore()
+		# Draw child widget
+		self.propagate_draw(self.get_children()[0], cr)
+
 def enable_aero_glass(window, root_element, iconpath):
 	"""
 	Enables Aero Glass effect on main application Window and changes
 	some colors to make text readable on transparent background.
+	
+	Returns True on success
 	"""
+	# Load native methods
+	try:
+		dwm = windll.dwmapi
+		pythonapi.PyCapsule_GetPointer.restype = c_void_p
+		pythonapi.PyCapsule_GetPointer.argtypes = [py_object]
+		gdkdll = CDLL ("libgdk-3-0.dll")
+		st_gtk_dll = CDLL ("st-gtk-windows.dll")
+	except Exception, e:
+		log.error("enable_aero_glass: Failed to load native stuff: %s", e)
+		return False
+		
 	# Prepare stuff
 	class MARGINS(Structure):
 		_fields_ = [("cxLeftWidth", c_int),
@@ -197,89 +280,108 @@ def enable_aero_glass(window, root_element, iconpath):
 				  ("cyBottomHeight", c_int)
 				 ]
 	margins = MARGINS(1, 1, 1, -1)
-	dwm = windll.dwmapi
 	
 	# Get me some glass
 	window.realize()
-	pythonapi.PyCapsule_GetPointer.restype = c_void_p
-	pythonapi.PyCapsule_GetPointer.argtypes = [py_object]
 	gpointer = pythonapi.PyCapsule_GetPointer(window.get_window().__gpointer__, None)  
-	gdkdll = CDLL ("libgdk-3-0.dll")
 	hwnd = gdkdll.gdk_win32_window_get_handle(gpointer)
 	dwm.DwmExtendFrameIntoClientArea(hwnd, byref(margins))
 	window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0,0,0,0))
 	
-	# Put main widget to frame with border & background
-	class WeirLookingFrame(Gtk.Frame):
-		BORDER_COLOR_1 = hex2color("596979FE")
-		BORDER_COLOR_2 = hex2color("000050FE")
-		# BORDER_COLOR_2 = hex2color("FF0000FE")
-		def __init__(self, child):
-			Gtk.Frame.__init__(self)
-			self.background = cairo.ImageSurface.create_from_png(os.path.join(
-					iconpath, "..", "images", "aero-glass-background.png"))
-			self.set_shadow_type(Gtk.ShadowType.NONE)
-			self.add(child)
-		
-		def draw_line(self, cr, x1, y1, x2, y2):
-			cr.move_to(x1, y1)
-			cr.line_to(x2, y2)
-			cr.stroke()
-		
-		def do_draw(self, cr):
-			allocation = self.get_allocation()
-			# Draw outer border
-			cr.save()
-			cr.set_line_width(1)
-			cr.set_source_rgba(*WeirLookingFrame.BORDER_COLOR_1)
-			self.draw_line(cr, 1, 0, allocation.width - 1, 0)
-			self.draw_line(cr, 0, 1, 0, allocation.height - 1)
-			self.draw_line(cr, allocation.width, 1, allocation.width, allocation.height - 1)
-			self.draw_line(cr, 1, allocation.height, allocation.width - 1, allocation.height)
-			# Draw inner border
-			cr.set_source_rgba(*WeirLookingFrame.BORDER_COLOR_2)
-			cr.rectangle(1, 1, allocation.width - 2, allocation.height - 2)
-			cr.clip()
-			cr.paint()
-			# Draw background
-			scale = max(
-					1.0,
-					float(allocation.width - 2) / float(self.background.get_width()),
-					float(allocation.height - 2) / float(self.background.get_height()))
-			cr.rectangle(2, 2, allocation.width - 4, allocation.height - 4)
-			cr.clip()
-			cr.scale(scale, scale)
-			cr.translate(1, 1)
-			cr.set_source_surface(self.background, 0, 0)
-			cr.paint()
-			cr.restore()
-			# Draw child widget
-			self.propagate_draw(self.get_children()[0], cr)
+	# Remove icon & window title
+	if st_gtk_dll.handle_wm_nccalcsize(hwnd) != 0:
+		# Native call failed, bail out from everything
+		return False
 	
+	# Put main widget to frame with border & background
 	p = root_element.get_parent()
 	p.remove(root_element)
 	p.set_border_width(0)
-	f = WeirLookingFrame(root_element)
+	f = WeirdLookingFrame(root_element, iconpath)
 	p.add(f)
-	f.set_border_width(3)
+	f.set_border_width(5)
 	f.set_vexpand(True)
 	f.set_visible(True)
+	return True
+
+class AeroButton:
+	def __init__(self, gtkbutton, image=None):
+		self.gtkbutton = gtkbutton
+		self.image = image
+		self.hover = False
+		self.pressed = False
+		self.gtkbutton.connect("draw", self.on_draw)
+		self.gtkbutton.connect("enter-notify-event", self.cb_mouse_in)
+		self.gtkbutton.connect("leave-notify-event", self.cb_mouse_out)
+		self.gtkbutton.connect("button-press-event", self.cb_pressed)
+		self.gtkbutton.connect("button-release-event", self.cb_released)
+		self.gtkbutton.connect("clicked", self.cb_clicked)
+		self.gtkbutton.set_border_width(0)
+		if not self.image is None:
+			# If custom image is used, remove all button children
+			while len(self.gtkbutton.get_children()) > 0:
+				ch = self.gtkbutton.get_children()[0]
+				self.gtkbutton.remove(ch)
+				ch.destroy()
 	
-	# Make buttons transparent
-	CSS = """
-		GtkButton, GtkButton:hover {
-			background-color: rgba(0,0,0,0);
-			background-image: none;
-			border-color: rgba(0, 0, 0, 0);
-			border-radius: 32;
-		}
+	def __del__(self):
+		# Prevents deallocating
+		pass
+	
+	def cb_mouse_in(self, *a):
+		self.hover = True
+		self.gtkbutton.queue_draw()
+		
+	def cb_mouse_out(self, *a):
+		self.hover = False
+		self.gtkbutton.queue_draw()
+	
+	def cb_pressed(self, *a):
+		self.pressed = True
+		self.gtkbutton.queue_draw()
+	
+	def cb_released(self, *a):
+		self.pressed = False
+		self.gtkbutton.queue_draw()
+	
+	def cb_clicked(self, *a):
+		GLib.timeout_add(200, self.cb_released)
+	
+	def on_draw(self, gtkbutton, cr):
+		"""
+		Draw method for transparent/aero button. If there is no custom
+		image set, simply draws all child widgets.
+		"""
+		allocation = gtkbutton.get_allocation()
+		# Draw outer border
+		if self.image is None:
+			# Draw child widgets normaly
+			gtkbutton.propagate_draw(gtkbutton.get_children()[0], cr)
+		else:
+			# Draw custom image
+			x, width = 0, self.image.get_width() / 3
+			if self.hover:   x = -width
+			if self.pressed: x = -2 * width
+			scale_x = float(allocation.width) / float(width)
+			scale_y = float(allocation.height) / float(self.image.get_height())
+			cr.save()
+			cr.rectangle(0, 0, allocation.width, allocation.height)
+			cr.scale(scale_x, scale_y)
+			cr.translate(0, 0)
+			cr.set_source_surface(self.image, x, 0)
+			cr.paint()
+			cr.restore()
+		return True
+
+def make_aero_button(button, image_path=None):
 	"""
-	cssprovider = Gtk.CssProvider()
-	cssprovider.load_from_data(str(CSS))
-	screen = Gdk.Screen.get_default()
-	sc = Gtk.StyleContext()
-	sc.add_provider_for_screen(screen, cssprovider,
-			Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	Makes button with transparent background and no border.
+	If image_path is set, custom image and custom rendering is used. In
+	that case, image is expected to contain 3 frames for normal,
+	hover and pressed state.
+	"""
+	image = None if image_path is None else cairo.ImageSurface.create_from_png(image_path)
+	return AeroButton(button, image)
 
 def make_dragable(window, widget):
 	""" Makes window dragable by draging specified widget """

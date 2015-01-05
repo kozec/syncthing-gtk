@@ -236,10 +236,24 @@ class App(Gtk.Application, TimerManager):
 		elif IS_WINDOWS:
 			# Use Aero glass effect on Windows
 			from syncthing_gtk import windows
-			windows.enable_aero_glass(self["window"], self["split"], self.iconpath)
-			self["server-name"].override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0.99))
-			self["separator_the_hell"].set_visible(False)
-			windows.make_dragable(self["window"], self["eb_the_hell"])
+			if windows.enable_aero_glass(self["window"], self["split"], self.iconpath):
+				# Enable draging by fake border
+				windows.make_dragable(self["window"], self["eb_the_hell"])
+				# Override widget sizes and colors
+				self["server-name"].override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0.99))
+				self["separator_the_hell"].set_visible(False)
+				self["left-menu-button"].set_size_request(64, 64)
+				self["left-menu-button"].set_margin_top(8)
+				self["left-menu-button"].set_margin_left(10)
+				self["left-menu-button"].set_margin_bottom(10)
+				self["right-menu-button"].set_margin_top(8)
+				self["right-menu-button"].set_margin_right(8)
+				self["bar_the_hell"].set_spacing(0)
+				self["bar_the_hell"].set_border_width(0)
+				# Make buttons transparent, override image on left one
+				windows.make_aero_button(self["left-menu-button"],
+					os.path.join(self.iconpath, "aero-icon.png"))
+				windows.make_aero_button(self["right-menu-button"])
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
