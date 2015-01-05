@@ -13,16 +13,13 @@ WNDPROC original_wndproc;
 
 /** Window message handler installed by handle_wm_nccalcsize */
 LRESULT CALLBACK _wm_nccalcsize_handler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (uMsg == WM_NCCALCSIZE) {
-		if (wParam == TRUE) {
-			NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)lParam;
-			printf ("HANDLED: WM_NCCALCSIZE\n");
-			params->rgrc[0].left   = params->rgrc[0].left   + 0;
-			params->rgrc[0].top    = params->rgrc[0].top    + 0;
-			params->rgrc[0].right  = params->rgrc[0].right  - 0;
-			params->rgrc[0].bottom = params->rgrc[0].bottom - 0;
-			return 0;
-		}
+	if ((uMsg == WM_NCCALCSIZE) && (wParam == TRUE)) {
+		NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)lParam;
+		params->rgrc[0].left   = params->rgrc[0].left   + 0;
+		params->rgrc[0].top    = params->rgrc[0].top    + 0;
+		params->rgrc[0].right  = params->rgrc[0].right  - 0;
+		params->rgrc[0].bottom = params->rgrc[0].bottom - 0;
+		return 0;
 	}
 	LRESULT rv = CallWindowProc(original_wndproc, hwnd, uMsg, wParam, lParam);
 	return rv;
