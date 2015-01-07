@@ -22,15 +22,13 @@ DEFAULT_PORT = 8080
 MAX_PORT = 8100
 
 class Wizard(Gtk.Assistant):
-	def __init__(self, gladepath="/usr/share/syncthing-gtk",
-				iconpath="/usr/share/syncthing-gtk/icons", config=None):
+	def __init__(self, iconpath="/usr/share/syncthing-gtk/icons", config=None):
 		# Init
 		Gtk.Assistant.__init__(self)
 		if not config is None:
 			self.config = config
 		else:
 			self.config = Configuration()
-		self.gladepath = gladepath
 		self.iconpath = iconpath
 		self.syncthing_options = {}
 		self.lines = []					# Daemon and wizard output,
@@ -257,7 +255,7 @@ class FindDaemonPage(Page):
 				return False
 			else:
 				# On Linux, generate and display error page
-				from syncthing_gtk.app import MIN_ST_VERSION
+				from syncthing_gtk import MIN_ST_VERSION
 				target_folder_link = '<a href="file://%s">%s</a>' % (
 						os.path.expanduser(StDownloader.get_target_folder()),
 						StDownloader.get_target_folder())
@@ -334,7 +332,7 @@ class FindDaemonPage(Page):
 	
 	def cb_process_exit(self, process, *a):
 		""" Called after daemon binary outputs version and exits """
-		from syncthing_gtk.app import MIN_ST_VERSION
+		from syncthing_gtk import MIN_ST_VERSION
 		bin_path = process.get_commandline()[0]
 		if compare_version(self.version_string, MIN_ST_VERSION):
 			# Daemon binary exists, is executable and meets

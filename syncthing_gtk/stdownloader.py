@@ -125,7 +125,7 @@ class StDownloader(GObject.GObject):
 	
 	def _cb_read_compatibility(self, f, result, buffer, *a):
 		# Extract compatibility info from version tags in response
-		from syncthing_gtk.app import INTERNAL_VERSION
+		from syncthing_gtk import INTERNAL_VERSION
 		try:
 			success, data, etag = f.load_contents_finish(result)
 			if not success: raise Exception("Gio download failed")
