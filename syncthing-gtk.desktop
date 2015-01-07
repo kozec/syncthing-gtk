@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Syncthing GTK
-GenericName=Syncthing GTK
-Comment=GUI for Syncthing
-Exec=/usr/bin/syncthing-gtk
-Type=Application
-Icon=/usr/share/syncthing-gtk/icons/st-logo-128.png
-Categories=Network
