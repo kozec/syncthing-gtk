@@ -274,10 +274,10 @@ class FindDaemonPage(Page):
 					message += _("Syncthing-GTK needs Syncthing daemon %s or newer, but only %s") % \
 							(MIN_ST_VERSION, self.ignored_version) + " "
 					message += _("were found.")
-					message += "\n\n"
-				message += _("Please, use package manager to install the Syncthing package") + " "
-				message += _("or %s from Syncthing page and save it to your %s directory.") % \
-							(dll_link, target_folder_link)
+					message += "\n"
+					message += _("Please, use package manager to install the Syncthing package") + " "
+					message += _("or %s from Syncthing page and save it to your %s directory.") % \
+								(dll_link, target_folder_link)
 				message += "\n\n"
 				message += _("Alternatively, Syncthing-GTK can download Syncthing binary") + " "
 				message += _("to %s and keep it up-to-date, but this option is meant as") % \
