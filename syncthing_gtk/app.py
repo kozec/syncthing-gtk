@@ -123,6 +123,7 @@ class App(Gtk.Application, TimerManager):
 			)
 		if lo.contains("header"): self.use_headerbar = False
 		if lo.contains("window"): self.hide_window = False
+		if lo.contains("minimized"): self.hide_window = True
 		if lo.contains("wizard"):
 			self.exit_after_wizard = True
 			self.show_wizard()
@@ -174,6 +175,7 @@ class App(Gtk.Application, TimerManager):
 			#	GLib.OptionArg.NONE, desc)
 		
 		aso("window",	b"w", "Display window (don't start minimized)")
+		aso("minimized",b"m", "Hide window (start minimized)")
 		aso("header",	b"s", "Use classic window header")
 		aso("quit",		b"q", "Quit running instance (if any)")
 		aso("verbose",	b"v", "Be verbose")
