@@ -83,7 +83,6 @@ class UIBuilder(Gtk.Builder):
 		# Now this will convert parsed DOM tree back to XML and fed it
 		# to Gtk.Builder XML parser.
 		# God probably kills kitten every time when method is called...
-		file("debug.xml", "w").write(self.xml.toxml("utf-8"))
 		Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8"))
 	
 	def _find_conditions(self, node):
@@ -93,6 +92,11 @@ class UIBuilder(Gtk.Builder):
 				self._find_conditions(child)
 				if child.tagName.lower() == "if":
 					self._solve_if_element(child)
+				elif child.getAttribute("if") != "":
+					condition = child.getAttribute("if")
+					if not self.condition_met(condition):
+						log.debug("Removed '%s' by attribute: %s", child.tagName, condition)
+						node.removeChild(child)
 	
 	def _solve_if_element(self, element):
 		"""

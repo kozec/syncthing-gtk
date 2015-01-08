@@ -10,8 +10,7 @@
 	<property name="icon">icons/st-logo-128.png</property>
 
 	<!-- Header Bar -->
-	<IF condition="header_bar">
-	<child type="titlebar">
+	<child if="header_bar" type="titlebar">
 		<object class="GtkHeaderBar" id="header">
 			<property name="visible">True</property>
 			<property name="show-close-button">True</property>
@@ -19,11 +18,8 @@
 			<child>
 				<object class="GtkMenuButton" id="app-menu-button">
 					<property name="visible">True</property>
-					<IF condition="is_windows">
-						<property name="relief">none</property>
-					<ELSE>
-						<property name="relief">half</property>
-					</ELSE></IF>
+					<property if="is_windows" name="relief">none</property>
+					<property if="!is_windows" name="relief">half</property>
 					<IF condition="icons_in_menu | old_gtk">
 						<property name="popup">app-menu-icons</property>
 					<ELSE>
@@ -68,11 +64,8 @@
 					<child>
 						<object class="GtkImage" id="edit-menu-icon">
 							<property name="visible">True</property>
-							<IF condition="old_gtk">
-								<property name="icon_name">emblem-system-symbolic</property>
-							<ELSE>
-								<property name="icon_name">open-menu-symbolic</property>
-							</ELSE></IF>
+							<property if="old_gtk" name="icon_name">emblem-system-symbolic</property>
+							<property if="!old_gtk" name="icon_name">open-menu-symbolic</property>
 							<property name="icon-size">1</property>
 						</object>
 					</child>
@@ -83,7 +76,6 @@
 			</child>
 		</object>
 	</child>
-	</IF>
 	<!-- /Header Bar -->
 
 	<!-- Window content -->
@@ -94,8 +86,7 @@
 			<property name="orientation">vertical</property>
 			
 			<!-- Traditional header -->
-			<IF condition="traditional_header">
-			<child>
+			<child if="traditional_header">
 				<object class="GtkBox" id="bar_the_hell">
 				    <property name="visible">True</property>
 				    <property name="can_focus">False</property>
@@ -150,7 +141,6 @@
 					<property name="orientation">horizontal</property>
 				</object>
 			</child>
-			</IF>
 			<!-- /Traditional header -->
 			
 			<!-- Panels -->
