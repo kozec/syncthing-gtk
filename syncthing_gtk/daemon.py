@@ -485,7 +485,7 @@ class Daemon(GObject.GObject, TimerManager):
 		except Exception, e:
 			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
 				e = TLSUnsupportedException(e.message)
-			self._rest_post_error(e, epoch, command, data, callback, error_callback, *callback_data)
+			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
