@@ -358,7 +358,7 @@ class InfoBox(Gtk.Container):
 	def compare_color_hex(self, hx):
 		"""
 		Returns True if specified color is same as color currently used.
-		Expects floats.
+		Expects AABBCC or #AABBCC format
 		"""
 		return self.compare_color(*InfoBox.hex2color(hx))
 	

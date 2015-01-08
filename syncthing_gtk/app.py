@@ -917,6 +917,9 @@ class App(Gtk.Application, TimerManager):
 				# Folder was marked as offline but is back online now
 				folder.set_status(_("Idle"))
 				folder.set_color_hex(COLOR_FOLDER_IDLE)
+			elif not online and folder.compare_color_hex(COLOR_FOLDER_SCANNING):
+				# Folder is offline and in Scanning state
+				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 			elif not online and folder.compare_color_hex(COLOR_FOLDER_IDLE):
 				# Folder is offline and in Idle state (not scanning)
 				folder.set_status(_("Offline"))
