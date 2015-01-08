@@ -97,6 +97,8 @@ class UIBuilder(Gtk.Builder):
 					if not self.condition_met(condition):
 						log.debug("Removed '%s' by attribute: %s", child.tagName, condition)
 						node.removeChild(child)
+					else:
+						child.removeAttribute("if")
 	
 	def _solve_if_element(self, element):
 		"""
