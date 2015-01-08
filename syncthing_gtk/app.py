@@ -752,10 +752,11 @@ class App(Gtk.Application, TimerManager):
 						len(announce)
 					)
 	
-	def cb_syncthing_device_added(self, daemon, nid, name, data):
+	def cb_syncthing_device_added(self, daemon, nid, name, used, data):
 		self.show_device(nid, name,
 			data["Compression"],
-			data["Introducer"] if "Introducer" in data else False
+			data["Introducer"] if "Introducer" in data else False,
+			used
 		)
 	
 	def cb_syncthing_device_data_changed(self, daemon, nid, address, client_version,
@@ -1145,10 +1146,12 @@ class App(Gtk.Application, TimerManager):
 		self.folders[id] = box
 		return box
 	
-	def show_device(self, id, name, use_compression, introducer):
+	def show_device(self, id, name, use_compression, introducer, used):
 		if name in (None, ""):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
+		if not used:
+			name = "%s (%s)" % (name, _("Unused"))
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("address",	"address.png",	_("Address"),			"?")
 		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
