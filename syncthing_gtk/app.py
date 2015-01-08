@@ -302,7 +302,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-data-failed", self.cb_syncthing_folder_state_changed, 0.0, COLOR_NEW, "")
 		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_FOLDER_SYNCING, _("Syncing"))
 		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
-		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
+		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
 		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
 		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
@@ -675,13 +675,11 @@ class App(Gtk.Application, TimerManager):
 		if nid in self.devices:
 			device = self.devices[nid].get_title()
 			can_fix = True
-		markup = _('Unexpected folder ID "<b>%s</b>" sent from device "<b>%s</b>"; ensure that the '
-					'folder exists and that  this device is selected under "Share With" in the '
-					'folder configuration.') % (rid, device)
+		markup = _('<b>%s</b> wants to share folder "<b>%s</b>". Add new folder?') % (device, rid)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
-			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_FOLDER_ID)
+			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_FOLDER_ID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, address):
@@ -690,13 +688,10 @@ class App(Gtk.Application, TimerManager):
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Unknown device "<b>%s</b>" is trying from connect from IP "<b>%s</b>"') % (nid, address)
-		markup += ";"
-		markup += _('If you just configured this remote device, you can click \'fix\' '
-					'to open Add device dialog.')
+		markup = _('Device "<b>%s</b>" at IP "<b>%s</b> wants to connect. Add new device?"') % (nid, address)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
-		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_DEVICE)
+		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
 		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
