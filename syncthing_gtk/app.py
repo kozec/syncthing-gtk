@@ -304,7 +304,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
 		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
 		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
-		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
+		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
@@ -878,8 +878,8 @@ class App(Gtk.Application, TimerManager):
 				self.animate_status()
 			elif self.any_device_online():
 				# Daemon is online and idle
-				self.statusicon.set("si-idle", _("Idle"))
-				self["menu-si-status"].set_label(_("Idle"))
+				self.statusicon.set("si-idle", _("Up to Date"))
+				self["menu-si-status"].set_label(_("Up to Date"))
 				self.cancel_timer("icon")
 			else:
 				# Daemon is online, but there is no remote device connected
@@ -915,7 +915,7 @@ class App(Gtk.Application, TimerManager):
 				online = online or device["online"]
 			if online and folder.compare_color_hex(COLOR_FOLDER_OFFLINE):
 				# Folder was marked as offline but is back online now
-				folder.set_status(_("Idle"))
+				folder.set_status(_("Up to Date"))
 				folder.set_color_hex(COLOR_FOLDER_IDLE)
 			elif not online and folder.compare_color_hex(COLOR_FOLDER_SCANNING):
 				# Folder is offline and in Scanning state
