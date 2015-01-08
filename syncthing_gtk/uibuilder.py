@@ -115,6 +115,10 @@ class UIBuilder(Gtk.Builder):
 			element.parentNode.removeChild(element)
 
 def getElementsByTagNameCI(node, tagname):
+	"""
+	Returns all elements with matching tag; Compares in
+	case-insensitive way.
+	"""
 	tagname = tagname.lower()
 	return [ child for child in node.childNodes if 
 			(child.nodeType == child.ELEMENT_NODE and
