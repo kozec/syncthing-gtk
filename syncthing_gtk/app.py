@@ -1152,7 +1152,9 @@ class App(Gtk.Application, TimerManager):
 			name = id.split("-")[0]
 		if not used:
 			name = "%s (%s)" % (name, _("Unused"))
-		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
+		icon = IdentIcon(id)
+		icon.set_size_request(22, 22)
+		box = InfoBox(self, name, icon)
 		box.add_value("address",	"address.png",	_("Address"),			"?")
 		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
 		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))

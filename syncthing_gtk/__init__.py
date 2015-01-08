@@ -18,6 +18,7 @@ from iddialog			import IDDialog
 from aboutdialog		import AboutDialog
 from ignoreeditor		import IgnoreEditor
 from ribar				import RIBar
+from identicon			import IdentIcon
 from daemonoutputdialog	import DaemonOutputDialog
 from stdownloader		import StDownloader
 from wizard				import Wizard
