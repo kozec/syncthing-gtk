@@ -238,35 +238,22 @@ class App(Gtk.Application, TimerManager):
 		add_simple_action('daemon_restart', self.cb_menu_restart)
 
 	def setup_widgets(self):
+		self.builder = UIBuilder()
+		# Set conditions for UIBuilder
+		old_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12)
+		icons_in_menu = self.config["icons_in_menu"]
+		if self.use_headerbar: 		self.builder.enable_condition("header_bar")
+		if not self.use_headerbar:	self.builder.enable_condition("traditional_header")
+		if IS_WINDOWS: 				self.builder.enable_condition("is_windows")
+		if IS_GNOME:  				self.builder.enable_condition("is_gnome")
+		if old_gtk:					self.builder.enable_condition("old_gtk")
+		if icons_in_menu:			self.builder.enable_condition("icons_in_menu")
 		# Load glade file
-		self.builder = Gtk.Builder()
 		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)
-		# Setup window
-		self["edit-menu-button"].set_sensitive(False)
-		self["right-menu-button"].set_sensitive(False)
-
-		if self.use_headerbar:
-			# Window creation, including the HeaderBar.
-			# Destroy the legacy bar.
-			self["window"].set_titlebar(self["header"])
-			self["bar_the_hell"].destroy()
-			self["separator_the_hell"].destroy()
-			if (Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12):
-				# Weird stuff happens with old Gnome on Fedora
-				self["app-menu-button"].set_popup(self["app-menu-icons"])
-				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
-				self["menu-image"].set_from_icon_name("emblem-system-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-			elif IS_GNOME:
-				self.set_app_menu(self["app-menu"])
-				self["app-menu-button"].destroy()
-			elif self.config["icons_in_menu"]:
-				# Use old menus with icon even with HeaderBar.
-				# Not available in Gnome
-				self["app-menu-button"].set_popup(self["app-menu-icons"])
-				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
-			if IS_WINDOWS:
-				self["app-menu-button"].set_relief(Gtk.ReliefStyle.HALF)
+		# Dunno how to do this from glade
+		if self.use_headerbar and IS_GNOME:
+			self.set_app_menu(self["app-menu"])
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
@@ -284,7 +271,6 @@ class App(Gtk.Application, TimerManager):
 		# Set window title in way that even Gnome can understand
 		self["window"].set_title(_("Syncthing GTK"))
 		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
-		self["window"].connect("realize", self.cb_realized)
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):
@@ -535,7 +521,6 @@ class App(Gtk.Application, TimerManager):
 		self.close_connect_dialog()
 		self.set_status(True)
 		self["edit-menu-button"].set_sensitive(True)
-		self["right-menu-button"].set_sensitive(True)
 		self["menu-si-shutdown"].set_sensitive(True)
 		self["menu-si-show-id"].set_sensitive(True)
 		self["menu-si-recvlimit"].set_sensitive(True)
@@ -1220,7 +1205,6 @@ class App(Gtk.Application, TimerManager):
 	
 	def restart(self):
 		self["edit-menu-button"].set_sensitive(False)
-		self["right-menu-button"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
 		self["menu-si-recvlimit"].set_sensitive(False)
