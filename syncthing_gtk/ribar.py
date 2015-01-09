@@ -72,8 +72,10 @@ class RIBar(RevealerClass):
 		# Settings
 		self._infobar.set_message_type(message_type)
 		if hasattr(self._infobar, "set_show_close_button"):
-			# GTK >3.10
+			# GTK >3.8
 			self._infobar.set_show_close_button(True)
+		else:
+			self.add_button(Gtk.Button("X"), 0)
 		self.set_reveal_child(False)
 		# Packing
 		self.add(self._infobar)
