@@ -81,7 +81,8 @@ class App(Gtk.Application, TimerManager):
 		# Determine if header bar should be shown
 		# User setting is not visible under Unity/Gnome
 		self.use_headerbar = \
-			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME)
+			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME) \
+			and (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 10)
 		
 		self.watcher = None
 		self.daemon = None

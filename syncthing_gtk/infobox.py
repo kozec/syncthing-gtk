@@ -6,6 +6,7 @@ Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango
+from syncthing_gtk.ribar import RevealerClass
 import os, logging, math
 _ = lambda (a) : a
 log = logging.getLogger("InfoBox")
@@ -82,7 +83,7 @@ class InfoBox(Gtk.Container):
 	def init_grid(self):
 		# Create widgets
 		self.grid = Gtk.Grid()
-		self.rev = Gtk.Revealer()
+		self.rev = RevealerClass()
 		align = Gtk.Alignment()
 		self.eb = Gtk.EventBox()
 		# Set values

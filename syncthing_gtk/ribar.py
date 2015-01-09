@@ -8,7 +8,13 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, GLib, GObject, Pango
 import os
 _ = lambda (a) : a
-RevealerClass = Gtk.Revealer
+RevealerClass = None
+if hasattr(Gtk, "Revealer"):
+	RevealerClass = Gtk.Revealer
+else:
+	from syncthing_gtk.fakerevealer import FakeRevealer
+	RevealerClass = FakeRevealer
+
 
 class RIBar(RevealerClass):
 	"""
@@ -65,7 +71,9 @@ class RIBar(RevealerClass):
 		self._infobar.connect("response", self._cb_response)
 		# Settings
 		self._infobar.set_message_type(message_type)
-		self._infobar.set_show_close_button(True)
+		if hasattr(self._infobar, "set_show_close_button"):
+			# GTK >3.10
+			self._infobar.set_show_close_button(True)
 		self.set_reveal_child(False)
 		# Packing
 		self.add(self._infobar)
