@@ -67,7 +67,6 @@ class App(Gtk.Application, TimerManager):
 		TimerManager.__init__(self)
 		# Setup Gtk.Application
 		self.setup_commandline()
-		self.connect('handle-local-options', self.do_local_options)
 		# Set variables
 		self.gladepath = gladepath
 		self.iconpath = iconpath
@@ -117,32 +116,59 @@ class App(Gtk.Application, TimerManager):
 				self.daemon.reconnect()
 	
 	def do_local_options(self, trash, lo):
-		set_logging_level(
-				lo.contains("verbose"),
-				lo.contains("debug")
-			)
-		if lo.contains("header"): self.use_headerbar = False
-		if lo.contains("window"): self.hide_window = False
-		if lo.contains("minimized"): self.hide_window = True
-		if lo.contains("wizard"):
+		self.parse_local_options(lo.contains)
+		return 0
+	
+	def parse_local_options(self, is_option):
+		""" Test for expected options using specified method """
+		set_logging_level(is_option("verbose"), is_option("debug") )
+		if is_option("header"): self.use_headerbar = False
+		if is_option("window"): self.hide_window = False
+		if is_option("minimized"): self.hide_window = True
+		if is_option("wizard"):
 			self.exit_after_wizard = True
 			self.show_wizard()
-		elif lo.contains("about"):
+		elif is_option("about"):
 			ad = AboutDialog(self, self.gladepath)
 			ad.run([])
 			sys.exit(0)
-		return 0
 		
 	def do_command_line(self, cl):
 		Gtk.Application.do_command_line(self, cl)
-		if cl.get_options_dict().contains("quit"):
-			self.cb_exit()
-			return 0
-		if cl.get_options_dict().contains("force-update"):
-			self.force_update_version = \
-				cl.get_options_dict().lookup_value("force-update").get_string()
-			if not self.force_update_version.startswith("v"):
-				self.force_update_version = "v%s" % (self.force_update_version,)
+		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
+		if new_gtk:
+			if cl.get_options_dict().contains("quit"):
+				self.cb_exit()
+				return 0
+			if cl.get_options_dict().contains("force-update"):
+				self.force_update_version = \
+					cl.get_options_dict().lookup_value("force-update").get_string()
+				if not self.force_update_version.startswith("v"):
+					self.force_update_version = "v%s" % (self.force_update_version,)
+		else:
+			# Fallback for old GTK without option parsing
+			if "-h" in sys.argv or "--help" in sys.argv:
+				print "Usage:"
+				print "  %s [arguments]" % (sys.argv[0],)
+				print "Arguments:"
+				for o in self.arguments:
+					# Don't display hidden and unsupported parameters
+					if not o.long_name in ("force-update", "quit"):
+						print "  -%s, --%s %s" % (
+							chr(o.short_name),
+							o.long_name.ljust(10),
+							o.description)
+				sys.exit(0)
+			def is_option(name):
+				# Emulating Gtk.Application.do_local_options
+				for o in self.arguments:
+					if o.long_name == name:
+						if "-%s" % (chr(o.short_name),) in sys.argv:
+							return True
+						if "--%s" % (o.long_name,) in sys.argv:
+							return True
+				return False
+			self.parse_local_options(is_option)
 		self.activate()
 		return 0
 	
@@ -159,6 +185,7 @@ class App(Gtk.Application, TimerManager):
 		self.hide_window = False
 	
 	def setup_commandline(self):
+		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
 		def aso(long_name, short_name, description,
 				flags=GLib.OptionFlags.IN_MAIN,
 				arg=GLib.OptionArg.NONE):
@@ -169,11 +196,16 @@ class App(Gtk.Application, TimerManager):
 			o.description = description
 			o.flags = flags
 			o.arg = arg
-			# print x
-			self.add_main_option_entries([o])
-			#self.add_main_option(lname, sname, GLib.OptionFlags.IN_MAIN,
-			#	GLib.OptionArg.NONE, desc)
-		
+			if new_gtk:
+				self.add_main_option_entries([o])
+			else:
+				self.arguments.append(o)
+
+		if new_gtk:
+			# Guess who doesn't support option parsing...
+			self.connect('handle-local-options', self.do_local_options)
+		else:
+			self.arguments = []
 		aso("window",	b"w", "Display window (don't start minimized)")
 		aso("minimized",b"m", "Hide window (start minimized)")
 		aso("header",	b"s", "Use classic window header")
@@ -185,6 +217,8 @@ class App(Gtk.Application, TimerManager):
 		aso("force-update", 0,
 				"Force updater to download specific daemon version",
 				GLib.OptionFlags.HIDDEN, GLib.OptionArg.STRING)
+
+
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
