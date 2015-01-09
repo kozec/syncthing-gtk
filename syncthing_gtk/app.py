@@ -135,8 +135,8 @@ class App(Gtk.Application, TimerManager):
 		
 	def do_command_line(self, cl):
 		Gtk.Application.do_command_line(self, cl)
-		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
-		if new_gtk:
+		new_glib = GLib.glib_version >= (2, 40, 0)
+		if new_glib:
 			if cl.get_options_dict().contains("quit"):
 				self.cb_exit()
 				return 0
@@ -185,7 +185,7 @@ class App(Gtk.Application, TimerManager):
 		self.hide_window = False
 	
 	def setup_commandline(self):
-		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
+		new_glib = GLib.glib_version >= (2, 40, 0)
 		def aso(long_name, short_name, description,
 				flags=GLib.OptionFlags.IN_MAIN,
 				arg=GLib.OptionArg.NONE):
@@ -196,12 +196,12 @@ class App(Gtk.Application, TimerManager):
 			o.description = description
 			o.flags = flags
 			o.arg = arg
-			if new_gtk:
+			if new_glib:
 				self.add_main_option_entries([o])
 			else:
 				self.arguments.append(o)
 
-		if new_gtk:
+		if new_glib:
 			# Guess who doesn't support option parsing...
 			self.connect('handle-local-options', self.do_local_options)
 		else:
@@ -217,8 +217,6 @@ class App(Gtk.Application, TimerManager):
 		aso("force-update", 0,
 				"Force updater to download specific daemon version",
 				GLib.OptionFlags.HIDDEN, GLib.OptionArg.STRING)
-
-
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
