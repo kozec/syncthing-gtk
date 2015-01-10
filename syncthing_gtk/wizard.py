@@ -640,6 +640,7 @@ class SaveSettingsPage(Page):
 		"""
 		# Generate API key
 		self.apikey = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(30))
+		log.debug("Generated apikey %s", self.apikey)
 		xml = None
 		try:
 			# Load XML file
@@ -668,6 +669,7 @@ class SaveSettingsPage(Page):
 					))
 			self.ct_textnode(xml, gui, "user", self.parent.syncthing_options["user"])
 			self.ct_textnode(xml, gui, "password", self.parent.syncthing_options["password"])
+			self.ct_textnode(xml, gui, "apikey", self.apikey)
 			gui.setAttribute("enabled", "true")
 			gui.setAttribute("tls", "false")
 			au.firstChild.replaceWholeText("0")
