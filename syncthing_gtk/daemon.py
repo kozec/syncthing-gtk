@@ -325,7 +325,10 @@ class Daemon(GObject.GObject, TimerManager):
 							.getElementsByTagName("gui")[0] \
 							.getElementsByTagName("address")[0] \
 							.firstChild.nodeValue
-			# TODO: https?
+			if self._address.startswith("0.0.0.0"):
+				addr, port = self._address.split(":", 1)
+				self._address = "127.0.0.1:%s" % (port,)
+				log.debug("WebUI listens on 0.0.0.0, connecting to 127.0.0.1 instead")
 		except Exception, e:
 			log.exception(e)
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
