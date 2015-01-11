@@ -107,6 +107,18 @@ if HAS_DBUS:
 			""" Returns list of folders synchronized by syncthig """
 			return self.folders
 	
+		@dbus.service.method(SERVICE, in_signature='s', out_signature='s')
+		def get_folder_state(self, path):
+			"""
+			Returns current state of folder. Returns empty string if
+			there is no such folder
+			Possible values:
+			idle, syncing, scanning, offline, stopped
+			"""
+			if path in self.id_by_path:
+				if self.id_by_path[path] in self.state_by_id:
+					return self.state_by_id[self.id_by_path[path]]
+			return ""
 	
 	dbus_main_loop = DBusGMainLoop()
 	DBusService = DBusServiceCls
