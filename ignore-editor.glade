@@ -97,7 +97,7 @@
                 <property name="can_focus">True</property>
                 <property name="margin_top">15</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">See &lt;a href="https://discourse.syncthing.net/t/excluding-files-from-synchronization-ignoring/80"&gt;Syncthing documentation&lt;/a&gt; for list of supported patterns</property>
+                <property name="label" translatable="yes">See &lt;a href="https://github.com/syncthing/syncthing/wiki/Ignoring-Files"&gt;Syncthing documentation&lt;/a&gt; for list of supported patterns</property>
                 <property name="use_markup">True</property>
               </object>
               <packing>
