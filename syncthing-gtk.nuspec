@@ -4,7 +4,7 @@
   <metadata>
     <id>syncthing-gtk</id>
     <title>Syncthing GTK</title>
-    <version>0.5.2</version>
+    <version></version>
     <authors>syncthing,kozec</authors>
     <owners>GeoffreyFrogeye,kozec</owners>
     <summary>GUI and notification area icon for Syncthing</summary>
@@ -31,17 +31,7 @@ Additional features:
     <copyright></copyright>
     <licenseUrl>https://github.com/syncthing/syncthing-gtk/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <releaseNotes>- Updated URL for Syncthing updater
-- Support for Syncthing >=0.10.9
-
-Cosmetics:
-
-- Automaticaly open topmost repo/device boxes when starting
-
-Fixes:
-
-- Anonymous usage reporting correctly stored, but incorrectly represented in UI
-- Bugged icon in Windows installer</releaseNotes>
+    <releaseNotes></releaseNotes>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
