@@ -117,11 +117,7 @@ class UISettingsDialog(EditorDialog):
 	
 	#@Overrides
 	def update_special_widgets(self, *a):
-		if self["vuse_old_header"].get_active():
-			self["vicons_in_menu"].set_sensitive(False)
-			self["vicons_in_menu"].set_active(True)
-		else:
-			self["vicons_in_menu"].set_sensitive(True)
+		pass
 	
 	#@Overrides
 	def on_save_reuqested(self):

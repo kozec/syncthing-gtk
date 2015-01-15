@@ -98,7 +98,12 @@
 						<property name="visible">True</property>
 						<property name="valign">center</property>
 						<property name="image">app-menu-button-icon</property>
-						<property name="popup">app-menu-icons</property>
+						<IF condition="icons_in_menu | old_gtk">
+							<property name="popup">app-menu-icons</property>
+						<ELSE>
+							<property name="menu-model">app-menu</property>
+							<property name="use-popover">True</property>
+						</ELSE></IF>
 				      </object>
 				      <packing>
 				        <property name="expand">False</property>
@@ -123,7 +128,12 @@
 				        <property name="sensitive">False</property>
 						<property name="valign">center</property>
 						<property name="image">edit-menu-button-icon</property>
-						<property name="popup">edit-menu-icons</property>
+						<IF condition="icons_in_menu | old_gtk">
+							<property name="popup">edit-menu-icons</property>
+						<ELSE>
+							<property name="menu-model">edit-menu</property>
+							<property name="use-popover">True</property>
+						</ELSE></IF>
 				      </object>
 				      <packing>
 				        <property name="expand">False</property>
@@ -191,7 +201,7 @@
 </object>
 <!-- /Main window -->
 
-<IF condition="traditional_header | icons_in_menu">
+<IF condition="icons_in_menu | old_gtk">
 	<!-- Application menu (left one) -->
 	<object class="GtkMenu" id="app-menu-icons">
 		<property name="visible">True</property>
