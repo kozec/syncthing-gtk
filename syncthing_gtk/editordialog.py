@@ -352,12 +352,21 @@ class EditorDialog(GObject.GObject):
 		# else nothing, unknown widget class cannot be read
 	
 	def cb_format_value_s(self, spinner):
-		""" Formats spinner value  """
+		""" Formats spinner value """
 		spinner.get_buffer().set_text(_("%ss") % (int(spinner.get_adjustment().get_value()),), -1);
 		return True
 	
+	def cb_format_value_s_or_disabed(self, spinner):
+		""" Formats spinner value """
+		val = int(spinner.get_adjustment().get_value())
+		if val < 1:
+			spinner.get_buffer().set_text(_("disabled"), -1)
+		else:
+			spinner.get_buffer().set_text(_("%ss") % (val,), -1);
+		return True
+	
 	def cb_format_value_days(self, spinner):
-		""" Formats spinner value  """
+		""" Formats spinner value """
 		v = int(spinner.get_adjustment().get_value())
 		if v == 0:
 			spinner.get_buffer().set_text(_("never delete"), -1)
