@@ -250,6 +250,8 @@ class App(Gtk.Application, TimerManager):
 		if IS_GNOME:  				self.builder.enable_condition("is_gnome")
 		if old_gtk:					self.builder.enable_condition("old_gtk")
 		if icons_in_menu:			self.builder.enable_condition("icons_in_menu")
+		# Fix icon path
+		self.builder.replace_icon_path("icons/", self.iconpath)
 		# Load glade file
 		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)

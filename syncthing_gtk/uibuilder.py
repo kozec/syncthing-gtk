@@ -22,6 +22,7 @@ class UIBuilder(Gtk.Builder):
 	def __init__(self):
 		Gtk.Builder.__init__(self)
 		self.conditions = set([])
+		self.icon_paths = []
 		self.xml = None
 	
 	def add_from_file(self, filename):
@@ -72,21 +73,44 @@ class UIBuilder(Gtk.Builder):
 			return not self.condition_met(cond.strip()[1:])
 		return cond.strip() in self.conditions
 	
+	def replace_icon_path(self, prefix, replace_with):
+		"""
+		All path replaceaments defined using this method are applied
+		by _build method on anything that remotely resembles icon path.
+		"""
+		if not prefix.endswith("/"): prefix = "%s/" % (prefix,)
+		if not replace_with.endswith("/"): replace_with = "%s/" % (replace_with,)
+		self.icon_paths.append((prefix, replace_with))
+	
 	def _build(self):
 		"""
-		Fun part starts here. Recursively walks through entire XML DOM
-		and removes all <IF> tags, replacing them with child nodes if when
-		condition is met
+		Fun part starts here. Recursively walks through entire DOM tree,
+		removes all <IF> tags replacing them with child nodes if when
+		condition is met and fixes icon paths, if required.
 		"""
 		log.debug("Enabled conditions: %s", self.conditions)
+		self._replace_icon_paths(self.xml.documentElement)
 		self._find_conditions(self.xml.documentElement)
 		# Now this will convert parsed DOM tree back to XML and fed it
 		# to Gtk.Builder XML parser.
 		# God probably kills kitten every time when method is called...
 		Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8"))
 	
+	def _replace_icon_paths(self, node):
+		""" Recursive part for _build - icon paths """
+		for child in node.childNodes:
+			if child.nodeType == child.ELEMENT_NODE:
+				self._replace_icon_paths(child)
+				if child.tagName.lower() == "property":
+					if child.getAttribute("name") == "pixbuf":
+						# GtkImage, pixbuf path
+						self._check_icon_path(child)
+					elif child.getAttribute("name") == "icon":
+						# window or dialog, icon path
+						self._check_icon_path(child)
+	
 	def _find_conditions(self, node):
-		""" Recursive part for _build """
+		""" Recursive part for _build - <IF> tags """
 		for child in node.childNodes:
 			if child.nodeType == child.ELEMENT_NODE:
 				self._find_conditions(child)
@@ -119,6 +143,23 @@ class UIBuilder(Gtk.Builder):
 			for elseem in getElementsByTagNameCI(element, "else"):
 				merge_with_parent(elseem, element)
 			element.parentNode.removeChild(element)
+	
+	def _check_icon_path(self, element):
+		def replace(path):
+			"""
+			If specified path begins with one of replaceament prefixes,
+			returns path with modified prefix.
+			"""
+			for prefix, replace_with in self.icon_paths:
+				if path.startswith(prefix):
+					return "%s%s" % (replace_with, path[len(prefix):])
+			return path
+		
+		for n in element.childNodes:
+			if n.nodeType == n.TEXT_NODE:
+				n.data = replace(n.data)
+		return
+	
 
 def getElementsByTagNameCI(node, tagname):
 	"""
