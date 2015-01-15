@@ -48,7 +48,7 @@ class IdentIcon(Gtk.DrawingArea):
 			return not (self.size % 2 and col == middleCol)
 		
 		def mirrorColFor(col):
-			return self.size - col - 1;
+			return self.size - col - 1
 		
 		allocation = self.get_allocation()
 		rectSize = min(allocation.width, allocation.height) / self.size
@@ -61,5 +61,5 @@ class IdentIcon(Gtk.DrawingArea):
 			for col in xrange(0, middleCol + 1):
 				if shouldFillRectAt(row, col):
 					fillRectAt(row, col)
-				#if shouldMirrorRectAt(row, col):
-				#	fillRectAt(row, mirrorColFor(col))
+					if shouldMirrorRectAt(row, col):
+						fillRectAt(row, mirrorColFor(col))
