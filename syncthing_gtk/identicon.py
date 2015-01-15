@@ -20,6 +20,15 @@ class IdentIcon(Gtk.DrawingArea):
 		self.color = (1, 1, 0.95, 1)		# icon color, rgba
 		self.size = 5
 	
+	def set_color_hex(self, hx):
+		""" Expects AABBCC or #AABBCC format """
+		self.set_color(*InfoBox.hex2color(hx))
+		
+	def set_color(self, r, g, b, a):
+		""" Expects floats """
+		self.color = (r, g, b, a)
+		self.queue_draw()
+
 	def do_get_preferred_width(self):
 		# Icon scales to whatever you give, but prefered
 		# size is always 22x22
