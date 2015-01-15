@@ -33,33 +33,36 @@ class IdentIcon(Gtk.DrawingArea):
 		return Gtk.SizeRequestMode.CONSTANT_SIZE
 	
 	def do_draw(self, cr):
-		def fillRectAt(row, col):
+		def fill_rect_at(row, col):
 			cr.rectangle(
-					offset_x + (col * rectSize),
-					offset_y + (row * rectSize),
-					rectSize, rectSize
+					offset_x + (col * rect_size),
+					offset_y + (row * rect_size),
+					rect_size, rect_size
 			)
 			cr.fill()
 		
-		def shouldFillRectAt(row, col):
+		def should_fill_rect_at(row, col):
 			return not (ord(self.value[row + col * self.size]) % 2)
 		
-		def shouldMirrorRectAt(row, col):
-			return not (self.size % 2 and col == middleCol)
+		def should_mirror_rect_at(row, col):
+			return not (self.size % 2 and col == middle_col)
 		
-		def mirrorColFor(col):
+		def mirror_col_for(col):
 			return self.size - col - 1
 		
-		allocation = self.get_allocation()
-		rectSize = min(allocation.width, allocation.height) / self.size
-		offset_x = (allocation.width / 2) - (rectSize * self.size / 2)
-		offset_y = (allocation.height / 2) - (rectSize * self.size / 2)
-		middleCol = self.size / 2
-		cr.set_source_rgba(*self.color)
+		# Prepare stuff
+		allocation	= self.get_allocation()
+		rect_size	= min(allocation.width, allocation.height) / self.size
+		offset_x	= (allocation.width / 2) - (rect_size * self.size / 2)
+		offset_y	= (allocation.height / 2) - (rect_size * self.size / 2)
+		middle_col	= self.size / 2
 		
+		# Set color
+		cr.set_source_rgba(*self.color)
+		# Do drawing
 		for row in xrange(0, self.size):
-			for col in xrange(0, middleCol + 1):
-				if shouldFillRectAt(row, col):
-					fillRectAt(row, col)
-					if shouldMirrorRectAt(row, col):
-						fillRectAt(row, mirrorColFor(col))
+			for col in xrange(0, middle_col + 1):
+				if should_fill_rect_at(row, col):
+					fill_rect_at(row, col)
+					if should_mirror_rect_at(row, col):
+						fill_rect_at(row, mirror_col_for(col))
