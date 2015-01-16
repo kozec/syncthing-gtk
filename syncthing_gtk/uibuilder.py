@@ -10,6 +10,20 @@ Usage:
 	- Enable conditions (enable_condition call)
 	- Call add_from_file or add_from_string method
 	- Continue as usual
+
+Added tags:
+	<IF condition="c"> ... </IF>
+		If condition is met, tag is replaced with its child tags
+		If condition is not met, tag and all child tags are removed
+	<IF condition="c"> ... <ELSE> ... </ELSE></IF>
+		If condition is met, tag is replaced with its child tags and
+		ELSE tag is removed including its children.
+		If condition is not met, tag is replaced with children of ELSE
+		tag. All other children, including ELSE tag are removed.
+	<COPYOBJECT id="i" />
+		Searchs for OBJECT tag with same id and replaces COPYOBJECT tag
+		with its copy.
+
 """
 
 from __future__ import unicode_literals
@@ -89,25 +103,41 @@ class UIBuilder(Gtk.Builder):
 		condition is met and fixes icon paths, if required.
 		"""
 		log.debug("Enabled conditions: %s", self.conditions)
-		self._replace_icon_paths(self.xml.documentElement)
+		self._objects_n_icons(self.xml.documentElement)
 		self._find_conditions(self.xml.documentElement)
 		# Now this will convert parsed DOM tree back to XML and fed it
 		# to Gtk.Builder XML parser.
 		# God probably kills kitten every time when method is called...
+		file("output.glade", "w").write(self.xml.toxml("utf-8"))
 		Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8"))
 	
-	def _replace_icon_paths(self, node):
-		""" Recursive part for _build - icon paths """
+	def _objects_n_icons(self, node):
+		"""
+		1st recursive stage for _build. Fixes icon paths
+		and copies objects.
+		"""
 		for child in node.childNodes:
 			if child.nodeType == child.ELEMENT_NODE:
-				self._replace_icon_paths(child)
-				if child.tagName.lower() == "property":
-					if child.getAttribute("name") == "pixbuf":
-						# GtkImage, pixbuf path
-						self._check_icon_path(child)
-					elif child.getAttribute("name") == "icon":
-						# window or dialog, icon path
-						self._check_icon_path(child)
+				if child.tagName.lower() == "copyobject":
+					id = child.getAttribute("id")
+					if id == "":
+						log.warn("COPYOBJECT tag without id")
+					else:
+						obj = search_for_id(self.xml, id)
+						cpy = obj.cloneNode(True)
+						child.parentNode.appendChild(cpy)
+						child.parentNode.insertBefore(cpy, child)
+						child.parentNode.removeChild(child)
+						self._objects_n_icons(cpy)
+				else:
+					self._objects_n_icons(child)
+					if child.tagName.lower() == "property":
+						if child.getAttribute("name") == "pixbuf":
+							# GtkImage, pixbuf path
+							self._check_icon_path(child)
+						elif child.getAttribute("name") == "icon":
+							# window or dialog, icon path
+							self._check_icon_path(child)
 	
 	def _find_conditions(self, node):
 		""" Recursive part for _build - <IF> tags """
@@ -180,3 +210,17 @@ def merge_with_parent(element, insert_before):
 			insert_before.parentNode.appendChild(child)
 			insert_before.parentNode.insertBefore(child, insert_before)
 	element.parentNode.removeChild(element)
+
+def search_for_id(element, id):
+	"""
+	Recursively search for object with specified id. Returns found
+	object or None if there is no such object.
+	"""
+	for child in element.childNodes:
+		if child.nodeType == child.ELEMENT_NODE:
+			if id == child.getAttribute("id"):
+				return child
+			r = search_for_id(child, id)
+			if not r is None:
+				return r
+	return None
