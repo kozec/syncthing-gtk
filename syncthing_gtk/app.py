@@ -67,7 +67,6 @@ class App(Gtk.Application, TimerManager):
 		TimerManager.__init__(self)
 		# Setup Gtk.Application
 		self.setup_commandline()
-		self.connect('handle-local-options', self.do_local_options)
 		# Set variables
 		self.gladepath = gladepath
 		self.iconpath = iconpath
@@ -81,8 +80,10 @@ class App(Gtk.Application, TimerManager):
 		self.force_update_version = None
 		# Determine if header bar should be shown
 		# User setting is not visible under Unity/Gnome
+		self.use_aero = True	# TODO: Configurable
 		self.use_headerbar = \
-			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME)
+			not IS_UNITY and not self.use_aero and \
+			(not self.config["use_old_header"] or IS_GNOME)
 		
 		self.watcher = None
 		self.daemon = None
@@ -117,31 +118,59 @@ class App(Gtk.Application, TimerManager):
 				self.daemon.reconnect()
 	
 	def do_local_options(self, trash, lo):
-		set_logging_level(
-				lo.contains("verbose"),
-				lo.contains("debug")
-			)
-		if lo.contains("header"): self.use_headerbar = False
-		if lo.contains("window"): self.hide_window = False
-		if lo.contains("wizard"):
+		self.parse_local_options(lo.contains)
+		return 0
+	
+	def parse_local_options(self, is_option):
+		""" Test for expected options using specified method """
+		set_logging_level(is_option("verbose"), is_option("debug") )
+		if is_option("header"): self.use_headerbar = False
+		if is_option("window"): self.hide_window = False
+		if is_option("minimized"): self.hide_window = True
+		if is_option("wizard"):
 			self.exit_after_wizard = True
 			self.show_wizard()
-		elif lo.contains("about"):
+		elif is_option("about"):
 			ad = AboutDialog(self, self.gladepath)
 			ad.run([])
 			sys.exit(0)
-		return 0
 		
 	def do_command_line(self, cl):
 		Gtk.Application.do_command_line(self, cl)
-		if cl.get_options_dict().contains("quit"):
-			self.cb_exit()
-			return 0
-		if cl.get_options_dict().contains("force-update"):
-			self.force_update_version = \
-				cl.get_options_dict().lookup_value("force-update").get_string()
-			if not self.force_update_version.startswith("v"):
-				self.force_update_version = "v%s" % (self.force_update_version,)
+		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
+		if new_gtk:
+			if cl.get_options_dict().contains("quit"):
+				self.cb_exit()
+				return 0
+			if cl.get_options_dict().contains("force-update"):
+				self.force_update_version = \
+					cl.get_options_dict().lookup_value("force-update").get_string()
+				if not self.force_update_version.startswith("v"):
+					self.force_update_version = "v%s" % (self.force_update_version,)
+		else:
+			# Fallback for old GTK without option parsing
+			if "-h" in sys.argv or "--help" in sys.argv:
+				print "Usage:"
+				print "  %s [arguments]" % (sys.argv[0],)
+				print "Arguments:"
+				for o in self.arguments:
+					# Don't display hidden and unsupported parameters
+					if not o.long_name in ("force-update", "quit"):
+						print "  -%s, --%s %s" % (
+							chr(o.short_name),
+							o.long_name.ljust(10),
+							o.description)
+				sys.exit(0)
+			def is_option(name):
+				# Emulating Gtk.Application.do_local_options
+				for o in self.arguments:
+					if o.long_name == name:
+						if "-%s" % (chr(o.short_name),) in sys.argv:
+							return True
+						if "--%s" % (o.long_name,) in sys.argv:
+							return True
+				return False
+			self.parse_local_options(is_option)
 		self.activate()
 		return 0
 	
@@ -158,6 +187,7 @@ class App(Gtk.Application, TimerManager):
 		self.hide_window = False
 	
 	def setup_commandline(self):
+		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
 		def aso(long_name, short_name, description,
 				flags=GLib.OptionFlags.IN_MAIN,
 				arg=GLib.OptionArg.NONE):
@@ -168,12 +198,18 @@ class App(Gtk.Application, TimerManager):
 			o.description = description
 			o.flags = flags
 			o.arg = arg
-			# print x
-			self.add_main_option_entries([o])
-			#self.add_main_option(lname, sname, GLib.OptionFlags.IN_MAIN,
-			#	GLib.OptionArg.NONE, desc)
-		
+			if new_gtk:
+				self.add_main_option_entries([o])
+			else:
+				self.arguments.append(o)
+
+		if new_gtk:
+			# Guess who doesn't support option parsing...
+			self.connect('handle-local-options', self.do_local_options)
+		else:
+			self.arguments = []
 		aso("window",	b"w", "Display window (don't start minimized)")
+		aso("minimized",b"m", "Hide window (start minimized)")
 		aso("header",	b"s", "Use classic window header")
 		aso("quit",		b"q", "Quit running instance (if any)")
 		aso("verbose",	b"v", "Be verbose")
@@ -183,6 +219,8 @@ class App(Gtk.Application, TimerManager):
 		aso("force-update", 0,
 				"Force updater to download specific daemon version",
 				GLib.OptionFlags.HIDDEN, GLib.OptionArg.STRING)
+
+
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
@@ -204,56 +242,38 @@ class App(Gtk.Application, TimerManager):
 		add_simple_action('daemon_restart', self.cb_menu_restart)
 
 	def setup_widgets(self):
+		self.builder = UIBuilder()
+		# Set conditions for UIBuilder
+		old_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12)
+		icons_in_menu = self.config["icons_in_menu"]
+		if self.use_headerbar:
+			self.builder.enable_condition("header_bar")
+		elif self.use_aero:
+			self.builder.enable_condition("use_aero")
+		else:
+			self.builder.enable_condition("traditional_header")
+		if IS_WINDOWS: 				self.builder.enable_condition("is_windows")
+		if IS_GNOME:  				self.builder.enable_condition("is_gnome")
+		if old_gtk:					self.builder.enable_condition("old_gtk")
+		if icons_in_menu:			self.builder.enable_condition("icons_in_menu")
+		# Fix icon path
+		self.builder.replace_icon_path("icons/", self.iconpath)
 		# Load glade file
-		self.builder = Gtk.Builder()
 		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)
-		# Setup window
-		self["edit-menu-button"].set_sensitive(False)
-		self["right-menu-button"].set_sensitive(False)
-
-		if self.use_headerbar:
-			# Window creation, including the HeaderBar.
-			# Destroy the legacy bar.
-			self["window"].set_titlebar(self["header"])
-			self["bar_the_hell"].destroy()
-			self["separator_the_hell"].destroy()
-			if (Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12):
-				# Weird stuff happens with old Gnome on Fedora
-				self["app-menu-button"].set_popup(self["app-menu-icons"])
-				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
-				self["menu-image"].set_from_icon_name("emblem-system-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-			elif IS_GNOME:
-				self.set_app_menu(self["app-menu"])
-				self["app-menu-button"].destroy()
-			elif self.config["icons_in_menu"]:
-				# Use old menus with icon even with HeaderBar.
-				# Not available in Gnome
-				self["app-menu-button"].set_popup(self["app-menu-icons"])
-				self["edit-menu-button"].set_popup(self["edit-menu-icons"])
-			if IS_WINDOWS:
-				self["app-menu-button"].set_relief(Gtk.ReliefStyle.HALF)
-		elif IS_WINDOWS:
+		if IS_WINDOWS:
 			# Use Aero glass effect on Windows
 			from syncthing_gtk import windows
 			if windows.enable_aero_glass(self["window"], self["split"], self.iconpath):
 				# Enable draging by fake border
-				windows.make_dragable(self["window"], self["eb_the_hell"])
-				# Override widget sizes and colors
-				self["server-name"].override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0.99))
-				self["separator_the_hell"].set_visible(False)
-				self["left-menu-button"].set_size_request(64, 64)
-				self["left-menu-button"].set_margin_top(8)
-				self["left-menu-button"].set_margin_left(10)
-				self["left-menu-button"].set_margin_bottom(10)
-				self["right-menu-button"].set_margin_top(8)
-				self["right-menu-button"].set_margin_right(8)
-				self["bar_the_hell"].set_spacing(0)
-				self["bar_the_hell"].set_border_width(0)
+				windows.make_dragable(self["window"], self["bar-the-hell"])
 				# Make buttons transparent, override image on left one
-				windows.make_aero_button(self["left-menu-button"],
+				windows.make_aero_button(self["app-menu-button"],
 					os.path.join(self.iconpath, "aero-icon.png"))
-				windows.make_aero_button(self["right-menu-button"])
+				windows.make_aero_button(self["edit-menu-button"])
+		# Dunno how to do this from glade
+		if self.use_headerbar and IS_GNOME:
+			self.set_app_menu(self["app-menu"])
 		
 		# Create speedlimit submenus for incoming and outcoming speeds
 		L_MEH = [("menu-si-sendlimit", self.cb_menu_sendlimit),
@@ -271,7 +291,6 @@ class App(Gtk.Application, TimerManager):
 		# Set window title in way that even Gnome can understand
 		self["window"].set_title(_("Syncthing GTK"))
 		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
-		self["window"].connect("realize", self.cb_realized)
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):
@@ -321,9 +340,9 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-data-failed", self.cb_syncthing_folder_state_changed, 0.0, COLOR_NEW, "")
 		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_FOLDER_SYNCING, _("Syncing"))
 		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
-		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
+		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
 		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
-		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Idle"))
+		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
@@ -522,7 +541,6 @@ class App(Gtk.Application, TimerManager):
 		self.close_connect_dialog()
 		self.set_status(True)
 		self["edit-menu-button"].set_sensitive(True)
-		self["right-menu-button"].set_sensitive(True)
 		self["menu-si-shutdown"].set_sensitive(True)
 		self["menu-si-show-id"].set_sensitive(True)
 		self["menu-si-recvlimit"].set_sensitive(True)
@@ -694,13 +712,11 @@ class App(Gtk.Application, TimerManager):
 		if nid in self.devices:
 			device = self.devices[nid].get_title()
 			can_fix = True
-		markup = _('Unexpected folder ID "<b>%s</b>" sent from device "<b>%s</b>"; ensure that the '
-					'folder exists and that  this device is selected under "Share With" in the '
-					'folder configuration.') % (rid, device)
+		markup = _('<b>%s</b> wants to share folder "<b>%s</b>". Add new folder?') % (device, rid)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
-			r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_FOLDER_ID)
+			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_FOLDER_ID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, address):
@@ -709,13 +725,10 @@ class App(Gtk.Application, TimerManager):
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Unknown device "<b>%s</b>" is trying from connect from IP "<b>%s</b>"') % (nid, address)
-		markup += ";"
-		markup += _('If you just configured this remote device, you can click \'fix\' '
-					'to open Add device dialog.')
+		markup = _('Device "<b>%s</b>" at IP "<b>%s</b> wants to connect. Add new device?"') % (nid, address)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
-		r.add_button(RIBar.build_button(_("_Fix")), RESPONSE_FIX_NEW_DEVICE)
+		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
 		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
@@ -771,10 +784,11 @@ class App(Gtk.Application, TimerManager):
 						len(announce)
 					)
 	
-	def cb_syncthing_device_added(self, daemon, nid, name, data):
+	def cb_syncthing_device_added(self, daemon, nid, name, used, data):
 		self.show_device(nid, name,
 			data["Compression"],
-			data["Introducer"] if "Introducer" in data else False
+			data["Introducer"] if "Introducer" in data else False,
+			used
 		)
 	
 	def cb_syncthing_device_data_changed(self, daemon, nid, address, client_version,
@@ -901,8 +915,8 @@ class App(Gtk.Application, TimerManager):
 				self.animate_status()
 			elif self.any_device_online():
 				# Daemon is online and idle
-				self.statusicon.set("si-idle", _("Idle"))
-				self["menu-si-status"].set_label(_("Idle"))
+				self.statusicon.set("si-idle", _("Up to Date"))
+				self["menu-si-status"].set_label(_("Up to Date"))
 				self.cancel_timer("icon")
 			else:
 				# Daemon is online, but there is no remote device connected
@@ -938,8 +952,11 @@ class App(Gtk.Application, TimerManager):
 				online = online or device["online"]
 			if online and folder.compare_color_hex(COLOR_FOLDER_OFFLINE):
 				# Folder was marked as offline but is back online now
-				folder.set_status(_("Idle"))
+				folder.set_status(_("Up to Date"))
 				folder.set_color_hex(COLOR_FOLDER_IDLE)
+			elif not online and folder.compare_color_hex(COLOR_FOLDER_SCANNING):
+				# Folder is offline and in Scanning state
+				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 			elif not online and folder.compare_color_hex(COLOR_FOLDER_IDLE):
 				# Folder is offline and in Idle state (not scanning)
 				folder.set_status(_("Offline"))
@@ -1164,10 +1181,12 @@ class App(Gtk.Application, TimerManager):
 		self.folders[id] = box
 		return box
 	
-	def show_device(self, id, name, use_compression, introducer):
+	def show_device(self, id, name, use_compression, introducer, used):
 		if name in (None, ""):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
+		if not used:
+			name = "%s (%s)" % (name, _("Unused"))
 		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
 		box.add_value("address",	"address.png",	_("Address"),			"?")
 		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
@@ -1206,7 +1225,6 @@ class App(Gtk.Application, TimerManager):
 	
 	def restart(self):
 		self["edit-menu-button"].set_sensitive(False)
-		self["right-menu-button"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
 		self["menu-si-recvlimit"].set_sensitive(False)

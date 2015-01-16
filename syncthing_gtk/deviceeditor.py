@@ -143,6 +143,11 @@ class DeviceEditorDialog(EditorDialog):
 		# If new folder/device was added, show dummy item UI, so user will
 		# see that something happen even before daemon gets restarted
 		if self.is_new:
+			used = False
+			for b in self["vFolders"].get_children():
+				if b.get_active():
+					used = True
+					break
 			box = self.app.show_device(self.get_value("DeviceID"), self.get_value("Name"),
-				self.get_value("Compression"), self.get_value("Introducer"))
+				self.get_value("Compression"), self.get_value("Introducer"), used)
 			box.set_color_hex(COLOR_NEW)

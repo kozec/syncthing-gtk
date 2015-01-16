@@ -93,10 +93,11 @@ class Daemon(GObject.GObject, TimerManager):
 				device_id:	device id
 				address:	address which connection come from
 		
-		device-added (id, name, data)
+		device-added (id, name, used, data)
 			Emited when new device is loaded from configuration
 				id:		id of loaded device
 				name:	name of loaded device (may be None)
+				used:	true if there is any folder shared with this device
 				data:	dict with rest of device data
 		
 		device-connected (id)
@@ -221,7 +222,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object)),
+			b"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, bool, object)),
 			b"device-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-discovered"	: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
@@ -484,7 +485,7 @@ class Daemon(GObject.GObject, TimerManager):
 		except Exception, e:
 			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
 				e = TLSUnsupportedException(e.message)
-			self._rest_post_error(e, epoch, command, data, callback, error_callback, *callback_data)
+			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
 			return
 		if epoch < self._epoch :
 			# Too late, throw it away
@@ -744,7 +745,8 @@ class Daemon(GObject.GObject, TimerManager):
 				data[id]["outbps"] = 0.0
 			# Store updated device_data
 			for key in data[id]:
-				device_data[key] = data[id][key]
+				if key != "ClientVersion" or data[id][key] != "":	# Happens for 'total'
+					device_data[key] = data[id][key]
 			
 			# Send "device-connected" signal, if device was disconnected until now
 			if not device_data["connected"] and nid != self._my_id:
@@ -884,11 +886,22 @@ class Daemon(GObject.GObject, TimerManager):
 		if not self._connected:
 			self._connected = True
 			self.emit('connected')
+			
+			# Pre-parse folders to detect unused devices
+			device_folders = {}
+			for r in config["Folders"]:
+				rid = r["ID"]
+				for n in r["Devices"]:
+					nid = n["DeviceID"]
+					if not nid in device_folders : device_folders[nid] = []
+					device_folders[nid].append(rid)
+
 			# Parse devices
 			for n in sorted(config["Devices"], key=lambda x : x["Name"].lower()):
 				nid = n["DeviceID"]
 				self._get_device_data(nid)	# Creates dict with device data
-				self.emit("device-added", nid, n["Name"], n)
+				used = (nid in device_folders) and (len(device_folders[nid]) > 0)
+				self.emit("device-added", nid, n["Name"], used, n)
 				
 			# Parse folders
 			for r in config["Folders"]:

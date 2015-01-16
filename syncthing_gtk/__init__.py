@@ -5,6 +5,7 @@ from daemonprocess		import DaemonProcess
 from daemon				import Daemon, InvalidConfigurationException, \
 							TLSUnsupportedException, ConnectionRestarted
 from watcher			import Watcher, HAS_INOTIFY
+from uibuilder			import UIBuilder
 from notifications		import Notifications, HAS_DESKTOP_NOTIFY
 from infobox			import InfoBox
 from editordialog		import EditorDialog
