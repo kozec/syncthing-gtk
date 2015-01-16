@@ -270,7 +270,10 @@ class App(Gtk.Application, TimerManager):
 				# Make buttons transparent, override image on left one
 				windows.make_aero_button(self["app-menu-button"],
 					os.path.join(self.iconpath, "aero-icon.png"))
-				windows.make_aero_button(self["edit-menu-button"])
+				windows.make_aero_button(self["edit-menu-button"],
+					os.path.join(self.iconpath, "cogwheel-icon.png"))
+
+
 		# Dunno how to do this from glade
 		if self.use_headerbar and IS_GNOME:
 			self.set_app_menu(self["app-menu"])
@@ -1218,8 +1221,9 @@ class App(Gtk.Application, TimerManager):
 		""" Clears folder and device lists. """
 		for i in ('devicelist', 'folderlist'):
 			for c in [] + self[i].get_children():
-				self[i].remove(c)
-				c.destroy()
+				if not c == self["edit-menu-button"]:
+					self[i].remove(c)
+					c.destroy()
 		self.devices = {}
 		self.folders = {}
 	

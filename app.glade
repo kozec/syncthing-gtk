@@ -27,8 +27,11 @@
 						<property name="use-popover">True</property>
 					</ELSE></IF>
 					<IF condition="use_aero">
-						<property name="width_request">64</property>
-						<property name="height_request">64</property>
+						<property name="width-request">64</property>
+						<property name="height-request">50</property>
+						<property name="margin-top">0</property>
+						<property name="margin-bottom">29</property>
+						<property name="margin-left">11</property>
 					</IF>
 					<style><class name="image-button"/></style>
 					<child>
@@ -59,11 +62,16 @@
 					<property name="valign">center</property>
 					<property name="image">edit-menu-button-image</property>
 					<IF condition="icons_in_menu | old_gtk">
-						<property name="popup">app-menu-icons</property>
+						<property name="popup">edit-menu-icons</property>
 					<ELSE>
 						<property name="menu-model">edit-menu</property>
 						<property name="use-popover">True</property>
 					</ELSE></IF>
+					<IF condition="use_aero">
+						<property name="margin-right">20</property>
+						<property name="margin-top">30</property>
+						<property name="margin-bottom">30</property>
+					</IF>
 					<style><class name="image-button"/></style>
 					<child>
 						<object class="GtkImage" id="edit-menu-icon">
@@ -95,8 +103,14 @@
 				    <property name="visible">True</property>
 				    <property name="can_focus">False</property>
 					<property name="orientation">horizontal</property>
-					<property name="border_width">6</property>
-					<property name="spacing">6</property>
+					<IF condition="use_aero">
+						<property name="border_width">0</property>
+						<property name="spacing">0</property>
+					<ELSE>
+						<property name="border_width">6</property>
+						<property name="spacing">6</property>
+					</ELSE>
+					</IF>
 				    <child>
 				      <copyobject id="app-menu-button" />
 				      <packing>
@@ -117,13 +131,13 @@
 				      </packing>
 				    </child>
 				    <child>
-				      <copyobject id="edit-menu-button" />
-				      <packing>
-				        <property name="expand">False</property>
-				        <property name="fill">True</property>
-				        <property name="pack_type">end</property>
-				        <property name="position">2</property>
-				      </packing>
+					  <copyobject id="edit-menu-button" />
+					  <packing>
+						<property name="expand">False</property>
+						<property name="fill">True</property>
+						<property name="pack_type">end</property>
+						<property name="position">2</property>
+					  </packing>
 				    </child>
 				</object>
 			</child>
@@ -138,7 +152,7 @@
 			
 			<!-- Panels -->
 			<child>
-			<object class="GtkPaned" id="split">
+			  <object class="GtkPaned" id="split">
 				<property name="visible">True</property>
 				<property name="can_focus">True</property>
 				<property name="position">500</property>
@@ -157,25 +171,23 @@
 						<property name="shrink">False</property>
 					</packing>
 				</child>
+				<!-- /Left panel -->
 				<!-- Right panel -->
 				<child>
 					<object class="GtkBox" id="devicelist">
-						<property name="visible">True</property>
-						<property name="can_focus">False</property>
-						<property name="orientation">vertical</property>
-						<property name="border_width">6</property>
-						<!-- Script adds widgets here -->
-					</object> <!-- /GtkBox -->
+					  <property name="visible">True</property>
+					  <property name="can_focus">False</property>
+					  <property name="orientation">vertical</property>
+					  <property name="border_width">6</property>
+					  <!-- Script adds widgets here -->
+					</object> <!-- /GtkBox id=devicelist -->
 					<packing>
-						<property name="resize">False</property>
-						<property name="shrink">False</property>
+					  <property name="resize">False</property>
+					  <property name="shrink">False</property>
 					</packing>
 				</child>
-			</object>
-			<packing>
-				<property name="expand">True</property>
-				<property name="fill">True</property>
-			</packing>
+				<!-- /Right panel -->
+			  </object>
 			</child>
 			<!-- /Panels -->
 		</object>
