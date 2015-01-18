@@ -45,6 +45,7 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		self.subfolders = set([])
 		# List (cache) for files with emblems
 		self.files = set([])
+		self.downloads = set([])
 		# Connect to Daemon object signals
 		self.daemon.connect("connected", self.cb_connected)
 		self.daemon.connect("connection-error", self.cb_syncthing_con_error)
@@ -53,6 +54,8 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, STATE_SYNCING)
 		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, STATE_IDLE)
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_state_changed, STATE_STOPPED)
+		self.daemon.connect("item-started", self.cb_syncthing_item_started)
+		self.daemon.connect("item-updated", self.cb_syncthing_item_updated)
 		
 		log.info("Initialized.")
 		# Let Daemon object connect to Syncthing
@@ -62,11 +65,14 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 	def _clear_emblems(self):
 		""" Clear emblems on all files that had emblem added """
 		for path in self.files:
-			file = Nautilus.FileInfo.create(Gio.File.new_for_path(path))
+			self._invalidate(path)
 			print "cleared emblem on ", path
-			# invalidate_extension_info will force nautilus to re-read emblems
-			file.invalidate_extension_info()
 		self.files = set([])
+	
+	def _invalidate(self, path):
+		""" Forces Nautils to re-read emblems on specified file """
+		file = Nautilus.FileInfo.create(Gio.File.new_for_path(path))
+		file.invalidate_extension_info()
 	
 	### Daemon callbacks
 	def cb_connected(self, *a):
@@ -77,6 +83,7 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		"""
 		self.folders = {}
 		self.subfolders = set([])
+		self.downloads = set([])
 		self._clear_emblems()
 		self.ready = True
 		log.info("Connected to Syncthing daemon")
@@ -91,12 +98,9 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		path = os.path.expanduser(r["Path"])
 		self.rid_to_path[rid] = path
 		self.folders[path] = STATE_OFFLINE
-		file = Nautilus.FileInfo.create(Gio.File.new_for_path(path))
-		file.invalidate_extension_info()
+		self._invalidate(path)
 	
 	def cb_syncthing_con_error(self, *a):
-		# log.info("con-error")
-		# self.daemon.reconnect()
 		pass
 	
 	def cb_syncthing_disconnected(self, *a):
@@ -112,21 +116,42 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 			self._clear_emblems()
 		self.daemon.reconnect()
 	
-	
 	def cb_syncthing_folder_state_changed(self, daemon, rid, state):
+		""" Called when folder synchronization starts or stops """
 		if rid in self.rid_to_path:
 			path = self.rid_to_path[rid]
 			self.folders[path] = state
 			log.debug("State of %s changed to %s", path, state)
-			file = Nautilus.FileInfo.create(Gio.File.new_for_path(path))
-			file.invalidate_extension_info()
+			self._invalidate(path)
+	
+	def cb_syncthing_item_started(self, daemon, rid, filename, *a):
+		""" Called when file download starts """
+		if rid in self.rid_to_path:
+			path = self.rid_to_path[rid]
+			filepath = os.path.join(path, filename)
+			log.debug("Download started %s", filepath)
+			self.downloads.add(filepath)
+			self._invalidate(filepath)
+	
+	def cb_syncthing_item_updated(self, daemon, rid, filename, *a):
+		""" Called after file is downloaded """
+		if rid in self.rid_to_path:
+			path = self.rid_to_path[rid]
+			filepath = os.path.join(path, filename)
+			log.debug("Download finished %s", filepath)
+			if filepath in self.downloads:
+				self.downloads.remove(filepath)
+				self._invalidate(filepath)
 	
 	### Plugin stuff
 	def update_file_info(self, file):
 		if not self.ready: return
 		# Check if folder is one of repositories managed by syncthing
 		path = file.get_location().get_path()
-		if path in self.folders:
+		if path in self.downloads:
+			file.add_emblem("syncthing-active")
+			self.files.add(path)
+		elif path in self.folders:
 			# Determine what emblem should be used
 			state = self.folders[path]
 			if state == STATE_IDLE:
