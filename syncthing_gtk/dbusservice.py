@@ -41,6 +41,7 @@ if HAS_DBUS:
 			self.id_by_path = {}
 			self.path_by_id = {}
 			self.state_by_id = {}
+			self.is_connected = False
 			# Daemon & callbacks setup
 			self.daemon = daemon
 			self.daemon.connect("config-loaded", self.cb_config_loaded)
@@ -59,11 +60,14 @@ if HAS_DBUS:
 		# Callbacks
 		def cb_disconnected(self, *a):
 			self.folders = []
-			self.disconnected()
+			if self.is_connected:
+				self.is_connected = False
+				self.disconnected()
 		
 		def cb_config_loaded(self, *a):
 			# This is emited by daemon after all folders are parsed
 			self.connected()
+			self.is_connected = True
 		
 		def cb_folder_added(self, daemon, rid, r):
 			path = os.path.expanduser(r["Path"])
