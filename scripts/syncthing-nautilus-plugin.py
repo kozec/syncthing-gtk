@@ -16,10 +16,10 @@ VERBOSE	= True
 DEBUG	= True
 
 # Magic numbers
-STATE_IDLE		= 0
-STATE_SYNCING	= 1
-STATE_OFFLINE	= 2
-STATE_STOPPED	= 3
+STATE_IDLE		= 1
+STATE_SYNCING	= 2
+STATE_OFFLINE	= 3
+STATE_STOPPED	= 4
 
 class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 	def __init__(self):
@@ -43,7 +43,7 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		# List (cache) for folders that are known to be placed bellow
 		# some syncthing repo
 		self.subfolders = set([])
-		# List (cache) for files with emblems
+		# List (cache) for files that plugin were asked about
 		self.files = set([])
 		self.downloads = set([])
 		# Connect to Daemon object signals
@@ -66,13 +66,23 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		""" Clear emblems on all files that had emblem added """
 		for path in self.files:
 			self._invalidate(path)
-			print "cleared emblem on ", path
-		self.files = set([])
 	
 	def _invalidate(self, path):
 		""" Forces Nautils to re-read emblems on specified file """
 		file = Nautilus.FileInfo.create(Gio.File.new_for_path(path))
 		file.invalidate_extension_info()
+	
+	def _get_parent_repo_state(self, path):
+		"""
+		If file belongs to any known repository, returns state of if.
+		Returns None otherwise.
+		"""
+		# TODO: Probably convert to absolute paths and check for '/' at
+		# end. It shouldn't be needed, in theory.
+		for x in self.folders:
+			if path.startswith(x + os.path.sep):
+				return self.folders[x]
+		return None
 	
 	### Daemon callbacks
 	def cb_connected(self, *a):
@@ -123,6 +133,10 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 			self.folders[path] = state
 			log.debug("State of %s changed to %s", path, state)
 			self._invalidate(path)
+			# Invalidate all files in repository as well
+			for f in self.files:
+				if f.startswith(path + os.path.sep):
+					self._invalidate(f)
 	
 	def cb_syncthing_item_started(self, daemon, rid, filename, *a):
 		""" Called when file download starts """
@@ -150,7 +164,6 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 		path = file.get_location().get_path()
 		if path in self.downloads:
 			file.add_emblem("syncthing-active")
-			self.files.add(path)
 		elif path in self.folders:
 			# Determine what emblem should be used
 			state = self.folders[path]
@@ -164,4 +177,18 @@ class STGTKExtension_Nautilus(GObject.GObject, Nautilus.InfoProvider):
 			else:
 				# Default (i-have-no-idea-what-happened) state
 				file.add_emblem("syncthing-offline")
-			self.files.add(path)
+		else:
+			state = self._get_parent_repo_state(path)
+			if state is None:
+				# _get_parent_repo_state returns None if file doesn't
+				# belongs to repo
+				pass
+			elif state in (STATE_IDLE, STATE_SYNCING):
+				# File manager probably shoudn't care about folder being scanned
+				file.add_emblem("syncthing")
+			else:
+				# Default (i-have-no-idea-what-happened) state
+				file.add_emblem("syncthing-offline")
+		# TODO: This remembers every file user ever saw in Nautilus.
+		# There *has* to be memory effecient alternative...
+		self.files.add(path)
