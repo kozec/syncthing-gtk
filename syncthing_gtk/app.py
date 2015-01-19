@@ -85,7 +85,6 @@ class App(Gtk.Application, TimerManager):
 		
 		self.watcher = None
 		self.daemon = None	# Created by setup_connection method
-		self.dbus = None	# Created after daemon instance
 		self.notifications = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
@@ -306,8 +305,6 @@ class App(Gtk.Application, TimerManager):
 			self.hide()
 			self.show_wizard()
 			return False
-		if HAS_DBUS:
-			self.dbus = DBusService(self.daemon)
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
 		if HAS_INOTIFY:

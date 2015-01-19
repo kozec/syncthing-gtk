@@ -22,5 +22,4 @@ from daemonoutputdialog	import DaemonOutputDialog
 from stdownloader		import StDownloader
 from wizard				import Wizard
 from finddaemondialog	import FindDaemonDialog
-from dbusservice		import DBusService, HAS_DBUS
 from app				import App
