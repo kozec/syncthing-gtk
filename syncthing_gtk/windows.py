@@ -14,6 +14,8 @@ import os, sys, logging, cairo, codecs, _winreg
 import msvcrt, win32pipe, win32gui, win32con
 
 log = logging.getLogger("windows.py")
+pythonapi.PyCapsule_GetPointer.restype = c_void_p
+pythonapi.PyCapsule_GetPointer.argtypes = [py_object]
 
 def fix_localized_system_error_messages():
 	"""
@@ -254,6 +256,20 @@ class WeirdLookingFrame(Gtk.Frame):
 		# Draw child widget
 		self.propagate_draw(self.get_children()[0], cr)
 
+# Structures used by aero-related functions
+class MARGINS(Structure):
+	_fields_ = [("cxLeftWidth", c_int),
+			  ("cxRightWidth", c_int),
+			  ("cyTopHeight", c_int),
+			  ("cyBottomHeight", c_int)
+			 ]
+class CORNERS(Structure):
+	_fields_ = [("left", c_int),
+			  ("right", c_int),
+			  ("top", c_int),
+			  ("bottom", c_int)
+			 ]
+
 def enable_aero_glass(window, root_element, iconpath):
 	"""
 	Enables Aero Glass effect on main application Window and changes
@@ -264,8 +280,6 @@ def enable_aero_glass(window, root_element, iconpath):
 	# Load native methods
 	try:
 		dwm = windll.dwmapi
-		pythonapi.PyCapsule_GetPointer.restype = c_void_p
-		pythonapi.PyCapsule_GetPointer.argtypes = [py_object]
 		gdkdll = CDLL ("libgdk-3-0.dll")
 		st_gtk_dll = CDLL ("st-gtk-windows.dll")
 	except Exception, e:
@@ -273,12 +287,6 @@ def enable_aero_glass(window, root_element, iconpath):
 		return False
 		
 	# Prepare stuff
-	class MARGINS(Structure):
-		_fields_ = [("cxLeftWidth", c_int),
-				  ("cxRightWidth", c_int),
-				  ("cyTopHeight", c_int),
-				  ("cyBottomHeight", c_int)
-				 ]
 	margins = MARGINS(1, 1, 1, -1)
 	
 	# Get me some glass
@@ -391,3 +399,19 @@ def make_dragable(window, widget):
 			window.begin_move_drag(event.button, 
 				event.x_root, event.y_root, event.time)
 	widget.connect("button-press-event", on_header_drag)
+
+def make_resizable(window, left, right, top, bottom):
+	"""
+	Makes window resizable by draggin corners.
+	Returns True on success.
+	"""
+	corners = CORNERS(left, right, top, bottom)
+	try:
+		st_gtk_dll = CDLL ("st-gtk-windows.dll")
+	except Exception, e:
+		log.error("make_resizable: Failed to load native stuff: %s", e)
+		return False
+	if st_gtk_dll.make_resizable(byref(corners)) == 0:
+		return True
+	return False
+	

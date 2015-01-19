@@ -8,11 +8,70 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <Windowsx.h>
+
+typedef int bool;
+typedef struct _CORNERS {
+  int left;
+  int right;
+  int top;
+  int bottom;
+} CORNERS;
+
+CORNERS windowCorners;
+bool hitTestEnabled = FALSE;
 
 WNDPROC original_wndproc;
 
+/** Hit test the frame for resizing and moving
+ * http://msdn.microsoft.com/en-us/library/windows/desktop/bb688195(v=vs.85).aspx#appendixc
+ */
+LRESULT HitTestNCA(HWND hWnd, WPARAM wParam, LPARAM lParam) {
+	// Get the point coordinates for the hit test.
+	POINT ptMouse = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+
+	// Get the window rectangle.
+	RECT rcWindow;
+	GetWindowRect(hWnd, &rcWindow);
+
+	// Get the frame rectangle, adjusted for the style without a caption.
+	RECT rcFrame = { 0 };
+	AdjustWindowRectEx(&rcFrame, WS_OVERLAPPEDWINDOW & ~WS_CAPTION, FALSE, 0);
+
+	// Determine if the hit test is for resizing. Default middle (1,1).
+	USHORT uRow = 1;
+	USHORT uCol = 1;
+	bool fOnResizeBorder = FALSE;
+
+	// Determine if the point is at the top or bottom of the window.
+	if (ptMouse.y >= rcWindow.top && ptMouse.y < rcWindow.top + windowCorners.top) {
+		fOnResizeBorder = (ptMouse.y < (rcWindow.top - rcFrame.top));
+		uRow = 0;
+	} else if (ptMouse.y < rcWindow.bottom && ptMouse.y >= rcWindow.bottom - windowCorners.bottom) {
+		uRow = 2;
+	}
+
+	// Determine if the point is at the left or right of the window.
+	if (ptMouse.x >= rcWindow.left && ptMouse.x < rcWindow.left + windowCorners.left) {
+		uCol = 0; // left side
+	} else if (ptMouse.x < rcWindow.right && ptMouse.x >= rcWindow.right - windowCorners.right) {
+		uCol = 2; // right side
+	}
+
+	// Hit test (HTTOPLEFT, ... HTBOTTOMRIGHT)
+	LRESULT hitTests[3][3] = {
+		{ HTTOPLEFT,    fOnResizeBorder ? HTTOP : HTCAPTION,    HTTOPRIGHT },
+		{ HTLEFT,       HTNOWHERE,     HTRIGHT },
+		{ HTBOTTOMLEFT, HTBOTTOM, HTBOTTOMRIGHT },
+	};
+
+	return hitTests[uRow][uCol];
+}
+
+
 /** Window message handler installed by handle_wm_nccalcsize */
 LRESULT CALLBACK _wm_nccalcsize_handler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	LRESULT rv;
 	if ((uMsg == WM_NCCALCSIZE) && (wParam == TRUE)) {
 		NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)lParam;
 		params->rgrc[0].left   = params->rgrc[0].left   + 0;
@@ -21,7 +80,13 @@ LRESULT CALLBACK _wm_nccalcsize_handler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 		params->rgrc[0].bottom = params->rgrc[0].bottom - 0;
 		return 0;
 	}
-	LRESULT rv = CallWindowProc(original_wndproc, hwnd, uMsg, wParam, lParam);
+	if (hitTestEnabled && (uMsg == WM_NCHITTEST)) {
+		rv = HitTestNCA(hwnd, wParam, lParam);
+		if (rv != HTNOWHERE)
+			return rv;
+	}
+	
+	rv = CallWindowProc(original_wndproc, hwnd, uMsg, wParam, lParam);
 	return rv;
 }
 
@@ -38,4 +103,14 @@ int handle_wm_nccalcsize(HWND hWnd) {
   }
   printf ("wm_nccalcsize handler installed.\n");
   return 0;
+}
+
+/**
+ * Adds resizing to already installed custom message handler.
+ * Returns 0 on success, what's always.
+ */
+int make_resizable(CORNERS* corners) {
+	windowCorners = *corners;
+	hitTestEnabled = TRUE;
+	return 0;
 }

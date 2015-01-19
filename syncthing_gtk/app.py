@@ -266,7 +266,9 @@ class App(Gtk.Application, TimerManager):
 			from syncthing_gtk import windows
 			if windows.enable_aero_glass(self["window"], self["split"], self.iconpath):
 				# Enable draging by fake border
-				windows.make_dragable(self["window"], self["bar-the-hell"])
+				windows.make_dragable(self["window"], self["eb-the-hell"])
+				# Enable resizing
+				windows.make_resizable(self["window"], 10, 10, 2, 10)
 				# Make buttons transparent, override image on left one
 				windows.make_aero_button(self["app-menu-button"],
 					os.path.join(self.iconpath, "aero-icon.png"))

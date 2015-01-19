@@ -30,7 +30,7 @@
 						<property name="width-request">64</property>
 						<property name="height-request">50</property>
 						<property name="margin-top">0</property>
-						<property name="margin-bottom">29</property>
+						<property name="margin-bottom">24</property>
 						<property name="margin-left">11</property>
 					</IF>
 					<style><class name="image-button"/></style>
@@ -70,7 +70,7 @@
 					<IF condition="use_aero">
 						<property name="margin-right">20</property>
 						<property name="margin-top">30</property>
-						<property name="margin-bottom">30</property>
+						<property name="margin-bottom">25</property>
 					</IF>
 					<style><class name="image-button"/></style>
 					<child>
@@ -92,54 +92,58 @@
 
 	<!-- Window content -->
 	<child>
-		<object class="GtkBox" id="content">
+	  <object class="GtkBox" id="content">
+		<property name="visible">True</property>
+		<property name="can_focus">False</property>
+		<property name="orientation">vertical</property>
+		
+		<!-- Traditional header -->
+		<child if="traditional_header | use_aero">
+		  <object class="GtkEventBox" id="eb-the-hell">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="orientation">vertical</property>
-			
-			<!-- Traditional header -->
-			<child if="traditional_header | use_aero">
-				<object class="GtkBox" id="bar-the-hell">
-				    <property name="visible">True</property>
-				    <property name="can_focus">False</property>
-					<property name="orientation">horizontal</property>
-					<IF condition="use_aero">
-						<property name="border_width">0</property>
-						<property name="spacing">0</property>
-					<ELSE>
-						<property name="border_width">6</property>
-						<property name="spacing">6</property>
-					</ELSE>
-					</IF>
-				    <child>
-				      <copyobject id="app-menu-button" />
-				      <packing>
-				        <property name="expand">False</property>
-				        <property name="fill">True</property>
-				        <property name="position">0</property>
-				      </packing>
-				    </child>
-				    <child>
-				      <object class="GtkLabel" id="server-name">
-				        <property name="visible">True</property>
-				        <property name="label" translatable="no"> </property>
-				      </object>
-				      <packing>
-				        <property name="expand">True</property>
-				        <property name="fill">True</property>
-				        <property name="position">1</property>
-				      </packing>
-				    </child>
-				    <child>
-					  <copyobject id="edit-menu-button" />
-					  <packing>
-						<property name="expand">False</property>
-						<property name="fill">True</property>
-						<property name="pack_type">end</property>
-						<property name="position">2</property>
-					  </packing>
-				    </child>
-				</object>
+			<child>
+			  <object class="GtkBox" id="bar-the-hell">
+				<property name="visible">True</property>
+				<property name="can_focus">False</property>
+				<property name="orientation">horizontal</property>
+				<IF condition="use_aero">
+					<property name="border_width">0</property>
+					<property name="spacing">0</property>
+				<ELSE>
+					<property name="border_width">6</property>
+					<property name="spacing">6</property>
+				</ELSE>
+				</IF>
+				<child>
+				  <copyobject id="app-menu-button" />
+				  <packing>
+					<property name="expand">False</property>
+					<property name="fill">True</property>
+					<property name="position">0</property>
+				  </packing>
+				</child>
+				<child>
+				  <object class="GtkLabel" id="server-name">
+					<property name="visible">True</property>
+					<property name="label" translatable="no"> </property>
+				  </object>
+				  <packing>
+					<property name="expand">True</property>
+					<property name="fill">True</property>
+					<property name="position">1</property>
+				  </packing>
+				</child>
+				<child>
+				  <copyobject id="edit-menu-button" />
+				  <packing>
+					<property name="expand">False</property>
+					<property name="fill">True</property>
+					<property name="pack_type">end</property>
+					<property name="position">2</property>
+				  </packing>
+				</child>
+			  </object>
 			</child>
 			<child>
 				<object class="GtkSeparator" id="separator_the_hell">
@@ -148,7 +152,9 @@
 					<property name="orientation">horizontal</property>
 				</object>
 			</child>
-			<!-- /Traditional header -->
+		  </object>
+		</child>
+		<!-- /Traditional header -->
 			
 			<!-- Panels -->
 			<child>
