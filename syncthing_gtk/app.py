@@ -248,34 +248,47 @@ class App(Gtk.Application, TimerManager):
 		icons_in_menu = self.config["icons_in_menu"]
 		if self.use_headerbar:
 			self.builder.enable_condition("header_bar")
-		elif self.use_aero:
-			self.builder.enable_condition("use_aero")
 		else:
 			self.builder.enable_condition("traditional_header")
 		if IS_WINDOWS: 				self.builder.enable_condition("is_windows")
 		if IS_GNOME:  				self.builder.enable_condition("is_gnome")
 		if old_gtk:					self.builder.enable_condition("old_gtk")
 		if icons_in_menu:			self.builder.enable_condition("icons_in_menu")
+		if IS_WINDOWS and self.use_aero:
+			from syncthing_gtk import windows
+			self.aero = windows.Aero(self.iconpath)
+			self.use_headerbar = False
+			if self.aero.is_supported():
+				self.builder.enable_condition("use_aero")
+				self.builder.disable_condition("traditional_header")
+				self.builder.disable_condition("header_bar")
+			else:
+				# Aero requested, but not supported
+				self.use_aero = False
+				self.builder.enable_condition("traditional_header")
+				self.builder.disable_condition("header_bar")
+				del self.aero
+			
 		# Fix icon path
 		self.builder.replace_icon_path("icons/", self.iconpath)
 		# Load glade file
 		self.builder.add_from_file(os.path.join(self.gladepath, "app.glade"))
 		self.builder.connect_signals(self)
-		if IS_WINDOWS:
-			# Use Aero glass effect on Windows
+		
+		# Use Aero glass effect, if enabled
+		if IS_WINDOWS and self.use_aero:
 			from syncthing_gtk import windows
-			if windows.enable_aero_glass(self["window"], self["split"], self.iconpath):
+			if self.aero.enable(self["window"], self["split"]):
 				# Enable draging by fake border
-				windows.make_dragable(self["window"], self["eb-the-hell"])
+				self.aero.make_dragable(self["eb-the-hell"])
 				# Enable resizing
-				windows.make_resizable(self["window"], 10, 10, 2, 10)
+				self.aero.make_resizable(10, 10, 2, 10)
 				# Make buttons transparent, override image on left one
-				windows.make_aero_button(self["app-menu-button"],
+				self.aero.make_aero_button(self["app-menu-button"],
 					os.path.join(self.iconpath, "aero-icon.png"))
-				windows.make_aero_button(self["edit-menu-button"],
+				self.aero.make_aero_button(self["edit-menu-button"],
 					os.path.join(self.iconpath, "cogwheel-icon.png"))
-
-
+		
 		# Dunno how to do this from glade
 		if self.use_headerbar and IS_GNOME:
 			self.set_app_menu(self["app-menu"])

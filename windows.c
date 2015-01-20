@@ -3,6 +3,9 @@
  * Windows only code compiled to dll and loaded by syncthing_gtk.windows
  * 
  * Compile using:
+ * $ gcc -I/c/Python27/include/ -c windows.c
+ * $ gcc -L/c/Python27/libs/ -shared -o st-gtk-windows.dll windows.o -lpython27
+ *
  * $ gcc -c windows.c && gcc -shared -o st-gtk-windows.dll windows.o
  */
 
@@ -17,9 +20,11 @@ typedef struct _CORNERS {
   int top;
   int bottom;
 } CORNERS;
+typedef int (*themeChangedCallbackType) ();
 
 CORNERS windowCorners;
 bool hitTestEnabled = FALSE;
+themeChangedCallbackType themeChangedCallback = NULL;
 
 WNDPROC original_wndproc;
 
@@ -80,14 +85,27 @@ LRESULT CALLBACK _wm_nccalcsize_handler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 		params->rgrc[0].bottom = params->rgrc[0].bottom - 0;
 		return 0;
 	}
-	if (hitTestEnabled && (uMsg == WM_NCHITTEST)) {
+	else if (uMsg == WM_SYSCOLORCHANGE) {
+		if (themeChangedCallback != NULL) 
+			themeChangedCallback();
+	}
+	else if (hitTestEnabled && (uMsg == WM_NCHITTEST)) {
 		rv = HitTestNCA(hwnd, wParam, lParam);
 		if (rv != HTNOWHERE)
 			return rv;
 	}
-	
-	rv = CallWindowProc(original_wndproc, hwnd, uMsg, wParam, lParam);
-	return rv;
+	return CallWindowProc(original_wndproc, hwnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Sets handler (callable python object) for WM_THEMECHANGED message.
+ * Reference to this object will be held until program ends or other
+ * handler is set.
+ * Returns 0 on success;
+ */
+int on_wm_themechanged(themeChangedCallbackType callback) {
+	themeChangedCallback = callback;
+	return 0;
 }
 
 /** 

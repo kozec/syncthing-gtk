@@ -62,7 +62,8 @@ class UIBuilder(Gtk.Builder):
 		""" Disables condition. Conditions are case-insensitive """
 		for c in conds:
 			log.debug("Disabled: %s", c)
-			self.conditions.remove(c)
+			if c in self.conditions:
+				self.conditions.remove(c)
 	
 	def condition_met(self, cond):
 		"""

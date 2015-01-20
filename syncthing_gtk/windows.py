@@ -186,6 +186,121 @@ def WinConfiguration():
 		
 	return _WinConfiguration
 
+class Aero:
+	"""
+	Wraps around GtkWindow and enables Aero glass effect
+	"""
+	def __init__(self, iconpath):
+		# Prepare
+		self.window = None
+		self.hwnd = 0
+		self.root_element = None
+		self.iconpath = iconpath
+		self.c_cb_wm_themechanged = CFUNCTYPE(c_int)(self.cb_wm_themechanged)
+		self.have_libs = False
+		# Load native methods
+		try:
+			self.dwm = windll.dwmapi
+			self.uxtheme = windll.uxtheme
+			self.gdkdll = CDLL ("libgdk-3-0.dll")
+			self.st_gtk_dll = CDLL ("st-gtk-windows.dll")
+			self.have_libs = True
+		except Exception, e:
+			log.error("Aero: Failed to load native stuff: %s", e)
+	
+	def is_supported(self):
+		""" Returns True if Aero effect is supported """
+		return self.have_libs
+	
+	def enable(self, window, root_element):
+		"""
+		Sets managed window and enables Aero Glass effect on it.
+		Also changes some colors to make text readable on transparent
+		background.
+		
+		Returns True on success
+		"""
+		if not self.is_supported():
+			# Nope
+			return False
+		self.window = window
+		self.root_element = root_element
+		
+		# Make sure that window is created
+		self.window.realize()
+		# Call on_wm_themechanged to enable glass effect
+		gpointer = pythonapi.PyCapsule_GetPointer(self.window.get_window().__gpointer__, None)  
+		self.hwnd = self.gdkdll.gdk_win32_window_get_handle(gpointer)
+		self.st_gtk_dll.on_wm_themechanged(self.c_cb_wm_themechanged)
+		self.cb_wm_themechanged()
+		
+		# Remove icon & window title
+		if self.st_gtk_dll.handle_wm_nccalcsize(self.hwnd) != 0:
+			# Native call failed, bail out from everything
+			return False
+		
+		# Put main widget to frame with border & background
+		p = self.root_element.get_parent()
+		p.remove(self.root_element)
+		p.set_border_width(0)
+		f = WeirdLookingFrame(self.root_element, self.iconpath)
+		p.add(f)
+		f.set_border_width(5)
+		f.set_vexpand(True)
+		f.set_visible(True)
+		return True
+	
+	def make_aero_button(self, button, image_path=None):
+		"""
+		Makes button with transparent background and no border.
+		If image_path is set, custom image and custom rendering is used. In
+		that case, image is expected to contain 3 frames for normal,
+		hover and pressed state.
+		"""
+		image = None if image_path is None else cairo.ImageSurface.create_from_png(image_path)
+		return AeroButton(button, image)
+	
+	def make_dragable(self, widget):
+		""" Makes window dragable by draging specified widget """
+		# Make window dragable by header
+		widget.connect("button-press-event", self.cb_widget_drag)
+
+	def make_resizable(self, left, right, top, bottom):
+		"""
+		Makes window resizable by draggin corners.
+		Returns True on success.
+		"""
+		corners = CORNERS(left, right, top, bottom)
+		if self.st_gtk_dll.make_resizable(byref(corners)) == 0:
+			return True
+		return False
+	
+	def cb_widget_drag(self, w, event):
+		""" Called when users drag window using custom widget """
+		if event.button == 1:
+			self.window.begin_move_drag(event.button, 
+				event.x_root, event.y_root, event.time)
+	
+	def cb_wm_themechanged(self, *a):
+		""" Handler for WM_THEMECHANGED message """
+		# Determine if Aero is active
+		haveAero = False
+		#try:
+		b = c_bool()
+		retcode = self.dwm.DwmIsCompositionEnabled(byref(b))
+		haveAero = retcode == 0 and b.value != 0 and self.uxtheme.IsAppThemed()
+		# except Exception: pass
+		log.info("WM_THEMECHANGED: Aero is now %s", haveAero)
+		if haveAero:
+			margins = MARGINS(1, 1, 1, -1)
+			self.dwm.DwmExtendFrameIntoClientArea(self.hwnd, byref(margins))
+			self.window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0,0,0,0))
+		else:
+			self.window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0.65,0.75,0.85,1))
+		return 42
+	
+
+
 class WeirdLookingFrame(Gtk.Frame):
 	""" Used by enable_aero_glass method """
 	BORDER_COLOR_1 = hex2color("596979FE")
@@ -270,48 +385,6 @@ class CORNERS(Structure):
 			  ("bottom", c_int)
 			 ]
 
-def enable_aero_glass(window, root_element, iconpath):
-	"""
-	Enables Aero Glass effect on main application Window and changes
-	some colors to make text readable on transparent background.
-	
-	Returns True on success
-	"""
-	# Load native methods
-	try:
-		dwm = windll.dwmapi
-		gdkdll = CDLL ("libgdk-3-0.dll")
-		st_gtk_dll = CDLL ("st-gtk-windows.dll")
-	except Exception, e:
-		log.error("enable_aero_glass: Failed to load native stuff: %s", e)
-		return False
-		
-	# Prepare stuff
-	margins = MARGINS(1, 1, 1, -1)
-	
-	# Get me some glass
-	window.realize()
-	gpointer = pythonapi.PyCapsule_GetPointer(window.get_window().__gpointer__, None)  
-	hwnd = gdkdll.gdk_win32_window_get_handle(gpointer)
-	dwm.DwmExtendFrameIntoClientArea(hwnd, byref(margins))
-	window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0,0,0,0))
-	
-	# Remove icon & window title
-	if st_gtk_dll.handle_wm_nccalcsize(hwnd) != 0:
-		# Native call failed, bail out from everything
-		return False
-	
-	# Put main widget to frame with border & background
-	p = root_element.get_parent()
-	p.remove(root_element)
-	p.set_border_width(0)
-	f = WeirdLookingFrame(root_element, iconpath)
-	p.add(f)
-	f.set_border_width(5)
-	f.set_vexpand(True)
-	f.set_visible(True)
-	return True
-
 class AeroButton:
 	def __init__(self, gtkbutton, image=None):
 		self.gtkbutton = gtkbutton
@@ -380,38 +453,3 @@ class AeroButton:
 			cr.paint()
 			cr.restore()
 		return True
-
-def make_aero_button(button, image_path=None):
-	"""
-	Makes button with transparent background and no border.
-	If image_path is set, custom image and custom rendering is used. In
-	that case, image is expected to contain 3 frames for normal,
-	hover and pressed state.
-	"""
-	image = None if image_path is None else cairo.ImageSurface.create_from_png(image_path)
-	return AeroButton(button, image)
-
-def make_dragable(window, widget):
-	""" Makes window dragable by draging specified widget """
-	# Make window dragable by header
-	def on_header_drag(w, event):
-		if event.button == 1:
-			window.begin_move_drag(event.button, 
-				event.x_root, event.y_root, event.time)
-	widget.connect("button-press-event", on_header_drag)
-
-def make_resizable(window, left, right, top, bottom):
-	"""
-	Makes window resizable by draggin corners.
-	Returns True on success.
-	"""
-	corners = CORNERS(left, right, top, bottom)
-	try:
-		st_gtk_dll = CDLL ("st-gtk-windows.dll")
-	except Exception, e:
-		log.error("make_resizable: Failed to load native stuff: %s", e)
-		return False
-	if st_gtk_dll.make_resizable(byref(corners)) == 0:
-		return True
-	return False
-	
