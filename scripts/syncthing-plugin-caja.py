@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 """
-Nemo plugin for Syncthing-GTK
+Caja plugin for Syncthing-GTK
 See syncthing_gtk/nautilusplugin.py for more info
 """
 
