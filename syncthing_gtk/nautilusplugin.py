@@ -8,10 +8,11 @@ This module is not imported by __init__, so usage requires doing
 from syncthing_gtk import nautilusplugin
 """
 
+from __future__ import unicode_literals
 from gi.repository import GObject, Gio, GLib
 from syncthing_gtk.tools import init_logging, set_logging_level
 from syncthing_gtk import Daemon
-import os, sys, logging
+import os, sys, logging, urlparse, urllib
 log = logging.getLogger("SyncthingPlugin")
 
 # Output options
@@ -58,7 +59,7 @@ def build_class(plugin_module):
 			# some syncthing repo
 			self.subfolders = set([])
 			# List (cache) for files that plugin were asked about
-			self.files = set([])
+			self.files = {}
 			self.downloads = set([])
 			# Connect to Daemon object signals
 			self.daemon.connect("connected", self.cb_connected)
@@ -83,8 +84,9 @@ def build_class(plugin_module):
 		
 		def _invalidate(self, path):
 			""" Forces Nautils to re-read emblems on specified file """
-			file = plugin_module.FileInfo.create(Gio.File.new_for_path(path))
-			file.invalidate_extension_info()
+			if path in self.files:
+				file = self.files[path]
+				file.invalidate_extension_info()
 		
 		def _get_parent_repo_state(self, path):
 			"""
@@ -97,6 +99,12 @@ def build_class(plugin_module):
 				if path.startswith(x + os.path.sep):
 					return self.folders[x]
 			return None
+		
+		def _get_path(self, file):
+			""" Returns path for provided FileInfo object """
+			if hasattr(file, "get_location"):
+				return file.get_location().get_path()
+			return urllib.unquote(file.get_uri().replace("file://", ""))
 		
 		### Daemon callbacks
 		def cb_connected(self, *a):
@@ -175,7 +183,7 @@ def build_class(plugin_module):
 		def update_file_info(self, file):
 			if not self.ready: return plugin_module.OperationResult.COMPLETE
 			# Check if folder is one of repositories managed by syncthing
-			path = file.get_location().get_path()
+			path = self._get_path(file)
 			if path in self.downloads:
 				file.add_emblem("syncthing-active")
 			elif path in self.folders:
@@ -205,6 +213,6 @@ def build_class(plugin_module):
 					file.add_emblem("syncthing-offline")
 			# TODO: This remembers every file user ever saw in Nautilus.
 			# There *has* to be memory effecient alternative...
-			self.files.add(path)
+			self.files[path] = file
 			return plugin_module.OperationResult.COMPLETE
 	return __NautiluslikeExtension
