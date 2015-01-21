@@ -721,7 +721,7 @@ class App(Gtk.Application, TimerManager):
 			self["devicelist"].reorder_child(device, 0)
 			# Modify header & color
 			device.set_status("")
-			device.set_icon(Gtk.Image.new_from_icon_name("user-home", Gtk.IconSize.LARGE_TOOLBAR))
+			device.get_icon().set_color(*self.box_text_color)
 			device.invert_header(True)
 			device.set_color_hex(COLOR_OWN_DEVICE)
 			if self.use_headerbar:
@@ -1170,7 +1170,9 @@ class App(Gtk.Application, TimerManager):
 			name = id.split("-")[0]
 		if not used:
 			name = "%s (%s)" % (name, _("Unused"))
-		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
+		icon = IdentIcon(id)
+		icon.set_size_request(22, 22)
+		box = InfoBox(self, name, icon)
 		box.add_value("address",	"address.png",	_("Address"),			"?")
 		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
 		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))

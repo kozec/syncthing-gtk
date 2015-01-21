@@ -304,7 +304,12 @@ class InfoBox(Gtk.Container):
 	def get_title(self):
 		return self.str_title
 	
+	def get_icon(self):
+		""" Returns icon widget """
+		return self.icon
+	
 	def set_icon(self, icon):
+		""" Sets new icon. Expects widget as parameter """
 		self.header_box.remove(self.icon)
 		self.header_box.pack_start(icon, False, False, 0)
 		self.header_box.reorder_child(icon, 0)
