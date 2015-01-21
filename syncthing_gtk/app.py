@@ -631,15 +631,9 @@ class App(Gtk.Application, TimerManager):
 			self.show_info_box(r)
 	
 	def cb_syncthing_config_saved(self, *a):
-		# Ask daemon to reconnect and reload entire UI
-		def runlater():
-			self.cancel_all() # timers
-			if not self.watcher is None:
-				self.watcher.clear()
-			self.daemon.reconnect()
-		# Can't reconnect right away as daemon instance probably
-		# still waits for response from syncthing daemon
-		self.timer(None, 1, runlater)
+		# Refresh daemon data from UI
+		log.debug("Config saved")
+		self.refresh()
 
 	def cb_config_loaded(self, daemon, config):
 		# Called after connection to daemon is initialized;
@@ -1136,32 +1130,48 @@ class App(Gtk.Application, TimerManager):
 		if IS_WINDOWS:
 			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
 				display_path = "~%s" % display_path[len(os.path.expanduser("~")):]
-		box = InfoBox(self, display_path, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
-		box.add_value("id",			"version.png",	_("Folder ID"),			id)
-		box.add_value("path",		"folder.png",	_("Path"),					display_path)
-		box.add_value("global",		"global.png",	_("Global State"),		"? items, ?B")
-		box.add_value("local",		"home.png",		_("Local State"),		"? items, ?B")
-		box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),			"? items, ?B")
-		box.add_value("master",		"lock.png",		_("Folder Master"),			_("Yes") if is_master else _("No"))
-		box.add_value("ignore",		"ignore.png",	_("Ignore Permissions"),	_("Yes") if ignore_perms else _("No"))
-		box.add_value("rescan",		"restart.png",	_("Rescan Interval"),		"%s s" % (rescan_interval,))
-		box.add_value("shared",		"shared.png",	_("Shared With"),			", ".join([ n.get_title() for n in shared ]))
-		box.add_hidden_value("id", id)
-		box.add_hidden_value("devices", shared)
-		box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
-		box.set_status("Unknown")
-		box.set_color_hex(COLOR_FOLDER)
-		box.set_bg_color(*self.box_background)
-		box.set_text_color(*self.box_text_color)
-		box.connect('right-click', self.cb_popup_menu_folder)
-		box.connect('enter-notify-event', self.cb_box_mouse_enter)
-		box.connect('leave-notify-event', self.cb_box_mouse_leave)
-		box.set_vexpand(False)
-		box.set_open(id in self.open_boxes or self.folders_never_loaded)
-		self.folders_never_loaded = False
-		GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
-		self["folderlist"].pack_start(box, False, False, 3)
-		self.folders[id] = box
+		if id in self.folders:
+			# Reuse existing box
+			box = self.folders[id]
+		else:
+			# Create new box
+			box = InfoBox(self, display_path, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
+			# Add visible lines
+			box.add_value("id",			"version.png",	_("Folder ID"))
+			box.add_value("path",		"folder.png",	_("Path"))
+			box.add_value("global",		"global.png",	_("Global State"),		"? items, ?B")
+			box.add_value("local",		"home.png",		_("Local State"),		"? items, ?B")
+			box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),		"? items, ?B")
+			box.add_value("master",		"lock.png",		_("Folder Master"))
+			box.add_value("ignore",		"ignore.png",	_("Ignore Permissions"))
+			box.add_value("rescan",		"restart.png",	_("Rescan Interval"))
+			box.add_value("shared",		"shared.png",	_("Shared With"))
+			# Add hidden stuff
+			box.add_hidden_value("id", id)
+			box.add_hidden_value("devices", shared)
+			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
+			# Setup display & signal
+			box.set_status("Unknown")
+			box.set_color_hex(COLOR_FOLDER)
+			box.set_bg_color(*self.box_background)
+			box.set_text_color(*self.box_text_color)
+			box.set_vexpand(False)
+			GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
+			self["folderlist"].pack_start(box, False, False, 3)
+			box.set_open(id in self.open_boxes or self.folders_never_loaded)
+			box.connect("right-click", self._delme_reload)
+			# box.connect('right-click', self.cb_popup_menu_folder)
+			box.connect('enter-notify-event', self.cb_box_mouse_enter)
+			box.connect('leave-notify-event', self.cb_box_mouse_leave)
+			self.folders[id] = box
+			self.folders_never_loaded = False
+		# Set values
+		box.set_value("id",		id)
+		box.set_value("path",	display_path)
+		box.set_value("master",	_("Yes") if is_master else _("No"))
+		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
+		box.set_value("rescan",	"%s s" % (rescan_interval,))
+		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		return box
 	
 	def show_device(self, id, name, use_compression, introducer, used):
@@ -1170,31 +1180,43 @@ class App(Gtk.Application, TimerManager):
 			name = id.split("-")[0]
 		if not used:
 			name = "%s (%s)" % (name, _("Unused"))
-		box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
-		box.add_value("address",	"address.png",	_("Address"),			"?")
-		box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
-		box.add_value("compress",	"compress.png",	_("Use Compression"),	_("Yes") if use_compression else _("No"))
-		box.add_value("inbps",		"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
-		box.add_value("outbps",		"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
-		box.add_value("introducer",	"thumb_up.png",	_("Introducer"),		_("Yes") if introducer else _("No"))
-		box.add_value("version",	"version.png",	_("Version"),			"?", visible=False)
-		box.add_value('last-seen',	"clock.png",	_("Last Seen"),			_("Never"))
-		box.add_hidden_value("id", id)
-		box.add_hidden_value("connected", False)
-		box.add_hidden_value("completion", {})
-		box.add_hidden_value("time", 0)
-		box.add_hidden_value("online", False)
-		box.set_color_hex(COLOR_DEVICE)
-		box.set_bg_color(*self.box_background)
-		box.set_text_color(*self.box_text_color)
-		box.connect('right-click', self.cb_popup_menu_device)
-		box.connect('enter-notify-event', self.cb_box_mouse_enter)
-		box.connect('leave-notify-event', self.cb_box_mouse_leave)
-		box.set_vexpand(False)
-		box.set_open(id in self.open_boxes)
-		GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
-		self["devicelist"].pack_start(box, False, False, 3)
-		self.devices[id] = box
+		if id in self.devices:
+			# Reuse existing box
+			box = self.devices[id]
+		else:
+			# Create new box
+			box = InfoBox(self, name, Gtk.Image.new_from_icon_name("computer", Gtk.IconSize.LARGE_TOOLBAR))
+			# Add visible lines
+			box.add_value("address",	"address.png",	_("Address"),			"?")
+			box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
+			box.add_value("compress",	"compress.png",	_("Use Compression"))
+			box.add_value("inbps",		"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
+			box.add_value("outbps",		"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
+			box.add_value("introducer",	"thumb_up.png",	_("Introducer"))
+			box.add_value("version",	"version.png",	_("Version"),			"?", visible=False)
+			box.add_value('last-seen',	"clock.png",	_("Last Seen"),			_("Never"))
+			# Add hidden stuff
+			box.add_hidden_value("id", id)
+			box.add_hidden_value("connected", False)
+			box.add_hidden_value("completion", {})
+			box.add_hidden_value("time", 0)
+			box.add_hidden_value("online", False)
+			# Setup display & signal
+			box.set_color_hex(COLOR_DEVICE)
+			box.set_bg_color(*self.box_background)
+			box.set_text_color(*self.box_text_color)
+			box.set_vexpand(False)
+			box.set_open(id in self.open_boxes)
+			GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
+			self["devicelist"].pack_start(box, False, False, 3)
+			box.connect('right-click', self.cb_popup_menu_device)
+			box.connect('enter-notify-event', self.cb_box_mouse_enter)
+			box.connect('leave-notify-event', self.cb_box_mouse_leave)
+			self.devices[id] = box
+		# Set values
+		box.set_value("compress",	_("Yes") if use_compression else _("No"))
+		box.set_value("introducer",	_("Yes") if introducer else _("No"))
+		box.set_value('last-seen',	_("Never"))
 		return box
 	
 	def clear(self):
@@ -1207,6 +1229,10 @@ class App(Gtk.Application, TimerManager):
 		self.folders = {}
 	
 	def restart(self):
+		"""
+		Removes everything, restets all data and reconnects
+		to daemon.
+		"""
 		self["edit-menu-button"].set_sensitive(False)
 		self["menu-si-shutdown"].set_sensitive(False)
 		self["menu-si-show-id"].set_sensitive(False)
@@ -1223,6 +1249,16 @@ class App(Gtk.Application, TimerManager):
 		if not self.watcher is None:
 			self.watcher.clear()
 		self.daemon.reconnect()
+	
+	def refresh(self):
+		"""
+		Similar to restart().
+		Re-requests all data from daemon, without disconnecting.
+		Then refreshes all UI widgets.
+		Looks cleaner & prevents UI from blinking.
+		"""
+		log.debug("Reloading config...")
+		self.daemon.reload_config()
 	
 	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
 		"""
@@ -1686,3 +1722,7 @@ class App(Gtk.Application, TimerManager):
 			self.cb_daemon_exit(None, -1)
 		else:
 			self.quit()
+	
+	def _delme_reload(self, *a):
+		self.refresh()
+		return True

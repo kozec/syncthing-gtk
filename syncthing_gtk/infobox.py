@@ -399,7 +399,7 @@ class InfoBox(Gtk.Container):
 		""" Returns True if box is open """
 		return self.rev.get_reveal_child()
 	
-	def add_value(self, key, icon, title, value, visible=True):
+	def add_value(self, key, icon, title, value="", visible=True):
 		""" Adds new line with provided properties """
 		if "." in icon:
 			# Icon is filename

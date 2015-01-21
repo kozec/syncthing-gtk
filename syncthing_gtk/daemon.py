@@ -655,6 +655,35 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Request 'last seen' values for all devices """
 		self._rest_request("stats/device", self._syncthing_cb_last_seen, lambda *a: True)
 	
+	def _parse_dev_n_folders(self, config):
+		"""
+		Parses devices and folders from configuration and emits
+		associated events.
+		"""
+		# Pre-parse folders to detect unused devices
+		device_folders = {}
+		for r in config["Folders"]:
+			rid = r["ID"]
+			for n in r["Devices"]:
+				nid = n["DeviceID"]
+				if not nid in device_folders : device_folders[nid] = []
+				device_folders[nid].append(rid)
+
+		# Parse devices
+		for n in sorted(config["Devices"], key=lambda x : x["Name"].lower()):
+			nid = n["DeviceID"]
+			self._get_device_data(nid)	# Creates dict with device data
+			used = (nid in device_folders) and (len(device_folders[nid]) > 0)
+			self.emit("device-added", nid, n["Name"], used, n)
+			
+		# Parse folders
+		for r in config["Folders"]:
+			rid = r["ID"]
+			self._syncing_folders.add(rid)
+			self._folder_devices[rid] = [ n["DeviceID"] for n in r["Devices"] ]
+			self.emit("folder-added", rid, r)
+			self._request_folder_data(rid)
+	
 	### Callbacks ###
 	
 	def _syncthing_cb_shutdown(self, data, reason):
@@ -890,29 +919,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self._connected = True
 			self.emit('connected')
 			
-			# Pre-parse folders to detect unused devices
-			device_folders = {}
-			for r in config["Folders"]:
-				rid = r["ID"]
-				for n in r["Devices"]:
-					nid = n["DeviceID"]
-					if not nid in device_folders : device_folders[nid] = []
-					device_folders[nid].append(rid)
-
-			# Parse devices
-			for n in sorted(config["Devices"], key=lambda x : x["Name"].lower()):
-				nid = n["DeviceID"]
-				self._get_device_data(nid)	# Creates dict with device data
-				used = (nid in device_folders) and (len(device_folders[nid]) > 0)
-				self.emit("device-added", nid, n["Name"], used, n)
-				
-			# Parse folders
-			for r in config["Folders"]:
-				rid = r["ID"]
-				self._syncing_folders.add(rid)
-				self._folder_devices[rid] = [ n["DeviceID"] for n in r["Devices"] ]
-				self.emit("folder-added", rid, r)
-				self._request_folder_data(rid)
+			self._parse_dev_n_folders(config)
 			
 			self._rest_request("events?limit=1", self._init_event_pooling)	# Requests most recent event only
 			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
@@ -1055,6 +1062,20 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		self.close()
 		GLib.idle_add(self._request_config)
+	
+	def reload_config(self, error_callback=None):
+		"""
+		Reloads config from syncthing daemon.
+		Calling this will cause or may cause emiting following events
+		with reloaded data:
+		- folder-added
+		- device-added
+		- config-out-of-sync
+		"""
+		def reload_config_cb(config):
+			self._parse_dev_n_folders(config)
+			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
+		self._rest_request("config", reload_config_cb, error_callback)
 	
 	def close(self):
 		"""
