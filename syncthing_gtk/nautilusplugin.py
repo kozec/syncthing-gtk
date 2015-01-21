@@ -36,7 +36,7 @@ def build_class(plugin_module):
 	NemoExtensionCls = nautilusplugin..build_class(Nemo)
 	"""
 
-	class __NautiluslikeExtension(GObject.GObject, plugin_module.InfoProvider):
+	class __NautiluslikeExtension(GObject.GObject, plugin_module.InfoProvider, plugin_module.MenuProvider):
 		def __init__(self):
 			# Prepare stuff
 			init_logging()
@@ -53,8 +53,9 @@ def build_class(plugin_module):
 				log.error("Failed to read Syncthing configuration.")
 				return
 			# List of known repos + their states
-			self.folders = {}
+			self.repos = {}
 			self.rid_to_path = {}
+			self.path_to_rid = {}
 			# List (cache) for folders that are known to be placed bellow
 			# some syncthing repo
 			self.subfolders = set([])
@@ -95,9 +96,9 @@ def build_class(plugin_module):
 			"""
 			# TODO: Probably convert to absolute paths and check for '/' at
 			# end. It shouldn't be needed, in theory.
-			for x in self.folders:
+			for x in self.repos:
 				if path.startswith(x + os.path.sep):
-					return self.folders[x]
+					return self.repos[x]
 			return None
 		
 		def _get_path(self, file):
@@ -113,7 +114,7 @@ def build_class(plugin_module):
 			Clears list of known folders and all caches.
 			Also asks Nautilus to clear all emblems.
 			"""
-			self.folders = {}
+			self.repos = {}
 			self.subfolders = set([])
 			self.downloads = set([])
 			self._clear_emblems()
@@ -129,7 +130,8 @@ def build_class(plugin_module):
 			"""
 			path = os.path.expanduser(r["Path"])
 			self.rid_to_path[rid] = path
-			self.folders[path] = STATE_OFFLINE
+			self.path_to_rid[path.rstrip("/")] = rid
+			self.repos[path] = STATE_OFFLINE
 			self._invalidate(path)
 		
 		def cb_syncthing_con_error(self, *a):
@@ -152,7 +154,7 @@ def build_class(plugin_module):
 			""" Called when folder synchronization starts or stops """
 			if rid in self.rid_to_path:
 				path = self.rid_to_path[rid]
-				self.folders[path] = state
+				self.repos[path] = state
 				log.debug("State of %s changed to %s", path, state)
 				self._invalidate(path)
 				# Invalidate all files in repository as well
@@ -179,16 +181,16 @@ def build_class(plugin_module):
 					self.downloads.remove(filepath)
 					self._invalidate(filepath)
 		
-		### Plugin stuff
+		### InfoProvider stuff
 		def update_file_info(self, file):
 			if not self.ready: return plugin_module.OperationResult.COMPLETE
 			# Check if folder is one of repositories managed by syncthing
 			path = self._get_path(file)
 			if path in self.downloads:
 				file.add_emblem("syncthing-active")
-			elif path in self.folders:
+			elif path in self.repos:
 				# Determine what emblem should be used
-				state = self.folders[path]
+				state = self.repos[path]
 				if state == STATE_IDLE:
 					# File manager probably shoudn't care about folder being scanned
 					file.add_emblem("syncthing")
@@ -215,4 +217,51 @@ def build_class(plugin_module):
 			# There *has* to be memory effecient alternative...
 			self.files[path] = file
 			return plugin_module.OperationResult.COMPLETE
+		
+		### MenuProvider stuff
+		def get_file_items(self, window, sel_items):
+			if len(sel_items) == 1:
+				# Display context menu only if one item is selected and
+				# that item is directory
+				return self.get_background_items(window, sel_items[0])
+			return []
+		
+		def cb_remove_repo_menu(self, menuitem, path):
+			print path
+			print self.path_to_rid
+			if path in self.path_to_rid:
+				rid = self.path_to_rid[path]
+				print "cb_remove_repo_menu", rid
+		
+		def cb_add_repo_menu(self, menuitem, path):
+			print "cb_add_repo_menu", path
+		
+		def get_background_items(self, window, item):
+			if not item.is_directory():
+				# Context menu is enabled only for directories
+				# (file can't be used as repo)
+				return []
+			path = self._get_path(item).rstrip("/")
+			if path in self.repos:
+				# Folder is already repository.
+				# Add 'remove from ST' item
+				menu = plugin_module.MenuItem(name='STPlugin::remove_repo',
+										 label='Remove Directory from Syncthing',
+										 tip='Remove selected directory from Syncthing',
+										 icon='syncthing-offline')
+				menu.connect('activate', self.cb_remove_repo_menu, path)
+				return [menu]
+			elif self._get_parent_repo_state(path) is None:
+				# Folder doesn't belongs to any repository.
+				# Add 'add to ST' item
+				menu = plugin_module.MenuItem(name='STPlugin::add_repo',
+										 label='Synchronize with Syncthing',
+										 tip='Add selected directory to Syncthing',
+										 icon='syncthing')
+				menu.connect('activate', self.cb_add_repo_menu, path)
+				return [menu]
+			# Folder belongs to some repository.
+			# Don't add anything
+			return []
+		
 	return __NautiluslikeExtension
