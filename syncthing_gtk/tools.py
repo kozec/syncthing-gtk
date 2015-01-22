@@ -146,12 +146,16 @@ def parsetime(m):
 	reformat, tz = None, None
 	if "." in m:
 		match = PARSER.match(m)
+		if match is None:
+			raise ValueError("Failed to parse '%s' as time" % m)
 		times = list(match.groups()[0:3])
 		times[2] = times[2][0:6]
 		reformat = "%s %s %s" % tuple(times)
 		tz = Timezone(int(match.group(4)), int(match.group(5)))
 	else:
 		match = PARSER_NODOT.match(m)
+		if match is None:
+			raise ValueError("Failed to parse '%s' as time" % m)
 		times = list(match.groups()[0:2])
 		reformat = "%s %s 00" % tuple(times)
 		tz = Timezone(int(match.group(3)), int(match.group(4)))
