@@ -1159,8 +1159,7 @@ class App(Gtk.Application, TimerManager):
 			GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
 			self["folderlist"].pack_start(box, False, False, 3)
 			box.set_open(id in self.open_boxes or self.folders_never_loaded)
-			box.connect("right-click", self._delme_reload)
-			# box.connect('right-click', self.cb_popup_menu_folder)
+			box.connect('right-click', self.cb_popup_menu_folder)
 			box.connect('enter-notify-event', self.cb_box_mouse_enter)
 			box.connect('leave-notify-event', self.cb_box_mouse_leave)
 			self.folders[id] = box
@@ -1723,7 +1722,3 @@ class App(Gtk.Application, TimerManager):
 			self.cb_daemon_exit(None, -1)
 		else:
 			self.quit()
-	
-	def _delme_reload(self, *a):
-		self.refresh()
-		return True
