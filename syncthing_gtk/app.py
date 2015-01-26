@@ -1383,7 +1383,7 @@ class App(Gtk.Application, TimerManager):
 					self.show()
 					self.check_delete("folder", rid, name)
 					return
-			log.warning("Failed to remove folder for path '%s': No such folder", path)
+			log.warning("Failed to remove directory for path '%s': No such folder", path)
 		
 		if self.daemon.is_connected():
 			have_config()
@@ -1563,7 +1563,7 @@ class App(Gtk.Application, TimerManager):
 				Gtk.ButtonsType.YES_NO,
 				"%s %s\n'%s'?" % (
 					_("Do you really want do delete"),
-					_("folder") if mode == "folder" else _("device"),
+					_("directory") if mode == "folder" else _("device"),
 					name
 					)
 				)
