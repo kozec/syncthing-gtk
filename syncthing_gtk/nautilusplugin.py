@@ -227,14 +227,15 @@ def build_class(plugin_module):
 			return []
 		
 		def cb_remove_repo_menu(self, menuitem, path):
-			print path
-			print self.path_to_rid
 			if path in self.path_to_rid:
-				rid = self.path_to_rid[path]
-				print "cb_remove_repo_menu", rid
+				path = os.path.abspath(os.path.expanduser(path))
+				path = path.replace("'", "\'")
+				os.system("syncthing-gtk --remove-repo '%s' &" % path)
 		
 		def cb_add_repo_menu(self, menuitem, path):
-			print "cb_add_repo_menu", path
+			path = os.path.abspath(os.path.expanduser(path))
+			path = path.replace("'", "\'")
+			os.system("syncthing-gtk --add-repo '%s' &" % path)
 		
 		def get_background_items(self, window, item):
 			if not item.is_directory():
