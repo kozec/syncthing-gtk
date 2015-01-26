@@ -1145,6 +1145,7 @@ class App(Gtk.Application, TimerManager):
 		if id in self.folders:
 			# Reuse existing box
 			box = self.folders[id]
+			box.set_title(display_path)
 		else:
 			# Create new box
 			box = InfoBox(self, display_path, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
@@ -1194,6 +1195,7 @@ class App(Gtk.Application, TimerManager):
 		if id in self.devices:
 			# Reuse existing box
 			box = self.devices[id]
+			box.set_title(name)
 		else:
 			# Create new box
 			box = InfoBox(self, name, IdentIcon(id))
