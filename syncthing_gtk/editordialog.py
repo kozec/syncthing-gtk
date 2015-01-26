@@ -6,7 +6,7 @@ Base class and universal handler for all Syncthing settings and editing
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GObject
+from gi.repository import Gtk, Gdk, Gio, GObject, GLib
 from syncthing_gtk.tools import ints
 from syncthing_gtk.daemon import ConnectionRestarted
 import os, sys, logging
@@ -84,6 +84,13 @@ class EditorDialog(GObject.GObject):
 			self["editor"].set_transient_for(parent)
 		self["editor"].set_modal(True)
 		self["editor"].show_all()
+	
+	def present(self, values=[]):
+		self["editor"].present()
+		for v in values:
+			if self[v].get_sensitive():
+				self[v].grab_focus()
+				return
 	
 	def close(self):
 		self.emit("close")
@@ -207,6 +214,7 @@ class EditorDialog(GObject.GObject):
 					# Value not found, probably old daemon version
 					log.warning("display_values: Value %s not found", key)
 					widget.set_sensitive(False)
+		GLib.idle_add(self.present, values)
 		return True
 		
 	def display_value(self, key, w):

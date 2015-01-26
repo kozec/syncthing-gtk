@@ -1198,6 +1198,10 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns tuple address on which daemon listens on. """
 		return self._address
 	
+	def is_connected(self):
+		""" Returns True if daemon is known to be alive """
+		return self._connected
+	
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
 		# Errors here are ignored; Syncthing rescans stuff periodicaly,
