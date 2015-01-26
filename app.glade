@@ -374,74 +374,72 @@
 	</object>
 	<!-- Edit menu (Right one) -->
 
-<ELSE>
-	<!-- Application popover menu (left one) -->
-	<menu id="app-menu">
-		<section>
-			<item>
-				<attribute name="label" translatable="yes">Open _Web Interface</attribute>
-				<attribute name="action">app.webui</attribute>
-			</item>
-			<item>
-				<attribute name="label" translatable="yes">Display _Daemon Ouput</attribute>
-				<attribute name="action">app.daemon_output</attribute>
-			</item>
-		</section>
-		<section>
-			<item>
-				<attribute name="label" translatable="yes">UI _Settings</attribute>
-				<attribute name="action">app.preferences</attribute>
-			</item>
-		</section>
-		<section>
-			<item>
-				<attribute name="label" translatable="yes">_About</attribute>
-				<attribute name="action">app.about</attribute>
-			</item>
-			<item>
-				<attribute name="label" translatable="yes">_Quit</attribute>
-				<attribute name="action">app.quit</attribute>
-			</item>
-		</section>
-	</menu>
-	<!-- /Application popover menu (left one) -->
-	
-	<!-- Edit popover menu (Right one) -->
-	<menu id="edit-menu">
-		<section>
-			<item>
-				<attribute name="label" translatable="yes">Add Shared _Folder</attribute>
-				<attribute name="action">app.add_folder</attribute>
-			</item>
-			<item>
-				<attribute name="label" translatable="yes">Add _Device</attribute>
-				<attribute name="action">app.add_device</attribute>
-			</item>
-		</section>
-		<section>
-			<item>
-				<attribute name="label" translatable="yes">Daemon _Settings</attribute>
-				<attribute name="action">app.daemon_preferences</attribute>
-			</item>
-			<item>
-				<attribute name="label" translatable="yes">Show _ID</attribute>
-				<attribute name="action">app.show_id</attribute>
-			</item>
-		</section>
-		<section>
-			<item>
-				<attribute name="label" translatable="yes">Sh_utdown Daemon</attribute>
-				<attribute name="action">app.daemon_shutdown</attribute>
-			</item>
-			<item>
-				<attribute name="label" translatable="yes">_Restart Daemon</attribute>
-				<attribute name="action">app.daemon_restart</attribute>
-			</item>
-		</section>
-	</menu>
-	<!-- /Edit popover menu (Right one) -->
-</ELSE>
 </IF>
+<!-- Application popover menu (left one) -->
+<menu id="app-menu">
+	<section>
+		<item>
+			<attribute name="label" translatable="yes">Open _Web Interface</attribute>
+			<attribute name="action">app.webui</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">Display _Daemon Ouput</attribute>
+			<attribute name="action">app.daemon_output</attribute>
+		</item>
+	</section>
+	<section>
+		<item>
+			<attribute name="label" translatable="yes">UI _Settings</attribute>
+			<attribute name="action">app.preferences</attribute>
+		</item>
+	</section>
+	<section>
+		<item>
+			<attribute name="label" translatable="yes">_About</attribute>
+			<attribute name="action">app.about</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">_Quit</attribute>
+			<attribute name="action">app.quit</attribute>
+		</item>
+	</section>
+</menu>
+<!-- /Application popover menu (left one) -->
+
+<!-- Edit popover menu (Right one) -->
+<menu id="edit-menu">
+	<section>
+		<item>
+			<attribute name="label" translatable="yes">Add Shared _Folder</attribute>
+			<attribute name="action">app.add_folder</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">Add _Device</attribute>
+			<attribute name="action">app.add_device</attribute>
+		</item>
+	</section>
+	<section>
+		<item>
+			<attribute name="label" translatable="yes">Daemon _Settings</attribute>
+			<attribute name="action">app.daemon_preferences</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">Show _ID</attribute>
+			<attribute name="action">app.show_id</attribute>
+		</item>
+	</section>
+	<section>
+		<item>
+			<attribute name="label" translatable="yes">Sh_utdown Daemon</attribute>
+			<attribute name="action">app.daemon_shutdown</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">_Restart Daemon</attribute>
+			<attribute name="action">app.daemon_restart</attribute>
+		</item>
+	</section>
+</menu>
+<!-- /Edit popover menu (Right one) -->
 
 <!-- Popup menu for folder -->
 <object class="GtkMenu" id="popup-menu-folder">

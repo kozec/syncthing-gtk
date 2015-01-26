@@ -698,7 +698,10 @@ class Daemon(GObject.GObject, TimerManager):
 	def _init_event_pooling(self, events):
 		if type(events) == list and len(events) > 0:
 			self._last_id = events[-1]["id"]
-			self._last_error_time = parsetime(events[-1]["time"])
+			try:
+				self._last_error_time = parsetime(events[-1]["time"])
+			except ValueError:
+				self._last_error_time = datetime.datetime.now()
 			self._rest_request("errors", self._syncthing_cb_errors)
 			self._request_events()
 		else:
