@@ -32,12 +32,13 @@ class FolderEditorDialog(EditorDialog):
 			"characters only"),
 	}
 	
-	def __init__(self, app, is_new, id=None):
+	def __init__(self, app, is_new, id=None, path=None):
 		EditorDialog.__init__(self, app,
 			"folder-edit.glade",
 			"New Shared Folder" if is_new else "Edit Shared Folder"
 			)
 		self.id = id
+		self.path = path
 		self.is_new = is_new
 	
 	def on_btBrowse_clicked(self, *a):
@@ -130,6 +131,9 @@ class FolderEditorDialog(EditorDialog):
 						self.is_new = False
 					except IndexError:
 						pass
+				if not self.path is None:
+					self.set_value("Path", self.path)
+					self["vPath"].set_sensitive(False)
 				self.set_value("Versioning", "simple")
 				self.set_value("RescanIntervalS", 30)
 				self.set_value("KeepVersions", 10)

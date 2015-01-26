@@ -145,6 +145,14 @@ class App(Gtk.Application, TimerManager):
 					cl.get_options_dict().lookup_value("force-update").get_string()
 				if not self.force_update_version.startswith("v"):
 					self.force_update_version = "v%s" % (self.force_update_version,)
+			if cl.get_options_dict().contains("add-repo"):
+				path = os.path.abspath(os.path.expanduser(
+					cl.get_options_dict().lookup_value("add-repo").get_string()))
+				self.show_add_folder_dialog(path)
+			if cl.get_options_dict().contains("remove-repo"):
+				path = os.path.abspath(os.path.expanduser(
+					cl.get_options_dict().lookup_value("remove-repo").get_string()))
+				self.show_remove_folder_dialog(path)
 		else:
 			# Fallback for old GTK without option parsing
 			if "-h" in sys.argv or "--help" in sys.argv:
@@ -187,8 +195,8 @@ class App(Gtk.Application, TimerManager):
 	def setup_commandline(self):
 		new_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 12)
 		def aso(long_name, short_name, description,
-				flags=GLib.OptionFlags.IN_MAIN,
-				arg=GLib.OptionArg.NONE):
+				arg=GLib.OptionArg.NONE,
+				flags=GLib.OptionFlags.IN_MAIN):
 			""" add_simple_option, adds program argument in simple way """
 			o = GLib.OptionEntry()
 			o.long_name = long_name
@@ -214,9 +222,13 @@ class App(Gtk.Application, TimerManager):
 		aso("debug",	b"d", "Be more verbose (debug mode)")
 		aso("wizard",	b"1", "Run 'first start wizard' and exit")
 		aso("about",	b"a", "Display about dialog and exit")
+		aso("add-repo", 0,    "Opens 'add repository' dialog with specified path prefilled",
+				GLib.OptionArg.STRING)
+		aso("remove-repo", 0, "If there is repository assigned with specified path, opens 'remove repository' dialog",
+				GLib.OptionArg.STRING)
 		aso("force-update", 0,
 				"Force updater to download specific daemon version",
-				GLib.OptionFlags.HIDDEN, GLib.OptionArg.STRING)
+				GLib.OptionArg.STRING, GLib.OptionFlags.HIDDEN)
 
 
 	
@@ -1333,6 +1345,51 @@ class App(Gtk.Application, TimerManager):
 				self.process = None
 		self.release()
 	
+	def show_add_folder_dialog(self, path=None):
+		"""
+		Waits for daemon to connect and shows 'add folder' dialog,
+		optionaly with pre-filled path entry.
+		"""
+		handler_id = None
+		def have_config(*a):
+			""" One-time handler for config-loaded signal """
+			if not handler_id is None:
+				self.daemon.handler_disconnect(handler_id)
+			self.show()
+			e = FolderEditorDialog(self, True, None, path)
+			e.load()
+			e.show(self["window"])
+		
+		if self.daemon.is_connected():
+			have_config()
+		else:
+			handler_id = self.daemon.connect("config-loaded", have_config)
+	
+	def show_remove_folder_dialog(self, path):
+		"""
+		Waits for daemon to connect, then searchs for folder id assigned
+		with specified path and shows 'remove folder' dialog, it such
+		id is found.
+		If id is not found, does nothing.
+		"""
+		handler_id = None
+		def have_config(*a):
+			""" One-time handler for config-loaded signal """
+			if not handler_id is None:
+				self.daemon.handler_disconnect(handler_id)
+			for rid in self.folders:
+				if self.folders[rid]["path"] == path:
+					name = self.folders[rid].get_title()
+					self.show()
+					self.check_delete("folder", rid, name)
+					return
+			log.warning("Failed to remove folder for path '%s': No such folder", path)
+		
+		if self.daemon.is_connected():
+			have_config()
+		else:
+			handler_id = self.daemon.connect("config-loaded", have_config)
+	
 	# --- Callbacks ---
 	def cb_exit(self, *a):
 		self.statusicon.hide()
@@ -1377,9 +1434,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_add_folder(self, event, *a):
 		""" Handler for 'Add folder' menu item """
-		e = FolderEditorDialog(self, True)
-		e.load()
-		e.show(self["window"])
+		self.show_add_folder_dialog()
 	
 	def cb_menu_add_device(self, event, *a):
 		""" Handler for 'Add device' menu item """
