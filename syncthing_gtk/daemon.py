@@ -692,7 +692,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if self._connected:
 				self._connected = False
 				self._epoch += 1
-				self.emit("disconnected", reason, None)
+				self.emit("disconnected", reason, "")
 			self.cancel_all()
 	
 	def _init_event_pooling(self, events):
@@ -881,7 +881,8 @@ class Daemon(GObject.GObject, TimerManager):
 			# Syncting version too low. Cancel everything and report error
 			self.cancel_all()
 			self._epoch += 1
-			self.emit("connection-error", Daemon.OLD_VERSION, "", None)
+			msg = "daemon is too old"
+			self.emit("connection-error", Daemon.OLD_VERSION, msg, Exception(msg))
 			return
 		if self._my_id != None:
 			device = self._get_device_data(self._my_id)
