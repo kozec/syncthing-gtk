@@ -30,6 +30,7 @@ class _Configuration(object):
 		"autokill_daemon"			: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
 		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
 		"minimize_on_start"			: (bool, False),
+		"folder_as_path"			: (bool, True),
 		"use_inotify"				: (list, []),
 		"use_old_header"			: (bool, False),
 		"icons_in_menu"				: (bool, True),

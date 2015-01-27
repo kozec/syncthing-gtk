@@ -17,8 +17,9 @@ log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
-		"vnotification_for_update", "vnotification_for_folder",
-		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
+		"vfolder_as_path", "vnotification_for_update",
+		"vnotification_for_folder", "vnotification_for_error",
+		"vst_autoupdate", "vsyncthing_binary",
 	]
 
 # Values for filemanager integration. Key is ID of checkbox widget
@@ -211,6 +212,11 @@ class UISettingsDialog(EditorDialog):
 				self.app.notifications = Notifications(self.app, self.app.daemon)
 		# Restart or cancel updatecheck
 		self.app.check_for_upgrade()
+		# Update directory boxes to reflect change in 'folder_as_path'
+		for rid in self.app.folders:
+			box = self.app.folders[rid]
+			title = box["path"] if self.app.config["folder_as_path"] else rid
+			box.set_title(title)
 
 def library_exists(name):
 	"""

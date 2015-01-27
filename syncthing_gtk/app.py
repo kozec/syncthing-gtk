@@ -1142,13 +1142,14 @@ class App(Gtk.Application, TimerManager):
 		if IS_WINDOWS:
 			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
 				display_path = "~%s" % display_path[len(os.path.expanduser("~")):]
+		title = display_path if self.config["folder_as_path"] else id
 		if id in self.folders:
 			# Reuse existing box
 			box = self.folders[id]
-			box.set_title(display_path)
+			box.set_title(title)
 		else:
 			# Create new box
-			box = InfoBox(self, display_path, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
+			box = InfoBox(self, title, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 			# Add visible lines
 			box.add_value("id",			"version.png",	_("Folder ID"))
 			box.add_value("path",		"folder.png",	_("Path"))
