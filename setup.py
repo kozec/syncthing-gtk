@@ -37,6 +37,7 @@ if __name__ == "__main__" : setup(
 	packages = ['syncthing_gtk'],
 	data_files = [
 		('share/syncthing-gtk', glob.glob("*.glade") ),
+		('share/syncthing-gtk', glob.glob("scripts/syncthing-plugin-*.py") ),
 		('share/syncthing-gtk/icons', glob.glob("icons/*") ),
 		('share/pixmaps', glob.glob("icons/emblem-*.png") ),
 		('share/applications', ['syncthing-gtk.desktop'] ),

@@ -88,7 +88,7 @@ class EditorDialog(GObject.GObject):
 	def present(self, values=[]):
 		self["editor"].present()
 		for v in values:
-			if self[v].get_sensitive():
+			if not self[v] is None and self[v].get_sensitive():
 				self[v].grab_focus()
 				return
 	

@@ -10,15 +10,41 @@ from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
 from syncthing_gtk.tools import *
 from syncthing_gtk.configuration import LONG_AGO
-import os
+import os, logging
 
 _ = lambda (a) : a
+log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
 		"vnotification_for_update", "vnotification_for_folder",
 		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
 	]
+
+# Values for filemanager integration. Key is ID of checkbox widget
+FM_DATA = {
+	"fmcb_nemo" : (
+		"nemo/extensions-3.0/libnemo-python.so",	# python plugin location, relative to /usr/lib
+		"Nemo python bindings",						# name or description of required package
+		"syncthing-plugin-nemo",					# plugin script filename, without extension
+		"nemo-python/extensions",					# script folder, relative to XDG_DATA_HOME
+		"Nemo"										# name
+	),
+	"fmcb_nautilus" : (
+		"nemo/extensions-3.0/libnemo-python.so",
+		"Nautilus python bindings",
+		"syncthing-plugin-nautilus",
+		"nautilus-python/extensions",
+		"Nautilus"
+	),
+	"fmcb_caja" : (
+		"caja/extensions-2.0/libcaja-python.so",
+		"Caja python bindings",
+		"syncthing-plugin-caja",
+		"caja-python/extensions",
+		"Caja"
+	)
+}
 
 class UISettingsDialog(EditorDialog):
 	def __init__(self, app):
@@ -55,6 +81,23 @@ class UISettingsDialog(EditorDialog):
 			self["rbOnExitLeave"].set_sensitive(False)
 			self["rbOnExitAsk"].set_sensitive(False)
 			self["rbOnExitTerminate"].set_active(True)
+		# Check for filemanager python bindings current state of plugins
+		status = []
+		for widget_id in FM_DATA:
+			so_file, package, plugin, location, name = FM_DATA[widget_id]
+			if not get_fm_source_path(plugin) is None:
+				if library_exists(so_file):
+					self[widget_id].set_sensitive(True)
+					self[widget_id].set_active(
+						os.path.exists(get_fm_target_path(plugin, location))
+					)
+				else:
+					log.warning("Cannot find %s required to support %s", so_file, name)
+					status.append(_("Install %s package to enable %s support") % (package, name))
+			else:
+				log.warning("Cannot find %s.py required to support %s", plugin, name)
+		self["fmLblIntegrationStatus"].set_text("\n".join(status))
+		
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	
@@ -125,6 +168,34 @@ class UISettingsDialog(EditorDialog):
 		# Save data to configuration file
 		for k in self.values:
 			self.app.config[k] = self.values[k]
+		# Create / delete fm integration scripts
+		for widget_id in FM_DATA:
+			so_file, package, plugin, location, name = FM_DATA[widget_id]
+			if self[widget_id].get_sensitive() and self[widget_id].get_active():
+				# Should be enabled. Check if script is in place and create it if not
+				source = get_fm_source_path(plugin)
+				target = get_fm_target_path(plugin, location)
+				if not source is None and not os.path.exists(target):
+					try:
+						if is_file_or_symlink(target):
+							os.unlink(target)
+						os.symlink(source, target)
+						log.info("Created symlink '%s' -> '%s'", source, target)
+					except Exception, e:
+						log.error("Failed to symlink '%s' -> '%s'", source, target)
+						log.error(e)
+			else:
+				# Should be disabled. Remove redundant scripts
+				for extension in ("py", "pyc", "pyo"):
+					target = get_fm_target_path(plugin, location, extension)
+					if is_file_or_symlink(target):
+						try:
+							os.unlink(target)
+							log.info("Removed '%s'", target)
+						except Exception, e:
+							log.error("Failed to remove '%s'", target)
+							log.error(e)
+		
 		# Report work done
 		self.syncthing_cb_post_config()
 	
@@ -140,6 +211,58 @@ class UISettingsDialog(EditorDialog):
 				self.app.notifications = Notifications(self.app, self.app.daemon)
 		# Restart or cancel updatecheck
 		self.app.check_for_upgrade()
+
+def library_exists(name):
+	"""
+	Checks if there is specified so file installed in one of known prefixes
+	"""
+	PREFIXES = [ "/usr/lib", "/usr/local/lib/" ] # Anything else?
+	for prefix in PREFIXES:
+		if os.path.exists(os.path.join(prefix, name)):
+			return True
+	return False
+
+def get_fm_target_path(plugin, location, extension="py"):
+	"""
+	Returns full path to plugin file in filemanager plugins directory
+	"""
+	datahome = os.path.expanduser("~/.local/share")
+	if "XDG_DATA_HOME" in os.environ:
+		datahome = os.environ["XDG_DATA_HOME"]
+	return os.path.join(datahome, location, "%s.%s" % (plugin, extension))
+
+def get_fm_source_path(plugin):
+	"""
+	Returns path to location where plugin file is installed
+	"""
+	filename = "%s.py" % (plugin,)
+	paths = (
+		# Relative path used while developing or when running
+		# ST-GTK without installation
+		"./scripts/",
+		# Default installation path
+		"/usr/share/syncthing-gtk",
+		# Not-so default installation path
+		"/usr/local/share/syncthing-gtk",
+	)
+	for path in paths:
+		fn = os.path.abspath(os.path.join(path, filename))	
+		if os.path.exists(fn):
+			return fn
+	return None
+
+def is_file_or_symlink(path):
+	"""
+	Returns True if specified file exists, even as broken symlink.
+	(os.path.exists() returns False for broken symlinks)
+	"""
+	if os.path.exists(path): return True
+	try:
+		os.readlink(path)
+		return True
+	except:
+		pass
+	return False
 
 def browse_for_binary(parent_window, settings_dialog, value):
 	"""
