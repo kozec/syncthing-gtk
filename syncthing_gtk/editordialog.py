@@ -225,7 +225,7 @@ class EditorDialog(GObject.GObject):
 		if isinstance(w, Gtk.SpinButton):
 			w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
 		elif isinstance(w, Gtk.Entry):
-			w.set_text(str(self.get_value(key.lstrip("v"))))
+			w.set_text(unicode(self.get_value(key.lstrip("v"))))
 		elif isinstance(w, Gtk.ComboBox):
 			val = self.get_value(key.lstrip("v"))
 			m = w.get_model()
