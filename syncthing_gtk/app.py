@@ -983,6 +983,7 @@ class App(Gtk.Application, TimerManager):
 		relative path in that folder, or (None, None) if specified path
 		doesn't belongs anywhere
 		"""
+		path = path.decode("utf-8")
 		for folder_id in self.folders:
 			f = self.folders[folder_id]
 			relpath = os.path.relpath(path, f["norm_path"])
