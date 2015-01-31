@@ -10,7 +10,7 @@
     <property name="comments" translatable="yes">GTK GUI and notification area icon for Syncthing</property>
     <property name="website">https://github.com/kozec/syncthing-gui</property>
     <property name="website_label" translatable="yes">GitHub</property>
-    <property name="logo">icons/st-gtk-logo.png</property>
+    <property name="logo">icons/st-logo-256.png</property>
     <property name="license_type">gpl-2-0</property>
     <signal name="response" handler="on_dialog_response" swapped="no"/>
     <child internal-child="vbox">
