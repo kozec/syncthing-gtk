@@ -17,10 +17,11 @@ Additional features:
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
 - Filesystem watching and instant synchronization using inotify
+- Nautilus (a.k.a. Files), Nemo and Caja integration
 - Desktop notifications
 
 Dependencies:  
-- python 2.7, GTK 3.10 or newer and <a href=https://live.gnome.org/PyGObject>PyGObject</a>
+- python 2.7, GTK 3.8 or newer and <a href=https://live.gnome.org/PyGObject>PyGObject</a>
 - python-gi-cairo on debian based distros (included in PyGObject elsewhere)
 - <a href="http://labix.org/python-dateutil">python-dateutil</a> (Python2 version)
 - <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>
@@ -29,6 +30,7 @@ Dependencies:
 Optional Dependencies:  
 - <a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> for instant synchronization.
 - libnotify for desktop notifications.
+- nautilus-python, nemo-python or caja-python for filemanager integration
 
 Packages:
 - Ubuntu (deb-based distros): in <a href="https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/">Web Upd8 PPA</a> (thanks!) or <a href="http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/">DEBs</a>
