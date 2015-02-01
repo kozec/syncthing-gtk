@@ -32,7 +32,7 @@ FM_DATA = {
 		"Nemo"										# name
 	),
 	"fmcb_nautilus" : (
-		"nemo/extensions-3.0/libnemo-python.so",
+		"nautilus/extensions-3.0/libnautilus-python.so",
 		"Nautilus python bindings",
 		"syncthing-plugin-nautilus",
 		"nautilus-python/extensions",
