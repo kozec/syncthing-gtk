@@ -17,7 +17,7 @@ log = logging.getLogger("SyncthingPlugin")
 
 # Output options
 VERBOSE	= True
-DEBUG	= True
+DEBUG	= False
 
 # Magic numbers
 STATE_IDLE		= 1
@@ -97,9 +97,8 @@ def build_class(plugin_module):
 			subdirectories.
 			"""
 			for f in self.files:
-				if f.startswith(path + os.path.sep) or f == path:
+				if f.startswith(path + os.path.sep) or f == path	:
 					self._invalidate(f)
-
 		
 		def _invalidate(self, path):
 			""" Forces Nautils to re-read emblems on specified file """
