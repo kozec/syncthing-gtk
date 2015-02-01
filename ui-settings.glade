@@ -331,7 +331,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="vfolder_as_path">
-                    <property name="label" translatable="yes">Use paths as titles for directory boxes</property>
+                    <property name="label" translatable="yes">Display paths in directories panel</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
