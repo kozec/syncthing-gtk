@@ -178,6 +178,12 @@ class UISettingsDialog(EditorDialog):
 				target = get_fm_target_path(plugin, location)
 				if not source is None and not os.path.exists(target):
 					try:
+						# Create directory first
+						os.makedirs(os.path.dirname(target))
+					except Exception, e:
+						# Ignore "file already exists" error
+						pass
+					try:
 						if is_file_or_symlink(target):
 							os.unlink(target)
 						os.symlink(source, target)

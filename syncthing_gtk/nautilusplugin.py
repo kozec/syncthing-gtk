@@ -122,7 +122,8 @@ def build_class(plugin_module):
 		def _get_path(self, file):
 			""" Returns path for provided FileInfo object """
 			if hasattr(file, "get_location"):
-				return file.get_location().get_path().decode('utf-8')
+				if not file.get_location().get_path() is None:
+					return file.get_location().get_path().decode('utf-8')
 			return urllib.unquote(file.get_uri().replace("file://", ""))
 		
 		### Daemon callbacks
