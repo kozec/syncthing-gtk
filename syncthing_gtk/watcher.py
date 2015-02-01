@@ -98,18 +98,21 @@ if HAS_INOTIFY:
 			return True	# Repeat until killed
 		
 		def _report_created(self, path):
+			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Created %s %s > %s", folder_id, path, relpath)
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_changed(self, path):
+			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Changed %s %s > %s", folder_id, path, relpath)
 			if not folder_id is None:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_deleted(self, path):
+			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Deleted %s %s > %s", folder_id, path, relpath)
 			if not folder_id is None:
