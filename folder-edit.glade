@@ -266,7 +266,7 @@
                     <property name="margin_bottom">10</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>
-                    <property name="label" translatable="yes">Files are protected from changes made on other devices, but changes made on this divece will be sent to the rest of the cluster.</property>
+                    <property name="label" translatable="yes">Files are protected from changes made on other devices, but changes made on this device will be sent to the rest of the cluster.</property>
                     <property name="wrap">True</property>
                   </object>
                   <packing>
