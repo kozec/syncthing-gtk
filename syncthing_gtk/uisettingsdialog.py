@@ -228,7 +228,10 @@ def library_exists(name):
 	"""
 	Checks if there is specified so file installed in one of known prefixes
 	"""
-	PREFIXES = [ "/usr/lib", "/usr/local/lib/" ] # Anything else?
+	PREFIXES = [ "/usr/lib", "/usr/local/lib/",
+		"/usr/lib/x86_64-linux-gnu/",
+		"/usr/lib/i386-linux-gnu/",
+	]
 	for prefix in PREFIXES:
 		if os.path.exists(os.path.join(prefix, name)):
 			return True
