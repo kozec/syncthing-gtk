@@ -17,7 +17,7 @@ log = logging.getLogger("SyncthingPlugin")
 
 # Output options
 VERBOSE	= True
-DEBUG	= True
+DEBUG	= False
 
 # Magic numbers
 STATE_IDLE		= 1
@@ -27,13 +27,13 @@ STATE_STOPPED	= 4
 
 def build_class(plugin_module):
 	"""
-	Builds extension class base on provided plugin module.
+	Builds extension class based on provided plugin module.
 	This allows sharing code between extensions and creating
-	extensions for Nautilus forks jus by doing:
+	extensions for Nautilus forks just by doing:
 	
 	from syncthing_gtk import nautilusplugin
 	from gi.repository import Nemo
-	NemoExtensionCls = nautilusplugin..build_class(Nemo)
+	NemoExtensionCls = nautilusplugin.build_class(Nemo)
 	"""
 
 	class __NautiluslikeExtension(GObject.GObject, plugin_module.InfoProvider, plugin_module.MenuProvider):
@@ -56,20 +56,28 @@ def build_class(plugin_module):
 			self.repos = {}
 			self.rid_to_path = {}
 			self.path_to_rid = {}
+			# Dict of known repos -> set of associated devices
+			self.rid_to_dev = {}
+			# Set of online devices
+			self.online_nids = set()
+			# Set of online repos (at least one associated device connected)
+			self.onlide_rids = set()
 			# List (cache) for folders that are known to be placed bellow
 			# some syncthing repo
-			self.subfolders = set([])
+			self.subfolders = set()
 			# List (cache) for files that plugin were asked about
 			self.files = {}
-			self.downloads = set([])
+			self.downloads = set()
 			# Connect to Daemon object signals
 			self.daemon.connect("connected", self.cb_connected)
 			self.daemon.connect("connection-error", self.cb_syncthing_con_error)
 			self.daemon.connect("disconnected", self.cb_syncthing_disconnected)
+			self.daemon.connect("device-connected", self.cb_device_connected)
+			self.daemon.connect("device-disconnected", self.cb_device_disconnected)
 			self.daemon.connect("folder-added", self.cb_syncthing_folder_added)
 			self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, STATE_SYNCING)
 			self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, STATE_IDLE)
-			self.daemon.connect("folder-stopped", self.cb_syncthing_folder_state_changed, STATE_STOPPED)
+			self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped)
 			self.daemon.connect("item-started", self.cb_syncthing_item_started)
 			self.daemon.connect("item-updated", self.cb_syncthing_item_updated)
 			
@@ -82,6 +90,15 @@ def build_class(plugin_module):
 			""" Clear emblems on all files that had emblem added """
 			for path in self.files:
 				self._invalidate(path)
+		
+		def _clear_emblems_in_dir(self, path):
+			"""
+			Same as _clear_emblems, but only for one directory and its
+			subdirectories.
+			"""
+			for f in self.files:
+				if f.startswith(path + os.path.sep) or f == path	:
+					self._invalidate(f)
 		
 		def _invalidate(self, path):
 			""" Forces Nautils to re-read emblems on specified file """
@@ -104,7 +121,8 @@ def build_class(plugin_module):
 		def _get_path(self, file):
 			""" Returns path for provided FileInfo object """
 			if hasattr(file, "get_location"):
-				return file.get_location().get_path().decode('utf-8')
+				if not file.get_location().get_path() is None:
+					return file.get_location().get_path().decode('utf-8')
 			return urllib.unquote(file.get_uri().replace("file://", ""))
 		
 		### Daemon callbacks
@@ -115,11 +133,39 @@ def build_class(plugin_module):
 			Also asks Nautilus to clear all emblems.
 			"""
 			self.repos = {}
-			self.subfolders = set([])
-			self.downloads = set([])
+			self.rid_to_dev = {}
+			self.online_nids = set()
+			self.onlide_rids = set()
+			self.subfolders = set()
+			self.downloads = set()
 			self._clear_emblems()
 			self.ready = True
 			log.info("Connected to Syncthing daemon")
+		
+		def cb_device_connected(self, daemon, nid):
+			self.online_nids.add(nid)
+			# Mark any repo attached to this device online
+			for rid in self.rid_to_dev:
+				if not rid in self.onlide_rids:
+					if nid in self.rid_to_dev[rid]:
+						log.debug("Repo '%s' now online", rid)
+						self.onlide_rids.add(rid)
+						if self.repos[self.rid_to_path[rid]] == STATE_OFFLINE:
+							self.repos[self.rid_to_path[rid]] = STATE_IDLE
+						self._clear_emblems_in_dir(self.rid_to_path[rid])
+		
+		def cb_device_disconnected(self, daemon, nid):
+			self.online_nids.remove(nid)
+			# Check for all online repos atached to this device
+			for rid in self.rid_to_dev:
+				if rid in self.onlide_rids:
+					# Check if repo is atached to any other, online device
+					if len([ x for x in self.rid_to_dev[rid] if x in self.online_nids ]) == 0:
+						# Nope
+						log.debug("Repo '%s' now offline", rid)
+						self.onlide_rids.remove(rid)
+						self.repos[self.rid_to_path[rid]] = STATE_OFFLINE
+						self._clear_emblems_in_dir(self.rid_to_path[rid])
 		
 		def cb_syncthing_folder_added(self, daemon, rid, r):
 			"""
@@ -133,6 +179,10 @@ def build_class(plugin_module):
 			self.path_to_rid[path.rstrip("/")] = rid
 			self.repos[path] = STATE_OFFLINE
 			self._invalidate(path)
+			# Store repo id in dict of associated devices
+			self.rid_to_dev[rid] = set()
+			for d in r['Devices']:
+				self.rid_to_dev[rid].add(d['DeviceID'])
 		
 		def cb_syncthing_con_error(self, *a):
 			pass
@@ -154,13 +204,16 @@ def build_class(plugin_module):
 			""" Called when folder synchronization starts or stops """
 			if rid in self.rid_to_path:
 				path = self.rid_to_path[rid]
-				self.repos[path] = state
-				log.debug("State of %s changed to %s", path, state)
-				self._invalidate(path)
-				# Invalidate all files in repository as well
-				for f in self.files:
-					if f.startswith(path + os.path.sep):
-						self._invalidate(f)
+				if self.repos[path] != STATE_OFFLINE:
+					self.repos[path] = state
+					log.debug("State of %s changed to %s", path, state)
+					self._invalidate(path)
+					# Invalidate all files in repository as well
+					self._clear_emblems_in_dir(path)
+		
+		def cb_syncthing_folder_stopped(self, daemon, rid, *a):
+			""" Called when synchronization error is detected """
+			self.cb_syncthing_folder_state_changed(daemon, rid, STATE_STOPPED)
 		
 		def cb_syncthing_item_started(self, daemon, rid, filename, *a):
 			""" Called when file download starts """

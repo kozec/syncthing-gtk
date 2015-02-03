@@ -331,7 +331,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="vfolder_as_path">
-                    <property name="label" translatable="yes">Use paths as titles for directory boxes</property>
+                    <property name="label" translatable="yes">Display paths in directories panel</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -511,7 +511,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="margin_top">8</property>
                     <property name="xalign">0</property>
                     <property name="xpad">3</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Note:&lt;/b&gt; You may need to restart your filemanager after enabling or disabling  integration.</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Note:&lt;/b&gt; You may need to restart your filemanager after toggling integration.</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
                   </object>

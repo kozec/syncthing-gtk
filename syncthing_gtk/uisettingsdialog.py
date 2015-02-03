@@ -32,7 +32,7 @@ FM_DATA = {
 		"Nemo"										# name
 	),
 	"fmcb_nautilus" : (
-		"nemo/extensions-3.0/libnemo-python.so",
+		"nautilus/extensions-3.0/libnautilus-python.so",
 		"Nautilus python bindings",
 		"syncthing-plugin-nautilus",
 		"nautilus-python/extensions",
@@ -177,6 +177,12 @@ class UISettingsDialog(EditorDialog):
 				source = get_fm_source_path(plugin)
 				target = get_fm_target_path(plugin, location)
 				if not source is None and not os.path.exists(target):
+					try:
+						# Create directory first
+						os.makedirs(os.path.dirname(target))
+					except Exception, e:
+						# Ignore "file already exists" error
+						pass
 					try:
 						if is_file_or_symlink(target):
 							os.unlink(target)

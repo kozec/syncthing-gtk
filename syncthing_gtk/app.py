@@ -1558,7 +1558,7 @@ class App(Gtk.Application, TimerManager):
 			# display directory contents
 			for x in ('xdg-open', 'gnome-open', 'kde-open'):
 				if os.path.exists("/usr/bin/%s" % x):
-					os.system("/usr/bin/%s '%s' &" % (x, path))
+					os.system( ("/usr/bin/%s '%s' &" % (x, path)).encode('utf-8') )
 					break
 	
 	def cb_menu_popup_delete_folder(self, *a):
