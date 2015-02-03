@@ -226,7 +226,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"device-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-discovered"	: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
-			b"device-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, int, int)),
+			b"device-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, object, object)),
 			b"last-seen-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"device-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"device-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
