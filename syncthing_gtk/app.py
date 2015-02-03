@@ -253,7 +253,7 @@ class App(Gtk.Application, TimerManager):
 	def setup_widgets(self):
 		self.builder = UIBuilder()
 		# Set conditions for UIBuilder
-		old_gtk = (Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12)
+		old_gtk = ((Gtk.get_major_version(), Gtk.get_minor_version()) < (3, 12)) and not IS_WINDOWS
 		icons_in_menu = self.config["icons_in_menu"]
 		if self.use_headerbar: 		self.builder.enable_condition("header_bar")
 		if not self.use_headerbar:	self.builder.enable_condition("traditional_header")
