@@ -9,7 +9,8 @@ from syncthing_gtk import windows
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 from gi.repository import Gio, GLib, GObject
-import os, logging, codecs, msvcrt, win32pipe, _winreg
+import os, logging, codecs, msvcrt, win32pipe
+import win32gui, win32api, win32con, _winreg
 log = logging.getLogger("windows.py")
 
 def fix_localized_system_error_messages():
@@ -37,6 +38,45 @@ def dont_use_localization_in_gtk():
 	real translation support is done.
 	"""
 	os.environ['LANGUAGE'] = 'en_US'
+
+def detect_shutdown():
+	"""
+	Returns ShutdownDetector object. If system shutdown is detected,
+	shuting_down property of returned object will be set to True.
+	"""
+	return ShutdownDetector()
+
+class ShutdownDetector:
+	"""
+	Creates dummy, invisible win32 window and listens for windows
+	messages on it (using GLib.idle_add). If WM_ENDSESSION message
+	is recieved, set's own shuting_down property to True
+	"""
+	def __init__(self):
+		self.shuting_down = False
+		hinst = win32api.GetModuleHandle(None)
+		wndclass = win32gui.WNDCLASS()
+		wndclass.hInstance = hinst
+		wndclass.lpszClassName = str("STGTKDummyWindowClass")
+		messageMap = { win32con.WM_ENDSESSION : self._proc }
+
+		wndclass.lpfnWndProc = messageMap
+		wc = win32gui.RegisterClass(wndclass)
+		self.hwnd = win32gui.CreateWindowEx(win32con.WS_EX_LEFT,
+				wc, "STGTKDummyWindowClass", 0, 0, 0, 
+				win32con.CW_USEDEFAULT, win32con.CW_USEDEFAULT,
+				0, 0, hinst, None)
+		
+		GLib.timeout_add_seconds(1, self._pump)
+	
+	def _pump(self):
+		win32gui.PumpWaitingMessages()
+		return True
+	
+	def _proc(self, hwnd, msg, wparam, lparam):
+		if msg == win32con.WM_ENDSESSION:
+			log.warning("System shutdown detected")
+			self.shuting_down = True
 
 class WinPopenReader:
 	"""

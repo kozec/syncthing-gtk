@@ -106,6 +106,9 @@ class App(Gtk.Application, TimerManager):
 		self.devices_never_loaded = True
 		self.folders_never_loaded = True
 		self.sync_animation = 0
+		if IS_WINDOWS:
+			import syncthing_gtk.windows
+			self.shutdown_detector = windows.detect_shutdown()
 	
 	def do_startup(self, *a):
 		Gtk.Application.do_startup(self, *a)
@@ -362,9 +365,12 @@ class App(Gtk.Application, TimerManager):
 		self.display_connect_dialog(_("Starting Syncthing daemon"))
 		# Start daemon
 		self.start_daemon()
-
+	
 	def start_daemon(self):
 		if self.process is None:
+			if IS_WINDOWS and self.shutdown_detector.shuting_down:
+				log.warning("Not starting daemon: System shutdown detected")
+				return
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
@@ -1747,10 +1753,8 @@ class App(Gtk.Application, TimerManager):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
-			self.process.connect('failed', self.cb_daemon_startup_failed)
-			self.process.connect('exit', self.cb_daemon_exit)
-			self.process.start()
+			self.process = None
+			self.start_daemon()
 	
 	def cb_daemon_startup_failed(self, proc, exception):
 		"""
