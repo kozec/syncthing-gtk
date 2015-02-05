@@ -15,10 +15,14 @@ _ = lambda (a) : a
 log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
-IS_GNOME, IS_UNITY = False, False
+IS_GNOME, IS_UNITY, IS_KDE5 = False, False, False
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
 	IS_UNITY = (os.environ["XDG_CURRENT_DESKTOP"] == "Unity")
+	if os.environ["XDG_CURRENT_DESKTOP"] == "KDE":
+		if "KDE_SESSION_VERSION" in os.environ:
+			if os.environ["KDE_SESSION_VERSION"] == "5":
+				IS_KDE5 = True
 if "DESKTOP_SESSION" in os.environ:
 	if os.environ["DESKTOP_SESSION"] == "gnome":
 		# Fedora...

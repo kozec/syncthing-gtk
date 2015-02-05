@@ -294,7 +294,7 @@ class App(Gtk.Application, TimerManager):
 	def setup_statusicon(self):
 		self.statusicon = StatusIcon(self.iconpath, self["si-menu"])
 		self.statusicon.connect("clicked", self.cb_statusicon_click)
-		if IS_UNITY and HAS_INDICATOR:
+		if HAS_INDICATOR:
 			self["menu-si-show"].set_visible(True)
 	
 	def setup_connection(self):

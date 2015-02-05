@@ -6,12 +6,12 @@ Syncthing-GTK - StatusIcon
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, GObject
-from syncthing_gtk.tools import IS_UNITY
+from syncthing_gtk.tools import IS_UNITY, IS_KDE5
 import os, sys
 
 # Why the hell does ubuntu use own notifications system?
 THE_HELL, HAS_INDICATOR = False, False
-if IS_UNITY:
+if IS_UNITY or IS_KDE5:
 	THE_HELL = True
 	try:
 		from gi.repository import AppIndicator3 as appindicator
