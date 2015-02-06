@@ -55,6 +55,7 @@ class StatusIcon(GObject.GObject):
 		else:
 			self._si = Gtk.StatusIcon.new_from_file(os.path.join(self._icon_path, icon))
 			self._si.set_title(text)
+			self._si.set_tooltip_text(text)
 			self._si.connect("activate", self._cb_click)
 			self._si.connect("popup-menu", self._cb_rclick)
 	
@@ -89,3 +90,4 @@ class StatusIcon(GObject.GObject):
 			else:
 				self._si.set_from_file(os.path.join(self._icon_path, "%s.png" % (icon,)))
 				self._si.set_title(text)
+				self._si.set_tooltip_text(text)
