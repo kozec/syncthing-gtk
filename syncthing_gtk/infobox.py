@@ -468,6 +468,13 @@ class InfoBox(Gtk.Container):
 				w.set_no_show_all(False)
 				w.set_visible(True)
 	
+	def set_visible(self, key, show):
+		""" Sets value visibility """
+		if show:
+			self.show_value(key)
+		else:
+			self.hide_value(key)
+
 	def hide_values(self, *keys):
 		""" Same as hide_value, but for multiple keys at once """
 		for k in keys: self.hide_value(k)

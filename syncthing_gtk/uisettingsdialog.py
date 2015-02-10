@@ -222,6 +222,7 @@ class UISettingsDialog(EditorDialog):
 		for rid in self.app.folders:
 			box = self.app.folders[rid]
 			title = box["path"] if self.app.config["folder_as_path"] else rid
+			box.set_visible("id", self.app.config["folder_as_path"])
 			box.set_title(title)
 
 def library_exists(name):

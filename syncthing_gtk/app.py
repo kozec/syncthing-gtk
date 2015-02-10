@@ -1191,6 +1191,9 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s" % (rescan_interval,))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
+		box.set_visible("id",		self.config["folder_as_path"])
+		box.set_visible("master",	is_master)
+		box.set_visible("ignore",	ignore_perms)
 		return box
 	
 	def show_device(self, id, name, use_compression, introducer, used):
