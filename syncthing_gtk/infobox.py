@@ -296,10 +296,11 @@ class InfoBox(Gtk.Container):
 	### Methods
 	def set_title(self, t):
 		self.str_title = t
-		if self.header_inverted:
-			self.title.set_markup('<span font_weight="bold" font_size="large" color="black">%s</span>' % t)
-		else:
-			self.title.set_markup('<span font_weight="bold" font_size="large" color="white">%s</span>' % t)
+		self.title.set_markup('<span color="%s" %s>%s</span>' % (
+			"black" if self.header_inverted else "white",
+			self.app.config["infobox_style"],
+			t
+		))
 	
 	def get_title(self):
 		return self.str_title
@@ -331,10 +332,14 @@ class InfoBox(Gtk.Container):
 		self.str_status = t
 		if percentage > 0.0 and percentage < 1.0:
 			percent = percentage * 100.0
-			self.status.set_markup('<span font_weight="bold" font_size="large" color="white">%s (%.f%%)</span>' % (t, percent))
+			self.status.set_markup('<span color="white" %s>%s (%.f%%)</span>' % (
+				self.app.config["infobox_style"],
+				t, percent))
 			log.debug("%s state changed to %s (%s%%)", self.str_title, t, percent)
 		else:
-			self.status.set_markup('<span font_weight="bold" font_size="large" color="white">%s</span>' % t)
+			self.status.set_markup('<span color="white" %s>%s</span>' % (
+				self.app.config["infobox_style"],
+				t))
 			log.debug("%s state changed to %s", self.str_title, t)
 	
 	def get_status(self):

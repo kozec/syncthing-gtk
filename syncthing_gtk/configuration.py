@@ -40,6 +40,7 @@ class _Configuration(object):
 		"st_autoupdate"				: (bool, False),
 		"last_updatecheck"			: (datetime, LONG_AGO),
 		"window_position"			: (tuple, None),
+		"infobox_style"				: (str, 'font_weight="bold" font_size="large"'),
 	}
 	
 	# Overrides some default values on Windows
