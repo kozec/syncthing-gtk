@@ -338,9 +338,9 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-data-failed", self.cb_syncthing_folder_state_changed, 0.0, COLOR_NEW, "")
 		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_FOLDER_SYNCING, _("Syncing"))
 		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
-		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
+		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_up_to_date)
 		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
-		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_IDLE, _("Up to Date"))
+		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_up_to_date)
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
 		return True
@@ -864,12 +864,20 @@ class App(Gtk.Application, TimerManager):
 			folder["global"] = "%s %s, %s" % (data["globalFiles"], _("Files"), sizeof_fmt(data["globalBytes"]))
 			folder["local"]	 = "%s %s, %s" % (data["localFiles"], _("Files"), sizeof_fmt(data["localBytes"]))
 			folder["oos"]	 = "%s %s, %s" % (data["needFiles"], _("Files"), sizeof_fmt(data["needBytes"]))
-			if float(data["globalBytes"]) > 0.0:
-				sync = float(data["inSyncBytes"]) / float(data["globalBytes"]),
-			else:
-				sync = 0.0
-			# folder.set_status(_(data['state'].capitalize()), sync)
+			if folder["b_master"]:
+				can_override = (data["needFiles"] > 0)
+				if can_override != folder["can_override"]:
+					folder["can_override"] = can_override
+					self.cb_syncthing_folder_up_to_date(None, rid)
 	
+	def cb_syncthing_folder_up_to_date(self, daemon, rid):
+		if rid in self.folders:	# Should be always
+			folder = self.folders[rid]
+			self.cb_syncthing_folder_state_changed(daemon, rid, 1.0,
+				COLOR_FOLDER_IDLE,
+				_("Cluster out of sync") if folder["can_override"] else _("Up to Date")
+			)
+		
 	def cb_syncthing_folder_state_changed(self, daemon, rid, percentage, color, text):
 		if rid in self.folders:	# Should be always
 			folder = self.folders[rid]
@@ -947,7 +955,10 @@ class App(Gtk.Application, TimerManager):
 				online = online or device["online"]
 			if online and folder.compare_color_hex(COLOR_FOLDER_OFFLINE):
 				# Folder was marked as offline but is back online now
-				folder.set_status(_("Up to Date"))
+				if folder["can_override"]:
+					folder.set_status(_("Cluster out of sync"))
+				else:
+					folder.set_status(_("Up to Date"))
 				folder.set_color_hex(COLOR_FOLDER_IDLE)
 			elif not online and folder.compare_color_hex(COLOR_FOLDER_SCANNING):
 				# Folder is offline and in Scanning state
@@ -1168,6 +1179,8 @@ class App(Gtk.Application, TimerManager):
 			box.add_value("shared",		"shared.png",	_("Shared With"))
 			# Add hidden stuff
 			box.add_hidden_value("id", id)
+			box.add_hidden_value("b_master", is_master)
+			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 			# Setup display & signal
@@ -1191,6 +1204,8 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s" % (rescan_interval,))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
+		box.set_value("b_master", is_master)
+		box.set_value("can_override", False)
 		box.set_visible("id",		self.config["folder_as_path"])
 		box.set_visible("master",	is_master)
 		box.set_visible("ignore",	ignore_perms)
@@ -1522,6 +1537,8 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
+		self["menu-popup-override"].set_visible(box["can_override"])
+		self["menu-separator-override"].set_visible(box["can_override"])
 		self["popup-menu-folder"].popup(None, None, None, None, button, time)
 	
 	def cb_popup_menu_device(self, box, button, time):
@@ -1577,8 +1594,13 @@ class App(Gtk.Application, TimerManager):
 
 	def cb_menu_popup_rescan_folder(self, *a):
 		""" Handler for 'rescan' context menu item """
-		# Editing folder
+		log.info("Rescan folder %s", self.rightclick_box["id"])
 		self.daemon.rescan(self.rightclick_box["id"])
+	
+	def cb_menu_popup_override(self, *a):
+		""" Handler for 'override' context menu item """
+		log.info("Override folder %s", self.rightclick_box["id"])
+		self.daemon.override(self.rightclick_box["id"])
 	
 	def cb_menu_popup_delete_device(self, *a):
 		""" Handler for other 'edit' context menu item """

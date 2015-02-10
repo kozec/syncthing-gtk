@@ -1212,6 +1212,13 @@ class Daemon(GObject.GObject, TimerManager):
 		else:
 			self._rest_post("scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
 	
+	def override(self, folder_id):
+		""" Asks daemon to override changes made in specified folder """
+		# Errors here are non-fatal, not expected and thus ignored.
+		def on_error(*a):
+			print a
+		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
+	
 	def request_events(self):
 		"""
 		Requests event directly, without waiting for timer to fire.

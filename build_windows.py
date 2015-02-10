@@ -138,6 +138,7 @@ if 'build' in sys.argv:
 				"actions" : [
 					"help-about",
 					"edit-delete",
+					"edit-undo",
 					"application-exit",
 					"system-shutdown",
 					"document-open",

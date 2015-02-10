@@ -446,6 +446,24 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-override">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Override Changes</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<property name="image">menu-popup-override-image</property>
+			<signal name="activate" handler="cb_menu_popup_override" swapped="no"/>
+		</object>
+	</child>
+	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-separator-override">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+	<child>
 		<object class="GtkImageMenuItem" id="menu-popup-edit-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -903,6 +921,12 @@
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
 	<property name="pixbuf">icons/show_id.png</property>
+</object>
+
+<object class="GtkImage" id="menu-popup-override-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon-name">edit-undo</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-rescan-folder-image">
