@@ -7,6 +7,7 @@ Dialog with Device ID and generated QR code
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
+from tools import IS_WINDOWS
 import os, tempfile
 _ = lambda (a) : a
 
@@ -41,8 +42,17 @@ class IDDialog(object):
 	def load_data(self):
 		""" Loads QR code from Syncthing daemon """
 		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
-		io = Gio.file_new_for_uri(uri)
-		io.load_contents_async(None, self.cb_syncthing_qr, ())
+		if IS_WINDOWS:
+			import urllib2
+			data = urllib2.urlopen(uri).read()
+			tf = tempfile.NamedTemporaryFile("wb", suffix=".png", delete=False)
+			tf.write(data)
+			tf.close()
+			self["vQR"].set_from_file(tf.name)
+			os.unlink(tf.name)
+		else:
+			io = Gio.file_new_for_uri(uri)
+			io.load_contents_async(None, self.cb_syncthing_qr, ())
 	
 	def cb_btClose_clicked(self, *a):
 		self.close()
