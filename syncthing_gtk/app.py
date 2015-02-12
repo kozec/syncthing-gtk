@@ -569,7 +569,7 @@ class App(Gtk.Application, TimerManager):
 			# Restart daemon process if connection is lost on Windows
 			self.process.kill()
 			self.process = None
-			self.start_daemon()
+			GLib.timeout_add_seconds(5, self.start_daemon)
 		self.set_status(False)
 		self.restart()
 	
