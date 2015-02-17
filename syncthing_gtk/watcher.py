@@ -32,9 +32,9 @@ if HAS_INOTIFY:
 		
 		def watch(self, path):
 			""" Starts recursive watching on specified directory """
-			self.wm.add_watch(path,
+			self.wm.add_watch(path.encode("utf-8"),
 				pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
-				pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True
+				pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True, quiet=False
 			)
 			log.verbose("Watching %s", path)
 		
@@ -66,7 +66,7 @@ if HAS_INOTIFY:
 			if event.mask & pyinotify.IN_ISDIR != 0:
 				if event.mask & pyinotify.IN_CREATE != 0:
 					# New dir - Add watch to created dir as well
-					self.watch(event.pathname)
+					self.watch(event.pathname.decode("utf-8"))
 					self._report_created(event.pathname)
 				elif event.mask & pyinotify.IN_DELETE != 0:
 					# Deleted dir - Remove watch to deleted dir
