@@ -243,7 +243,7 @@ class StatusIconGTK3(StatusIcon):
 			self.set_property("active", is_embedded)
 	
 	def _on_rclick(self, si, button, time):
-		self._popupmenu.popup(None, None, None, None, button, time)
+		self._get_popupmenu().popup(None, None, None, None, button, time)
 	
 	def _set_visible(self, active):
 		StatusIcon._set_visible(self, active)
