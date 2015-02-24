@@ -290,7 +290,9 @@ class App(Gtk.Application, TimerManager):
 	
 	def setup_statusicon(self):
 		self.statusicon = get_status_icon(self.iconpath, self["si-menu"])
-		self.statusicon.connect("clicked", self.cb_statusicon_click)
+		self.statusicon.connect("clicked",        self.cb_statusicon_click)
+		self.statusicon.connect("notify::active", self.cb_statusicon_notify_active)
+		self.cb_statusicon_notify_active()
 	
 	def setup_connection(self):
 		# Create Daemon instance (loads and parses config)
@@ -1678,6 +1680,12 @@ class App(Gtk.Application, TimerManager):
 		if self.is_visible():
 			self.hide()
 		else:
+			self.show()
+	
+	def cb_statusicon_notify_active(self, *a):
+		""" Called when the status icon changes its "inaccessible for sure" state """
+		# Show main window if the status icon is sure that no icon will be shown to the user
+		if not self.statusicon.get_active():
 			self.show()
 	
 	def cb_infobar_close(self, bar):

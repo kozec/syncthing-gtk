@@ -10,9 +10,9 @@ import locale
 import os
 import sys
 
-from gi.repository import GObject as gobject
-from gi.repository import GLib    as glib
-from gi.repository import Gtk     as gtk
+from gi.repository import GObject
+from gi.repository import GLib
+from gi.repository import Gtk
 
 from syncthing_gtk.tools import IS_UNITY, IS_KDE
 
@@ -39,95 +39,167 @@ _ = lambda msg: msg
 #     ⁵ For some menu items the standard GTK icons are used instead of the monotone ones
 
 
-class StatusIcon(gobject.GObject):
+class StatusIcon(GObject.GObject):
 	"""
 	Base class for all status icon backends
 	"""
 	TRAY_TITLE     = _("Syncthing")
 	
 	__gsignals__ = {
-		b"clicked": (gobject.SIGNAL_RUN_FIRST, None, ()),
+		b"clicked": (GObject.SIGNAL_RUN_FIRST, None, ()),
+	}
+	
+	__gproperties__ = {
+		b"active": (
+			GObject.TYPE_BOOLEAN,
+			"is the icon user-visible?",
+			"does the icon back-end think that anything is might be shown to the user?",
+			True,
+			GObject.PARAM_READWRITE
+		)		
 	}
 	
 	def __init__(self, icon_path, popupmenu):
-		gobject.GObject.__init__(self)
-		self._icon_path = os.path.normpath(os.path.abspath(icon_path))
-		self._popupmenu = popupmenu
-		self._active    = False
-		self._hidden    = False
-		self._icon      = "si-idle"
-		self._text      = ""
+		GObject.GObject.__init__(self)
+		self.__icon_path = os.path.normpath(os.path.abspath(icon_path))
+		self.__popupmenu = popupmenu
+		self.__active    = True
+		self.__visible   = False
+		self.__hidden    = False
+		self.__icon      = "si-unknown"
+		self.__text      = ""
 	
-	def on_click(self, *a):
-		self.emit("clicked")
+	def get_active(self):
+		"""
+		Return whether there is at least a chance that the icon might be shown to the user
+		
+		If this returns `False` then the icon will definetely not be shown, but if it returns `True` it doesn't have to
+		be visible...
+		
+		<em>Note:</em> This value is not directly influenced by calling `hide()` and `show()`.
+		
+		@return {bool}
+		"""
+		return self.get_property("active")
 	
-	def get_popupmenu(self):
-		return self._popupmenu
-	
-	def get_icon(self, icon=None):
-		if icon:
-			#TODO: Once icons are moved to a shared/themable location this should just do `return icon`
-			self._icon = icon
-		return os.path.join(self._icon_path, self._icon) + ".png"
-	
-	def get_text(self, text=None):
-		if text:
-			self._text = text
-		return self._text
-	
-	def set_active(self, active):
-		pass
-	
-	def set(self, icon, text=None):
+	def set(self, icon=None, text=None):
+		"""
+		Set the status icon image and descriptive text
+		
+		If either of these are `None` their previous value will be used.
+		
+		@param {String} icon
+		       The name of the icon to show (i.e. `si-idle`)
+		@param {String} text
+		       Some text that indicates what the application is currently doing (generally this be used for the tooltip)
+		"""
 		if IS_KDE and isinstance(self, StatusIconDBus) and not icon.startswith("si-syncing"):
 			# KDE seems to be the only platform that has proper support for icon states
 			# (all other implementations just hide the icon completely when its passive)
-			self._active = False
+			self.__visible = False
 		elif icon != "si-syncing-0":
 			# Ignore first syncing icon state to prevent the icon from flickering
 			# into the main notification bar during initialization
-			self._active = True
+			self.__visible = True
 		
-		if self._hidden:
-			self.set_active(False)
+		if self.__hidden:
+			self._set_visible(False)
 		else:
-			self.set_active(self._active)
+			self._set_visible(self.__visible)
 	
 	def hide(self):
-		self._hidden = True
-		self.set_active(False)
+		"""
+		Hide the icon
+		
+		This method tries its best to ensure the icon is hidden, but there are no guarantees as to how use well its
+		going to work.
+		"""
+		self.__hidden = True
+		self._set_visible(False)
 	
 	def show(self):
-		self._hidden = False
-		self.set_active(self._active)
+		"""
+		Show a previously hidden icon
+		
+		This method tries its best to ensure the icon is hidden, but there are no guarantees as to how use well its
+		going to work.
+		"""
+		self.__hidden = False
+		self._set_visible(self.__visible)
+	
+	
+	def _on_click(self, *a):
+		self.emit("clicked")
+	
+	def _get_icon(self, icon=None):
+		"""
+		@internal
+		
+		Use `set()` instead.
+		"""
+		if icon:
+			#TODO: Once icons are moved to a shared/themable location this should just do `return icon`
+			self.__icon = icon
+		return os.path.join(self.__icon_path, self.__icon) + ".png"
+	
+	def _get_text(self, text=None):
+		"""
+		@internal
+		
+		Use `set()` instead.
+		"""
+		if text:
+			self.__text = text
+		return self.__text
+	
+	def _get_popupmenu(self):
+		"""
+		@internal
+		"""
+		return self.__popupmenu
+	
+	def _set_visible(self, visible):
+		"""
+		@internal
+		"""
+		pass
+
+	def do_get_property(self, property):
+		if property.name == "active":
+			return self.__active
+		else:
+			raise AttributeError("Unknown property %s" % property.name)
+	
+	def do_set_property(self, property, value):
+		if property.name == "active":
+			self.__active = value
+		else:
+			raise AttributeError("unknown property %s" % property.name)
 
 
 class StatusIconDummy(StatusIcon):
 	"""
 	Dummy status icon implementation that does nothing
 	"""
-	def hide(self):
-		pass
+	def __init__(self, *args):
+		StatusIcon.__init__(self, *args)
+		
+		# Pretty unlikely that this will be visible...
+		self.set_property("active", False)
 	
-	def set(self, icon, text=None):
+	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)
 		
-		self.get_icon(icon)
-		self.get_text(text)
+		self._get_icon(icon)
+		self._get_text(text)
 
 
 class StatusIconGTK3(StatusIcon):
 	"""
 	Gtk.StatusIcon based status icon backend
 	"""
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args):
 		StatusIcon.__init__(self, *args)
-		
-		# Yes, its Python 2...
-		if "on_state_changed" in kwargs:
-			self._cb_embedded_changed = kwargs["on_state_changed"]
-		else:
-			self._cb_embedded_changed = lambda is_active: None
 		
 		if IS_UNITY:
 			# Unity fakes SysTray support but actually hides all icons...
@@ -139,11 +211,11 @@ class StatusIconGTK3(StatusIcon):
 			# (since several KDE applications depend on it)
 			raise NotImplementedError
 		
-		self._tray = gtk.StatusIcon()
+		self._tray = Gtk.StatusIcon()
 		
-		self._tray.connect("activate", self.on_click)
-		self._tray.connect("popup-menu", self.on_rclick)
-		self._tray.connect("notify::embedded", self.on_embedded_change)
+		self._tray.connect("activate", self._on_click)
+		self._tray.connect("popup-menu", self._on_rclick)
+		self._tray.connect("notify::embedded", self._on_embedded_change)
 		
 		self._tray.set_visible(True)
 		self._tray.set_name("syncthing-gtk")
@@ -151,34 +223,32 @@ class StatusIconGTK3(StatusIcon):
 		
 		# self._tray.is_embedded() must be called asynchronously
 		# See: http://stackoverflow.com/a/6365904/277882
-		self._state_is_embedded = True
-		glib.idle_add(self.on_embedded_change)
+		GLib.idle_add(self._on_embedded_change)
 	
-	def on_embedded_change(self, *args):
+	def set(self, icon=None, text=None):
+		StatusIcon.set(self, icon, text)
+		
+		self._tray.set_from_file(self._get_icon(icon))
+		self._tray.set_tooltip_text(self._get_text(text))
+	
+	def _on_embedded_change(self, *args):
 		# Without an icon update at this point GTK might consider the icon embedded and visible even through
 		# it can't actually be seen...
-		self._tray.set_from_file(self.get_icon())
+		self._tray.set_from_file(self._get_icon())
 		
 		# An invisible tray icon will never be embedded but it also should not be replaced
 		# by a fallback icon
 		is_embedded = self._tray.is_embedded() or not self._tray.get_visible()
-		if is_embedded != self._state_is_embedded:
-			self._state_is_embedded = is_embedded
-			self._cb_embedded_changed(self._state_is_embedded)
+		if is_embedded != self.get_property("active"):
+			self.set_property("active", is_embedded)
 	
-	def on_rclick(self, si, button, time):
+	def _on_rclick(self, si, button, time):
 		self._popupmenu.popup(None, None, None, None, button, time)
 	
-	def set_active(self, active):
-		StatusIcon.set_active(self, active)
+	def _set_visible(self, active):
+		StatusIcon._set_visible(self, active)
 		
 		self._tray.set_visible(active)
-	
-	def set(self, icon, text=None):
-		StatusIcon.set(self, icon, text)
-		
-		self._tray.set_from_file(self.get_icon(icon))
-		self._tray.set_tooltip_text(self.get_text(text))
 
 
 class StatusIconDBus(StatusIcon):
@@ -197,7 +267,7 @@ class StatusIconQt(StatusIconDBus):
 		action = self._qt_types["QAction"](menu_qt)
 		
 		# Convert item to separator if appropriate
-		action.setSeparator(isinstance(menu_child_gtk, gtk.SeparatorMenuItem))
+		action.setSeparator(isinstance(menu_child_gtk, Gtk.SeparatorMenuItem))
 		
 		# Copy sensitivity
 		def set_sensitive(*args):
@@ -206,18 +276,18 @@ class StatusIconQt(StatusIconDBus):
 		set_sensitive()
 		
 		# Copy checkbox state
-		if isinstance(menu_child_gtk, gtk.CheckMenuItem):
+		if isinstance(menu_child_gtk, Gtk.CheckMenuItem):
 			action.setCheckable(True)
-			def set_active(*args):
+			def _set_visible(*args):
 				action.setChecked(menu_child_gtk.get_active())
-			menu_child_gtk.connect("notify::active", set_active)
-			set_active()
+			menu_child_gtk.connect("notify::active", _set_visible)
+			_set_visible()
 		
 		# Copy icon
-		if isinstance(menu_child_gtk, gtk.ImageMenuItem):
+		if isinstance(menu_child_gtk, Gtk.ImageMenuItem):
 			def set_image(*args):
 				image = menu_child_gtk.get_image()
-				if image and image.get_storage_type() == gtk.ImageType.PIXBUF:
+				if image and image.get_storage_type() == Gtk.ImageType.PIXBUF:
 					# Converting GdkPixbufs to QIcons might be a bit inefficient this way,
 					# but it requires only very little code and looks very stable
 					png_buffer = image.get_pixbuf().save_to_bufferv("png", [], [])[1]
@@ -227,22 +297,22 @@ class StatusIconQt(StatusIconDBus):
 					action.setIcon(self._qt_types["QIcon"](pixmap))
 				elif image:
 					icon_name = None
-					if image.get_storage_type() == gtk.ImageType.ICON_NAME:
+					if image.get_storage_type() == Gtk.ImageType.ICON_NAME:
 						icon_name = image.get_icon_name()[0]
-					if image.get_storage_type() == gtk.ImageType.STOCK:
+					if image.get_storage_type() == Gtk.ImageType.STOCK:
 						icon_name = image.get_stock()[0]
 					
-					action.setIcon(self.get_icon_by_name(icon_name))
+					action.setIcon(self._get_icon_by_name(icon_name))
 				else:
-					action.setIcon(self.get_icon_by_name(None))
+					action.setIcon(self._get_icon_by_name(None))
 			menu_child_gtk.connect("notify::image", set_image)
 			set_image()
 		
 		# Set label
 		def set_label(*args):
 			label = menu_child_gtk.get_label()
-			if isinstance(menu_child_gtk, gtk.ImageMenuItem) and menu_child_gtk.get_use_stock():
-				label = gtk.stock_lookup(label).label
+			if isinstance(menu_child_gtk, Gtk.ImageMenuItem) and menu_child_gtk.get_use_stock():
+				label = Gtk.stock_lookup(label).label
 			if isinstance(label, str):
 				label = label.decode(locale.getpreferredencoding())
 			if menu_child_gtk.get_use_underline():
@@ -253,7 +323,7 @@ class StatusIconQt(StatusIconDBus):
 		
 		# Add submenus
 		def set_popupmenu(*args):
-			action.setMenu(self.get_popupmenu(menu_child_gtk.get_submenu()))
+			action.setMenu(self._get_popupmenu(menu_child_gtk.get_submenu()))
 		menu_child_gtk.connect("notify::popupmenu", set_popupmenu)
 		set_popupmenu()
 		
@@ -262,7 +332,7 @@ class StatusIconQt(StatusIconDBus):
 		
 		return action
 	
-	def get_icon_by_name(self, icon_name):
+	def _get_icon_by_name(self, icon_name):
 		if icon_name:
 			icon_path = self._gtk_icon_theme.lookup_icon(icon_name, 48, 0).get_filename()
 			if icon_path:
@@ -285,13 +355,13 @@ class StatusIconQt(StatusIconDBus):
 		
 		return self._qt_types["QIcon"]()
 	
-	def set_qt_types(self, **kwargs):
-		self._gtk_icon_theme = gtk.IconTheme.get_default()
+	def _set_qt_types(self, **kwargs):
+		self._gtk_icon_theme = Gtk.IconTheme.get_default()
 		
 		self._qt_types = kwargs
 	
-	def get_popupmenu(self, menu_gtk=False):
-		menu_gtk = menu_gtk if menu_gtk is not False else StatusIcon.get_popupmenu(self)
+	def _get_popupmenu(self, menu_gtk=False):
+		menu_gtk = menu_gtk if menu_gtk is not False else StatusIcon._get_popupmenu(self)
 		if not menu_gtk:
 			return None
 		
@@ -313,7 +383,7 @@ class StatusIconKDE4(StatusIconQt):
 			import PyQt4.QtGui  as qtgui
 			import PyKDE4.kdeui as kdeui
 			
-			self.set_qt_types(
+			self._set_qt_types(
 				QAction = qtgui.QAction,
 				QMenu   = kdeui.KMenu,
 				QIcon   = qtgui.QIcon,
@@ -335,7 +405,7 @@ class StatusIconKDE4(StatusIconQt):
 		self._qt_app = qt.QApplication([sys.argv[0], "--style=motif"])
 		
 		# Keep reference to KMenu object to prevent SegFault...
-		self._kde_menu = self.get_popupmenu()
+		self._kde_menu = self._get_popupmenu()
 		
 		self._tray = kdeui.KStatusNotifierItem("syncthing-gtk", None)
 		self._tray.setStandardActionsEnabled(False) # Prevent KDE quit item from showing
@@ -343,18 +413,18 @@ class StatusIconKDE4(StatusIconQt):
 		self._tray.setCategory(kdeui.KStatusNotifierItem.ApplicationStatus)
 		self._tray.setTitle(self.TRAY_TITLE)
 		
-		self._tray.activateRequested.connect(self.on_click)
+		self._tray.activateRequested.connect(self._on_click)
 	
-	def set_active(self, active):
-		StatusIcon.set_active(self, active)
+	def _set_visible(self, active):
+		StatusIcon._set_visible(self, active)
 		
 		self._tray.setStatus(self._status_active if active else self._status_passive)
 	
-	def set(self, icon, text=""):
+	def set(self, icon=None, text=""):
 		StatusIcon.set(self, icon, text)
 		
-		self._tray.setIconByName(self.get_icon(icon))
-		self._tray.setToolTip(self.get_icon(icon), self.get_text(text), "")
+		self._tray.setIconByName(self._get_icon(icon))
+		self._tray.setToolTip(self._get_icon(icon), self._get_text(text), "")
 
 
 class StatusIconAppIndicator(StatusIconDBus):
@@ -374,19 +444,20 @@ class StatusIconAppIndicator(StatusIconDBus):
 		
 		category = appindicator.IndicatorCategory.APPLICATION_STATUS
 		# Whatever icon is set here will be used as a tooltip icon during the entire time to icon is shown
-		self._tray = appindicator.Indicator.new("syncthing-gtk", self.get_icon(), category)
-		self._tray.set_menu(self.get_popupmenu())
+		self._tray = appindicator.Indicator.new("syncthing-gtk", self._get_icon(), category)
+		self._tray.set_menu(self._get_popupmenu())
 		self._tray.set_title(self.TRAY_TITLE)
 	
-	def set_active(self, active):
-		StatusIcon.set_active(self, active)
+	def _set_visible(self, active):
+		StatusIcon._set_visible(self, active)
 		
 		self._tray.set_status(self._status_active if active else self._status_passive)
 	
-	def set(self, icon, text=None):
+	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)
 		
-		self._tray.set_icon_full(self.get_icon(icon), self.get_text(text))
+		self._tray.set_icon_full(self._get_icon(icon), self._get_text(text))
+
 
 
 class StatusIconProxy(StatusIcon):
@@ -396,30 +467,41 @@ class StatusIconProxy(StatusIcon):
 		self._arguments  = args
 		self._status_fb  = None
 		self._status_gtk = None
+		self.set("si-unknown", "")
 		
 		try:
 			# Try loading GTK native status icon
-			self._status_gtk = StatusIconGTK3(*args, on_state_changed=self._set_gtk_active)
-			self._status_gtk.connect(b"clicked", self.on_click)
+			self._status_gtk = StatusIconGTK3(*args)
+			self._status_gtk.connect(b"clicked",        self._on_click)
+			self._status_gtk.connect(b"notify::active", self._on_notify_active_gtk)
+			self._on_notify_active_gtk()
 			
 			print("StatusIcon: Using backend StatusIconGTK3 (primary)")
 		except NotImplementedError:
 			# Directly load fallback implementation
 			self._load_fallback()
 	
-	def on_click(self, *args):
+	def _on_click(self, *args):
 		self.emit(b"clicked")
 	
-	def _set_gtk_active(self, gtk_active):
+	def _on_notify_active_gtk(self, *args):
 		if self._status_fb:
 			# Hide fallback icon if GTK icon is active and vice-versa
-			if gtk_active:
+			if self._status_gtk.get_active():
 				self._status_fb.hide()
 			else:
 				self._status_fb.show()
-		elif not gtk_active:
+		elif not self._status_gtk.get_active():
 			# Load fallback implementation
 			self._load_fallback()
+	
+	def _on_notify_active_fb(self, *args):
+		active = False
+		if self._status_gtk and self._status_gtk.get_active():
+			active = True
+		if self._status_fb and self._status_fb.get_active():
+			active = True
+		self.set_property("active", active)
 	
 	def _load_fallback(self):
 		if IS_UNITY:
@@ -431,7 +513,9 @@ class StatusIconProxy(StatusIcon):
 			for StatusIconBackend in status_icon_backends:
 				try:
 					self._status_fb = StatusIconBackend(*self._arguments)
-					self._status_fb.connect(b"clicked", self.on_click)
+					self._status_fb.connect(b"clicked",        self._on_click)
+					self._status_fb.connect(b"notify::active", self._on_notify_active_fb)
+					self._on_notify_active_fb()
 					
 					print("StatusIcon: Using backend %s (fallback)" % StatusIconBackend.__name__)
 					break
@@ -444,7 +528,7 @@ class StatusIconProxy(StatusIcon):
 		# Update fallback icon
 		self.set(self._icon, self._text)
 	
-	def set(self, icon, text=None):
+	def set(self, icon=None, text=None):
 		self._icon = icon
 		self._text = text
 		
@@ -458,8 +542,12 @@ class StatusIconProxy(StatusIcon):
 			self._status_gtk.hide()
 		if self._status_fb:
 			self._status_fb.hide()
-
-
+	
+	def show(self):
+		if self._status_gtk:
+			self._status_gtk.show()
+		if self._status_fb:
+			self._status_fb.show()
 
 def get_status_icon(*args):
 	# Try selecting backend based on environment variable
