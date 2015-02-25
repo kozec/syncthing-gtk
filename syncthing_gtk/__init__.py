@@ -17,7 +17,7 @@ if not "GTK2APP" in os.environ:
 	from deviceeditor		import DeviceEditorDialog
 	from foldereditor		import FolderEditorDialog
 	from daemonsettings		import DaemonSettingsDialog
-	from statusicon			import StatusIcon, HAS_INDICATOR
+	from statusicon			import get_status_icon
 	from uisettingsdialog	import UISettingsDialog
 	from configuration		import Configuration
 	from iddialog			import IDDialog

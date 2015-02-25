@@ -182,15 +182,15 @@ class App(Gtk.Application, TimerManager):
 		return 0
 	
 	def do_activate(self, *a):
-		if not self.hide_window or (IS_UNITY and not HAS_INDICATOR):
-			if self.wizard is None:
-				# Show main window
-				self.show()
-		elif self.hide_window:
+		if self.hide_window:
 			print
 			print _("Syncthing-GTK started and running in notification area")
 			if not self.daemon is None:
 				self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
+		else:
+			if self.wizard is None:
+				# Show main window
+				self.cb_statusicon_click()
 		self.hide_window = False
 	
 	def setup_commandline(self):
@@ -289,10 +289,10 @@ class App(Gtk.Application, TimerManager):
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):
-		self.statusicon = StatusIcon(self.iconpath, self["si-menu"])
-		self.statusicon.connect("clicked", self.cb_statusicon_click)
-		if HAS_INDICATOR:
-			self["menu-si-show"].set_visible(True)
+		self.statusicon = get_status_icon(self.iconpath, self["si-menu"])
+		self.statusicon.connect("clicked",        self.cb_statusicon_click)
+		self.statusicon.connect("notify::active", self.cb_statusicon_notify_active)
+		self.cb_statusicon_notify_active()
 	
 	def setup_connection(self):
 		# Create Daemon instance (loads and parses config)
@@ -1053,6 +1053,7 @@ class App(Gtk.Application, TimerManager):
 				self.connect_dialog.show()
 		else:
 			self["window"].present()
+		self["menu-si-show"].set_label(_("Hide Window"))
 		if IS_WINDOWS:
 			# Change window size by 1px - this will cause bugged
 			# window border to reappear
@@ -1071,6 +1072,7 @@ class App(Gtk.Application, TimerManager):
 			# on Windows...
 			self.config["window_position"] = (x, y)
 		self["window"].hide()
+		self["menu-si-show"].set_label(_("Show Window"))
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
@@ -1678,6 +1680,12 @@ class App(Gtk.Application, TimerManager):
 		if self.is_visible():
 			self.hide()
 		else:
+			self.show()
+	
+	def cb_statusicon_notify_active(self, *a):
+		""" Called when the status icon changes its "inaccessible for sure" state """
+		# Show main window if the status icon is sure that no icon will be shown to the user
+		if not self.statusicon.get_active():
 			self.show()
 	
 	def cb_infobar_close(self, bar):
