@@ -27,6 +27,7 @@ if "DESKTOP_SESSION" in os.environ:
 
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
+LOG_FORMAT				= "%(levelname)s %(name)-13s %(message)s"
 DESKTOP_FILE = """[Desktop Entry]
 Name=%s
 Exec=%s
@@ -196,19 +197,7 @@ def init_logging():
 	Initializes logging, sets custom logging format and adds one
 	logging level with name and method to call.
 	"""
-	fmt = "%(levelname)s %(name)-13s %(message)s"
-	logging.basicConfig(format=fmt)
-	if IS_WINDOWS:
-		# Windows executable has no console to output to, so output is
-		# written to logfile as well
-		import tempfile
-		logfile = tempfile.NamedTemporaryFile(delete=False,
-			prefix="Syncthing-GTK-",
-			suffix=".log")
-		logfile.close()
-		h = logging.FileHandler(logfile.name)
-		h.setFormatter(logging.Formatter(fmt))
-		logging.getLogger().addHandler(h)
+	logging.basicConfig(format=LOG_FORMAT)
 	logger = logging.getLogger()
 	# Rename levels
 	logging.addLevelName(10, "D")	# Debug
@@ -231,6 +220,17 @@ def set_logging_level(verbose, debug):
 		logger.setLevel(11)
 	else:			# INFO and worse
 		logger.setLevel(20)
+	if (debug or verbose) and IS_WINDOWS:
+		# Windows executable has no console to output to, so output is
+		# written to logfile as well
+		import tempfile
+		logfile = tempfile.NamedTemporaryFile(delete=False,
+			prefix="Syncthing-GTK-",
+			suffix=".log")
+		logfile.close()
+		h = logging.FileHandler(logfile.name)
+		h.setFormatter(logging.Formatter(LOG_FORMAT))
+		logging.getLogger().addHandler(h)
 
 def check_daemon_running():
 	""" Returns True if syncthing daemon is running """
