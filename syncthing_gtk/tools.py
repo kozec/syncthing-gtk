@@ -196,7 +196,19 @@ def init_logging():
 	Initializes logging, sets custom logging format and adds one
 	logging level with name and method to call.
 	"""
-	logging.basicConfig(format="%(levelname)s %(name)-13s %(message)s")
+	fmt = "%(levelname)s %(name)-13s %(message)s"
+	logging.basicConfig(format=fmt)
+	if IS_WINDOWS:
+		# Windows executable has no console to output to, so output is
+		# written to logfile as well
+		import tempfile
+		logfile = tempfile.NamedTemporaryFile(delete=False,
+			prefix="Syncthing-GTK-",
+			suffix=".log")
+		logfile.close()
+		h = logging.FileHandler(logfile.name)
+		h.setFormatter(logging.Formatter(fmt))
+		logging.getLogger().addHandler(h)
 	logger = logging.getLogger()
 	# Rename levels
 	logging.addLevelName(10, "D")	# Debug
