@@ -365,6 +365,11 @@ class App(Gtk.Application, TimerManager):
 
 	def start_daemon(self):
 		if self.process is None:
+			if IS_WINDOWS:
+				from syncthing_gtk import windows
+				if windows.is_shutting_down():
+					log.warning("Not starting daemon: System shutdown detected")
+					return
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)

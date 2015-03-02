@@ -9,8 +9,10 @@ from syncthing_gtk import windows
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 from gi.repository import Gio, GLib, GObject
-import os, logging, codecs, msvcrt, win32pipe, _winreg
+import os, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 log = logging.getLogger("windows.py")
+
+SM_SHUTTINGDOWN = 0x2000
 
 def fix_localized_system_error_messages():
 	"""
@@ -37,6 +39,10 @@ def dont_use_localization_in_gtk():
 	real translation support is done.
 	"""
 	os.environ['LANGUAGE'] = 'en_US'
+
+def is_shutting_down():
+	""" Returns True if Windows initiated shutdown process """
+	return (win32api.GetSystemMetrics(SM_SHUTTINGDOWN) != 0)
 
 class WinPopenReader:
 	"""
