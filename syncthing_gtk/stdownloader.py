@@ -94,7 +94,7 @@ class StDownloader(GObject.GObject):
 		Path will contain ~ on Linux and needs to be expanded.
 		"""
 		if IS_WINDOWS:
-			return os.path.join(get_config_dir(), "syncthing")
+			return os.path.join(get_config_dir().encode(sys.stdout.encoding), "syncthing")
 		for p in ("~/bin", "~/.bin"):
 			if os.path.exists(os.path.expanduser(p)):
 				return p
@@ -217,8 +217,14 @@ class StDownloader(GObject.GObject):
 		# Everything is done, emit version signal
 		self.emit("version", self.version)
 	
-	
 	def download(self):
+		try:
+			target_dir = os.path.split(self.target)[0]
+			if not os.path.exists(target_dir):
+				os.makedirs(target_dir)
+		except Exception, e:
+			self.emit("error", e, _("Failed to create directory"))
+			return
 		try:
 			suffix = ".%s" % (".".join(self.dll_url.split(".")[-2:]),)
 			if suffix.endswith(".zip") :
@@ -233,7 +239,6 @@ class StDownloader(GObject.GObject):
 		f.read_async(GLib.PRIORITY_DEFAULT, None, self._cb_open_archive,
 				(tmpfile,))
 		self.emit("download-starting")
-	
 	
 	def _cb_open_archive(self, f, result, (tmpfile,)):
 		stream = None
@@ -295,9 +300,9 @@ class StDownloader(GObject.GObject):
 					tinfo = archive.getmember(pathname)
 					if tinfo.isfile():
 						compressed = archive.extractfile(pathname)
-						try:
-							os.makedirs(os.path.split(self.target)[0])
-						except Exception: pass
+						print self.target
+						print (self.target,)
+						print type(self.target)
 						output = file(self.target, "wb")
 						GLib.idle_add(self._extract, (archive, compressed, output, 0, tinfo.size))
 						return

@@ -14,6 +14,7 @@ if __name__ == "__main__":
 		from syncthing_gtk import windows
 		windows.fix_localized_system_error_messages()
 		windows.dont_use_localization_in_gtk()
+		windows.os_paths_for_non_ascii_usernames()
 	
 	from syncthing_gtk import App
 	App(".", "./icons").run(sys.argv)

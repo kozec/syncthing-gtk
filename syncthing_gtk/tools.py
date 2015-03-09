@@ -295,6 +295,13 @@ def get_config_dir():
 	Returns ~/.config, %APPDATA% or whatever has user set as
 	configuration directory.
 	"""
+	if IS_WINDOWS:
+		# GLib returns weird things if Windows user has non-ascii
+		# character in LOCALAPPDATA
+		if "LOCALAPPDATA" in os.environ:
+			# Should be always
+			return os.environ["LOCALAPPDATA"]
+		return os.path.expanduser("~")
 	confdir = GLib.get_user_config_dir()
 	if confdir is None:
 		confdir = os.path.expanduser("~/.config")

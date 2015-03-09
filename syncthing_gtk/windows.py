@@ -9,7 +9,7 @@ from syncthing_gtk import windows
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 from gi.repository import Gio, GLib, GObject
-import os, logging, codecs, msvcrt, win32pipe, win32api, _winreg
+import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
@@ -39,6 +39,71 @@ def dont_use_localization_in_gtk():
 	real translation support is done.
 	"""
 	os.environ['LANGUAGE'] = 'en_US'
+
+def os_paths_for_non_ascii_usernames():
+	"""
+	Replaces os.environ with custom implementation that decodes some
+	fields from whatever locale Windows is using to unicode when they
+	are being read and encodes them back when being set.
+	Specialy handled are path-related fields (USERPROFILE, APPDATA, etc)
+	and USER.
+	
+	Fix is applied only if os.path.expanduser("~") can't be decoded normaly.
+	
+	This fixes (along with other) bug in os.path.expanduser that occurs
+	when user has non-ascii characters in username (or rather USERPROFILE).
+	
+	See http://bugs.python.org/issue13207 , may some random deity damn
+	their unworthy souls -_-
+	"""
+	
+	
+	"""
+	Replaces os.path.expanduser function with my own version that
+	correctly handles non-ascii characters in ~ directory.
+	See http://bugs.python.org/issue13207 , may some random deity damn
+	their unworthy souls -_-
+	
+	Also replaces os.environ with dict that have fields like APPDATA,
+	USERNAME (etc) decoded from whatever locale Windows is using to
+	unicode.
+	"""
+	if "?" in os.path.expanduser("~"):
+		# Yeah, Windows actually does this
+		log.warn("Applying os_paths_for_non_ascii_usernames")
+		if not "USERPROFILE" in os.environ:
+			log.error("Sorry, You are using Windows, non-ascii character in username")
+			log.error("and You don't have USERPROFILE environment variable set. Stop")
+			log.error("doing at least one of named.")
+			# ^^ wrapped to cmd.exe window width
+			sys.exit(1)
+		
+		os.environ = SomeInUnicodeEnviron()
+		
+		"""
+		os_environ = os.environ
+		os.environ = []
+		for x in ("USERPROFILE", "APPDATA", "USERNAME", "LOCALAPPDATA"):
+			print x
+			os.environ[x] = os_environ[x].decode(sys.stdout.encoding)
+		for x in os_environ:
+			if not x in os.environ:
+				os.environ[x] = os_environ[x]
+		userprofile = os.environ["USERPROFILE"]
+		
+		def os_path_expanduser(path):
+			" ""
+			Expand ~ constructs. ~user is not supported
+			If %USERPROFILE%, code already crashed
+			" ""
+			if path.startswith("~/"):
+				return os.path.join(userprofile, path[2:])
+			if path.startswith("~"):
+				raise ValueError("~user construct is not supported")
+			return path
+		
+		os.path.expanduser = os_path_expanduser
+		"""
 
 def is_shutting_down():
 	""" Returns True if Windows initiated shutdown process """
@@ -162,7 +227,7 @@ def WinConfiguration():
 		def _store(self, r, name, tp, value):
 			""" Stores value in registry, handling special types """
 			if tp in (unicode, str):
-				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, str(value))
+				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, value.encode(sys.stdout.encoding))
 			elif tp in (int, bool):
 				_winreg.SetValueEx(r, name, 0, _winreg.REG_DWORD, int(value))
 			elif tp in (list, tuple):
@@ -171,7 +236,7 @@ def WinConfiguration():
 					for i in xrange(0, len(value)):
 						self._store(r, "%s_%s" % (name, i), type(value[i]), value[i])
 			else:
-				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, serializer(value))
+				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, serializer(value).encode(sys.stdout.encoding))
 		
 		def _read(self, r, name, tp):
 			""" Reads value from registry, handling special types """
@@ -183,6 +248,54 @@ def WinConfiguration():
 				return value
 			else:
 				value, keytype = _winreg.QueryValueEx(r, name)
-				return value
+				return value.decode(sys.stdout.encoding)
 		
 	return _WinConfiguration
+
+_os_environ = os.environ
+class SomeInUnicodeEnviron:
+	""" See os_paths_for_non_ascii_usernames """
+	HANDLED = ("USERPROFILE", "APPDATA", "USERNAME", "LOCALAPPDATA", "USER", "USERNAME")
+	def __setitem__(self, key, item): 
+		if key in SomeInUnicodeEnviron.HANDLED:
+			item = unicode(item).encode(sys.stdout.encoding)
+		_os_environ[key] = item
+	
+	def __getitem__(self, key): 
+		if key in SomeInUnicodeEnviron.HANDLED:
+			print "TRANSLATING", key, _os_environ[key], _os_environ[key].decode(sys.stdout.encoding)
+			return _os_environ[key].decode(sys.stdout.encoding)
+		print "not translating", key
+		return _os_environ[key]
+	
+	def get(self, key, default):
+		if key in self:
+			return self[key]
+		return default
+	
+	def set(self, key, value):
+		self[key] = value
+	
+	def __len__(self): 
+		return len(_os_environ)
+	
+	def __delitem__(self, key): 
+		del self._os_environ[key]
+	
+	def keys(self): 
+		return _os_environ.keys()
+	
+	def values(self):
+		return [ self[x] for x in _os_environ ]
+		
+	def __cmp__(self, dict):
+		return cmp(_os_environ, dict)
+	
+	def __contains__(self, item):
+		return item in _os_environ
+	
+	def __iter__(self):
+		return iter(_os_environ)
+	
+	def __call__(self):
+		return _os_environ
