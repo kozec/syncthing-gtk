@@ -32,10 +32,13 @@ if HAS_INOTIFY:
 		
 		def watch(self, path):
 			""" Starts recursive watching on specified directory """
-			self.wm.add_watch(path.encode("utf-8"),
+			added = self.wm.add_watch(path.encode("utf-8"),
 				pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
 				pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True, quiet=False
 			)
+			if path in added:
+				# Should be always
+				self.wds[path] = added[path]
 			log.verbose("Watching %s", path)
 		
 		def remove(self, path):

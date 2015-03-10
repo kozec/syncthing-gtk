@@ -1301,6 +1301,8 @@ class App(Gtk.Application, TimerManager):
 		Looks cleaner & prevents UI from blinking.
 		"""
 		log.debug("Reloading config...")
+		if not self.watcher is None:
+			self.watcher.clear()
 		self.daemon.reload_config()
 	
 	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
