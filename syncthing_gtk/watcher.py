@@ -84,7 +84,7 @@ if HAS_INOTIFY:
 			elif event.mask & pyinotify.IN_MOVED_FROM != 0:
 				# Moved out = deleted
 				self._report_deleted(event.pathname)
-			elif event.mask & pyinotify.IN_DELETE != 0:
+			elif event.mask & pyinotify.IN_MOVED_TO != 0:
 				# Moved in = created
 				self._report_created(event.pathname)
 		
