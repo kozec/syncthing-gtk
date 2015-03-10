@@ -1147,6 +1147,9 @@ class App(Gtk.Application, TimerManager):
 				self.connect_dialog.show_all()
 			else:
 				cb.show()	# Keep this one visible, even if dialog is not
+			# Update notification icon menu so user can start daemon from there
+			self["menu-si-shutdown"].set_visible(False)
+			self["menu-si-resume"].set_visible(True)
 	
 	def close_connect_dialog(self):
 		if self.connect_dialog != None:
