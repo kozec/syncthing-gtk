@@ -329,7 +329,6 @@ class InfoBox(Gtk.Container):
 		self.set_title(self.str_title)
 	
 	def set_status(self, t, percentage=0.0):
-		self.str_status = t
 		if percentage > 0.0 and percentage < 1.0:
 			percent = percentage * 100.0
 			self.status.set_markup('<span color="white" %s>%s (%.f%%)</span>' % (
@@ -340,7 +339,9 @@ class InfoBox(Gtk.Container):
 			self.status.set_markup('<span color="white" %s>%s</span>' % (
 				self.app.config["infobox_style"],
 				t))
-			log.debug("%s state changed to %s", self.str_title, t)
+			if self.str_status != t:
+				log.debug("%s state changed to %s", self.str_title, t)
+		self.str_status = t
 	
 	def get_status(self):
 		return self.str_status
