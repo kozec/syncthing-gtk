@@ -160,11 +160,20 @@ class FolderEditorDialog(EditorDialog):
 		if key == "vDevices":
 			# Very special case
 			nids = [ n["DeviceID"] for n in self.get_value("Devices") ]
+			target = self["vDevices"]
+			if len(self.app.devices) > 5:
+				# Add scrollbar, so window can fit small displays
+				target = Gtk.VBox()
+				scroll = Gtk.ScrolledWindow()
+				scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+				scroll.add_with_viewport(target)
+				# scroll.set_size_request(-1, 100)
+				self["vDevices"].pack_start(scroll, False, True, 0)
 			for device in self.app.devices.values():
 				if device["id"] != self.app.daemon.get_my_id():
 					b = Gtk.CheckButton(device.get_title(), False)
 					b.set_tooltip_text(device["id"])
-					self["vDevices"].pack_end(b, False, False, 0)
+					target.pack_end(b, False, False, 0)
 					b.set_active(device["id"] in nids)
 			self["vDevices"].show_all()
 		else:
