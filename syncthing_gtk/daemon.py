@@ -1198,6 +1198,17 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		return self._my_id
 	
+	def get_version(self):
+		"""
+		Returns daemon version or "unknown" if daemon version is not yet
+		known
+		"""
+		if self._my_id == None: return "unknown"
+		device = self._get_device_data(self._my_id)
+		if "ClientVersion" in device:
+			return device["ClientVersion"]
+		return "unknown"
+	
 	def get_webui_url(self):
 		""" Returns webiu url in http(s)://127.0.0.1:8080 format """
 		return "%s://%s" % (
