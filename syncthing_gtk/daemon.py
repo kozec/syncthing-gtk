@@ -981,10 +981,12 @@ class Daemon(GObject.GObject, TimerManager):
 			self._syncing_folders.discard(rid)
 			if not rid in self._stopped_folders:
 				self.emit("folder-sync-finished", rid)
+			recheck = True
 		if state != "scanning" and rid in self._scanning_folders:
 			self._scanning_folders.discard(rid)
 			if not rid in self._stopped_folders:
 				self.emit("folder-scan-finished", rid)
+			recheck = True
 		if state == "syncing":
 			if not rid in self._stopped_folders:
 				if rid in self._syncing_folders:
@@ -1000,7 +1002,6 @@ class Daemon(GObject.GObject, TimerManager):
 				else:
 					self._scanning_folders.add(rid)
 					self.emit("folder-scan-started", rid)
-				recheck = True
 		return recheck
 	
 	def _on_event(self, e):
