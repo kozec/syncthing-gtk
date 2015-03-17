@@ -54,7 +54,7 @@ class DeviceEditorDialog(EditorDialog):
 			if self.is_new:
 				self.values = { x.lstrip("v") : "" for x in VALUES }
 				self.set_value("Addresses", "dynamic")
-				self.set_value("Compression", True)
+				self.set_value("Compression", "metadata")
 				self.checks = {
 					"vDeviceID" : check_device_id,
 					}

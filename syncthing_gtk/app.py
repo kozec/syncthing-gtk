@@ -1215,7 +1215,7 @@ class App(Gtk.Application, TimerManager):
 		box.set_visible("ignore",	ignore_perms)
 		return box
 	
-	def show_device(self, id, name, use_compression, introducer, used):
+	def show_device(self, id, name, compression, introducer, used):
 		if name in (None, ""):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
@@ -1231,7 +1231,7 @@ class App(Gtk.Application, TimerManager):
 			# Add visible lines
 			box.add_value("address",	"address.png",	_("Address"),			"?")
 			box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
-			box.add_value("compress",	"compress.png",	_("Use Compression"))
+			box.add_value("compress",	"compress.png",	_("Compression"))
 			box.add_value("inbps",		"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
 			box.add_value("outbps",		"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
 			box.add_value("introducer",	"thumb_up.png",	_("Introducer"))
@@ -1257,7 +1257,9 @@ class App(Gtk.Application, TimerManager):
 			box.connect('leave-notify-event', self.cb_box_mouse_leave)
 			self.devices[id] = box
 		# Set values
-		box.set_value("compress",	_("Yes") if use_compression else _("No"))
+		if compression in (True, "always"): box.set_value("compress", _("All Data"))
+		elif compression in (False, "never"): box.set_value("compress", _("Off"))
+		else: box.set_value("compress", _("Metadata Only"))
 		box.set_value("introducer",	_("Yes") if introducer else _("No"))
 		box.set_value('last-seen',	_("Never"))
 		return box
