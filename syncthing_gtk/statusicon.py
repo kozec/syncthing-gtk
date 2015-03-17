@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import locale
 import os
 import sys
+import logging
 
 from gi.repository import GObject
 from gi.repository import GLib
@@ -17,6 +18,7 @@ from gi.repository import Gtk
 from syncthing_gtk.tools import IS_UNITY, IS_KDE
 
 _ = lambda msg: msg
+log = logging.getLogger("StatusIcon")
 
 
 #                | KDE5            | MATE      | Unity      | Cinnamon   | Cairo-Dock (classic) | Cairo-Dock (modern) | KDE4      |
@@ -476,7 +478,7 @@ class StatusIconProxy(StatusIcon):
 			self._status_gtk.connect(b"notify::active", self._on_notify_active_gtk)
 			self._on_notify_active_gtk()
 			
-			print("StatusIcon: Using backend StatusIconGTK3 (primary)")
+			log.info("Using backend StatusIconGTK3 (primary)")
 		except NotImplementedError:
 			# Directly load fallback implementation
 			self._load_fallback()
@@ -517,7 +519,7 @@ class StatusIconProxy(StatusIcon):
 					self._status_fb.connect(b"notify::active", self._on_notify_active_fb)
 					self._on_notify_active_fb()
 					
-					print("StatusIcon: Using backend %s (fallback)" % StatusIconBackend.__name__)
+					log.warning("StatusIcon: Using backend %s (fallback)" % StatusIconBackend.__name__)
 					break
 				except NotImplementedError:
 					continue
@@ -556,12 +558,12 @@ def get_status_icon(*args):
 		if status_icon_backend_name in globals():
 			try:
 				status_icon = globals()[status_icon_backend_name](*args)
-				print("StatusIcon: Using requested backend %s" % (status_icon_backend_name))
+				log.info("StatusIcon: Using requested backend %s" % (status_icon_backend_name))
 				return status_icon
 			except NotImplementedError:
-				print("StatusIcon: Requested backend %s is not supported" % (status_icon_backend_name))
+				log.error("StatusIcon: Requested backend %s is not supported" % (status_icon_backend_name))
 		else:
-			print("StatusIcon: Requested backend %s does not exist" % (status_icon_backend_name))
+			log.error("StatusIcon: Requested backend %s does not exist" % (status_icon_backend_name))
 		
 		return StatusIconDummy(*args)
 	
