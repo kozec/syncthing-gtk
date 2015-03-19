@@ -301,6 +301,11 @@ class App(Gtk.Application, TimerManager):
 		except InvalidConfigurationException, e:
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
+			if IS_XP:
+				# Wizard can't run on old Windows versions. Instead of
+				# it, 'Give me daemon executable' dialog is shown
+				self.cb_daemon_startup_failed(None, "File not found")
+				return False
 			self.hide()
 			self.show_wizard()
 			return False
