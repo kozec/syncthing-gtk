@@ -28,6 +28,7 @@ class _Configuration(object):
 	REQUIRED_KEYS = {
 		"autostart_daemon"			: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
 		"autokill_daemon"			: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
+		"daemon_priority"			: (int, 0), # uses nice values
 		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
 		"minimize_on_start"			: (bool, False),
 		"folder_as_path"			: (bool, True),

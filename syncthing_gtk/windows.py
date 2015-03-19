@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 from gi.repository import Gio, GLib, GObject
 import os, logging, codecs, msvcrt, win32pipe, win32api, _winreg
+import win32process
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
@@ -43,6 +44,19 @@ def dont_use_localization_in_gtk():
 def is_shutting_down():
 	""" Returns True if Windows initiated shutdown process """
 	return (win32api.GetSystemMetrics(SM_SHUTTINGDOWN) != 0)
+
+def nice_to_priority_class(nice):
+	""" Converts nice value to windows priority class """
+	if nice <= -20:	# PRIORITY_HIGHEST
+		return win32process.HIGH_PRIORITY_CLASS,
+	if nice <= -10:	# PRIORITY_HIGH
+		return win32process.ABOVE_NORMAL_PRIORITY_CLASS
+	if nice >= 10:	# PRIORITY_LOW
+		return win32process.BELOW_NORMAL_PRIORITY_CLASS
+	if nice >= 19:	# PRIORITY_LOWEST
+		return win32process.IDLE_PRIORITY_CLASS
+	# PRIORITY_NORMAL
+	return win32process.NORMAL_PRIORITY_CLASS
 
 class WinPopenReader:
 	"""
@@ -164,6 +178,13 @@ def WinConfiguration():
 			if tp in (unicode, str):
 				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, str(value))
 			elif tp in (int, bool):
+				value = int(value)
+				if value > 0xFFFF:
+					raise ValueError("Overflow")
+				if value < 0:
+					# This basicaly prevents storing anything >0xFFFF to registry.
+					# Luckily, that shouldn't be needed, largest thing stored as int is 20
+					value = 0xFFFF + (-value)
 				_winreg.SetValueEx(r, name, 0, _winreg.REG_DWORD, int(value))
 			elif tp in (list, tuple):
 				if not value is None:	# None is default value for window_position
@@ -183,6 +204,8 @@ def WinConfiguration():
 				return value
 			else:
 				value, keytype = _winreg.QueryValueEx(r, name)
+				if type(value) == int and value > 0xFFFF:
+					value = - (value - 0xFFFF)
 				return value
 		
 	return _WinConfiguration
