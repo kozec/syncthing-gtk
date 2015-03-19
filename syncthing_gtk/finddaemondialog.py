@@ -9,7 +9,7 @@ values afterwards.
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import EditorDialog, StDownloader
-from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
+from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, IS_XP
 from syncthing_gtk.uisettingsdialog import browse_for_binary
 import os, platform
 _ = lambda (a) : a
@@ -30,7 +30,14 @@ class FindDaemonDialog(EditorDialog):
 			  "%s bellow or click on <b>Download</b> "
 			  "button to download latest Syncthing package.") % (exe,)
 		))
-	
+		if IS_XP:
+			# Downloading is not offered on XP - github will not talk to it
+			self["lblMessage"].set_markup("%s\n%s" % (
+				_("Syncthing daemon binary cannot be found."),
+				_("If you have Syncthing installed, please, set path to "
+				  "%s bellow") % (exe,)
+			))
+			self.hide_download_button()
 	
 	
 	
