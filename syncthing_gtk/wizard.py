@@ -614,7 +614,7 @@ class SaveSettingsPage(Page):
 			s.close()
 			# Good, port is available
 			del s
-			self.parent.output_line("syncthing-gtk: choosen port %s" % (port,))
+			self.parent.output_line("syncthing-gtk: chosen port %s" % (port,))
 			self.port = port
 			self.parent.syncthing_options["port"] = str(port)
 			self.status.set_markup(_("Saving..."))
