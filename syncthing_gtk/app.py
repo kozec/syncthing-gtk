@@ -15,7 +15,7 @@ _ = lambda (a) : a
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.6.2"
+INTERNAL_VERSION		= "v0.6.3"
 # Minimal Syncthing version supported by App
 MIN_ST_VERSION			= "0.10.3"
 
@@ -301,6 +301,11 @@ class App(Gtk.Application, TimerManager):
 		except InvalidConfigurationException, e:
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
+			if IS_XP:
+				# Wizard can't run on old Windows versions. Instead of
+				# it, 'Give me daemon executable' dialog is shown
+				self.cb_daemon_startup_failed(None, "File not found")
+				return False
 			self.hide()
 			self.show_wizard()
 			return False
@@ -458,7 +463,7 @@ class App(Gtk.Application, TimerManager):
 		def cb_cu_version(sd, version):
 			needs_upgrade = False
 			try:
-				needs_upgrade = not compare_version(self.get_daemon_version(), version)
+				needs_upgrade = not compare_version(self.daemon.get_version(), version)
 			except Exception:
 				# May happen if connection to daemon is lost while version
 				# check is running
@@ -1081,13 +1086,6 @@ class App(Gtk.Application, TimerManager):
 		if not self.daemon is None:
 			self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 	
-	def get_daemon_version(self):
-		"""
-		Returns version of connected daemon.
-		May throw error if connection is not yet established.
-		"""
-		return self.devices[self.daemon.get_my_id()]["version"]
-	
 	def display_connect_dialog(self, message, quit_button=True):
 		"""
 		Displays 'Be patient, i'm trying to connect here' dialog, or updates
@@ -1215,7 +1213,7 @@ class App(Gtk.Application, TimerManager):
 		box.set_visible("ignore",	ignore_perms)
 		return box
 	
-	def show_device(self, id, name, use_compression, introducer, used):
+	def show_device(self, id, name, compression, introducer, used):
 		if name in (None, ""):
 			# Show first block from ID if name is unset
 			name = id.split("-")[0]
@@ -1231,7 +1229,7 @@ class App(Gtk.Application, TimerManager):
 			# Add visible lines
 			box.add_value("address",	"address.png",	_("Address"),			"?")
 			box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
-			box.add_value("compress",	"compress.png",	_("Use Compression"))
+			box.add_value("compress",	"compress.png",	_("Compression"))
 			box.add_value("inbps",		"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
 			box.add_value("outbps",		"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
 			box.add_value("introducer",	"thumb_up.png",	_("Introducer"))
@@ -1257,7 +1255,9 @@ class App(Gtk.Application, TimerManager):
 			box.connect('leave-notify-event', self.cb_box_mouse_leave)
 			self.devices[id] = box
 		# Set values
-		box.set_value("compress",	_("Yes") if use_compression else _("No"))
+		if compression in (True, "always"): box.set_value("compress", _("All Data"))
+		elif compression in (False, "never"): box.set_value("compress", _("Off"))
+		else: box.set_value("compress", _("Metadata Only"))
 		box.set_value("introducer",	_("Yes") if introducer else _("No"))
 		box.set_value('last-seen',	_("Never"))
 		return box

@@ -20,11 +20,12 @@ Additional features:
 - Nautilus (a.k.a. Files), Nemo and Caja integration
 - Desktop notifications
 
-Dependencies:  
+Dependencies:
 - python 2.7, GTK 3.8 or newer and <a href=https://live.gnome.org/PyGObject>PyGObject</a>
 - python-gi-cairo on debian based distros (included in PyGObject elsewhere)
 - <a href="http://labix.org/python-dateutil">python-dateutil</a> (Python2 version)
 - <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>
+- [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
 - <a href="http://syncthing.net">Syncthing</a> 0.10 or newer
 
 Optional Dependencies:  

@@ -10,11 +10,12 @@ from gi.repository import GLib
 from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
-import re, os, sys, logging, __main__
+import re, os, sys, platform, logging, __main__
 _ = lambda (a) : a
 log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
+IS_XP = IS_WINDOWS and platform.release() in ("XP", "2000", "2003")
 IS_GNOME, IS_UNITY, IS_KDE = False, False, False
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
@@ -297,7 +298,19 @@ def get_config_dir():
 	"""
 	confdir = GLib.get_user_config_dir()
 	if confdir is None:
-		confdir = os.path.expanduser("~/.config")
+		if IS_WINDOWS:
+			if "LOCALAPPDATA" in os.environ:
+				# W7 and later
+				confdir = os.environ["LOCALAPPDATA"]
+			elif "APPDATA" in os.environ:
+				# XP
+				confdir = os.environ["APPDATA"]
+			else:
+				# 95? :D
+				confdir = os.path.expanduser("~/.config")
+		else:
+			# Linux
+			confdir = os.path.expanduser("~/.config")
 	return confdir
 
 get_install_path = None

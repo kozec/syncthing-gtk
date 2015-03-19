@@ -277,8 +277,10 @@ class Daemon(GObject.GObject, TimerManager):
 		self._syncing_devices = set()
 		# and once again, for folders in 'Scanning' state
 		self._scanning_folders = set()
-		# needs_update holds set of folders whose state was recently
-		# changed and needs to be fetched from server
+		# needs_update holds set of folders & devices whose state was
+		# recently changed and needs to be fetched from server
+		# (None, folder_id) for local index
+		# (device_id, folder_id) for remote completion
 		self._needs_update = set()
 		# device_data stores data needed to compute transfer speeds
 		# and synchronization state
@@ -723,8 +725,11 @@ class Daemon(GObject.GObject, TimerManager):
 							return
 				self._last_id = events[-1]["id"]
 				
-				for rid in self._needs_update:
-					self._request_folder_data(rid)
+				for nid, rid in self._needs_update:
+					if nid is None:
+						self._request_folder_data(rid)
+					else:
+						self._request_completion(nid, rid)
 				self._needs_update.clear()
 		
 		self.timer("event", self._refresh_interval, self._request_events)
@@ -795,9 +800,6 @@ class Daemon(GObject.GObject, TimerManager):
 				device_data["outbps"],
 				device_data["InBytesTotal"],
 				device_data["OutBytesTotal"])
-			# Request even more data for remote devices
-			if nid != self._my_id:
-				self._request_completion(nid)
 		
 		# ... repeat until pronounced dead
 		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections, None, now)
@@ -979,10 +981,12 @@ class Daemon(GObject.GObject, TimerManager):
 			self._syncing_folders.discard(rid)
 			if not rid in self._stopped_folders:
 				self.emit("folder-sync-finished", rid)
+			recheck = True
 		if state != "scanning" and rid in self._scanning_folders:
 			self._scanning_folders.discard(rid)
 			if not rid in self._stopped_folders:
 				self.emit("folder-scan-finished", rid)
+			recheck = True
 		if state == "syncing":
 			if not rid in self._stopped_folders:
 				if rid in self._syncing_folders:
@@ -998,7 +1002,6 @@ class Daemon(GObject.GObject, TimerManager):
 				else:
 					self._scanning_folders.add(rid)
 					self.emit("folder-scan-started", rid)
-				recheck = True
 		return recheck
 	
 	def _on_event(self, e):
@@ -1012,11 +1015,13 @@ class Daemon(GObject.GObject, TimerManager):
 			state = e["data"]["to"]
 			rid = e["data"]["folder"]
 			if self._folder_state_changed(rid, state, 0):
-				self._needs_update.add(rid)
+				self._needs_update.add((None, rid))
 		elif eType in ("RemoteIndexUpdated"):
 			rid = e["data"]["folder"]
+			nid = e["data"]["device"]
 			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
-				self._needs_update.add(rid)
+				self._needs_update.add((None, rid))
+			self._needs_update.add((nid, rid))
 		elif eType == "DeviceConnected":
 			nid = e["data"]["id"]
 			self.emit("device-connected", nid)
@@ -1047,12 +1052,18 @@ class Daemon(GObject.GObject, TimerManager):
 			filename = e["data"]["name"]
 			mtime = parsetime(e["data"]["modified"])
 			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
-				self._needs_update.add(rid)
+				self._needs_update.add((None, rid))
 			self.emit("item-updated", rid, filename, mtime)
+			# Request completion data for each device that shares this folder
+			for nid in self._folder_devices[rid]:
+				self._needs_update.add((nid, rid))
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
+		elif eType == "ItemFinished":
+			# Not handled (yet?)
+			pass
 		elif eType == "DownloadProgress":
-			# TODO: Find what exactly this does and how can I use it
+			# Not handled (yet?)
 			pass
 		else:
 			log.warning("Unhandled event type: %s", e)
@@ -1187,6 +1198,17 @@ class Daemon(GObject.GObject, TimerManager):
 		May return None to indicate that ID is not yet known
 		"""
 		return self._my_id
+	
+	def get_version(self):
+		"""
+		Returns daemon version or "unknown" if daemon version is not yet
+		known
+		"""
+		if self._my_id == None: return "unknown"
+		device = self._get_device_data(self._my_id)
+		if "ClientVersion" in device:
+			return device["ClientVersion"]
+		return "unknown"
 	
 	def get_webui_url(self):
 		""" Returns webiu url in http(s)://127.0.0.1:8080 format """

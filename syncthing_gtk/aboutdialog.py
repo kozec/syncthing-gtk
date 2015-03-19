@@ -51,7 +51,7 @@ class AboutDialog(object):
 			pass
 		# Get daemon version
 		try:
-			daemon_ver = app.get_daemon_version()
+			daemon_ver = app.daemon.get_version()
 			app_ver = "%s (Daemon %s)" % (app_ver, daemon_ver)
 		except:
 			# App is None or daemon version is not yet known
