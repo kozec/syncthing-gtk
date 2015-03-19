@@ -17,7 +17,7 @@ log = logging.getLogger("StDownloader")
 CHUNK_SIZE = 102400
 
 class StDownloader(GObject.GObject):
-	ST_GTK_URL	= "https://api.github.com/repos/syncthing/syncthing-gtk/tags"
+	ST_GTK_URL	= "https://api.github.com/repos/syncthing/syncthing-gtk/git/refs/tags"
 	ST_URL		= "https://api.github.com/repos/syncthing/syncthing/releases"
 
 	"""
@@ -135,8 +135,8 @@ class StDownloader(GObject.GObject):
 			# Go over all tags and store them in form that is
 			# easier to work with
 			for tag in data:
-				name = tag["name"]
-				sha = tag["commit"]["sha"]
+				name = tag["ref"].split("/")[-1]
+				sha = tag["object"]["sha"]
 				if name.startswith("v"):
 					commits_by_version[name] = sha
 				if not sha in tags_by_commit:
