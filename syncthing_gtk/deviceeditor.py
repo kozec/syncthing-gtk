@@ -7,7 +7,7 @@ Universal dialog handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
-from syncthing_gtk.tools import check_device_id, compare_version
+from syncthing_gtk.tools import check_device_id
 from syncthing_gtk import EditorDialog
 import sys, logging
 _ = lambda (a) : a
@@ -54,17 +54,6 @@ class DeviceEditorDialog(EditorDialog):
 	def set_value(self, key, value):
 		if key == "Addresses":
 			self.values[key] = [ x.strip() for x in value.split(",") ]
-		elif key == "Compression":
-			if compare_version(self.app.daemon.get_version(), "v0.10.26"):
-				return EditorDialog.set_value(self, key, value)
-			else:
-				# For syncthing <= 0.10.25
-				if value == "never":
-					print "store_value", key, value, False
-					return EditorDialog.set_value(self, key, False)
-				else:
-					print "store_value", key, value, True
-					return EditorDialog.set_value(self, key, True)
 		else:
 			return EditorDialog.set_value(self, key, value)
 	

@@ -853,12 +853,7 @@ class Daemon(GObject.GObject, TimerManager):
 		
 		announce = None
 		if "extAnnounceOK" in data:
-			if hasattr(data["extAnnounceOK"], "keys"):
-				# Dict, Syncthing >= 0.10.9
-				announce = data["extAnnounceOK"]
-			else:
-				# Boolean, older Syncthing
-				announce = { 'default' : bool(data["extAnnounceOK"]) }
+			announce = data["extAnnounceOK"]
 		
 		self.emit('system-data-updated',
 			data["sys"], float(data["cpuPercent"]),

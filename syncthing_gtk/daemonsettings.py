@@ -27,9 +27,6 @@ class DaemonSettingsDialog(EditorDialog):
 		if key == "ListenAddress":
 			return ", ".join([ x.strip() for x in self.values[key]])
 		elif key == "GlobalAnnServers":
-			if "GlobalAnnServer" in self.values:
-				# For Syncthing < 0.9.10
-				return self.values["GlobalAnnServer"]
 			return ", ".join([ x.strip() for x in self.values["GlobalAnnServers"]])
 		elif key == "URAccepted":
 			return (self.values["URAccepted"] == 1)
@@ -46,12 +43,6 @@ class DaemonSettingsDialog(EditorDialog):
 			self.values[key] = [ x.strip() for x in value.split(",") ]
 		elif key == "GlobalAnnServers":
 			self.values[key] = [ x.strip() for x in value.split(",") ]
-			if "GlobalAnnServer" in self.values:
-				# For Syncthing < 0.9.10
-				if len(self.values[key]) > 0:
-					self.values["GlobalAnnServer"] = self.values[key][0]
-				else:
-					self.values["GlobalAnnServer"] = ""
 		elif key == "URAccepted":
 			self.values[key] = 1 if value else -1
 		elif key == "MaxSendKbpsEnabled":

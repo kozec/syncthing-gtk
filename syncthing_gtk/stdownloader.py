@@ -77,7 +77,7 @@ class StDownloader(GObject.GObject):
 		# Latest Syncthing version known to be compatibile with
 		# Syncthing-GTK. This is just hardcoded minimal version,
 		# actual value will be determined later
-		self.latest_compat = "v0.10.0"
+		self.latest_compat = "v0.11.0"
 		self.version = None
 		self.dll_url = None
 		self.dll_size = None
