@@ -40,6 +40,7 @@ if __name__ == "__main__" : setup(
 		('share/syncthing-gtk', glob.glob("scripts/syncthing-plugin-*.py") ),
 		('share/syncthing-gtk/icons', glob.glob("icons/*") ),
 		('share/pixmaps', glob.glob("icons/emblem-*.png") ),
+		('share/pixmaps', ["icons/syncthing-gtk.png"]),
 		('share/applications', ['syncthing-gtk.desktop'] ),
 		],
 	scripts = [ "scripts/syncthing-gtk" ],
