@@ -222,7 +222,7 @@
 			<object class="GtkImageMenuItem" id="menu-daemon-output">
 				<property name="visible">True</property>
 				<property name="can_focus">False</property>
-				<property name="label" translatable="yes">Display _Daemon Ouput</property>
+				<property name="label" translatable="yes">Display _Daemon Output</property>
 				<property name="use_underline">True</property>
 				<property name="always_show_image">True</property>
 				<property name="image">menu-daemon-output-image</property>
@@ -383,7 +383,7 @@
 			<attribute name="action">app.webui</attribute>
 		</item>
 		<item>
-			<attribute name="label" translatable="yes">Display _Daemon Ouput</attribute>
+			<attribute name="label" translatable="yes">Display _Daemon Output</attribute>
 			<attribute name="action">app.daemon_output</attribute>
 		</item>
 	</section>
