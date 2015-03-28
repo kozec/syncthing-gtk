@@ -18,7 +18,7 @@ if IS_WINDOWS:
 	from subprocess import Popen, PIPE, STARTUPINFO, \
 		STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE, \
 		CREATE_NEW_PROCESS_GROUP
-	from syncthing_gtk.windows import WinPopenReader
+	from syncthing_gtk.windows import WinPopenReader, nice_to_priority_class
 elif not HAS_SUBPROCESS:
 	# Gio.Subprocess is not available in Gio < 3.12
 	from subprocess import Popen, PIPE
@@ -33,11 +33,17 @@ class DaemonProcess(GObject.GObject):
 		b"failed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 	}
 	SCROLLBACK_SIZE = 500	# Maximum number of output lines stored in memory
+	PRIORITY_LOWEST		= 19
+	PRIORITY_LOW		= 10
+	PRIORITY_NORMAL		= 0
+	PRIORITY_HIGH		= -10
+	PRIORITY_HIGHEST	= -20
 	
-	def __init__(self, commandline):
+	def __init__(self, commandline, priority=PRIORITY_NORMAL):
 		""" commandline should be list of arguments """
 		GObject.GObject.__init__(self)
 		self.commandline = commandline
+		self.priority = priority
 		self._proc = None
 	
 	def start(self):
@@ -50,20 +56,29 @@ class DaemonProcess(GObject.GObject):
 				sinfo = STARTUPINFO()
 				sinfo.dwFlags = STARTF_USESHOWWINDOW
 				sinfo.wShowWindow = 0
+				cflags = nice_to_priority_class(self.priority)
 				self._proc = Popen(self.commandline,
 							stdin=PIPE, stdout=PIPE, stderr=PIPE,
-							startupinfo=sinfo)
+							startupinfo=sinfo, creationflags=cflags)
 				self._stdout = WinPopenReader(self._proc)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 			elif HAS_SUBPROCESS:
 				# New Gio
 				flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
-				self._proc = Gio.Subprocess.new(self.commandline, flags)
+				if self.priority == 0:
+					self._proc = Gio.Subprocess.new(self.commandline, flags)
+				else:
+					# I just really do hope that there is no distro w/out nice command
+					self._proc = Gio.Subprocess.new([ "nice", "-%s" % self.priority ] + self.commandline, flags)
 				self._proc.wait_check_async(None, self._cb_finished)
 				self._stdout = self._proc.get_stdout_pipe()
 			else:
 				# Gio < 3.12 - Gio.Subprocess is missing :(
-				self._proc = Popen(self.commandline, stdout=PIPE)
+				if self.priority == 0:
+					self._proc = Popen(self.commandline, stdout=PIPE)
+				else:
+					# still hoping
+					self._proc = Popen([ "nice", "-%s" % self.priority ], stdout=PIPE)
 				self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 		except Exception, e:

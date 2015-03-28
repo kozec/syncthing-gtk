@@ -375,7 +375,7 @@ class App(Gtk.Application, TimerManager):
 				if windows.is_shutting_down():
 					log.warning("Not starting daemon: System shutdown detected")
 					return
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
 			self.process.start()
@@ -1792,7 +1792,7 @@ class App(Gtk.Application, TimerManager):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
 			self.process.start()

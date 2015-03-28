@@ -230,7 +230,7 @@ class EditorDialog(GObject.GObject):
 			val = self.get_value(key.lstrip("v"))
 			m = w.get_model()
 			for i in xrange(0, len(m)):
-				if val == str(m[i][0]).strip():
+				if str(val) == str(m[i][0]).strip():
 					w.set_active(i)
 					break
 		elif isinstance(w, Gtk.CheckButton):
