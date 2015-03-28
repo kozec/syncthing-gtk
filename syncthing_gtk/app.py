@@ -1195,6 +1195,7 @@ class App(Gtk.Application, TimerManager):
 			self["folderlist"].pack_start(box, False, False, 3)
 			box.set_open(id in self.open_boxes or self.folders_never_loaded)
 			box.connect('right-click', self.cb_popup_menu_folder)
+			box.connect('doubleclick', self.cb_browse_folder)
 			box.connect('enter-notify-event', self.cb_box_mouse_enter)
 			box.connect('leave-notify-event', self.cb_box_mouse_leave)
 			self.folders[id] = box
@@ -1581,7 +1582,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_popup_browse_folder(self, *a):
 		""" Handler for 'browse' folder context menu item """
-		path = os.path.expanduser(self.rightclick_box["path"])
+		self.cb_browse_folder(self.rightclick_box)
+		
+	def cb_browse_folder(self, box, *a):
+		""" Handler for 'browse' action """
+		path = os.path.expanduser(box["path"])
 		if IS_WINDOWS:
 			# Don't attempt anything, use Windows Explorer on Windows
 			os.system('explorer "%s"' % (path,))
