@@ -65,12 +65,20 @@ class DaemonProcess(GObject.GObject):
 			elif HAS_SUBPROCESS:
 				# New Gio
 				flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
-				self._proc = Gio.Subprocess.new(self.commandline, flags)
+				if self.priority == 0:
+					self._proc = Gio.Subprocess.new(self.commandline, flags)
+				else:
+					# I just really do hope that there is no distro w/out nice command
+					self._proc = Gio.Subprocess.new([ "nice", "-%s" % self.priority ] + self.commandline, flags)
 				self._proc.wait_check_async(None, self._cb_finished)
 				self._stdout = self._proc.get_stdout_pipe()
 			else:
 				# Gio < 3.12 - Gio.Subprocess is missing :(
-				self._proc = Popen(self.commandline, stdout=PIPE)
+				if self.priority == 0:
+					self._proc = Popen(self.commandline, stdout=PIPE)
+				else:
+					# still hoping
+					self._proc = Popen([ "nice", "-%s" % self.priority ], stdout=PIPE)
 				self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 		except Exception, e:
