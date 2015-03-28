@@ -141,6 +141,8 @@ class UISettingsDialog(EditorDialog):
 			set_run_on_startup(value, "Syncthing-GTK", get_executable(),
 				"/usr/share/syncthing-gtk/icons/st-logo-128.png",
 				"GUI for Syncthing")
+		elif key == "daemon_priority":
+			return EditorDialog.set_value(self, key, int(value))
 		else:
 			return EditorDialog.set_value(self, key, value)
 	
