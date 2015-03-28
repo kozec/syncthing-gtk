@@ -223,18 +223,18 @@ class EditorDialog(GObject.GObject):
 		by subclass to handle special values.
 		"""
 		if isinstance(w, Gtk.SpinButton):
-			w.get_adjustment().set_value(ints(self.get_value(key.lstrip("v"))))
+			w.get_adjustment().set_value(ints(self.get_value(strip_v(key))))
 		elif isinstance(w, Gtk.Entry):
-			w.set_text(unicode(self.get_value(key.lstrip("v"))))
+			w.set_text(unicode(self.get_value(strip_v(key))))
 		elif isinstance(w, Gtk.ComboBox):
-			val = self.get_value(key.lstrip("v"))
+			val = self.get_value(strip_v(key))
 			m = w.get_model()
 			for i in xrange(0, len(m)):
 				if val == str(m[i][0]).strip():
 					w.set_active(i)
 					break
 		elif isinstance(w, Gtk.CheckButton):
-			w.set_active(self.get_value(key.lstrip("v")))
+			w.set_active(self.get_value(strip_v(key)))
 		else:
 			log.warning("display_value: %s class cannot handle widget %s, key %s", self.__class__.__name__, w, key)
 			if not w is None: w.set_sensitive(False)
@@ -246,10 +246,10 @@ class EditorDialog(GObject.GObject):
 		key = self.get_widget_id(w)
 		if key != None:
 			if isinstance(w, Gtk.CheckButton):
-				self.set_value(key.lstrip("v"), w.get_active())
+				self.set_value(strip_v(key), w.get_active())
 				self.update_special_widgets()
 			if isinstance(w, Gtk.ComboBox):
-				self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
+				self.set_value(strip_v(key), str(w.get_model()[w.get_active()][0]).strip())
 				self.update_special_widgets()
 	
 	def update_special_widgets(self, *a):
@@ -350,13 +350,13 @@ class EditorDialog(GObject.GObject):
 		overriden by subclass to handle special values.
 		"""
 		if isinstance(w, Gtk.SpinButton):
-			self.set_value(key.strip("v"), int(w.get_adjustment().get_value()))
+			self.set_value(strip_v(key), int(w.get_adjustment().get_value()))
 		elif isinstance(w, Gtk.Entry):
-			self.set_value(key.strip("v"), w.get_text())
+			self.set_value(strip_v(key), w.get_text())
 		elif isinstance(w, Gtk.CheckButton):
-			self.set_value(key.strip("v"), w.get_active())
+			self.set_value(strip_v(key), w.get_active())
 		elif isinstance(w, Gtk.ComboBox):
-			self.set_value(key.strip("v"), str(w.get_model()[w.get_active()][0]).strip())
+			self.set_value(strip_v(key), str(w.get_model()[w.get_active()][0]).strip())
 		# else nothing, unknown widget class cannot be read
 	
 	def cb_format_value_s(self, spinner):
@@ -430,5 +430,8 @@ class EditorDialog(GObject.GObject):
 			lambda obj, callback, *a : callback(*a),
 			callback, *data
 			)
+
+""" Strips 'v' prefix used in widget IDs """
+strip_v = lambda x:  x[1:] if x.startswith("v") else x
 
 class ValueNotFoundError(KeyError): pass

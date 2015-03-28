@@ -7,13 +7,14 @@ Universal dialog handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
-from syncthing_gtk import EditorDialog
+from syncthing_gtk.editordialog import EditorDialog, strip_v
 _ = lambda (a) : a
 
-VALUES = [ "vListenAddress", "vLocalAnnEnabled", "vUPnPEnabled",
-		"vStartBrowser", "vMaxSendKbpsEnabled", "vMaxSendKbps",
-		"vMaxRecvKbpsEnabled", "vMaxRecvKbps", "vURAccepted",
-		"vLocalAnnPort", "vGlobalAnnEnabled", "vGlobalAnnServers"
+VALUES = [ "vlistenAddress", "vlocalAnnounceEnabled", "vupnpEnabled",
+		"vstartBrowser", "vmaxSendKbpsEnabled", "vmaxSendKbps",
+		"vmaxRecvKbpsEnabled", "vmaxRecvKbps", "vurAccepted",
+		"vlocalAnnouncePort", "vglobalAnnounceEnabled",
+		"vglobalAnnounceServers"
 		]
 
 
@@ -24,60 +25,60 @@ class DaemonSettingsDialog(EditorDialog):
 	
 	#@Overrides
 	def get_value(self, key):
-		if key == "ListenAddress":
-			return ", ".join([ x.strip() for x in self.values[key]])
-		elif key == "GlobalAnnServers":
-			return ", ".join([ x.strip() for x in self.values["GlobalAnnServers"]])
-		elif key == "URAccepted":
-			return (self.values["URAccepted"] == 1)
-		elif key == "MaxSendKbpsEnabled":
-			return (self.values["MaxSendKbps"] != 0)
-		elif key == "MaxRecvKbpsEnabled":
-			return (self.values["MaxRecvKbps"] != 0)
+		if key == "listenAddress":
+			return ", ".join([ strip_v(x) for x in self.values[key]])
+		elif key == "globalAnnounceServers":
+			return ", ".join([ strip_v(x) for x in self.values["globalAnnounceServers"]])
+		elif key == "urAccepted":
+			return (self.values["urAccepted"] == 1)
+		elif key == "maxSendKbpsEnabled":
+			return (self.values["maxSendKbps"] != 0)
+		elif key == "maxRecvKbpsEnabled":
+			return (self.values["maxRecvKbps"] != 0)
 		else:
 			return EditorDialog.get_value(self, key)
 	
 	#@Overrides
 	def set_value(self, key, value):
-		if key == "ListenAddress":
-			self.values[key] = [ x.strip() for x in value.split(",") ]
-		elif key == "GlobalAnnServers":
-			self.values[key] = [ x.strip() for x in value.split(",") ]
-		elif key == "URAccepted":
+		if key == "listenAddress":
+			self.values[key] = [ strip_v(x) for x in value.split(",") ]
+		elif key == "globalAnnounceServers":
+			self.values[key] = [ strip_v(x) for x in value.split(",") ]
+		elif key == "urAccepted":
 			self.values[key] = 1 if value else -1
-		elif key == "MaxSendKbpsEnabled":
+		elif key == "maxSendKbpsEnabled":
 			if value:
-				if self.values["MaxSendKbps"] <= 0:
-					self.values["MaxSendKbps"] = 1
-					self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
+				if self.values["maxSendKbps"] <= 0:
+					self.values["maxSendKbps"] = 1
+					self.find_widget_by_id("vmaxSendKbps").get_adjustment().set_value(self.values["maxSendKbps"])
 			else:
-				self.values["MaxSendKbps"] = 0
-				self.find_widget_by_id("vMaxSendKbps").get_adjustment().set_value(self.values["MaxSendKbps"])
-		elif key == "MaxRecvKbpsEnabled":
+				self.values["maxSendKbps"] = 0
+				self.find_widget_by_id("vmaxSendKbps").get_adjustment().set_value(self.values["maxSendKbps"])
+		elif key == "maxRecvKbpsEnabled":
 			if value:
-				if self.values["MaxRecvKbps"] <= 0:
-					self.values["MaxRecvKbps"] = 1
-					self.find_widget_by_id("vMaxRecvKbps").get_adjustment().set_value(self.values["MaxRecvKbps"])
+				if self.values["maxRecvKbps"] <= 0:
+					self.values["maxRecvKbps"] = 1
+					self.find_widget_by_id("vmaxRecvKbps").get_adjustment().set_value(self.values["maxRecvKbps"])
 			else:
-				self.values["MaxRecvKbps"] = 0
-				self.find_widget_by_id("vMaxRecvKbps").get_adjustment().set_value(self.values["MaxRecvKbps"])
+				self.values["maxRecvKbps"] = 0
+				self.find_widget_by_id("vmaxRecvKbps").get_adjustment().set_value(self.values["maxRecvKbps"])
 		else:
 			return EditorDialog.set_value(self, key, value)
 
 	#@Overrides
 	def on_data_loaded(self):
-		self.values = self.config["Options"]
+		self.values = self.config["options"]
 		self.checks = {}
 		return self.display_values(VALUES)
 	
 	#@Overrides
 	def update_special_widgets(self, *a):
-		self["vMaxSendKbps"].set_sensitive(self.get_value("MaxSendKbpsEnabled"))
-		self["vMaxRecvKbps"].set_sensitive(self.get_value("MaxRecvKbpsEnabled"))
-		self["lblvLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
-		self["vLocalAnnPort"].set_sensitive(self.get_value("LocalAnnEnabled"))
-		self["lblvGlobalAnnServers"].set_sensitive(self.get_value("GlobalAnnEnabled"))
-		self["vGlobalAnnServers"].set_sensitive(self.get_value("GlobalAnnEnabled"))
+		self["vmaxSendKbps"].set_sensitive(self.get_value("maxSendKbpsEnabled"))
+		self["vmaxRecvKbps"].set_sensitive(self.get_value("maxRecvKbpsEnabled"))
+		self["lblvlocalAnnouncePort"].set_sensitive(self.get_value("localAnnounceEnabled"))
+		self["vlocalAnnouncePort"].set_sensitive(self.get_value("localAnnounceEnabled"))
+		self["lblvglobalAnnounceServers"].set_sensitive(self.get_value("globalAnnounceEnabled"))
+		self["lblvglobalAnnounceServers"].set_sensitive(self.get_value("globalAnnounceEnabled"))
 	
 	#@Overrides
 	def on_save_reuqested(self):

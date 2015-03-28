@@ -660,8 +660,8 @@ class App(Gtk.Application, TimerManager):
 	def cb_config_loaded(self, daemon, config):
 		# Called after connection to daemon is initialized;
 		# Used to change indicating UI components
-		self.recv_limit = config["Options"]["MaxRecvKbps"]
-		self.send_limit = config["Options"]["MaxSendKbps"]
+		self.recv_limit = config["options"]["maxRecvKbps"]
+		self.send_limit = config["options"]["maxSendKbps"]
 		L_MEV = [("menu-si-sendlimit", self.send_limit),
 				 ("menu-si-recvlimit", self.recv_limit)]
 		
@@ -674,7 +674,7 @@ class App(Gtk.Application, TimerManager):
 					other = False
 			self["%s-other" % (limitmenu,)].set_active(other)
 		
-		if config["Options"]["URAccepted"] == 0:
+		if config["options"]["urAccepted"] == 0:
 			# User did not responded to usage reporting yet. Ask
 			self.ask_for_ur()
 		
@@ -785,8 +785,8 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_device_added(self, daemon, nid, name, used, data):
 		self.show_device(nid, name,
-			data["Compression"],
-			data["Introducer"] if "Introducer" in data else False,
+			data["compression"],
+			data["introducer"] if "introducer" in data else False,
 			used
 		)
 	
@@ -850,11 +850,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
 		box = self.show_folder(
-			rid, r["Path"], r["Path"],
-			r["ReadOnly"], r["IgnorePerms"], 
-			r["RescanIntervalS"],
+			rid, r["path"], r["path"],
+			r["readOnly"], r["ignorePerms"], 
+			r["rescanIntervalS"],
 			sorted(
-				[ self.devices[n["DeviceID"]] for n in r["Devices"] ],
+				[ self.devices[n["deviceID"]] for n in r["devices"] ],
 				key=lambda x : x.get_title().lower()
 				)
 			)
@@ -1641,11 +1641,11 @@ class App(Gtk.Application, TimerManager):
 		configuration is loaded from server.
 		"""
 		if mode == "folder":
-			config["Folders"] = [ x for x in config["Folders"] if x["ID"] != id ]
+			config["folders"] = [ x for x in config["folders"] if x["id"] != id ]
 			if id in self.folders:
 				self.folders[id].get_parent().remove(self.folders[id])
 		else: # device
-			config["Devices"] = [ x for x in config["Devices"] if x["DeviceID"] != id ]
+			config["devices"] = [ x for x in config["devices"] if x["deviceID"] != id ]
 			if id in self.devices:
 				self.devices[id].get_parent().remove(self.devices[id])
 		self.daemon.write_config(config, lambda *a: a)

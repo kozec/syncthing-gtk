@@ -552,6 +552,7 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		con.close(None)
 		response = "".join(buffer)
+		print response
 		# Parse response
 		if self._CSRFtoken is None and self._api_key is None:
 			# I wanna cookie!
@@ -664,25 +665,25 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		# Pre-parse folders to detect unused devices
 		device_folders = {}
-		for r in config["Folders"]:
-			rid = r["ID"]
-			for n in r["Devices"]:
-				nid = n["DeviceID"]
+		for r in config["folders"]:
+			rid = r["id"]
+			for n in r["devices"]:
+				nid = n["deviceID"]
 				if not nid in device_folders : device_folders[nid] = []
 				device_folders[nid].append(rid)
 
 		# Parse devices
-		for n in sorted(config["Devices"], key=lambda x : x["Name"].lower()):
-			nid = n["DeviceID"]
+		for n in sorted(config["devices"], key=lambda x : x["name"].lower()):
+			nid = n["deviceID"]
 			self._get_device_data(nid)	# Creates dict with device data
 			used = (nid in device_folders) and (len(device_folders[nid]) > 0)
-			self.emit("device-added", nid, n["Name"], used, n)
+			self.emit("device-added", nid, n["name"], used, n)
 			
 		# Parse folders
-		for r in config["Folders"]:
-			rid = r["ID"]
+		for r in config["folders"]:
+			rid = r["id"]
 			self._syncing_folders.add(rid)
-			self._folder_devices[rid] = [ n["DeviceID"] for n in r["Devices"] ]
+			self._folder_devices[rid] = [ n["deviceID"] for n in r["devices"] ]
 			self.emit("folder-added", rid, r)
 			self._request_folder_data(rid)
 	
@@ -736,9 +737,9 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _syncthing_cb_errors(self, errors):
 		for e in errors["errors"]:
-			t = parsetime(e["Time"])
+			t = parsetime(e["time"])
 			if t > self._last_error_time:
-				self.emit("error", e["Error"])
+				self.emit("error", e["error"])
 				self._last_error_time = t
 		self.timer("errors", self._refresh_interval * 5, self._rest_request, "errors", self._syncthing_cb_errors)
 	
@@ -807,7 +808,7 @@ class Daemon(GObject.GObject, TimerManager):
 	def _syncthing_cb_last_seen(self, data):
 		for nid in data:
 			if nid != HTTP_HEADERS:
-				t = parsetime(data[nid]["LastSeen"])
+				t = parsetime(data[nid]["lastSeen"])
 				if t < NEVER: t = None
 				if not nid in self._last_seen or self._last_seen[nid] != t:
 					self._last_seen[nid] = t
