@@ -477,7 +477,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
-		sc = Gio.SocketClient(tls=self._tls)
+		sc = Gio.SocketClient(tls=self._tls, tls_validation_flags=0)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
 			(command, data, self._epoch, callback, error_callback, callback_data))
 	
