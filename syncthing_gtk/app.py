@@ -309,6 +309,10 @@ class App(Gtk.Application, TimerManager):
 			self.hide()
 			self.show_wizard()
 			return False
+		except TLSErrorException, e:
+			# This is pretty-much fatal. Display error message and bail out.
+			self.cb_syncthing_con_error(daemon, Daemon.UNKNOWN, str(e), e)
+			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
 		if HAS_INOTIFY:
