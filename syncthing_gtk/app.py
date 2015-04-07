@@ -973,7 +973,12 @@ class App(Gtk.Application, TimerManager):
 				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 			elif not online and folder.compare_color_hex(COLOR_FOLDER_IDLE):
 				# Folder is offline and in Idle state (not scanning)
-				folder.set_status(_("Offline"))
+				if len([ d for d in folder["devices"] if d["id"] != self.daemon.get_my_id()]) == 0:
+					# No device to share folder with
+					folder.set_status(_("Unshared"))
+				else:
+					# Folder is shared, but all devices are offline
+					folder.set_status(_("Offline"))
 				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 	
 	def show_error_box(self, ribar, additional_data={}):
