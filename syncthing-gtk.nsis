@@ -3,7 +3,7 @@
 # Initial stuff
 !include MUI2.nsh
 !define APP_NAME SyncthingGTK
-!define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.5.7.zip"
+!define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.6.4.zip"
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\syncthing-gtk.exe"
 !include "build\version.nsh"
@@ -49,7 +49,7 @@ NotRunning:
 	File /r build\exe.win32-2.7\icons
 	# Check if random file that should be part of libraries zip exists
 	# and download&extract zip if not
-	IfFileExists $INSTDIR\libwebp-5.dll SkipDownload DoDownload
+	IfFileExists $INSTDIR\win32process.pyd SkipDownload DoDownload
 DoDownload:
 	NSISdl::download ${LIBRARIES_URL} $TEMP\${LIBRARIES_FILE}
 	ZipDLL::extractall $TEMP\${LIBRARIES_FILE} $INSTDIR
