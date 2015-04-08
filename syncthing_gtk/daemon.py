@@ -632,10 +632,10 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _request_config(self, *a):
 		""" Request settings from syncthing daemon """
-		self._rest_request("config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+		self._rest_request("system/config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 	
 	def _request_folder_data(self, rid):
-		self._rest_request("model?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid)
+		self._rest_request("db/status?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid)
 	
 	def _request_completion(self, nid, rid=None):
 		"""
@@ -648,7 +648,7 @@ class Daemon(GObject.GObject, TimerManager):
 				if nid in self._folder_devices[rid]:
 					self._request_completion(nid, rid)
 			return
-		self._rest_request("completion?device=%s&folder=%s" % (nid, rid), self._syncthing_cb_completion, None, nid, rid)
+		self._rest_request("db/completion?device=%s&folder=%s" % (nid, rid), self._syncthing_cb_completion, None, nid, rid)
 	
 	def _request_events(self, *a):
 		""" Request new events from syncthing daemon """
@@ -705,7 +705,7 @@ class Daemon(GObject.GObject, TimerManager):
 				self._last_error_time = parsetime(events[-1]["time"])
 			except ValueError:
 				self._last_error_time = datetime.datetime.now()
-			self._rest_request("errors", self._syncthing_cb_errors)
+			self._rest_request("system/error", self._syncthing_cb_errors)
 			self._request_events()
 		else:
 			# Retry for invalid data
@@ -741,7 +741,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if t > self._last_error_time:
 				self.emit("error", e["error"])
 				self._last_error_time = t
-		self.timer("errors", self._refresh_interval * 5, self._rest_request, "errors", self._syncthing_cb_errors)
+		self.timer("errors", self._refresh_interval * 5, self._rest_request, "system/error", self._syncthing_cb_errors)
 	
 	def _syncthing_cb_events_error(self, exception, command):
 		"""
@@ -803,7 +803,7 @@ class Daemon(GObject.GObject, TimerManager):
 				device_data["OutBytesTotal"])
 		
 		# ... repeat until pronounced dead
-		self.timer("conns", self._refresh_interval * 5, self._rest_request, "connections", self._syncthing_cb_connections, None, now)
+		self.timer("conns", self._refresh_interval * 5, self._rest_request, "system/connections", self._syncthing_cb_connections, None, now)
 	
 	def _syncthing_cb_last_seen(self, data):
 		for nid in data:
@@ -850,7 +850,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if version:
 				self._syncthing_cb_version_known(version)
 			else:
-				self._rest_request("version", self._syncthing_cb_version)
+				self._rest_request("system/version", self._syncthing_cb_version)
 		
 		announce = None
 		if "extAnnounceOK" in data:
@@ -860,7 +860,7 @@ class Daemon(GObject.GObject, TimerManager):
 			data["sys"], float(data["cpuPercent"]),
 			announce)
 		
-		self.timer("system", self._refresh_interval * 5, self._rest_request, "system", self._syncthing_cb_system)
+		self.timer("system", self._refresh_interval * 5, self._rest_request, "system/status", self._syncthing_cb_system)
 	
 	def _syncthing_cb_version(self, data):
 		if "version" in data:
@@ -924,9 +924,9 @@ class Daemon(GObject.GObject, TimerManager):
 			self._parse_dev_n_folders(config)
 			
 			self._rest_request("events?limit=1", self._init_event_pooling)	# Requests most recent event only
-			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
-			self._rest_request("connections", self._syncthing_cb_connections, None, time.time())
-			self._rest_request("system", self._syncthing_cb_system)
+			self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
+			self._rest_request("system/connections", self._syncthing_cb_connections, None, time.time())
+			self._rest_request("system/status", self._syncthing_cb_system)
 			self._request_last_seen()
 			self.check_config()
 			self.emit('config-loaded', config)
@@ -939,7 +939,7 @@ class Daemon(GObject.GObject, TimerManager):
 				epoch = self._epoch
 				self.emit("connection-error", Daemon.REFUSED, exception.message, exception)
 				if epoch == self._epoch:
-					self.timer("config", self._refresh_interval, self._rest_request, "config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+					self.timer("config", self._refresh_interval, self._rest_request, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error)
 				return
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message, exception)
@@ -1085,8 +1085,8 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		def reload_config_cb(config):
 			self._parse_dev_n_folders(config)
-			self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
-		self._rest_request("config", reload_config_cb, error_callback)
+			self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
+		self._rest_request("system/config", reload_config_cb, error_callback)
 	
 	def close(self):
 		"""
@@ -1113,7 +1113,7 @@ class Daemon(GObject.GObject, TimerManager):
 		Check if configuration is in sync.
 		Should cause 'config-out-of-sync' event to be raised ASAP.
 		"""
-		self._rest_request("config/sync", self._syncthing_cb_config_in_sync)
+		self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
 	
 	def read_config(self, callback, error_callback=None, *calbackdata):
 		"""
@@ -1122,7 +1122,8 @@ class Daemon(GObject.GObject, TimerManager):
 		callback(config) with data decoded from json on success,
 		error_callback(exception) on failure
 		"""
-		self._rest_request("config", callback, error_callback, *calbackdata)
+		print "read_config", "system/config", callback, error_callback
+		self._rest_request("system/config", callback, error_callback, *calbackdata)
 	
 	def write_config(self, config, callback, error_callback=None, *calbackdata):
 		"""
@@ -1133,7 +1134,7 @@ class Daemon(GObject.GObject, TimerManager):
 		def run_before(data, *a):
 			self.check_config()
 			callback(*calbackdata)
-		self._rest_post("config", config, run_before, error_callback, *calbackdata)
+		self._rest_post("system/config", config, run_before, error_callback, *calbackdata)
 	
 	def read_stignore(self, folder_id, callback, error_callback=None, *calbackdata):
 		"""
@@ -1146,7 +1147,7 @@ class Daemon(GObject.GObject, TimerManager):
 				callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
 			else:
 				callback("", *a)
-		self._rest_request("ignores?folder=%s" % (folder_id,), r_filter, error_callback, *calbackdata)
+		self._rest_request("db/ignores?folder=%s" % (folder_id,), r_filter, error_callback, *calbackdata)
 	
 	def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
 		"""
@@ -1154,7 +1155,7 @@ class Daemon(GObject.GObject, TimerManager):
 		with on success, error_callback(exception) on failure.
 		"""
 		data = { 'ignore': text.split("\n") }
-		self._rest_post("ignores?folder=%s" % (folder_id,), data, callback, error_callback, *calbackdata)
+		self._rest_post("db/ignores?folder=%s" % (folder_id,), data, callback, error_callback, *calbackdata)
 	
 	def restart(self):
 		"""
