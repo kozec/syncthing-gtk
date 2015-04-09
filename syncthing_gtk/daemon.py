@@ -552,7 +552,6 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		con.close(None)
 		response = "".join(buffer)
-		print response
 		# Parse response
 		if self._CSRFtoken is None and self._api_key is None:
 			# I wanna cookie!
@@ -1058,6 +1057,9 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "ItemFinished":
 			# Not handled (yet?)
 			pass
+		elif eType == "FolderSummary":
+			# Not handled (yet?)
+			pass
 		elif eType == "DownloadProgress":
 			# Not handled (yet?)
 			pass
@@ -1122,7 +1124,6 @@ class Daemon(GObject.GObject, TimerManager):
 		callback(config) with data decoded from json on success,
 		error_callback(exception) on failure
 		"""
-		print "read_config", "system/config", callback, error_callback
 		self._rest_request("system/config", callback, error_callback, *calbackdata)
 	
 	def write_config(self, config, callback, error_callback=None, *calbackdata):
