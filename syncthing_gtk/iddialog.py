@@ -8,6 +8,7 @@ Dialog with Device ID and generated QR code
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from tools import IS_WINDOWS
+import urllib2, httplib, ssl
 import os, tempfile, logging
 log = logging.getLogger("IDDialog")
 _ = lambda (a) : a
@@ -45,16 +46,14 @@ class IDDialog(object):
 		if IS_WINDOWS:
 			return self.load_data_urllib()
 		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
-		print "load_data"
 		io = Gio.file_new_for_uri(uri)
 		io.load_contents_async(None, self.cb_syncthing_qr, ())
 	
 	def load_data_urllib(self):
 		""" Loads QR code from Syncthing daemon """
-		import urllib2
 		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
 		api_key = self.app.daemon.get_api_key()
-		opener = urllib2.build_opener()
+		opener = urllib2.build_opener(DummyHTTPSHandler())
 		if not api_key is None:
 			opener.addheaders = [("X-API-Key", api_key)]
 		a = opener.open(uri)
@@ -93,3 +92,20 @@ class IDDialog(object):
 			return
 		finally:
 			del io
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+class DummyHTTPSHandler(urllib2.HTTPSHandler):
+	"""
+	Dummy HTTPS handler that ignores certificate errors. This in unsafe,
+	but used ONLY for QR code images.
+	"""
+	def __init__(self):
+		urllib2.HTTPSHandler.__init__(self)
+	
+	def https_open(self, req):
+		return self.do_open(self.getConnection, req)
+	
+	def getConnection(self, host, timeout=300):
+		return httplib.HTTPSConnection(host, context=ctx)
