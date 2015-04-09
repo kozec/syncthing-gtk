@@ -1198,6 +1198,10 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns true if any folder is being synchronized right now  """
 		return len(self._syncing_folders) > 0
 	
+	def get_api_key(self):
+		""" Returns API key used for communication with daemon. May return None """
+		return self._api_key
+	
 	def get_min_version(self):
 		"""
 		Returns minimal syncthing daemon version that daemon instance
