@@ -284,9 +284,10 @@ class App(Gtk.Application, TimerManager):
 			self[limitmenu].show_all()
 		
 		if not old_gtk:
-			if not Gtk.IconTheme.get_default().has_icon(self["edit-menu-icon"].get_icon_name()[0]):
-				# If requested icon is not found in default theme, replace it with emblem-system-symbolic
-				self["edit-menu-icon"].set_from_icon_name("emblem-system-symbolic", self["edit-menu-icon"].get_icon_name()[1])
+			if not self["edit-menu-icon"] is None:
+				if not Gtk.IconTheme.get_default().has_icon(self["edit-menu-icon"].get_icon_name()[0]):
+					# If requested icon is not found in default theme, replace it with emblem-system-symbolic
+					self["edit-menu-icon"].set_from_icon_name("emblem-system-symbolic", self["edit-menu-icon"].get_icon_name()[1])
 		
 		# Set window title in way that even Gnome can understand
 		self["window"].set_title(_("Syncthing GTK"))
