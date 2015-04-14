@@ -1636,16 +1636,15 @@ class App(Gtk.Application, TimerManager):
 		"""
 		Asks user if he really wants to do what he just asked to do
 		"""
+		msg = _("Do you really want to permanently stop synchronizing directory '%s'?")
+		if mode == "device":
+			msg = _("Do you really want remove device '%s' from Syncthing?")
 		d = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 				Gtk.MessageType.QUESTION,
 				Gtk.ButtonsType.YES_NO,
-				"%s %s\n'%s'?" % (
-					_("Do you really want do delete"),
-					_("directory") if mode == "folder" else _("device"),
-					name
-					)
+				msg % name
 				)
 		r = d.run()
 		d.hide()
