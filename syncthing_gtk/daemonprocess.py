@@ -133,7 +133,11 @@ class DaemonProcess(GObject.GObject):
 		except GLib.GError:
 			# Exited with exit code
 			log.info("Subprocess exited with code %s", proc.get_exit_status())
-		self.emit('exit', proc.get_exit_status())
+		if proc.get_exit_status() == 127:
+			# Command not found
+			self.emit("failed", Exception("Command not found"))
+		else:
+			self.emit('exit', proc.get_exit_status())
 		if IS_WINDOWS: self._stdout.close()
 		self._cancel.cancel()
 	
