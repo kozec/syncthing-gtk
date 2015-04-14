@@ -90,6 +90,8 @@ class App(Gtk.Application, TimerManager):
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
+		# Used when upgrading from incompatibile version
+		self.restart_after_update = None
 		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
 		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
 		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
@@ -606,6 +608,16 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
+		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and self.process != None:
+			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
+			# Try to update.
+			from configuration import LONG_AGO
+			self.config["last_updatecheck"] = LONG_AGO
+			self.restart_after_update = True
+			self.close_connect_dialog()
+			self.display_connect_dialog(_("Your syncthing daemon is too old.\nAttempting to download recent, please wait..."))
+			self.set_status(False)
+			self.check_for_upgrade()
 		else:
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
 			if reason == Daemon.NOT_AUTHORIZED:
@@ -1810,6 +1822,9 @@ class App(Gtk.Application, TimerManager):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()
+				if self.restart_after_update:
+					self.restart_after_update = False
+					self.restart()
 			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
