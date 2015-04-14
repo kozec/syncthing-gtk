@@ -297,14 +297,16 @@ def get_config_dir():
 	configuration directory.
 	"""
 	confdir = GLib.get_user_config_dir()
-	if confdir is None:
+	if confdir is None or IS_XP:
 		if IS_WINDOWS:
 			if "LOCALAPPDATA" in os.environ:
 				# W7 and later
 				confdir = os.environ["LOCALAPPDATA"]
 			elif "APPDATA" in os.environ:
 				# XP
-				confdir = os.environ["APPDATA"]
+				from ctypes import cdll
+				os_encoding = 'cp' + str(cdll.kernel32.GetACP())
+				confdir = os.environ["APPDATA"].decode(os_encoding)
 			else:
 				# 95? :D
 				confdir = os.path.expanduser("~/.config")

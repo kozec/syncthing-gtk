@@ -21,6 +21,8 @@ class InfoBox(Gtk.Container):
 	__gsignals__ = {
 			# right-click(button, time)
 			b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
+			# doubleclick, no arguments
+			b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
 		}
 	
 	### Initialization
@@ -94,7 +96,8 @@ class InfoBox(Gtk.Container):
 		self.eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(*self.background))
 		self.grid.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(*self.background))
 		# Connect signals
-		self.eb.connect("button-release-event", self.on_grid_click)
+		self.eb.connect("button-release-event", self.on_grid_release)
+		self.eb.connect("button-press-event", self.on_grid_click)
 		self.eb.connect('enter-notify-event', self.on_enter_notify)
 		self.eb.connect('leave-notify-event', self.on_leave_notify)
 		# Pack together
@@ -254,10 +257,16 @@ class InfoBox(Gtk.Container):
 		elif event.button == 3:	# right
 			self.emit('right-click', event.button, 0)
 	
-	def on_grid_click(self, eventbox, event):
+	def on_grid_release(self, eventbox, event):
 		""" Displays popup menu on right click """
 		if event.button == 3:	# right
 			self.emit('right-click', event.button, 0)
+	
+	def on_grid_click(self, eventbox, event):
+		""" Emits 'doubleclick' signal """
+		if event.button == 1:	# Left
+			if event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS:
+				self.emit('doubleclick')
 	
 	def hilight_timer(self, *a):
 		""" Called repeatedly while color is changing """

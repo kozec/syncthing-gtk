@@ -320,8 +320,15 @@ class Daemon(GObject.GObject, TimerManager):
 		except Exception, e:
 			pass
 		self._tls = False
+		self._cert = None
 		if tls.lower() == "true":
 			self._tls = True
+			try:
+				self._cert = Gio.TlsCertificate.new_from_file(
+					os.path.join(get_config_dir(), "syncthing", "https-cert.pem"))
+			except Exception, e:
+				log.exception(e)
+				raise TLSErrorException("Failed to load daemon certificate")
 		try:
 			self._address = xml.getElementsByTagName("configuration")[0] \
 							.getElementsByTagName("gui")[0] \
@@ -372,7 +379,9 @@ class Daemon(GObject.GObject, TimerManager):
 			callback(json_data, callback_data... )
 			error_callback(exception, command, callback_data... )
 		"""
-		sc = Gio.SocketClient(tls=self._tls, tls_validation_flags=0)
+		sc = Gio.SocketClient(tls=self._tls)
+		if self._tls:
+			GObject.Object.connect(sc, "event", self._rest_socket_event)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
 			(command, self._epoch, callback, error_callback, callback_data))
 	
@@ -475,9 +484,20 @@ class Daemon(GObject.GObject, TimerManager):
 				log.error("Request '%s' failed; Repeating...", command)
 			self.timer(None, 1, self._rest_request, command, callback, error_callback, *callback_data)
 	
+	def _rest_socket_event(self, sc, event, connectable, con):
+		""" Setups TSL certificate if HTTPS is used """
+		if event == Gio.SocketClientEvent.TLS_HANDSHAKING:
+			con.connect("accept-certificate", self._rest_accept_certificate)
+	
+	def _rest_accept_certificate(self, con, peer_cert, errors):
+		""" Check if server presents expected certificate and accept connection """
+		return peer_cert.is_same(self._cert)
+	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
 		sc = Gio.SocketClient(tls=self._tls)
+		if self._tls:
+			GObject.Object.connect(sc, "event", self._rest_socket_event)
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
 			(command, data, self._epoch, callback, error_callback, callback_data))
 	
@@ -1176,6 +1196,10 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns true if any folder is being synchronized right now  """
 		return len(self._syncing_folders) > 0
 	
+	def get_api_key(self):
+		""" Returns API key used for communication with daemon. May return None """
+		return self._api_key
+	
 	def get_min_version(self):
 		"""
 		Returns minimal syncthing daemon version that daemon instance
@@ -1256,6 +1280,7 @@ class Daemon(GObject.GObject, TimerManager):
 
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(RuntimeError): pass
+class TLSErrorException(RuntimeError): pass
 
 class HTTPError(RuntimeError):
 	def __init__(self, message, full_response):

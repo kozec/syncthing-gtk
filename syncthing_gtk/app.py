@@ -283,6 +283,11 @@ class App(Gtk.Application, TimerManager):
 				submenu.add(menuitem)
 			self[limitmenu].show_all()
 		
+		if not old_gtk:
+			if not Gtk.IconTheme.get_default().has_icon(self["edit-menu-icon"].get_icon_name()[0]):
+				# If requested icon is not found in default theme, replace it with emblem-system-symbolic
+				self["edit-menu-icon"].set_from_icon_name("emblem-system-symbolic", self["edit-menu-icon"].get_icon_name()[1])
+		
 		# Set window title in way that even Gnome can understand
 		self["window"].set_title(_("Syncthing GTK"))
 		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
@@ -308,6 +313,10 @@ class App(Gtk.Application, TimerManager):
 				return False
 			self.hide()
 			self.show_wizard()
+			return False
+		except TLSErrorException, e:
+			# This is pretty-much fatal. Display error message and bail out.
+			self.cb_syncthing_con_error(daemon, Daemon.UNKNOWN, str(e), e)
 			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
@@ -375,7 +384,7 @@ class App(Gtk.Application, TimerManager):
 				if windows.is_shutting_down():
 					log.warning("Not starting daemon: System shutdown detected")
 					return
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
 			self.process.start()
@@ -969,7 +978,12 @@ class App(Gtk.Application, TimerManager):
 				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 			elif not online and folder.compare_color_hex(COLOR_FOLDER_IDLE):
 				# Folder is offline and in Idle state (not scanning)
-				folder.set_status(_("Offline"))
+				if len([ d for d in folder["devices"] if d["id"] != self.daemon.get_my_id()]) == 0:
+					# No device to share folder with
+					folder.set_status(_("Unshared"))
+				else:
+					# Folder is shared, but all devices are offline
+					folder.set_status(_("Offline"))
 				folder.set_color_hex(COLOR_FOLDER_OFFLINE)
 	
 	def show_error_box(self, ribar, additional_data={}):
@@ -1195,6 +1209,7 @@ class App(Gtk.Application, TimerManager):
 			self["folderlist"].pack_start(box, False, False, 3)
 			box.set_open(id in self.open_boxes or self.folders_never_loaded)
 			box.connect('right-click', self.cb_popup_menu_folder)
+			box.connect('doubleclick', self.cb_browse_folder)
 			box.connect('enter-notify-event', self.cb_box_mouse_enter)
 			box.connect('leave-notify-event', self.cb_box_mouse_leave)
 			self.folders[id] = box
@@ -1581,7 +1596,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_popup_browse_folder(self, *a):
 		""" Handler for 'browse' folder context menu item """
-		path = os.path.expanduser(self.rightclick_box["path"])
+		self.cb_browse_folder(self.rightclick_box)
+		
+	def cb_browse_folder(self, box, *a):
+		""" Handler for 'browse' action """
+		path = os.path.expanduser(box["path"])
 		if IS_WINDOWS:
 			# Don't attempt anything, use Windows Explorer on Windows
 			os.system('explorer "%s"' % (path,))
@@ -1617,16 +1636,15 @@ class App(Gtk.Application, TimerManager):
 		"""
 		Asks user if he really wants to do what he just asked to do
 		"""
+		msg = _("Do you really want to permanently stop synchronizing directory '%s'?")
+		if mode == "device":
+			msg = _("Do you really want remove device '%s' from Syncthing?")
 		d = Gtk.MessageDialog(
 				self["window"],
 				Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 				Gtk.MessageType.QUESTION,
 				Gtk.ButtonsType.YES_NO,
-				"%s %s\n'%s'?" % (
-					_("Do you really want do delete"),
-					_("directory") if mode == "folder" else _("device"),
-					name
-					)
+				msg % name
 				)
 		r = d.run()
 		d.hide()
@@ -1792,7 +1810,7 @@ class App(Gtk.Application, TimerManager):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"])
+			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
 			self.process.connect('failed', self.cb_daemon_startup_failed)
 			self.process.connect('exit', self.cb_daemon_exit)
 			self.process.start()
