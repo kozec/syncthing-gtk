@@ -446,11 +446,16 @@ class Daemon(GObject.GObject, TimerManager):
 			if code == 401:
 				self._rest_error(HTTPAuthException("".join(buffer)), epoch, command, callback, error_callback, callback_data)
 				return
+			elif code == 404:
+				self._rest_error(HTTPCode(404, "Not found", "".join(buffer), headers), epoch, command, callback, error_callback, callback_data)
+				return
 			elif code != 200:
-				self._rest_error(HTTPCode(code, response, "".join(buffer)), epoch, command, callback, error_callback, callback_data)
+				self._rest_error(HTTPCode(code, response, "".join(buffer), headers), epoch, command, callback, error_callback, callback_data)
 				return
 		except Exception, e:
 			# That probably wasn't HTTP
+			import traceback
+			traceback.print_exc()
 			self._rest_error(InvalidHTTPResponse("".join(buffer)), epoch, command, callback, error_callback, callback_data)
 			return
 		# Parse response and call callback
@@ -963,6 +968,16 @@ class Daemon(GObject.GObject, TimerManager):
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message, exception)
 			return
+		elif isinstance(exception, HTTPCode):
+			# HTTP 404 may acually mean old daemon version
+			version = get_header(exception.headers, "X-Syncthing-Version")
+			if version != None and not compare_version(version, MIN_VERSION):
+				self._epoch += 1
+				msg = "daemon is too old"
+				self.emit("connection-error", Daemon.OLD_VERSION, msg, Exception(msg))
+			else:
+				self.emit("connection-error", Daemon.UNKNOWN, exception.message, exception)
+			return
 		elif isinstance(exception, TLSUnsupportedException):
 			self.emit("connection-error", Daemon.TLS_UNSUPPORTED, exception.message, exception)
 			return
@@ -1292,10 +1307,11 @@ class InvalidHTTPResponse(HTTPError):
 		HTTPError.__init__(self, "Invalid HTTP response", full_response)
 
 class HTTPCode(HTTPError):
-	def __init__(self, code, message, full_response):
-		HTTPError.__init__(self, "HTTP error %s" % (code,), message, full_response)
+	def __init__(self, code, message, full_response, headers = []):
+		HTTPError.__init__(self, "HTTP error %s : %s" % (code, message), full_response)
 		self.code = code
 		self.message = message
+		self.headers = headers
 	def __str__(self):
 		if self.message is None:
 			return "HTTP/%s" % (self.code,)
