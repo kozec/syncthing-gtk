@@ -88,7 +88,7 @@ class RIBar(RevealerClass):
 		self.emit("response", response_id)
 	
 	def disable_close_button(self):
-		if hasattr(self._infobar):
+		if hasattr(self._infobar, "set_show_close_button"):
 			self._infobar.set_show_close_button(False)
 	
 	def add_widget(self, widget, expand=False, fill=True):
