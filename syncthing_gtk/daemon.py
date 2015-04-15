@@ -277,11 +277,6 @@ class Daemon(GObject.GObject, TimerManager):
 		self._syncing_devices = set()
 		# and once again, for folders in 'Scanning' state
 		self._scanning_folders = set()
-		# needs_update holds set of folders & devices whose state was
-		# recently changed and needs to be fetched from server
-		# (None, folder_id) for local index
-		# (device_id, folder_id) for remote completion
-		self._needs_update = set()
 		# device_data stores data needed to compute transfer speeds
 		# and synchronization state
 		self._device_data = {}
@@ -736,11 +731,6 @@ class Daemon(GObject.GObject, TimerManager):
 							self._last_id = events[-1]["id"]
 							return
 				self._last_id = events[-1]["id"]
-				
-				for nid, rid in self._needs_update:
-					if nid is None:
-						self._request_folder_data(rid)
-				self._needs_update.clear()
 		
 		self.timer("event", self._refresh_interval, self._request_events)
 	
@@ -906,15 +896,11 @@ class Daemon(GObject.GObject, TimerManager):
 				self._stopped_folders.add(rid)
 				self.emit("folder-stopped", rid, data["invalid"])
 		self.emit('folder-data-changed', rid, data)
+		p = 0.0
 		if state == "syncing":
-			p = 0.0
 			if float(data["globalBytes"]) > 0.0:
 				p = float(data["inSyncBytes"]) / float(data["globalBytes"])
-			if self._folder_state_changed(rid, state, p):
-				self.timer("folder_%s" % rid, self._refresh_interval, self._request_folder_data, rid)
-		else:
-			if self._folder_state_changed(rid, state, 0):
-				self.timer("folder_%s" % rid, self._refresh_interval, self._request_folder_data, rid)
+		self._folder_state_changed(rid, state, p)
 	
 	def _syncthing_cb_folder_data_failed(self, exception, request, rid):
 		self.emit('folder-data-failed', rid)
@@ -986,20 +972,15 @@ class Daemon(GObject.GObject, TimerManager):
 	def _folder_state_changed(self, rid, state, progress):
 		"""
 		Emits event according to last known and new state.
-		Returns False or True to indicate that folder status should be
-		re-checked after short time.
 		"""
-		recheck = False
 		if state != "syncing" and rid in self._syncing_folders:
 			self._syncing_folders.discard(rid)
 			if not rid in self._stopped_folders:
 				self.emit("folder-sync-finished", rid)
-			recheck = True
 		if state != "scanning" and rid in self._scanning_folders:
 			self._scanning_folders.discard(rid)
 			if not rid in self._stopped_folders:
 				self.emit("folder-scan-finished", rid)
-			recheck = True
 		if state == "syncing":
 			if not rid in self._stopped_folders:
 				if rid in self._syncing_folders:
@@ -1007,7 +988,6 @@ class Daemon(GObject.GObject, TimerManager):
 				else:
 					self._syncing_folders.add(rid)
 					self.emit("folder-sync-started", rid)
-				recheck = True
 		elif state == "scanning":
 			if not rid in self._stopped_folders:
 				if rid in self._scanning_folders:
@@ -1015,7 +995,6 @@ class Daemon(GObject.GObject, TimerManager):
 				else:
 					self._scanning_folders.add(rid)
 					self.emit("folder-scan-started", rid)
-		return recheck
 	
 	def _on_event(self, e):
 		eType = e["type"]
@@ -1027,14 +1006,9 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "StateChanged":
 			state = e["data"]["to"]
 			rid = e["data"]["folder"]
-			if self._folder_state_changed(rid, state, 0):
-				self._needs_update.add((None, rid))
+			self._folder_state_changed(rid, state, 0)
 		elif eType in ("RemoteIndexUpdated"):
-			rid = e["data"]["folder"]
-			nid = e["data"]["device"]
-			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
-				self._needs_update.add((None, rid))
-			self._needs_update.add((nid, rid))
+			pass
 		elif eType == "DeviceConnected":
 			nid = e["data"]["id"]
 			self.emit("device-connected", nid)
@@ -1059,21 +1033,20 @@ class Daemon(GObject.GObject, TimerManager):
 			filename = e["data"]["item"]
 			t = parsetime(e["time"])
 			self.emit("item-started", rid, filename, t)
-		elif eType == "LocalIndexUpdated":
-			rid = e["data"]["folder"]
-			filename = e["data"]["name"]
-			mtime = parsetime(e["data"]["modified"])
-			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
-				self._needs_update.add((None, rid))
-			self.emit("item-updated", rid, filename, mtime)
-		elif eType == "ConfigSaved":
-			self.emit("config-saved")
 		elif eType == "FolderCompletion":
 			self._syncthing_cb_completion(e["data"])
-		elif eType == "ItemFinished":
-			# Not handled (yet?)
-			pass
 		elif eType == "FolderSummary":
+			rid = e["data"]["folder"]
+			self._syncthing_cb_folder_data(e["data"]["summary"], rid)
+		elif eType == "LocalIndexUpdated":
+			rid = e["data"]["folder"]
+			if "name" in e["data"]:
+				filename = e["data"]["name"]
+				mtime = parsetime(e["data"]["modified"])
+				self.emit("item-updated", rid, filename, mtime)
+		elif eType == "ConfigSaved":
+			self.emit("config-saved")
+		elif eType == "ItemFinished":
 			# Not handled (yet?)
 			pass
 		elif eType == "DownloadProgress":
@@ -1118,7 +1091,6 @@ class Daemon(GObject.GObject, TimerManager):
 		self._stopped_folders = set()
 		self._syncing_devices = set()
 		self._scanning_folders = set()
-		self._needs_update = set()
 		self._device_data = {}
 		self._folder_devices = {}
 		self._last_id = 0
