@@ -787,31 +787,28 @@ class Daemon(GObject.GObject, TimerManager):
 		now = time.time()
 		td = now - prev_time
 		
-		for id in data:
+		cons = data["connections"]
+		# Use my own device for totals, if it is already known
+		# It it is not known, just skip totals for now
+		if not self._my_id is None:
+			cons[self._my_id] = data["total"]
+		
+		for id in cons:
 			# Load device data
-			if id == HTTP_HEADERS:
-				# Special key added by rest_request method
-				continue
 			nid = id
-			if id == "total":
-				# Use my own device for totals, if it is already known
-				# It it is not known, just skip totals for now
-				if self._my_id is None:
-					continue
-				nid = self._my_id
 			device_data = self._get_device_data(nid)
 			
 			# Compute rates
 			try:
-				data[id]["inbps"] = max(0.0, (data[id]["InBytesTotal"] - device_data["InBytesTotal"]) / td);
-				data[id]["outbps"] = max(0.0, (data[id]["OutBytesTotal"] - device_data["OutBytesTotal"]) / td);
+				cons[id]["inbps"] = max(0.0, (cons[id]["InBytesTotal"] - device_data["InBytesTotal"]) / td);
+				cons[id]["outbps"] = max(0.0, (cons[id]["OutBytesTotal"] - device_data["OutBytesTotal"]) / td);
 			except Exception:
-				data[id]["inbps"] = 0.0
-				data[id]["outbps"] = 0.0
+				cons[id]["inbps"] = 0.0
+				cons[id]["outbps"] = 0.0
 			# Store updated device_data
-			for key in data[id]:
-				if key != "ClientVersion" or data[id][key] != "":	# Happens for 'total'
-					device_data[key] = data[id][key]
+			for key in cons[id]:
+				if key != "ClientVersion" or cons[id][key] != "":	# Happens for 'total'
+					device_data[key] = cons[id][key]
 			
 			# Send "device-connected" signal, if device was disconnected until now
 			if not device_data["connected"] and nid != self._my_id:
