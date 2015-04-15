@@ -1179,14 +1179,14 @@ class Daemon(GObject.GObject, TimerManager):
 		Asks daemon to restart. If sucesfull, call will cause
 		'disconnected' event with Daemon.RESTART reason to be fired
 		"""
-		self._rest_post("restart",  {}, self._syncthing_cb_shutdown, None, Daemon.RESTART)
+		self._rest_post("system/restart",  {}, self._syncthing_cb_shutdown, None, Daemon.RESTART)
 	
 	def shutdown(self):
 		"""
 		Asks daemon to shutdown. If sucesfull, call will cause
 		'disconnected' event with Daemon.SHUTDOWN reason to be fired
 		"""
-		self._rest_post("shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN)
+		self._rest_post("system/shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN)
 	
 	def syncing(self):
 		""" Returns true if any folder is being synchronized right now  """
@@ -1248,9 +1248,9 @@ class Daemon(GObject.GObject, TimerManager):
 		# Errors here are ignored; Syncthing rescans stuff periodicaly,
 		# so it's not big problem if call fails.
 		if path is None:
-			self._rest_post("scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: a, folder_id)
+			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: a, folder_id)
 		else:
-			self._rest_post("scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
+			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
