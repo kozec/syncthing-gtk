@@ -362,9 +362,9 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns dict with device data, creating it if needed """
 		if not nid in self._device_data:
 			self._device_data[nid] = {
-					"InBytesTotal" : 0, "OutBytesTotal" : 0,
-					"inbps" : 0, "outbps" : 0 , "ClientVersion" : "?",
-					"Address": "", "completion" : {}, "connected" : False,
+					"inBytesTotal" : 0, "outBytesTotal" : 0,
+					"inbps" : 0, "outbps" : 0 , "clientVersion" : "?",
+					"address": "", "completion" : {}, "connected" : False,
 				}
 		return self._device_data[nid]
 	
@@ -800,14 +800,14 @@ class Daemon(GObject.GObject, TimerManager):
 			
 			# Compute rates
 			try:
-				cons[id]["inbps"] = max(0.0, (cons[id]["InBytesTotal"] - device_data["InBytesTotal"]) / td);
-				cons[id]["outbps"] = max(0.0, (cons[id]["OutBytesTotal"] - device_data["OutBytesTotal"]) / td);
+				cons[id]["inbps"] = max(0.0, (cons[id]["inBytesTotal"] - device_data["inBytesTotal"]) / td);
+				cons[id]["outbps"] = max(0.0, (cons[id]["outBytesTotal"] - device_data["outBytesTotal"]) / td);
 			except Exception:
 				cons[id]["inbps"] = 0.0
 				cons[id]["outbps"] = 0.0
 			# Store updated device_data
 			for key in cons[id]:
-				if key != "ClientVersion" or cons[id][key] != "":	# Happens for 'total'
+				if key != "clientVersion" or cons[id][key] != "":	# Happens for 'total'
 					device_data[key] = cons[id][key]
 			
 			# Send "device-connected" signal, if device was disconnected until now
@@ -816,12 +816,12 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("device-connected", nid)
 			# Send "device-data-changed" signal
 			self.emit("device-data-changed", nid, 
-				device_data["Address"],
-				device_data["ClientVersion"],
+				device_data["address"],
+				device_data["clientVersion"],
 				device_data["inbps"],
 				device_data["outbps"],
-				device_data["InBytesTotal"],
-				device_data["OutBytesTotal"])
+				device_data["inBytesTotal"],
+				device_data["outBytesTotal"])
 		
 		# ... repeat until pronounced dead
 		self.timer("conns", self._refresh_interval * 5, self._rest_request, "system/connections", self._syncthing_cb_connections, None, now)
@@ -905,13 +905,13 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		if self._my_id != None:
 			device = self._get_device_data(self._my_id)
-			if version != device["ClientVersion"]:
-				device["ClientVersion"] = version
+			if version != device["clientVersion"]:
+				device["clientVersion"] = version
 				self.emit("device-data-changed", self._my_id, 
 					None,
-					device["ClientVersion"],
+					device["clientVersion"],
 					device["inbps"], device["outbps"],
-					device["InBytesTotal"], device["OutBytesTotal"])
+					device["inBytesTotal"], device["outBytesTotal"])
 	
 	def _syncthing_cb_folder_data(self, data, rid):
 		state = data['state']
@@ -1240,8 +1240,8 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		if self._my_id == None: return "unknown"
 		device = self._get_device_data(self._my_id)
-		if "ClientVersion" in device:
-			return device["ClientVersion"]
+		if "clientVersion" in device:
+			return device["clientVersion"]
 		return "unknown"
 	
 	def get_webui_url(self):
