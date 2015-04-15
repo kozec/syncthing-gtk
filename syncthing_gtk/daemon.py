@@ -661,19 +661,6 @@ class Daemon(GObject.GObject, TimerManager):
 	def _request_folder_data(self, rid):
 		self._rest_request("db/status?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid)
 	
-	def _request_completion(self, nid, rid=None):
-		"""
-		Requests completion data for specified device and folder.
-		If rid is None, requests completion data for specified device and
-		ALL folders.
-		"""
-		if rid is None:
-			for rid in self._folder_devices:
-				if nid in self._folder_devices[rid]:
-					self._request_completion(nid, rid)
-			return
-		self._rest_request("db/completion?device=%s&folder=%s" % (nid, rid), self._syncthing_cb_completion, None, nid, rid)
-	
 	def _request_events(self, *a):
 		""" Request new events from syncthing daemon """
 		self._rest_request("events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
@@ -753,8 +740,6 @@ class Daemon(GObject.GObject, TimerManager):
 				for nid, rid in self._needs_update:
 					if nid is None:
 						self._request_folder_data(rid)
-					else:
-						self._request_completion(nid, rid)
 				self._needs_update.clear()
 		
 		self.timer("event", self._refresh_interval, self._request_events)
@@ -835,29 +820,30 @@ class Daemon(GObject.GObject, TimerManager):
 					self._last_seen[nid] = t
 					self.emit('last-seen-changed', nid, t)
 	
-	def _syncthing_cb_completion(self, data, nid, rid):
-		if "completion" in data:
-			# Store acquired value
-			device = self._get_device_data(nid)
-			device["completion"][rid] = float(data["completion"])
-			
-			# Recompute stuff
-			total = 100.0 * len(device["completion"])
-			sync = 0.0
-			if total > 0.0:
-				sync = sum(device["completion"].values()) / total
-			if sync <= 0 or sync >= 100:
-				# Not syncing
-				if nid in self._syncing_devices:
-					self._syncing_devices.discard(nid)
-					self.emit("device-sync-finished", nid)
+	def _syncthing_cb_completion(self, data):
+		nid = data["device"]
+		rid = data["folder"]
+		# Store acquired value
+		device = self._get_device_data(nid)
+		device["completion"][rid] = float(data["completion"])
+		
+		# Recompute stuff
+		total = 100.0 * len(device["completion"])
+		sync = 0.0
+		if total > 0.0:
+			sync = sum(device["completion"].values()) / total
+		if sync <= 0 or sync >= 100:
+			# Not syncing
+			if nid in self._syncing_devices:
+				self._syncing_devices.discard(nid)
+				self.emit("device-sync-finished", nid)
+		else:
+			# Syncing
+			if not nid in self._syncing_devices:
+				self._syncing_devices.add(nid)
+				self.emit("device-sync-started", nid, sync)
 			else:
-				# Syncing
-				if not nid in self._syncing_devices:
-					self._syncing_devices.add(nid)
-					self.emit("device-sync-started", nid, sync)
-				else:
-					self.emit("device-sync-progress", nid, sync)
+				self.emit("device-sync-progress", nid, sync)
 
 	
 	def _syncthing_cb_system(self, data):
@@ -1052,7 +1038,6 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "DeviceConnected":
 			nid = e["data"]["id"]
 			self.emit("device-connected", nid)
-			self._request_completion(nid)
 		elif eType == "DeviceDisconnected":
 			nid = e["data"]["id"]
 			self.emit("device-disconnected", nid)
@@ -1081,11 +1066,10 @@ class Daemon(GObject.GObject, TimerManager):
 			if (not rid in self._syncing_devices) and (not rid in self._scanning_folders):
 				self._needs_update.add((None, rid))
 			self.emit("item-updated", rid, filename, mtime)
-			# Request completion data for each device that shares this folder
-			for nid in self._folder_devices[rid]:
-				self._needs_update.add((nid, rid))
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
+		elif eType == "FolderCompletion":
+			self._syncthing_cb_completion(e["data"])
 		elif eType == "ItemFinished":
 			# Not handled (yet?)
 			pass
