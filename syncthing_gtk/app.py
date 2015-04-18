@@ -1538,11 +1538,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.recv_limit != speed:
-			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
+			self.change_setting_n_restart("options/maxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.send_limit != speed:
-			self.change_setting_n_restart("Options/MaxSendKbps", speed)
+			self.change_setting_n_restart("options/maxSendKbps", speed)
 	
 	def cb_menu_recvlimit_other(self, menuitem):
 		return self.cb_menu_limit_other(menuitem, self.recv_limit)
@@ -1769,10 +1769,10 @@ class App(Gtk.Application, TimerManager):
 			e.show(self["window"])
 		elif response_id == RESPONSE_UR_ALLOW:
 			# Allow Usage reporting
-			self.change_setting_n_restart("Options/URAccepted", 1)
+			self.change_setting_n_restart("options/urAccepted", 1)
 		elif response_id == RESPONSE_UR_FORBID:
 			# Allow Usage reporting
-			self.change_setting_n_restart("Options/URAccepted", -1)
+			self.change_setting_n_restart("options/urAccepted", -1)
 		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):
