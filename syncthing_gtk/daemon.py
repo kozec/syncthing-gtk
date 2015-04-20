@@ -686,7 +686,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("device-added", nid, n["name"], used, n)
 			
 		# Parse folders
-		for r in config["folders"]:
+		for r in sorted(config["folders"], key=lambda x : x["id"].lower()):
 			rid = r["id"]
 			self._syncing_folders.add(rid)
 			self._folder_devices[rid] = [ n["deviceID"] for n in r["devices"] ]
