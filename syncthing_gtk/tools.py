@@ -274,6 +274,10 @@ def parse_version(ver):
 	"""
 	comps = VERSION_NUMBER.match(ver).group(1).split(".")
 	if comps[0] == "":
+		if ver == "unknown-dev":
+			# Exception for non-tagged releases.
+			# See https://github.com/syncthing/syncthing-gtk/issues/133
+			return parse_version("v9999.99")
 		# Not even single number in version string
 		return 0
 	while len(comps) < 6:
