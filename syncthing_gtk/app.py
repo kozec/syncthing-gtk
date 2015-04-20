@@ -387,11 +387,18 @@ class App(Gtk.Application, TimerManager):
 				if windows.is_shutting_down():
 					log.warning("Not starting daemon: System shutdown detected")
 					return
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
-			self.process.connect('failed', self.cb_daemon_startup_failed)
-			self.process.connect('exit', self.cb_daemon_exit)
-			self.process.start()
+			self.ct_process()
 			self.lookup_action('daemon_output').set_enabled(True)
+	
+	def ct_process(self):
+		"""
+		Sets self.process, adds related handlers and starts daemon.
+		Just so I don't have to write same code all over the place.
+		"""
+		self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"], self.config["max_cpus"])
+		self.process.connect('failed', self.cb_daemon_startup_failed)
+		self.process.connect('exit', self.cb_daemon_exit)
+		self.process.start()
 	
 	def ask_for_ur(self, *a):
 		if self.ur_question_shown:
@@ -1826,10 +1833,7 @@ class App(Gtk.Application, TimerManager):
 				if self.restart_after_update:
 					self.restart_after_update = False
 					self.restart()
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
-			self.process.connect('failed', self.cb_daemon_startup_failed)
-			self.process.connect('exit', self.cb_daemon_exit)
-			self.process.start()
+			self.ct_process()
 	
 	def cb_daemon_startup_failed(self, proc, exception):
 		"""

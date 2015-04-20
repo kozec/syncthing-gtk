@@ -64,7 +64,7 @@ class DaemonSettingsDialog(EditorDialog):
 				self.find_widget_by_id("vmaxRecvKbps").get_adjustment().set_value(self.values["maxRecvKbps"])
 		else:
 			return EditorDialog.set_value(self, key, value)
-
+	
 	#@Overrides
 	def on_data_loaded(self):
 		self.values = self.config["options"]

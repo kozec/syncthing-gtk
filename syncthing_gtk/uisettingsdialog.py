@@ -19,7 +19,7 @@ VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
 		"vdaemon_priority", "vfolder_as_path", "vnotification_for_update",
 		"vnotification_for_folder", "vnotification_for_error",
-		"vst_autoupdate", "vsyncthing_binary",
+		"vst_autoupdate", "vsyncthing_binary", "vmax_cpus",
 	]
 
 # Values for filemanager integration. Key is ID of checkbox widget
@@ -59,6 +59,10 @@ class UISettingsDialog(EditorDialog):
 	def cb_btBrowse_clicked(self, *a):
 		""" Display file browser dialog to browse for syncthing binary """
 		browse_for_binary(self["editor"], self, "vsyncthing_binary")
+	
+	def cb_vmax_cpus_value_changed(self, sb):
+		if sb.get_adjustment().get_value() == 0:
+			sb.set_text(_("Unlimited"))
 	
 	#@Overrides
 	def load_data(self):
