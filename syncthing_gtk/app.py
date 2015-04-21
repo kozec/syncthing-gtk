@@ -470,7 +470,16 @@ class App(Gtk.Application, TimerManager):
 		def cb_cu_extract_finished(sd, r, l, pb):
 			pb.hide()
 			l.set_text(_("Restarting daemon..."))
-			self.daemon.restart()
+			if self.daemon.is_connected():
+				self.daemon.restart()
+			else:
+				# Happens when updating from unsupported version
+				if not self.process is None:
+					self.process.kill()
+				else:
+					self.start_daemon()
+					self.set_status(False)
+					self.restart()
 			self.timer(None, 2, r.close)
 		
 		def cb_cu_download_fail(sd, exception, message, r):
@@ -1823,7 +1832,7 @@ class App(Gtk.Application, TimerManager):
 			self.quit()
 	
 	def cb_daemon_exit(self, proc, error_code):
-		if not self.process is None:
+		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
 			if self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
