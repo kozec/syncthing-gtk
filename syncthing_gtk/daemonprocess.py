@@ -115,6 +115,12 @@ class DaemonProcess(GObject.GObject):
 		Repeatedly check if process is still alive.
 		Called only on windows
 		"""
+		if self._proc == None:
+			# Never started or killed really fast
+			self.emit('exit', 1)
+			self._cancel.cancel()
+			if IS_WINDOWS: self._stdout.close()
+			return False
 		self._proc.poll()
 		if self._proc.returncode is None:
 			# Repeat until finished or canceled
