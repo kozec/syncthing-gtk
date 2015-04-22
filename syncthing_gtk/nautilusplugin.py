@@ -174,15 +174,15 @@ def build_class(plugin_module):
 			Adds path to list of known repositories and asks Nautilus to
 			re-read emblem.
 			"""
-			path = os.path.expanduser(r["Path"])
+			path = os.path.expanduser(r["path"])
 			self.rid_to_path[rid] = path
 			self.path_to_rid[path.rstrip("/")] = rid
 			self.repos[path] = STATE_OFFLINE
 			self._invalidate(path)
 			# Store repo id in dict of associated devices
 			self.rid_to_dev[rid] = set()
-			for d in r['Devices']:
-				self.rid_to_dev[rid].add(d['DeviceID'])
+			for d in r['devices']:
+				self.rid_to_dev[rid].add(d['deviceID'])
 		
 		def cb_syncthing_con_error(self, *a):
 			pass
