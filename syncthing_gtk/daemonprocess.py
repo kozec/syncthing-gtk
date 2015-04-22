@@ -39,16 +39,19 @@ class DaemonProcess(GObject.GObject):
 	PRIORITY_HIGH		= -10
 	PRIORITY_HIGHEST	= -20
 	
-	def __init__(self, commandline, priority=PRIORITY_NORMAL):
+	def __init__(self, commandline, priority=PRIORITY_NORMAL, max_cpus=0):
 		""" commandline should be list of arguments """
 		GObject.GObject.__init__(self)
 		self.commandline = commandline
 		self.priority = priority
+		self.max_cpus = max_cpus
 		self._proc = None
 	
 	def start(self):
 		os.environ["STNORESTART"] = "1"	# see syncthing --help
 		os.environ["STNOUPGRADE"] = "1"	# hopefully implemented later
+		if self.max_cpus > 0:
+			os.environ["GOMAXPROCS"] = str(self.max_cpus)
 		try:
 			self._cancel = Gio.Cancellable()
 			if IS_WINDOWS:

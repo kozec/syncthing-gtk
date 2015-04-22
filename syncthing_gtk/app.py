@@ -15,9 +15,9 @@ _ = lambda (a) : a
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.6.3"
+INTERNAL_VERSION		= "v0.6.9"
 # Minimal Syncthing version supported by App
-MIN_ST_VERSION			= "0.10.3"
+MIN_ST_VERSION			= "0.11.0"
 
 COLOR_DEVICE			= "#707070"					# Dark-gray
 COLOR_DEVICE_SYNCING	= "#2A89C8"					# Blue
@@ -90,6 +90,8 @@ class App(Gtk.Application, TimerManager):
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
+		# Used when upgrading from incompatibile version
+		self.restart_after_update = None
 		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
 		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
 		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
@@ -385,11 +387,18 @@ class App(Gtk.Application, TimerManager):
 				if windows.is_shutting_down():
 					log.warning("Not starting daemon: System shutdown detected")
 					return
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
-			self.process.connect('failed', self.cb_daemon_startup_failed)
-			self.process.connect('exit', self.cb_daemon_exit)
-			self.process.start()
+			self.ct_process()
 			self.lookup_action('daemon_output').set_enabled(True)
+	
+	def ct_process(self):
+		"""
+		Sets self.process, adds related handlers and starts daemon.
+		Just so I don't have to write same code all over the place.
+		"""
+		self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"], self.config["max_cpus"])
+		self.process.connect('failed', self.cb_daemon_startup_failed)
+		self.process.connect('exit', self.cb_daemon_exit)
+		self.process.start()
 	
 	def ask_for_ur(self, *a):
 		if self.ur_question_shown:
@@ -461,7 +470,16 @@ class App(Gtk.Application, TimerManager):
 		def cb_cu_extract_finished(sd, r, l, pb):
 			pb.hide()
 			l.set_text(_("Restarting daemon..."))
-			self.daemon.restart()
+			if self.daemon.is_connected():
+				self.daemon.restart()
+			else:
+				# Happens when updating from unsupported version
+				if not self.process is None:
+					self.process.kill()
+				else:
+					self.start_daemon()
+					self.set_status(False)
+					self.restart()
 			self.timer(None, 2, r.close)
 		
 		def cb_cu_download_fail(sd, exception, message, r):
@@ -607,6 +625,16 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
+		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and self.process != None:
+			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
+			# Try to update.
+			from configuration import LONG_AGO
+			self.config["last_updatecheck"] = LONG_AGO
+			self.restart_after_update = True
+			self.close_connect_dialog()
+			self.display_connect_dialog(_("Your syncthing daemon is too old.\nAttempting to download recent, please wait..."))
+			self.set_status(False)
+			self.check_for_upgrade()
 		else:
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
 			if reason == Daemon.NOT_AUTHORIZED:
@@ -670,8 +698,8 @@ class App(Gtk.Application, TimerManager):
 	def cb_config_loaded(self, daemon, config):
 		# Called after connection to daemon is initialized;
 		# Used to change indicating UI components
-		self.recv_limit = config["Options"]["MaxRecvKbps"]
-		self.send_limit = config["Options"]["MaxSendKbps"]
+		self.recv_limit = config["options"]["maxRecvKbps"]
+		self.send_limit = config["options"]["maxSendKbps"]
 		L_MEV = [("menu-si-sendlimit", self.send_limit),
 				 ("menu-si-recvlimit", self.recv_limit)]
 		
@@ -684,7 +712,7 @@ class App(Gtk.Application, TimerManager):
 					other = False
 			self["%s-other" % (limitmenu,)].set_active(other)
 		
-		if config["Options"]["URAccepted"] == 0:
+		if config["options"]["urAccepted"] == 0:
 			# User did not responded to usage reporting yet. Ask
 			self.ask_for_ur()
 		
@@ -795,8 +823,8 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_device_added(self, daemon, nid, name, used, data):
 		self.show_device(nid, name,
-			data["Compression"],
-			data["Introducer"] if "Introducer" in data else False,
+			data["compression"],
+			data["introducer"] if "introducer" in data else False,
 			used
 		)
 	
@@ -860,11 +888,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
 		box = self.show_folder(
-			rid, r["Path"], r["Path"],
-			r["ReadOnly"], r["IgnorePerms"], 
-			r["RescanIntervalS"],
+			rid, r["path"], r["path"],
+			r["readOnly"], r["ignorePerms"], 
+			r["rescanIntervalS"],
 			sorted(
-				[ self.devices[n["DeviceID"]] for n in r["Devices"] ],
+				[ self.devices[n["deviceID"]] for n in r["devices"] ],
 				key=lambda x : x.get_title().lower()
 				)
 			)
@@ -1526,11 +1554,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.recv_limit != speed:
-			self.change_setting_n_restart("Options/MaxRecvKbps", speed)
+			self.change_setting_n_restart("options/maxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.send_limit != speed:
-			self.change_setting_n_restart("Options/MaxSendKbps", speed)
+			self.change_setting_n_restart("options/maxSendKbps", speed)
 	
 	def cb_menu_recvlimit_other(self, menuitem):
 		return self.cb_menu_limit_other(menuitem, self.recv_limit)
@@ -1660,11 +1688,11 @@ class App(Gtk.Application, TimerManager):
 		configuration is loaded from server.
 		"""
 		if mode == "folder":
-			config["Folders"] = [ x for x in config["Folders"] if x["ID"] != id ]
+			config["folders"] = [ x for x in config["folders"] if x["id"] != id ]
 			if id in self.folders:
 				self.folders[id].get_parent().remove(self.folders[id])
 		else: # device
-			config["Devices"] = [ x for x in config["Devices"] if x["DeviceID"] != id ]
+			config["devices"] = [ x for x in config["devices"] if x["deviceID"] != id ]
 			if id in self.devices:
 				self.devices[id].get_parent().remove(self.devices[id])
 		self.daemon.write_config(config, lambda *a: a)
@@ -1757,10 +1785,10 @@ class App(Gtk.Application, TimerManager):
 			e.show(self["window"])
 		elif response_id == RESPONSE_UR_ALLOW:
 			# Allow Usage reporting
-			self.change_setting_n_restart("Options/URAccepted", 1)
+			self.change_setting_n_restart("options/urAccepted", 1)
 		elif response_id == RESPONSE_UR_FORBID:
 			# Allow Usage reporting
-			self.change_setting_n_restart("Options/URAccepted", -1)
+			self.change_setting_n_restart("options/urAccepted", -1)
 		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):
@@ -1804,17 +1832,17 @@ class App(Gtk.Application, TimerManager):
 			self.quit()
 	
 	def cb_daemon_exit(self, proc, error_code):
-		if not self.process is None:
+		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
 			if self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()
-			self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"])
-			self.process.connect('failed', self.cb_daemon_startup_failed)
-			self.process.connect('exit', self.cb_daemon_exit)
-			self.process.start()
+				if self.restart_after_update:
+					self.restart_after_update = False
+					self.restart()
+			self.ct_process()
 	
 	def cb_daemon_startup_failed(self, proc, exception):
 		"""

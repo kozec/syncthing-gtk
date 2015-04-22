@@ -9,6 +9,11 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="adjMaxCPUs">
+    <property name="upper">99</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkListStore" id="lststrPriority">
     <columns>
       <!-- column-name key -->
@@ -697,7 +702,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">6</property>
+                    <property name="top_attach">9</property>
                     <property name="width">2</property>
                     <property name="height">1</property>
                   </packing>
@@ -714,7 +719,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">7</property>
+                    <property name="top_attach">10</property>
                     <property name="width">2</property>
                     <property name="height">1</property>
                   </packing>
@@ -769,6 +774,58 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
+                    <property name="width">2</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label14">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes">Maximum number of CPU cores</property>
+                    <property name="use_underline">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">6</property>
+                    <property name="width">2</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label15">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_bottom">10</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes">Sets the maximum number of CPU cores for daemon to use. This value will be used only if "&lt;i&gt;start daemon in background&lt;/i&gt;" option is checked on "&lt;i&gt;Interface&lt;/i&gt;" page.</property>
+                    <property name="use_markup">True</property>
+                    <property name="wrap">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">8</property>
+                    <property name="width">2</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="vmax_cpus">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin_bottom">10</property>
+                    <property name="text" translatable="yes">1</property>
+                    <property name="adjustment">adjMaxCPUs</property>
+                    <property name="value">1</property>
+                    <signal name="value-changed" handler="cb_vmax_cpus_value_changed" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">7</property>
                     <property name="width">2</property>
                     <property name="height">1</property>
                   </packing>
