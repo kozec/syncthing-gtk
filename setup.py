@@ -3,6 +3,7 @@
 from distutils.core import setup
 from subprocess import Popen, PIPE
 import glob, os
+ICON_SIZES = (16, 24, 32, 64, 128, 256)
 
 def get_version():
 	"""
@@ -29,19 +30,25 @@ def get_version():
 		path = path[0:-1]
 	return version
 
-if __name__ == "__main__" : setup(
-	name = 'syncthing-gtk',
-	version = get_version(),
-	description = 'GTK3 GUI for Syncthing',
-	url = 'https://github.com/syncthing/syncthing-gtk',
-	packages = ['syncthing_gtk'],
+if __name__ == "__main__" : 
 	data_files = [
 		('share/syncthing-gtk', glob.glob("*.glade") ),
 		('share/syncthing-gtk', glob.glob("scripts/syncthing-plugin-*.py") ),
-		('share/syncthing-gtk/icons', glob.glob("icons/*") ),
 		('share/pixmaps', glob.glob("icons/emblem-*.png") ),
 		('share/pixmaps', ["icons/syncthing-gtk.png"]),
 		('share/applications', ['syncthing-gtk.desktop'] ),
-		],
-	scripts = [ "scripts/syncthing-gtk" ],
+	] + [
+		(
+			'share/icons/hicolor/%sx%s/apps' % (size,size),
+			glob.glob("icons/%sx%s/apps/*" % (size,size))
+		) for size in ICON_SIZES 
+	]
+	setup(
+		name = 'syncthing-gtk',
+		version = get_version(),
+		description = 'GTK3 GUI for Syncthing',
+		url = 'https://github.com/syncthing/syncthing-gtk',
+		packages = ['syncthing_gtk'],
+		data_files = data_files,
+		scripts = [ "scripts/syncthing-gtk" ],
 )

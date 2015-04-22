@@ -146,7 +146,8 @@ class StatusIcon(GObject.GObject):
 		if icon:
 			#TODO: Once icons are moved to a shared/themable location this should just do `return icon`
 			self.__icon = icon
-		return os.path.join(self.__icon_path, self.__icon) + ".png"
+		print self.__icon
+		return self.__icon
 	
 	def _get_text(self, text=None):
 		"""
