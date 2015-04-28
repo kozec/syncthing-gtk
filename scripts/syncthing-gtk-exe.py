@@ -18,6 +18,7 @@ if __name__ == "__main__":
 	from syncthing_gtk import windows
 	windows.fix_localized_system_error_messages()
 	windows.dont_use_localization_in_gtk()
+	windows.override_menu_borders()
 	
 	from syncthing_gtk import App
 	App(path, os.path.join(path, "icons")).run(sys.argv)

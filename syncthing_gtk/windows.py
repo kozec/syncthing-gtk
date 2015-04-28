@@ -8,7 +8,7 @@ from syncthing_gtk import windows
 
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
-from gi.repository import Gio, GLib, GObject
+from gi.repository import Gio, GLib, GObject, Gtk, Gdk
 import os, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 import win32process
 log = logging.getLogger("windows.py")
@@ -57,6 +57,32 @@ def nice_to_priority_class(nice):
 		return win32process.IDLE_PRIORITY_CLASS
 	# PRIORITY_NORMAL
 	return win32process.NORMAL_PRIORITY_CLASS
+
+def override_menu_borders():
+	""" Loads custom CSS to create borders around popup menus """
+	style_provider = Gtk.CssProvider()
+	style_provider.load_from_data(b"""
+		.menu {
+			border-image: linear-gradient(to top,
+										  alpha(@borders, 0.80),
+										  alpha(@borders, 0.60) 33%,
+										  alpha(@borders, 0.50) 66%,
+										  alpha(@borders, 0.15)) 2 2 2 2/ 2px 2px 2px 2px;
+		}
+
+		.menubar .menu {
+			border-image: linear-gradient(to top,
+										  alpha(@borders, 0.80),
+										  alpha(@borders, 0.60) 33%,
+										  alpha(@borders, 0.50) 66%,
+										  transparent 99%) 2 2 2 2/ 2px 2px 2px 2px;
+		}
+		""")
+	Gtk.StyleContext.add_provider_for_screen(
+		Gdk.Screen.get_default(), 
+		style_provider,     
+		Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+	)
 
 class WinPopenReader:
 	"""
