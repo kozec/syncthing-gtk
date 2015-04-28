@@ -78,6 +78,7 @@ class StDownloader(GObject.GObject):
 		# Syncthing-GTK. This is just hardcoded minimal version,
 		# actual value will be determined later
 		self.latest_compat = "v0.11.0"
+		self.forced = None
 		self.version = None
 		self.dll_url = None
 		self.dll_size = None
@@ -117,6 +118,7 @@ class StDownloader(GObject.GObject):
 	
 	def force_version(self, version):
 		self.latest_compat = version
+		self.forced = version
 		log.verbose("STDownloader: Forced Syncthing version: %s", self.latest_compat)
 		
 		uri = StDownloader.ST_URL
@@ -178,6 +180,7 @@ class StDownloader(GObject.GObject):
 	
 	def _cb_read_latest(self, f, result, buffer, *a):
 		# Extract release version from response
+		from syncthing_gtk.app import MIN_ST_VERSION
 		latest_ver = None
 		try:
 			success, data, etag = f.load_contents_finish(result)
@@ -189,7 +192,7 @@ class StDownloader(GObject.GObject):
 				version = release["tag_name"]
 				if latest_ver is None:
 					latest_ver = version
-				if compare_version(self.latest_compat, version):
+				if compare_version(self.latest_compat, version) and (self.forced or compare_version(version, MIN_ST_VERSION)):
 					# Compatibile
 					log.verbose("STDownloader: Found compatibile Syncthing version: %s", version)
 					self.version = version
