@@ -1441,7 +1441,7 @@ class App(Gtk.Application, TimerManager):
 			elif self.config["autokill_daemon"] == 1: # Yes
 				self.process.terminate()
 				self.process = None
-		self.release()
+		Gtk.Application.quit(self)
 	
 	def show_add_folder_dialog(self, path=None):
 		"""
