@@ -16,11 +16,12 @@ log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
 IS_XP = IS_WINDOWS and platform.release() in ("XP", "2000", "2003")
-IS_GNOME, IS_UNITY, IS_KDE = False, False, False
+IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON = [False] * 4
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
 	IS_UNITY = (os.environ["XDG_CURRENT_DESKTOP"] == "Unity")
 	IS_KDE   = (os.environ["XDG_CURRENT_DESKTOP"] == "KDE")
+	IS_CINNAMON = (os.environ["XDG_CURRENT_DESKTOP"] == "X-Cinnamon")
 if "DESKTOP_SESSION" in os.environ:
 	if os.environ["DESKTOP_SESSION"] == "gnome":
 		# Fedora...

@@ -15,7 +15,7 @@ from gi.repository import GObject
 from gi.repository import GLib
 from gi.repository import Gtk
 
-from syncthing_gtk.tools import IS_UNITY, IS_KDE
+from syncthing_gtk.tools import IS_UNITY, IS_KDE, IS_CINNAMON
 
 _ = lambda msg: msg
 log = logging.getLogger("StatusIcon")
@@ -245,7 +245,7 @@ class StatusIconGTK3(StatusIcon):
 		
 		# An invisible tray icon will never be embedded but it also should not be replaced
 		# by a fallback icon
-		is_embedded = self._tray.is_embedded() or not self._tray.get_visible()
+		is_embedded = self._tray.is_embedded() or not self._tray.get_visible() or IS_CINNAMON
 		if is_embedded != self.get_property("active"):
 			self.set_property("active", is_embedded)
 	
