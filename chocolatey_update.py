@@ -48,8 +48,12 @@ nuspecFile = open("syncthing-gtk.nuspec", "r", encoding="utf8")
 nuspecString = nuspecFile.read()
 nuspecFile.close()
 
+from syncthing_gtk import app
+minStVersion = app.MIN_ST_VERSION
+
 nuspecString = re.sub(r'<version>.*</version>', '<version>'+version+'</version>', nuspecString)
 nuspecString = re.sub(r'<releaseNotes>[\w\W]*</releaseNotes>', '<releaseNotes>'+releaseNotes+'</releaseNotes>', nuspecString)
+nuspecString = re.sub(r'<dependency id="syncthing" version=".*"/>', '<dependency id="syncthing" version="'+minStVersion+'"/>', nuspecString)
 
 nuspecFile = open("syncthing-gtk.nuspec", "w", encoding="utf8")
 print(nuspecString, file=nuspecFile, end="")
