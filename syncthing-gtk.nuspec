@@ -31,6 +31,11 @@ Additional features:
     <copyright></copyright>
     <licenseUrl>https://github.com/syncthing/syncthing-gtk/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies>
+    	<group>
+    		<dependency id="syncthing" version=""/>
+    	</group>
+    </dependencies>
     <releaseNotes></releaseNotes>
   </metadata>
   <files>
