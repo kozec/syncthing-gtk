@@ -16,8 +16,8 @@ from gi.repository import GLib
 from gi.repository import Gtk
 
 from syncthing_gtk.tools import IS_UNITY, IS_KDE, IS_CINNAMON
+from syncthing_gtk.tools import _ # gettext function
 
-_ = lambda msg: msg
 log = logging.getLogger("StatusIcon")
 
 

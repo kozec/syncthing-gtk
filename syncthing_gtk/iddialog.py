@@ -8,10 +8,10 @@ Dialog with Device ID and generated QR code
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from tools import IS_WINDOWS
+from syncthing_gtk.tools import _ # gettext function
 import urllib2, httplib, ssl
 import os, tempfile, logging
 log = logging.getLogger("IDDialog")
-_ = lambda (a) : a
 
 class IDDialog(object):
 	""" Dialog with Device ID and generated QR code """

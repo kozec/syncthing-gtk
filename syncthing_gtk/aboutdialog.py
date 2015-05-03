@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib
 from syncthing_gtk.tools import IS_WINDOWS
 import os, sys, tempfile
-_ = lambda (a) : a
 
 class AboutDialog(object):
 	""" Standard looking about dialog """

@@ -8,9 +8,9 @@ Base class and universal handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject, GLib
 from syncthing_gtk.tools import ints
+from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.daemon import ConnectionRestarted
 import os, sys, logging
-_ = lambda (a) : a
 log = logging.getLogger("EditorDialog")
 
 class EditorDialog(GObject.GObject):

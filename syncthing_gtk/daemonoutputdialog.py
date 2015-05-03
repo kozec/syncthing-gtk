@@ -8,7 +8,6 @@ Displays output from daemon subprocess
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio
 import os, tempfile
-_ = lambda (a) : a
 
 class DaemonOutputDialog(object):
 	""" Displays output from daemon subprocess """
