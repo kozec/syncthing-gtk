@@ -235,7 +235,10 @@ def library_exists(name):
 	"""
 	Checks if there is specified so file installed in one of known prefixes
 	"""
-	PREFIXES = [ "/usr/lib", "/usr/local/lib/",
+	PREFIXES = [
+		"/usr/lib64",	# Fedora
+		"/usr/lib",
+		"/usr/local/lib/",
 		"/usr/lib/x86_64-linux-gnu/",
 		"/usr/lib/i386-linux-gnu/",
 	]
