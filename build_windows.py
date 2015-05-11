@@ -182,6 +182,13 @@ if 'build' in sys.argv:
 			os.path.join(src_path, theme, "index.theme"),
 			os.path.join(target_path, theme, "index.theme")
 		)
+	
+	print "Copying even more icons"
+	shutil.copy(
+		os.path.join(build_dir, "icons/128x128/apps/syncthing-gtk.png"),
+		os.path.join(build_dir, "icons/syncthing-gtk.png")
+	)
+
 	print "Copying glib schemas"
 	if not os.path.exists(os.path.join(build_dir, "/share/glib-2.0/schemas")):
 		target_path = os.path.join(build_dir, "share/glib-2.0/schemas")
