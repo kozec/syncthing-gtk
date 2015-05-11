@@ -34,6 +34,15 @@ if __name__ == "__main__" :
 	data_files = [
 		('share/syncthing-gtk', glob.glob("*.glade") ),
 		('share/syncthing-gtk', glob.glob("scripts/syncthing-plugin-*.py") ),
+		('share/syncthing-gtk/icons', [
+				"icons/%s.png" % x for x in (
+					'add_node', 'add_repo', 'address',
+					'announce', 'clock', 'compress', 'cpu', 'dl_rate',
+					'eye', 'folder', 'global', 'home', 'ignore', 'lock',
+					'ram', 'restart', 'settings', 'shared', 'show_id',
+					'shutdown', 'show_id', 'sync', 'thumb_up',
+					'up_rate', 'version'
+			)]),
 		('share/pixmaps', glob.glob("icons/emblem-*.png") ),
 		('share/pixmaps', ["icons/syncthing-gtk.png"]),
 		('share/applications', ['syncthing-gtk.desktop'] ),
