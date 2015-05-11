@@ -239,6 +239,8 @@ def library_exists(name):
 		"/usr/lib64",	# Fedora
 		"/usr/lib",
 		"/usr/local/lib/",
+		"/usr/x86_64-pc-linux-gnu/lib/",
+		"/usr/i686-pc-linux-gnu/lib/",
 		"/usr/lib/x86_64-linux-gnu/",
 		"/usr/lib/i386-linux-gnu/",
 	]
