@@ -144,9 +144,7 @@ class StatusIcon(GObject.GObject):
 		Use `set()` instead.
 		"""
 		if icon:
-			#TODO: Once icons are moved to a shared/themable location this should just do `return icon`
 			self.__icon = icon
-		print self.__icon
 		return self.__icon
 	
 	def _get_text(self, text=None):
@@ -236,7 +234,7 @@ class StatusIconGTK3(StatusIcon):
 	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)
 		
-		self._tray.set_from_file(self._get_icon(icon))
+		self._tray.set_from_icon_name(self._get_icon(icon))
 		self._tray.set_tooltip_text(self._get_text(text))
 	
 	def _on_embedded_change(self, *args):
