@@ -228,11 +228,14 @@ class FindDaemonPage(Page):
 	def prepare(self):
 		self.paths = [ "./" ]
 		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
-		suffix, trash = StDownloader.determine_platform()
-		self.binaries = ["syncthing", "syncthing%s" % (suffix,)]
-		if suffix == "x64":
-			# Allow 32bit binary on 64bit
-			self.binaries += ["syncthing.x86"]
+		if StDownloader is None:
+			self.binaries = ["syncthing"]
+		else:
+			suffix, trash = StDownloader.determine_platform()
+			self.binaries = ["syncthing", "syncthing%s" % (suffix,)]
+			if suffix == "x64":
+				# Allow 32bit binary on 64bit
+				self.binaries += ["syncthing.x86"]
 		if IS_WINDOWS:
 			self.paths += [ "c:/Program Files/syncthing",
 				"c:/Program Files (x86)/syncthing",
@@ -258,8 +261,17 @@ class FindDaemonPage(Page):
 				# directly
 				self.parent.insert_and_go(DownloadSTPage())
 				return False
+			elif StDownloader is None:
+				# On Linux with updater disabled, generate and
+				# display error page
+				title = _("Syncthing daemon not found.")
+				message = _("Please, use package manager to install the Syncthing package.")
+				page = self.parent.error(self, title, message, False)
+				page.show_all()
+				return False
 			else:
-				# On Linux, generate and display error page
+				# On Linux with updater generate similar display error
+				# and offer download
 				from syncthing_gtk.app import MIN_ST_VERSION
 				target_folder_link = '<a href="file://%s">%s</a>' % (
 						os.path.expanduser(StDownloader.get_target_folder()),
@@ -300,7 +312,7 @@ class FindDaemonPage(Page):
 				page.show_all()
 				# Add Download page
 				self.parent.insert(DownloadSTPage())
-				return
+				return False
 		
 		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)

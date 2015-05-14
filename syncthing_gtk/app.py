@@ -143,11 +143,12 @@ class App(Gtk.Application, TimerManager):
 			if cl.get_options_dict().contains("quit"):
 				self.cb_exit()
 				return 0
-			if cl.get_options_dict().contains("force-update"):
-				self.force_update_version = \
-					cl.get_options_dict().lookup_value("force-update").get_string()
-				if not self.force_update_version.startswith("v"):
-					self.force_update_version = "v%s" % (self.force_update_version,)
+			if not StDownloader is None:
+				if cl.get_options_dict().contains("force-update"):
+					self.force_update_version = \
+						cl.get_options_dict().lookup_value("force-update").get_string()
+					if not self.force_update_version.startswith("v"):
+						self.force_update_version = "v%s" % (self.force_update_version,)
 			if cl.get_options_dict().contains("add-repo"):
 				path = os.path.abspath(os.path.expanduser(
 					cl.get_options_dict().lookup_value("add-repo").get_string()))
@@ -229,9 +230,10 @@ class App(Gtk.Application, TimerManager):
 				GLib.OptionArg.STRING)
 		aso("remove-repo", 0, "If there is repository assigned with specified path, opens 'remove repository' dialog",
 				GLib.OptionArg.STRING)
-		aso("force-update", 0,
-				"Force updater to download specific daemon version",
-				GLib.OptionArg.STRING, GLib.OptionFlags.HIDDEN)
+		if not StDownloader is None:
+			aso("force-update", 0,
+					"Force updater to download specific daemon version",
+					GLib.OptionArg.STRING, GLib.OptionFlags.HIDDEN)
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
@@ -425,6 +427,9 @@ class App(Gtk.Application, TimerManager):
 		# User response is handled in App.cb_infobar_response
 	
 	def check_for_upgrade(self, *a):
+		if StDownloader is None:
+			# Can't, someone stole my updater module :(
+			return
 		self.cancel_timer("updatecheck")
 		if not self.config["st_autoupdate"]:
 			# Disabled, don't even bother
@@ -626,7 +631,7 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and self.process != None:
+		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process and not StDownloader is None:
 			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
 			# Try to update.
 			from configuration import LONG_AGO
@@ -1869,7 +1874,7 @@ class App(Gtk.Application, TimerManager):
 		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
-			if self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
+			if not StDownloader is None and self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()

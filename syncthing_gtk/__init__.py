@@ -19,7 +19,6 @@ if not "GTK2APP" in os.environ:
 	from foldereditor		import FolderEditorDialog
 	from daemonsettings		import DaemonSettingsDialog
 	from statusicon			import get_status_icon
-	from uisettingsdialog	import UISettingsDialog
 	from configuration		import Configuration
 	from iddialog			import IDDialog
 	from aboutdialog		import AboutDialog
@@ -27,7 +26,12 @@ if not "GTK2APP" in os.environ:
 	from ribar				import RIBar
 	from identicon			import IdentIcon
 	from daemonoutputdialog	import DaemonOutputDialog
-	from stdownloader		import StDownloader
+	try:
+		# May fail if stdownloader is removed from distribution
+		from stdownloader		import StDownloader
+	except ImportError:
+		StDownloader = None
+	from uisettingsdialog	import UISettingsDialog
 	from wizard				import Wizard
 	from finddaemondialog	import FindDaemonDialog
 	from app				import App
