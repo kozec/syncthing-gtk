@@ -45,7 +45,7 @@ class Wizard(Gtk.Assistant):
 		self.set_size_request(720, -1)
 		self.set_default_size(720, 300)
 		self.set_deletable(True)
-		self.set_icon_from_file(os.path.join(self.iconpath, "st-logo-24.png"))
+		self.set_icon_name("syncthing-gtk")
 		self.set_title("%s %s" % (_("Syncthing-GTK"), _("First run wizard")))
 		# Add "Quit" button
 		self.quit_button = Gtk.Button.new_from_stock("gtk-quit")
