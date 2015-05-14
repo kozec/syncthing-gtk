@@ -685,6 +685,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="no_show_all">True</property>
                     <property name="margin_top">10</property>
                     <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
@@ -708,9 +709,10 @@ Install blahblahblah to enable Caja support</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="label8">
+                  <object class="GtkLabel" id="lblAutoupdate">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
                     <property name="margin_left">10</property>
                     <property name="xalign">0</property>
                     <property name="label" translatable="yes">If enabled, Syncthing-GTK will automatically check for new daemon releases and replace binary with latest version.</property>

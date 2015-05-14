@@ -7,7 +7,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
-from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
+from syncthing_gtk import Notifications, StDownloader, HAS_DESKTOP_NOTIFY
 from syncthing_gtk.tools import *
 from syncthing_gtk.configuration import LONG_AGO
 import os, logging
@@ -102,7 +102,9 @@ class UISettingsDialog(EditorDialog):
 			else:
 				log.warning("Cannot find %s.py required to support %s", plugin, name)
 		self["fmLblIntegrationStatus"].set_text("\n".join(status))
-		
+		if StDownloader is None:
+			self["vst_autoupdate"].set_visible(False)
+			self["lblAutoupdate"].set_visible(False)
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	

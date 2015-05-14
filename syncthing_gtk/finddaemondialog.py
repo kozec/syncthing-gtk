@@ -30,16 +30,15 @@ class FindDaemonDialog(EditorDialog):
 			  "%s bellow or click on <b>Download</b> "
 			  "button to download latest Syncthing package.") % (exe,)
 		))
-		if IS_XP:
-			# Downloading is not offered on XP - github will not talk to it
+		if IS_XP or StDownloader is None:
+			# Downloading is not offered on XP (github will not talk to it)
+			# or if StDownloader module is not packaged
 			self["lblMessage"].set_markup("%s\n%s" % (
 				_("Syncthing daemon binary cannot be found."),
 				_("If you have Syncthing installed, please, set path to "
 				  "%s bellow") % (exe,)
 			))
 			self.hide_download_button()
-	
-	
 	
 	### Dialog emulation
 	def set_transient_for(self, parent):
