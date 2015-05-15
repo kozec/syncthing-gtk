@@ -1,3 +1,9 @@
+syncthing-gtk (0.7.1.1-2~amc~vivid0) vivid; urgency=medium
+
+  * Integrated debian directory into native package
+
+ -- André Colomb <src@andre.colomb.de>  Fri, 15 May 2015 09:30:13 +0200
+
 syncthing-gtk (0.7.1.1-1~webupd8~vivid0) vivid; urgency=medium
 
   * New upstream release
