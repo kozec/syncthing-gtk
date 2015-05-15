@@ -4,6 +4,7 @@ Priority: extra
 Maintainer: Alin Andrei <webupd8@gmail.com>
 Build-Depends: debhelper (>= 9),
 	python-all-dev (>=2.7),
+	dh-python,
 	python-gobject-2-dev,
 	libgtk-3-dev,
 	libappindicator3-dev,
