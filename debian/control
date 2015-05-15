@@ -1,0 +1,47 @@
+Source: syncthing-gtk
+Section: gnome
+Priority: extra
+Maintainer: Alin Andrei <webupd8@gmail.com>
+Build-Depends: debhelper (>= 9),
+	python-all-dev (>=2.7),
+	python-gobject-2-dev,
+	libgtk-3-dev,
+	libappindicator3-dev,
+	libnotify-dev,
+        python-notify
+X-Python-Version: >= 2.7
+Standards-Version: 3.9.5
+Homepage: https://github.com/kozec/syncthing-gui
+
+Package: syncthing-gtk
+Architecture: any
+Depends: ${misc:Depends},
+	${python:Depends},
+	python-gobject | python-gi,
+	python-dateutil,
+	libappindicator3-1,
+	libgtk-3-0,
+	gir1.2-gtk-3.0,
+	gir1.2-glib-2.0,
+	gir1.2-appindicator3-0.1,
+	python-notify,
+	python-gi-cairo
+Recommends: python-pyinotify
+Suggests: python-nautilus | python-nemo | python-caja
+Breaks: syncthing-gui
+Replaces: syncthing-gui
+Description: GUI for Syncthing
+ Syncthing GUI is a GTK3 & python based GUI and notification
+ area icon for Syncthing.
+ .
+ Supported syncthing features:
+ - Everything what WebUI can display
+ - Adding / editing / deleting nodes
+ - Adding / editing / deleting repositories
+ - Restart / shutdown server
+ - Editing daemon settings
+ .
+ Additional features:
+ - Running Syncthing daemon in background
+ - Half-automatic setup for new nodes and repositories
+ - Filesystem watching and instant synchronization using inotify

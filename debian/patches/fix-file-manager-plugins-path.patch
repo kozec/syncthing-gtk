@@ -1,0 +1,26 @@
+From 8a119469dc68ea22a55ce1599091fb5a4230f466 Mon Sep 17 00:00:00 2001
+From: kozec <kozec@kozec.com>
+Date: Tue, 3 Feb 2015 16:27:53 +0100
+Subject: [PATCH] Also check Ubuntu-specific paths when searching for
+ filemanager plugin libs. Refs #82
+
+---
+ syncthing_gtk/uisettingsdialog.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/syncthing_gtk/uisettingsdialog.py b/syncthing_gtk/uisettingsdialog.py
+index 75bb776..8e08e99 100644
+--- a/syncthing_gtk/uisettingsdialog.py
++++ b/syncthing_gtk/uisettingsdialog.py
+@@ -228,7 +228,10 @@ def library_exists(name):
+ 	"""
+ 	Checks if there is specified so file installed in one of known prefixes
+ 	"""
+-	PREFIXES = [ "/usr/lib", "/usr/local/lib/" ] # Anything else?
++	PREFIXES = [ "/usr/lib", "/usr/local/lib/",
++		"/usr/lib/x86_64-linux-gnu/",
++		"/usr/lib/i386-linux-gnu/",
++	]
+ 	for prefix in PREFIXES:
+ 		if os.path.exists(os.path.join(prefix, name)):
+ 			return True

@@ -1,0 +1,250 @@
+syncthing-gtk (0.7.1.1-1~webupd8~vivid0) vivid; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 11 May 2015 12:54:13 +0200
+
+syncthing-gtk (0.7.1-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 11 May 2015 12:54:13 +0200
+
+syncthing-gtk (0.7.0.2-1~webupd8~vivid0) vivid; urgency=medium
+
+  * New upstream bugfix release
+
+ -- Alin Andrei <webupd8@gmail.com>  Tue, 28 Apr 2015 16:26:19 +0200
+
+syncthing-gtk (0.7.0.1-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream bugfix release
+
+ -- Alin Andrei <webupd8@gmail.com>  Thu, 23 Apr 2015 21:11:46 +0200
+
+syncthing-gtk (0.7-1~webupd8~vivid0) vivid; urgency=medium
+
+  * New upstream release
+  * Requires syncthing daemon version 0.11 or newer
+
+ -- Alin Andrei <webupd8@gmail.com>  Wed, 22 Apr 2015 16:29:13 +0200
+
+syncthing-gtk (0.6.5-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Wed, 15 Apr 2015 11:50:41 +0200
+
+syncthing-gtk (0.6.4-1~webupd8~vivid0) vivid; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Tue, 07 Apr 2015 14:20:19 +0200
+
+syncthing-gtk (0.6.3-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Thu, 19 Mar 2015 15:01:46 +0200
+
+syncthing-gtk (0.6.2-1~webupd8~vivid0) vivid; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Tue, 10 Mar 2015 12:06:34 +0200
+
+syncthing-gtk (0.6.1-1~webupd8~vivid1) vivid; urgency=medium
+
+  * Depend on python-gi-cairo
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 16 Feb 2015 10:37:21 +0200
+
+syncthing-gtk (0.6.1-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release
+  * Disabled fix-file-manager-plugins-path.patch (applied upstream)
+
+ -- Alin Andrei <webupd8@gmail.com>  Fri, 13 Feb 2015 12:18:38 +0200
+
+syncthing-gtk (0.6-1~webupd8~vivid1) vivid; urgency=medium
+
+  * New upstream release:
+    - Support for Identicons
+    - Option to display folder IDs instead of paths on left-side 
+      panel
+    - File manager integration for Nautilus, Nemo and Caja. 
+      Includes emblems and context menus
+    - Fixed missing Gnome AppMenu
+    - Fixed event pooling crashing when daemon sends invalid date
+    - Fixed multiple bugs with unicode paths
+  * Suggests: python-nautilus | python-nemo | python-caja 
+  * Added fix-file-manager-plugins-path.patch
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 02 Feb 2015 16:17:32 +0200
+
+syncthing-gtk (0.5.8-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release:
+    - Allowed disabling menu icons when HeaderBar is disabled
+    - Allowed setting rescan interval to zero
+    - Fix: Both menus are same with HeaderBar and menu icons enabled
+    - Fix: Several menu icons are missing on Ubuntu 14.04
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 19 Jan 2015 11:59:17 +0200
+
+syncthing-gtk (0.5.7-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release:
+    - Added -m option to start minimized
+    - Changed names for repository states to same as Syncthing uses
+    - Fixed local daemon version not shown
+    - Fixed mangled "Daemon not found" message in 1st run wizard  
+
+ -- Alin Andrei <webupd8@gmail.com>  Tue, 13 Jan 2015 12:09:41 +0200
+
+syncthing-gtk (0.5.6-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release:
+    - Fix: Download and upload rates calculated wrong on 
+      Syncthing v0.10.9 or newer.
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 05 Jan 2015 13:14:19 +0200
+
+syncthing-gtk (0.5.5-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release:
+    - Fix for app.glade (and rest of glade files) being not found
+    - Fix for missing Gtk.Application methods on Ubuntu
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 22 Dec 2014 13:25:34 +0200
+
+syncthing-gtk (0.5.4-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release:
+    - Error handling in 1st run wizard
+    - Set minimal window size, so window can't be shrink so much 
+      that it's not possible to access one of panels anymore
+    - Redone logging and argument parsing
+    - Fixed some typos and cosmetic fixes
+    - Due to bug in older Syncthing daemon, 1st run wizard requires
+      daemon version 0.10.3 or newer
+
+ -- Alin Andrei <webupd8@gmail.com>  Fri, 12 Dec 2014 12:48:17 +0200
+
+syncthing-gtk (0.5.3-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release:
+    - Updated URL for Syncthing updater
+    - Support for Syncthing >=0.10.9
+    - Automaticaly open topmost repo/device boxes when starting
+    - Fixed anonymous usage reporting correctly stored, but incorrectly 
+      represented in UI
+
+ -- Alin Andrei <webupd8@gmail.com>  Fri, 12 Dec 2014 12:48:17 +0200
+
+syncthing-gtk (0.5.2-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release:
+    - Updated URL for Syncthing updater
+    - Support for Syncthing >=0.10.9
+    - Automaticaly open topmost repo/device boxes when starting
+    - Anonymous usage reporting correctly stored, but incorrectly
+      represented in UI
+    - Updated icons to new Syncthing icon theme
+    - Added 'Anonymous usage reporting' popup, so user can accept
+      it even if he never opens WebUI
+    - HTTPS support (Linux only)
+    - Removed 'quit' button from "Syncthing is restarting" message
+    - Corrected a lot of typos
+
+ -- Alin Andrei <webupd8@gmail.com>  Tue, 02 Dec 2014 11:15:32 +0200
+
+syncthing-gtk (0.5-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release:
+    - Better Gnome support
+    - First run wizard
+    - Doesn't need syncthing to be started at least once anymore
+    - Autoupdater for daemon binary (enabled by default only on Windows)
+    - Stop / Resume syncthing items in notification icon menu
+    - Speed throttling options in notification icon menu
+    - Option to automaticaly start Syncthing-GTK with desktop session
+    - Option to set path to daemon binary
+    - Fixed: Removed own name from 'Shared with' device list
+    - Return of paned handle margin that suddenly disappeared in GTK 3.14
+    - Better support for dark GTK themes
+
+ -- Alin Andrei <webupd8@gmail.com>  Fri, 21 Nov 2014 17:20:48 +0200
+
+syncthing-gtk (0.4.2-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release:
+    - Desktop notification fixes
+
+ -- Alin Andrei <webupd8@gmail.com>  Wed, 15 Oct 2014 17:11:34 +0200
+
+syncthing-gtk (0.4.1-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release:
+    - Added desktop notifications for file updates and Syncthing errors
+    - Added highlighting for related folder/devices in main window
+    - Some fixes
+   * depend on libnotify-dev and python-notify
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 13 Oct 2014 13:47:52 +0200
+
+syncthing-gtk (0.4-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release:
+    - Added support for inotify filesystem watching, enabling 
+      changed files to be synchronized immediately.
+    - Added UI Settings Dialog with options to disable hiding 
+      window on startup and non-native looking window header.
+    - Added error message that popups when daemon version is too old
+    - Support for REST API changes and changed node/repo-related 
+      terminology in syncthing v0.10 
+   * syncthing-gtk now requires Syncthing daemon version 0.10 or newer
+   * Recommend python-pyinotify (for instant synchronization)
+   * Updated package description
+
+ -- Alin Andrei <webupd8@gmail.com>  Wed, 08 Oct 2014 18:04:34 +0200
+
+syncthing-gtk (0.3.8.1-1~webupd8~trusty0) trusty; urgency=medium
+
+  * New upstream release:
+    - Don't display just added repo with 'unknown' state
+    - Display "Always start daemon automaticaly" even if app starts minimized
+    - Check daemon version and exit with message if daemon is too old
+
+ -- Alin Andrei <webupd8@gmail.com>  Thu, 02 Oct 2014 11:42:39 +0200
+
+syncthing-gtk (0.3.8-1~webupd8~utopic0) utopic; urgency=medium
+
+  * New upstream release
+
+ -- Alin Andrei <webupd8@gmail.com>  Mon, 29 Sep 2014 11:55:24 +0200
+
+syncthing-gtk (0.3.6-1~webupd8~precise0) precise; urgency=medium
+
+  * New upstream release:
+    - Changed icon on 'edit' button to cogwheel
+    - Added 'Share Repositories' block to node editor, allowing 
+      user to set all repositories shared with edited node in one 
+      place
+    - Increased event pooling interval when main window is hidden 
+      to save some CPU power
+    - Some (mostly cosmetic) fixes
+
+ -- Alin Andrei <webupd8@gmail.com>  Tue, 23 Sep 2014 11:25:39 +0200
+
+syncthing-gtk (0.3.5-1~webupd8~trusty1) trusty; urgency=medium
+
+  * Depend on python-dateutil
+
+ -- Alin Andrei <webupd8@gmail.com>  Fri, 12 Sep 2014 09:53:21 +0200
+
+syncthing-gtk (0.3.5-1~webupd8~utopic) utopic; urgency=medium
+
+  * Initial debianization
+
+ -- Alin Andrei <webupd8@gmail.com>  Thu, 11 Sep 2014 11:27:49 +0200
