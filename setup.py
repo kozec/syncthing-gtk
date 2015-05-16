@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 from distutils.core import setup, Command
-from distutils.command.install import install as Install
 from subprocess import Popen, PIPE
 from time import gmtime, strftime
 import glob, os, shutil, pwd
@@ -31,53 +30,39 @@ def get_version():
 		path = path[0:-1]
 	return version
 
-class build_deb(Command):
+def deb_version(v):
 	"""
-	build_deb commands creates deb/ folder with all files needed to build
-	working, debian binary package.
-	Actual package can be build using `dpkg-buildpackage` command from
-	created deb/ directory
+	Converts internal version string to something better suitable
+	for debian.
+	v0.7.1.1-5-g893c4f9 -> 0.7.1.1.5.g893c4f9
+	"""
+	return v.replace("-", ".").lstrip("v")
+
+class make_deb(Command):
+	"""
+	make_deb commands creates debian/ folder with all files needed to build
+	working, binary package for debian.
+	Actual package can be build using `debuild` command
 	
 	Notes to myself:
-	  dpkg-buildpackage -d
+	  debuild -d
 	    -- builds package without checking builddeps
-	  dpkg-buildpackage -d -ai386 
+	  debuild -d -ai386 
 	    -- builds package for another architecture
 	"""
-	description = "builds deb package"
+	description = "prepares debian package"
 	user_options = [ ]
 	boolean_options = []
 	negative_opt = {}
-	sub_commands = [('install', lambda x:True)]
+	sub_commands = [('sdist', lambda x:True)]
 	
-	def initialize_options (self):
-		pass
-	
-	def finalize_options (self):
-		pass
-	
-	def run(self):
-		# Output directory
-		deb = os.path.join(os.getcwd(), "deb")
-		# Remove output directory, if exists and create it empty
-		if os.path.exists(deb):
-			shutil.rmtree(deb)
-		os.mkdir(deb)
-		
-		# Create required package structure and files
-		os.mkdir(os.path.join(deb, "debian"))
-		file(os.path.join(deb, "debian", "control"), "w").write(
-"""Source: syncthing-gtk
+	### Pure madness follows ###
+	CONTROL = '''Source: syncthing-gtk
 Section: gnome
 Priority: extra
 Maintainer: kozec <kozec@kozec.com>
 Build-Depends: debhelper (>= 9),
-	python-all-dev (>=2.7),
-	python-gobject-2-dev,
-	libgtk-3-dev,
-	libappindicator3-dev,
-	libnotify-dev,
-	python-notify
+	python-all-dev (>=2.7)
 X-Python-Version: >= 2.7
 Standards-Version: 3.9.5
 Homepage: https://github.com/kozec/syncthing-gui
@@ -117,32 +102,65 @@ Description: GUI for Syncthing
  - Filesystem watching and instant synchronization using inotify
  - Nautilus (a.k.a. Files), Nemo and Caja integration
  - Desktop notifications
-""")
-		file(os.path.join(deb, "debian/compat"), "w").write("9\n")
-		file(os.path.join(deb, "debian/rules"), "w").write(
-"""#!/usr/bin/make -f
+'''
+	COMPAT = '''9\n'''
+	RULES = '''#!/usr/bin/make -f
 %:
-		dh $@
-""")
-		file(os.path.join(deb, "debian/changelog"), "w").write(
-"""syncthing-gtk (%(version)s) release; urgency=medium
+		dh $@ --with python2
+'''
+	CHANGELOG = '''syncthing-gtk (%(version)s) vivid; urgency=medium
 
   * Packaging of v%(version)s.
 
  -- %(user)s <dummy@mail.com>  %(time)s
-""" % {
-			'version' : self.distribution.get_version().strip("v"),
-			'user' : pwd.getpwuid(os.getuid())[0],
-			'time' : strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+'''
+	COPYRIGHT = '''
+Format: http://dep.debian.net/deps/dep5
+Upstream-Name: syspeek
+Source: https://launchpad.net/syspeek
+
+Files: *
+Copyright: 2014 kozec https://github.com/kozec
+License: GPL-2.0
+  See /usr/share/common-licenses/GPL-2
+'''
+	### Pure madness ends ###
+
+	def initialize_options (self):
+		pass
+	
+	def finalize_options (self):
+		pass
+	
+	def run(self):
+		# Output directory
+		deb = os.path.join(os.getcwd(), "debian")
+		# Remove output directory, if exists and create it empty
+		if os.path.exists(deb):
+			shutil.rmtree(deb)
+		os.mkdir(deb)
+		
+		# Create required package structure and files
+		file(os.path.join(deb, "control"), "w").write(make_deb.CONTROL)
+		file(os.path.join(deb, "compat"), "w").write(make_deb.COMPAT)
+		file(os.path.join(deb, "rules"), "w").write(make_deb.RULES)
+		file(os.path.join(deb, "copyright"), "w").write(make_deb.COPYRIGHT)
+		file(os.path.join(deb, "changelog"), "w").write(make_deb.CHANGELOG % {
+				'version' : deb_version(self.distribution.get_version()),
+				'user' : pwd.getpwuid(os.getuid())[0],
+				'time' : strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
 		})
-		# Set prefix for install command and install ST-GTK to output directory
-		self.distribution.get_option_dict('install')['root'] = ("build_deb", deb)
+		
+		# Set options for sdist command and generate source package in current directory
+		self.distribution.get_option_dict('sdist')['dist_dir'] = ("build_deb", ".")
+		self.distribution.get_option_dict('sdist')['formats'] = ("build_deb", "gztar")
 		for cmd_name in self.get_sub_commands():
 			self.run_command(cmd_name)
 		
-		# Remove StDownloader class to disable autoupdates
-		os.unlink(os.path.join(deb, "usr/lib/python2.7/site-packages/syncthing_gtk/stdownloader.py"))
-		os.unlink(os.path.join(deb, "usr/lib/python2.7/site-packages/syncthing_gtk/stdownloader.pyc"))
+		# TODO: This. No idea how...
+		## Remove StDownloader class to disable autoupdates
+		#os.unlink(os.path.join(deb, "usr/lib/python2.7/site-packages/syncthing_gtk/stdownloader.py"))
+		#os.unlink(os.path.join(deb, "usr/lib/python2.7/site-packages/syncthing_gtk/stdownloader.pyc"))
 
 if __name__ == "__main__" : 
 	data_files = [
@@ -173,7 +191,7 @@ if __name__ == "__main__" :
 		url = 'https://github.com/syncthing/syncthing-gtk',
 		packages = ['syncthing_gtk'],
 		cmdclass= {
-			'build_deb' : build_deb
+			'make_deb' : make_deb
 		},
 		data_files = data_files,
 		scripts = [ "scripts/syncthing-gtk" ],
