@@ -42,6 +42,16 @@ class EditorDialog(GObject.GObject):
 		# Used by get_widget_id
 		self.widget_to_id = {}
 		self.setup_widgets(gladefile, title)
+		# Move entire dialog content to ScrolledWindow if screen height
+		# is too small
+		if Gdk.Screen.get_default().height() < 900:
+			if not self["editor-content"] is None:
+				parent = self["editor-content"].get_parent()
+				parent.remove(self["editor-content"])
+				sw = Gtk.ScrolledWindow()
+				sw.add_with_viewport(self["editor-content"])
+				parent.pack_start(sw, True, True, 0)
+				self["editor"].resize(self["editor"].get_size()[0], Gdk.Screen.get_default().height() * 2 / 3)
 	
 	def load(self):
 		""" Loads configuration data and pre-fills values to fields """
