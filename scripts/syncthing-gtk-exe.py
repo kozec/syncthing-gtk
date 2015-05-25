@@ -21,7 +21,8 @@ if __name__ == "__main__":
 	windows.override_menu_borders()
 	
 	from gi.repository import Gtk
-	Gtk.IconTheme.get_default().append_search_path(os.path.join(os.getcwd(), "icons"))
+	Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons", "32x32", "apps")))
+	Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons")))
 	
 	from syncthing_gtk import App
 	App(path, os.path.join(path, "icons")).run(sys.argv)

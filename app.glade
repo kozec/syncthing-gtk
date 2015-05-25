@@ -7,7 +7,8 @@
 	<property name="default-height">600</property>
 	<signal name="delete-event" handler="cb_delete_event" swapped="no"/>
 	<signal name="realize" handler="cb_realized" swapped="no"/>
-	<property name="icon-name">syncthing-gtk</property>
+	<property if="!is_windows" name="icon-name">syncthing-gtk</property>
+	<property if="is_windows"  name="icon">icons/32x32/apps/syncthing-gtk.png</property>
 
 	<!-- Header Bar -->
 	<child if="header_bar" type="titlebar">
@@ -30,8 +31,9 @@
 					<child>
 						<object class="GtkImage" id="app-menu-button-icon">
 							<property name="visible">True</property>
-							<property name="icon-name">syncthing-gtk</property>
-							<property name="icon-size">24</property>
+							<property if="!is_windows" name="icon-name">syncthing-gtk</property>
+							<property if="!is_windows" name="icon-size">24</property>
+							<property if="is_windows"  name="icon">icons/24x24/apps/syncthing-gtk.png</property>
 						</object>
 					</child>
 				</object>
@@ -775,8 +777,9 @@
 <IF condition="traditional_header">
 	<object class="GtkImage" id="app-menu-button-icon">
 		<property name="visible">True</property>
-		<property name="icon-name">syncthing-gtk</property>
-		<property name="icon-size">16</property>
+		<property if="!is_windows" name="icon-name">syncthing-gtk</property>
+		<property if="!is_windows" name="icon-size">16</property>
+		<property if="is_windows"  name="pixbuf">icons/16x16/apps/syncthing-gtk.png</property>
 	</object>
 	<object class="GtkImage" id="edit-menu-button-icon">
 		<property name="visible">True</property>
