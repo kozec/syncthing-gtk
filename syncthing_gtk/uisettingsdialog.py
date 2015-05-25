@@ -17,9 +17,9 @@ log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
-		"vfolder_as_path", "vnotification_for_update",
+		"vdaemon_priority", "vfolder_as_path", "vnotification_for_update",
 		"vnotification_for_folder", "vnotification_for_error",
-		"vst_autoupdate", "vsyncthing_binary",
+		"vst_autoupdate", "vsyncthing_binary", "vmax_cpus",
 	]
 
 # Values for filemanager integration. Key is ID of checkbox widget
@@ -59,6 +59,10 @@ class UISettingsDialog(EditorDialog):
 	def cb_btBrowse_clicked(self, *a):
 		""" Display file browser dialog to browse for syncthing binary """
 		browse_for_binary(self["editor"], self, "vsyncthing_binary")
+	
+	def cb_vmax_cpus_value_changed(self, sb):
+		if sb.get_adjustment().get_value() == 0:
+			sb.set_text(_("Unlimited"))
 	
 	#@Overrides
 	def load_data(self):
@@ -141,6 +145,8 @@ class UISettingsDialog(EditorDialog):
 			set_run_on_startup(value, "Syncthing-GTK", get_executable(),
 				"/usr/share/syncthing-gtk/icons/st-logo-128.png",
 				"GUI for Syncthing")
+		elif key == "daemon_priority":
+			return EditorDialog.set_value(self, key, int(value))
 		else:
 			return EditorDialog.set_value(self, key, value)
 	
@@ -229,7 +235,12 @@ def library_exists(name):
 	"""
 	Checks if there is specified so file installed in one of known prefixes
 	"""
-	PREFIXES = [ "/usr/lib", "/usr/local/lib/",
+	PREFIXES = [
+		"/usr/lib64",	# Fedora
+		"/usr/lib",
+		"/usr/local/lib/",
+		"/usr/x86_64-pc-linux-gnu/lib/",
+		"/usr/i686-pc-linux-gnu/lib/",
 		"/usr/lib/x86_64-linux-gnu/",
 		"/usr/lib/i386-linux-gnu/",
 	]

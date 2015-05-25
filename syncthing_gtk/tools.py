@@ -16,11 +16,12 @@ log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
 IS_XP = IS_WINDOWS and platform.release() in ("XP", "2000", "2003")
-IS_GNOME, IS_UNITY, IS_KDE = False, False, False
+IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON = [False] * 4
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
 	IS_UNITY = (os.environ["XDG_CURRENT_DESKTOP"] == "Unity")
 	IS_KDE   = (os.environ["XDG_CURRENT_DESKTOP"] == "KDE")
+	IS_CINNAMON = (os.environ["XDG_CURRENT_DESKTOP"] == "X-Cinnamon")
 if "DESKTOP_SESSION" in os.environ:
 	if os.environ["DESKTOP_SESSION"] == "gnome":
 		# Fedora...
@@ -274,6 +275,10 @@ def parse_version(ver):
 	"""
 	comps = VERSION_NUMBER.match(ver).group(1).split(".")
 	if comps[0] == "":
+		if ver == "unknown-dev":
+			# Exception for non-tagged releases.
+			# See https://github.com/syncthing/syncthing-gtk/issues/133
+			return parse_version("v9999.99")
 		# Not even single number in version string
 		return 0
 	while len(comps) < 6:
@@ -297,14 +302,16 @@ def get_config_dir():
 	configuration directory.
 	"""
 	confdir = GLib.get_user_config_dir()
-	if confdir is None:
+	if confdir is None or IS_XP:
 		if IS_WINDOWS:
 			if "LOCALAPPDATA" in os.environ:
 				# W7 and later
 				confdir = os.environ["LOCALAPPDATA"]
 			elif "APPDATA" in os.environ:
 				# XP
-				confdir = os.environ["APPDATA"]
+				from ctypes import cdll
+				os_encoding = 'cp' + str(cdll.kernel32.GetACP())
+				confdir = os.environ["APPDATA"].decode(os_encoding)
 			else:
 				# 95? :D
 				confdir = os.path.expanduser("~/.config")

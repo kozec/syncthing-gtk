@@ -26,7 +26,7 @@ Dependencies:
 - <a href="http://labix.org/python-dateutil">python-dateutil</a> (Python2 version)
 - <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
-- <a href="http://syncthing.net">Syncthing</a> 0.10 or newer
+- <a href="http://syncthing.net">Syncthing</a> v0.11 or newer
 
 Optional Dependencies:  
 - <a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> for instant synchronization.

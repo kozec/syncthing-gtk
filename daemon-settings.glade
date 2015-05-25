@@ -9,7 +9,7 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adjLocalAnnPort">
+  <object class="GtkAdjustment" id="adjlocalAnnouncePort">
     <property name="lower">1</property>
     <property name="upper">65535</property>
     <property name="value">21025</property>
@@ -99,7 +99,7 @@
                 <property name="xalign">0</property>
                 <property name="label" translatable="yes">Sync Protocol Listen Addresses</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vListenAddress</property>
+                <property name="mnemonic_widget">vlistenAddress</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -111,7 +111,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="vListenAddress">
+              <object class="GtkEntry" id="vlistenAddress">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
@@ -125,7 +125,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vLocalAnnEnabled">
+              <object class="GtkCheckButton" id="vlocalAnnounceEnabled">
                 <property name="label" translatable="yes">Enable Local _Discovery</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -142,7 +142,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vUPnPEnabled">
+              <object class="GtkCheckButton" id="vupnpEnabled">
                 <property name="label" translatable="yes">Enable _UPnP</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -158,13 +158,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="lblvLocalAnnPort">
+              <object class="GtkLabel" id="lblvlocalAnnouncePort">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
                 <property name="label" translatable="yes">Local Discovery _Port</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vLocalAnnPort</property>
+                <property name="mnemonic_widget">vlocalAnnouncePort</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -176,7 +176,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="vMaxSendKbps">
+              <object class="GtkSpinButton" id="vmaxSendKbps">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
@@ -189,7 +189,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vMaxSendKbpsEnabled">
+              <object class="GtkCheckButton" id="vmaxSendKbpsEnabled">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -203,7 +203,7 @@
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Outgoing _Rate Limit (KiB/s)</property>
                     <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">vMaxSendKbpsEnabled</property>
+                    <property name="mnemonic_widget">vmaxSendKbpsEnabled</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -217,7 +217,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vStartBrowser">
+              <object class="GtkCheckButton" id="vstartBrowser">
                 <property name="label" translatable="yes">Open browser with _WebUI when daemon is starting</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -234,7 +234,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vURAccepted">
+              <object class="GtkCheckButton" id="vurAccepted">
                 <property name="label" translatable="yes">Enable _Anonymous Usage Reporting</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -250,7 +250,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vGlobalAnnEnabled">
+              <object class="GtkCheckButton" id="vglobalAnnounceEnabled">
                 <property name="label" translatable="yes">Enable _Global Discovery</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -267,13 +267,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="lblvGlobalAnnServers">
+              <object class="GtkLabel" id="lblvglobalAnnounceServers">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="xalign">0</property>
                 <property name="label" translatable="yes">Global Discovery _Servers</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">vGlobalAnnServers</property>
+                <property name="mnemonic_widget">vglobalAnnounceServers</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -285,7 +285,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="vGlobalAnnServers">
+              <object class="GtkEntry" id="vglobalAnnounceServers">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">15</property>
@@ -297,12 +297,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="vLocalAnnPort">
+              <object class="GtkSpinButton" id="vlocalAnnouncePort">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
                 <property name="text" translatable="yes">50</property>
-                <property name="adjustment">adjLocalAnnPort</property>
+                <property name="adjustment">adjlocalAnnouncePort</property>
                 <property name="value">50</property>
               </object>
               <packing>
@@ -312,7 +312,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="vMaxRecvKbpsEnabled">
+              <object class="GtkCheckButton" id="vmaxRecvKbpsEnabled">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -326,7 +326,7 @@
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">_Incoming Rate Limit (KiB/s)</property>
                     <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">vMaxRecvKbpsEnabled</property>
+                    <property name="mnemonic_widget">vmaxRecvKbpsEnabled</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -340,7 +340,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="vMaxRecvKbps">
+              <object class="GtkSpinButton" id="vmaxRecvKbps">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>

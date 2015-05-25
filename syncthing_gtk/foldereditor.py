@@ -8,7 +8,8 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
-from syncthing_gtk import EditorDialog, HAS_INOTIFY
+from syncthing_gtk.editordialog import EditorDialog, strip_v
+from syncthing_gtk import EditorDialog, Watcher
 import os, sys, re, logging
 _ = lambda (a) : a
 log = logging.getLogger("FolderEditor")
@@ -18,15 +19,15 @@ COLOR_NEW				= "#A0A0A0"
 RE_FOLDER_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
 # Regexp to generate folder id from filename
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
-VALUES = [ "vID", "vPath", "vReadOnly", "vIgnorePerms", "vDevices",
-	"vVersioning", "vKeepVersions", "vRescanIntervalS", "vMaxAge",
-	"vVersionsPath", "vINotify"
+VALUES = [ "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
+	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
+	"vversionsPath", "vinotify"
 	]
 
 class FolderEditorDialog(EditorDialog):
 	MESSAGES = {
 		# Displayed when folder id is invalid
-		"vID" : _("The Folder ID must be a short, unique identifier"
+		"vid" : _("The Folder ID must be a short, unique identifier"
 			" (64 characters or less) consisting of letters, numbers "
 			"and the the dot (.), dash (-) and underscode (_) "
 			"characters only"),
@@ -58,13 +59,13 @@ class FolderEditorDialog(EditorDialog):
 		d.set_current_folder(os.path.expanduser("~"))
 		# Get response
 		if d.run() == Gtk.ResponseType.OK:
-			self["vPath"].set_text(d.get_filename())
-			if len(self["vID"].get_text().strip()) == 0:
+			self["vpath"].set_text(d.get_filename())
+			if len(self["vid"].get_text().strip()) == 0:
 				# ID is empty, fill it with last path element
 				try:
 					lpl = os.path.split(d.get_filename())[-1]
 					id = RE_GEN_ID.search(lpl).group(0).lower()
-					self["vID"].set_text(id)
+					self["vid"].set_text(id)
 				except AttributeError:
 					# Can't regexp anything
 					pass
@@ -72,38 +73,38 @@ class FolderEditorDialog(EditorDialog):
 	
 	#@Overrides
 	def get_value(self, key):
-		if key == "KeepVersions":
-			return self.get_burried_value("Versioning/Params/keep", self.values, 0, int)
-		elif key == "MaxAge":
-			return self.get_burried_value("Versioning/Params/maxAge", self.values, 0, int) / 86400 # seconds to days
-		elif key == "VersionsPath":
-			return self.get_burried_value("Versioning/Params/versionsPath", self.values, "")
-		elif key == "Versioning":
-			return self.get_burried_value("Versioning/Type", self.values, "")
-		elif key == "INotify":
+		if key == "keepVersions":
+			return self.get_burried_value("versioning/params/keep", self.values, 0, int)
+		elif key == "maxAge":
+			return self.get_burried_value("versioning/params/maxAge", self.values, 0, int) / 86400 # seconds to days
+		elif key == "versionsPath":
+			return self.get_burried_value("versioning/params/versionsPath", self.values, "")
+		elif key == "versioning":
+			return self.get_burried_value("versioning/type", self.values, "")
+		elif key == "inotify":
 			return self.id in self.app.config["use_inotify"]
 		else:
 			return EditorDialog.get_value(self, key)
 	
 	#@Overrides
 	def set_value(self, key, value):
-		if key == "Versioning":
+		if key == "versioning":
 			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Type"))
-			self.values["Versioning"]["Type"] = value
-		elif key == "KeepVersions":
+			self.create_dicts(self.values, ("versioning", "type"))
+			self.values["versioning"]["type"] = value
+		elif key == "keepVersions":
 			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Params", "keep"))
-			self.values["Versioning"]["Params"]["keep"] = str(int(value))
-		elif key == "MaxAge":
+			self.create_dicts(self.values, ("versioning", "params", "keep"))
+			self.values["versioning"]["params"]["keep"] = str(int(value))
+		elif key == "maxAge":
 			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Params", "maxAge"))
-			self.values["Versioning"]["Params"]["maxAge"] = str(int(value) * 86400) # days to seconds
-		elif key == "VersionsPath":
+			self.create_dicts(self.values, ("versioning", "params", "maxAge"))
+			self.values["versioning"]["params"]["maxAge"] = str(int(value) * 86400) # days to seconds
+		elif key == "versionsPath":
 			# Create structure if needed
-			self.create_dicts(self.values, ("Versioning", "Params", "versionsPath"))
-			self.values["Versioning"]["Params"]["versionsPath"] = value
-		elif key == "INotify":
+			self.create_dicts(self.values, ("versioning", "params", "versionsPath"))
+			self.values["versioning"]["params"]["versionsPath"] = value
+		elif key == "inotify":
 			l = self.app.config["use_inotify"]
 			if value:
 				if not self.id in l:
@@ -119,28 +120,28 @@ class FolderEditorDialog(EditorDialog):
 	def on_data_loaded(self):
 		try:
 			if self.is_new:
-				self.values = { x.lstrip("v") : "" for x in VALUES }
+				self.values = { strip_v(x) : "" for x in VALUES }
 				self.checks = {
-					"vID" : self.check_folder_id,
-					"vPath" : self.check_path
+					"vid" : self.check_folder_id,
+					"vpath" : self.check_path
 					}
 				if self.id != None:
 					try:
-						v = [ x for x in self.config["Folders"] if x["ID"] == self.id ][0]
+						v = [ x for x in self.config["folders"] if x["id"] == self.id ][0]
 						self.values = v
 						self.is_new = False
 					except IndexError:
 						pass
 				if not self.path is None:
-					self.set_value("Path", self.path)
-					self["vPath"].set_sensitive(False)
-				self.set_value("Versioning", "simple")
-				self.set_value("RescanIntervalS", 30)
-				self.set_value("KeepVersions", 10)
+					self.set_value("path", self.path)
+					self["vpath"].set_sensitive(False)
+				self.set_value("versioning", "simple")
+				self.set_value("rescanIntervalS", 30)
+				self.set_value("keepVersions", 10)
 			else:
-				self.values = [ x for x in self.config["Folders"] if x["ID"] == self.id ][0]
+				self.values = [ x for x in self.config["folders"] if x["id"] == self.id ][0]
 				self.checks = {}
-				self["vPath"].set_sensitive(False)
+				self["vpath"].set_sensitive(False)
 				self["btBrowse"].set_sensitive(False)
 		except KeyError, e:
 			# ID not found in configuration. This is practicaly impossible,
@@ -148,73 +149,60 @@ class FolderEditorDialog(EditorDialog):
 			log.exception(e)
 			self.close()
 			return False
-		if not HAS_INOTIFY:
-			self["vINotify"].set_sensitive(False)
-			self["lblINotify"].set_sensitive(False)
-			self["vINotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
-			self["lblINotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
+		if Watcher is None:
+			self["vinotify"].set_sensitive(False)
+			self["lblinotify"].set_sensitive(False)
+			self["vinotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
+			self["lblinotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
 		return self.display_values(VALUES)
 	
 	#@Overrides
 	def display_value(self, key, w):
-		if key == "vDevices":
+		if key == "vdevices":
 			# Very special case
-			nids = [ n["DeviceID"] for n in self.get_value("Devices") ]
-			target = self["vDevices"]
-			if len(self.app.devices) > 5:
-				# Add scrollbar, so window can fit small displays
-				target = Gtk.VBox()
-				scroll = Gtk.ScrolledWindow()
-				scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-				scroll.add_with_viewport(target)
-				# scroll.set_size_request(-1, 100)
-				self["vDevices"].pack_start(scroll, False, True, 0)
+			nids = [ n["deviceID"] for n in self.get_value("devices") ]
 			for device in self.app.devices.values():
 				if device["id"] != self.app.daemon.get_my_id():
 					b = Gtk.CheckButton(device.get_title(), False)
 					b.set_tooltip_text(device["id"])
-					target.pack_end(b, False, False, 0)
+					self["vdevices"].pack_end(b, False, False, 0)
 					b.set_active(device["id"] in nids)
-			self["vDevices"].show_all()
+			self["vdevices"].show_all()
 		else:
 			EditorDialog.display_value(self, key, w)
 	
 	#@Overrides
 	def update_special_widgets(self, *a):
-		self["vID"].set_sensitive(self.id is None)
-		v = self.get_value("Versioning")
+		self["vid"].set_sensitive(self.id is None)
+		v = self.get_value("versioning")
 		if v == "":
-			if self["rvVersioning"].get_reveal_child():
-				self["rvVersioning"].set_reveal_child(False)
+			if self["rvversioning"].get_reveal_child():
+				self["rvversioning"].set_reveal_child(False)
 		else:
-			self["bxVersioningSimple"].set_visible(self.get_value("Versioning") == "simple")
-			self["bxVersioningStaggered"].set_visible(self.get_value("Versioning") == "staggered")
-			if not self["rvVersioning"].get_reveal_child():
-				self["rvVersioning"].set_reveal_child(True)
+			self["bxVersioningSimple"].set_visible(self.get_value("versioning") == "simple")
+			self["bxVersioningStaggered"].set_visible(self.get_value("versioning") == "staggered")
+			if not self["rvversioning"].get_reveal_child():
+				self["rvversioning"].set_reveal_child(True)
 	
 	#@Overrides
 	def on_save_reuqested(self):
 		self.store_values(VALUES)
+		print self.values
 		if self.is_new:
 			# Add new dict to configuration (edited dict is already there)
-			self.config["Folders"].append(self.values)
+			self.config["folders"].append(self.values)
 		# Post configuration back to daemon
 		self.post_config()
 	
 	#@Overrides
 	def store_value(self, key, w):
-		if key == "vDevices":	# Still very special case
+		if key == "vdevices":	# Still very special case
 			devices = [ {
-					   "Addresses" : None,
-					   "DeviceID" : b.get_tooltip_text(),
-					   "Name" : "",
-					   "CertName" : "",
-					   "Compression" : False
-						}
-						for b in self["vDevices"].get_children()
+						"deviceID" : b.get_tooltip_text(),
+						} for b in self["vdevices"].get_children()
 						if b.get_active()
 					]
-			self.set_value("Devices", devices)
+			self.set_value("devices", devices)
 		else:
 			EditorDialog.store_value(self, key, w)
 	
@@ -225,11 +213,11 @@ class FolderEditorDialog(EditorDialog):
 		# see that something happen even before daemon gets restarted
 		if self.is_new:
 			box = self.app.show_folder(
-				self.get_value("ID"), self.get_value("Path"), self.get_value("Path"),
-				self.get_value("ReadOnly"), self.get_value("IgnorePerms"),
-				self.get_value("RescanIntervalS"),
+				self.get_value("id"), self.get_value("path"), self.get_value("path"),
+				self.get_value("readOnly"), self.get_value("ignorePerms"),
+				self.get_value("rescanIntervalS"),
 				sorted(
-					[ self.app.devices[n["DeviceID"]] for n in self.get_value("Devices") ],
+					[ self.app.devices[n["deviceID"]] for n in self.get_value("devices") ],
 					key=lambda x : x.get_title().lower()
 				))
 			box.set_color_hex(COLOR_NEW)
@@ -249,14 +237,14 @@ class FolderEditorDialog(EditorDialog):
 	
 	def fill_folder_id(self, rid):
 		""" Pre-fills folder Id for new-folder dialog """
-		self["vID"].set_text(rid)
+		self["vid"].set_text(rid)
 		self.id = rid
 		self.update_special_widgets()
 	
 	def mark_device(self, nid):
 		""" Marks (checks) checkbox for specified device """
-		if "vDevices" in self:	# ... only if there are checkboxes here
-			for child in self["vDevices"].get_children():
+		if "vdevices" in self:	# ... only if there are checkboxes here
+			for child in self["vdevices"].get_children():
 				if child.get_tooltip_text() == nid:
 					l = child.get_children()[0]	# Label in checkbox
 					l.set_markup("<b>%s</b>" % (l.get_label()))

@@ -7,21 +7,21 @@ Universal dialog handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
-from syncthing_gtk.tools import check_device_id, compare_version
-from syncthing_gtk import EditorDialog
+from syncthing_gtk.tools import check_device_id
+from syncthing_gtk.editordialog import EditorDialog, strip_v
 import sys, logging
 _ = lambda (a) : a
 log = logging.getLogger("DeviceEditor")
 
 COLOR_NEW				= "#A0A0A0"
-VALUES = [ "vDeviceID", "vName", "vAddresses", "vCompression",
-	"vFolders", "vIntroducer"
+VALUES = [ "vdeviceID", "vname", "vaddresses", "vcompression",
+	"vfolders", "vintroducer"
 	]
 
 class DeviceEditorDialog(EditorDialog):
 	MESSAGES = {
 		# Displayed when device id is invalid
-		"vDeviceID" : _("The entered device ID does not look valid. It "
+		"vdeviceID" : _("The entered device ID does not look valid. It "
 			"should be a 52 character string consisting of letters and "
 			"numbers, with spaces and dashes being optional."),
 	}
@@ -36,9 +36,9 @@ class DeviceEditorDialog(EditorDialog):
 	
 	#@Overrides
 	def get_value(self, key):
-		if key == "Addresses":
-			return ",".join([ x.strip() for x in self.values[key]])
-		elif key == "Compression":
+		if key == "addresses":
+			return ",".join([ strip_v(x) for x in self.values[key]])
+		elif key == "compression":
 			val = EditorDialog.get_value(self, key)
 			# For syncthing <= 0.10.25
 			if val in (True, "true"):
@@ -52,19 +52,8 @@ class DeviceEditorDialog(EditorDialog):
 	
 	#@Overrides
 	def set_value(self, key, value):
-		if key == "Addresses":
-			self.values[key] = [ x.strip() for x in value.split(",") ]
-		elif key == "Compression":
-			if compare_version(self.app.daemon.get_version(), "v0.10.26"):
-				return EditorDialog.set_value(self, key, value)
-			else:
-				# For syncthing <= 0.10.25
-				if value == "never":
-					print "store_value", key, value, False
-					return EditorDialog.set_value(self, key, False)
-				else:
-					print "store_value", key, value, True
-					return EditorDialog.set_value(self, key, True)
+		if key == "addresses":
+			self.values[key] = [ strip_v(x) for x in value.split(",") ]
 		else:
 			return EditorDialog.set_value(self, key, value)
 	
@@ -72,17 +61,17 @@ class DeviceEditorDialog(EditorDialog):
 	def on_data_loaded(self):
 		try:
 			if self.is_new:
-				self.values = { x.lstrip("v") : "" for x in VALUES }
-				self.set_value("Addresses", "dynamic")
-				self.set_value("Compression", "metadata")
+				self.values = { strip_v(x) : "" for x in VALUES }
+				self.set_value("addresses", "dynamic")
+				self.set_value("compression", "metadata")
 				self.checks = {
-					"vDeviceID" : check_device_id,
+					"vdeviceID" : check_device_id,
 					}
 				if self.id != None:
 					# Pre-fill device id, if provided
-					self.set_value("DeviceID", self.id)
+					self.set_value("deviceID", self.id)
 			else:
-				self.values = [ x for x in self.config["Devices"] if x["DeviceID"] == self.id ][0]
+				self.values = [ x for x in self.config["devices"] if x["deviceID"] == self.id ][0]
 		except KeyError, e:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
@@ -93,66 +82,66 @@ class DeviceEditorDialog(EditorDialog):
 	
 	#@Overrides
 	def display_value(self, key, w):
-		if key == "vFolders":
+		if key == "vfolders":
 			# Even more special case
 			rids = [ ]
 			# Get list of folders that share this device
-			for r in self.config["Folders"]:
-				for n in r["Devices"]:
-					if n["DeviceID"] == self.id:
-						rids.append(r["ID"])
+			for r in self.config["folders"]:
+				for n in r["devices"]:
+					if n["deviceID"] == self.id:
+						rids.append(r["id"])
 			# Create CheckButtons
 			for folder in reversed(sorted(self.app.folders.values(), key=lambda x : x["id"])):
 				b = Gtk.CheckButton(folder["path"], False)
 				b.set_tooltip_text(folder["id"])
-				self["vFolders"].pack_end(b, False, False, 0)
+				self["vfolders"].pack_end(b, False, False, 0)
 				b.set_active(folder["id"] in rids)
-			self["vFolders"].show_all()
+			self["vfolders"].show_all()
 		else:
 			EditorDialog.display_value(self, key, w)
 	
 	#@Overrides
 	def update_special_widgets(self, *a):
-		self["vDeviceID"].set_sensitive(self.is_new)
+		self["vdeviceID"].set_sensitive(self.is_new)
 	
 	#@Overrides
 	def on_save_reuqested(self):
 		self.store_values(VALUES)
 		if self.is_new:
 			# Add new dict to configuration (edited dict is already there)
-			self.config["Devices"].append(self.values)
+			self.config["devices"].append(self.values)
 		# Post configuration back to daemon
 		self.post_config()
 	
 	#@Overrides
 	def store_value(self, key, w):
-		if key == "vFolders":	# And this one is special too
+		if key == "vfolders":	# And this one is special too
 			# Generate dict of { folder_id : bool } where bool is True if
 			# folder should be shared with this device
 			folders = {}
-			for b in self["vFolders"].get_children():
+			for b in self["vfolders"].get_children():
 				folders[b.get_tooltip_text()] = b.get_active()
 			# Go over all Folders/<folder>/Devices/<device> keys in config
 			# and set them as needed
-			nid = self.get_value("DeviceID")
-			for r in self.config["Folders"]:
-				rid = r["ID"]
+			nid = self.get_value("deviceID")
+			for r in self.config["folders"]:
+				rid = r["id"]
 				found = False
-				for n in r["Devices"]:
-					if n["DeviceID"] == nid:
+				for n in r["devices"]:
+					if n["deviceID"] == nid:
 						if not rid in folders or not folders[rid]:
 							# Remove this /<device> key (unshare folder with device)
-							r["Devices"].remove(n)
+							r["devices"].remove(n)
 							break
 						found = True
 				if (not found) and (rid in folders) and folders[rid]:
 					# Add new /<device> key (share folder with device)
-					r["Devices"].append({
-					   "Addresses" : None,
-					   "DeviceID" : nid,
-					   "Name" : "",
-					   "CertName" : "",
-					   "Compression" : False
+					r["devices"].append({
+					   "addresses" : None,
+					   "deviceID" : nid,
+					   "name" : "",
+					   "certName" : "",
+					   "compression" : "metadata"
 						})
 		else:
 			EditorDialog.store_value(self, key, w)

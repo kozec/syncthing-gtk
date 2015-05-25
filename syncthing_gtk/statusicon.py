@@ -15,7 +15,7 @@ from gi.repository import GObject
 from gi.repository import GLib
 from gi.repository import Gtk
 
-from syncthing_gtk.tools import IS_UNITY, IS_KDE
+from syncthing_gtk.tools import IS_UNITY, IS_KDE, IS_CINNAMON
 
 _ = lambda msg: msg
 log = logging.getLogger("StatusIcon")
@@ -61,7 +61,7 @@ class StatusIcon(GObject.GObject):
 		)		
 	}
 	
-	def __init__(self, icon_path, popupmenu):
+	def __init__(self, icon_path, popupmenu, force=False):
 		GObject.GObject.__init__(self)
 		self.__icon_path = os.path.normpath(os.path.abspath(icon_path))
 		self.__popupmenu = popupmenu
@@ -70,6 +70,7 @@ class StatusIcon(GObject.GObject):
 		self.__hidden    = False
 		self.__icon      = "si-unknown"
 		self.__text      = ""
+		self.__force     = force
 	
 	def get_active(self):
 		"""
@@ -130,6 +131,9 @@ class StatusIcon(GObject.GObject):
 		self._set_visible(self.__visible)
 	
 	
+	def _is_forced(self):
+		return self.__force
+	
 	def _on_click(self, *a):
 		self.emit("clicked")
 	
@@ -140,9 +144,8 @@ class StatusIcon(GObject.GObject):
 		Use `set()` instead.
 		"""
 		if icon:
-			#TODO: Once icons are moved to a shared/themable location this should just do `return icon`
 			self.__icon = icon
-		return os.path.join(self.__icon_path, self.__icon) + ".png"
+		return self.__icon
 	
 	def _get_text(self, text=None):
 		"""
@@ -183,8 +186,8 @@ class StatusIconDummy(StatusIcon):
 	"""
 	Dummy status icon implementation that does nothing
 	"""
-	def __init__(self, *args):
-		StatusIcon.__init__(self, *args)
+	def __init__(self, *args, **kwargs):
+		StatusIcon.__init__(self, *args, **kwargs)
 		
 		# Pretty unlikely that this will be visible...
 		self.set_property("active", False)
@@ -200,18 +203,19 @@ class StatusIconGTK3(StatusIcon):
 	"""
 	Gtk.StatusIcon based status icon backend
 	"""
-	def __init__(self, *args):
-		StatusIcon.__init__(self, *args)
+	def __init__(self, *args, **kwargs):
+		StatusIcon.__init__(self, *args, **kwargs)
 		
-		if IS_UNITY:
-			# Unity fakes SysTray support but actually hides all icons...
-			raise NotImplementedError
+		if not self._is_forced():
+			if IS_UNITY:
+				# Unity fakes SysTray support but actually hides all icons...
+				raise NotImplementedError
 		
-		if IS_KDE:
-			# While the GTK backend works fine on KDE 4, the StatusIconKDE4 backend will achieve better
-			# results and should be available on any standard KDE 4 installation
-			# (since several KDE applications depend on it)
-			raise NotImplementedError
+			if IS_KDE:
+				# While the GTK backend works fine on KDE 4, the StatusIconKDE4 backend will achieve better
+				# results and should be available on any standard KDE 4 installation
+				# (since several KDE applications depend on it)
+				raise NotImplementedError
 		
 		self._tray = Gtk.StatusIcon()
 		
@@ -230,7 +234,7 @@ class StatusIconGTK3(StatusIcon):
 	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)
 		
-		self._tray.set_from_file(self._get_icon(icon))
+		self._tray.set_from_icon_name(self._get_icon(icon))
 		self._tray.set_tooltip_text(self._get_text(text))
 	
 	def _on_embedded_change(self, *args):
@@ -240,7 +244,7 @@ class StatusIconGTK3(StatusIcon):
 		
 		# An invisible tray icon will never be embedded but it also should not be replaced
 		# by a fallback icon
-		is_embedded = self._tray.is_embedded() or not self._tray.get_visible()
+		is_embedded = self._tray.is_embedded() or not self._tray.get_visible() or IS_CINNAMON
 		if is_embedded != self.get_property("active"):
 			self.set_property("active", is_embedded)
 	
@@ -336,24 +340,31 @@ class StatusIconQt(StatusIconDBus):
 	
 	def _get_icon_by_name(self, icon_name):
 		if icon_name:
-			icon_path = self._gtk_icon_theme.lookup_icon(icon_name, 48, 0).get_filename()
-			if icon_path:
-				icon_dir, icon_basename = os.path.split(os.path.realpath(icon_path))
-				
-				# If we don't resolve all icon names (i.e.: realpath) before passing them to Qt
-				# SOME OF THEM will be dropped (especially if their name started with "gtk-" originally)
-				icon_name = os.path.splitext(icon_basename)[0]
-				
-				# Make sure that Qt can find this icon by its name, by adding
-				# the directory to the icon theme search path
-				# This extra step is required because we have to set the application
-				# style to "motif" during Qt initialization
-				if icon_dir not in self._qt_types["QIcon"].themeSearchPaths():
-					theme_search_paths = self._qt_types["QIcon"].themeSearchPaths()
-					theme_search_paths.prepend(icon_dir)
-					self._qt_types["QIcon"].setThemeSearchPaths(theme_search_paths)
-				
-				return self._qt_types["QIcon"].fromTheme(icon_name, self._qt_types["QIcon"](icon_path))
+			icon_file = self._gtk_icon_theme.lookup_icon(icon_name, 48, 0)
+			if not icon_file:
+				log.info("Skipping unknown icon file: %s" % (icon_name))
+				return self._qt_types["QIcon"]()
+			
+			icon_path = icon_file.get_filename()
+			if not icon_path:
+				return self._qt_types["QIcon"]()
+			
+			icon_dir, icon_basename = os.path.split(os.path.realpath(icon_path))
+		
+			# If we don't resolve all icon names (i.e.: realpath) before passing them to Qt
+			# SOME OF THEM will be dropped (especially if their name started with "gtk-" originally)
+			icon_name = os.path.splitext(icon_basename)[0]
+		
+			# Make sure that Qt can find this icon by its name, by adding
+			# the directory to the icon theme search path
+			# This extra step is required because we have to set the application
+			# style to "motif" during Qt initialization
+			if icon_dir not in self._qt_types["QIcon"].themeSearchPaths():
+				theme_search_paths = self._qt_types["QIcon"].themeSearchPaths()
+				theme_search_paths.prepend(icon_dir)
+				self._qt_types["QIcon"].setThemeSearchPaths(theme_search_paths)
+		
+			return self._qt_types["QIcon"].fromTheme(icon_name, self._qt_types["QIcon"](icon_path))
 		
 		return self._qt_types["QIcon"]()
 	
@@ -377,8 +388,8 @@ class StatusIconKDE4(StatusIconQt):
 	"""
 	PyKDE5.kdeui.KStatusNotifierItem based status icon backend
 	"""
-	def __init__(self, *args):
-		StatusIcon.__init__(self, *args)
+	def __init__(self, *args, **kwargs):
+		StatusIcon.__init__(self, *args, **kwargs)
 		
 		try:
 			import PyQt4.Qt     as qt
@@ -433,8 +444,8 @@ class StatusIconAppIndicator(StatusIconDBus):
 	"""
 	Unity's AppIndicator3.Indicator based status icon backend
 	"""
-	def __init__(self, *args):
-		StatusIcon.__init__(self, *args)
+	def __init__(self, *args, **kwargs):
+		StatusIcon.__init__(self, *args, **kwargs)
 		
 		try:
 			from gi.repository import AppIndicator3 as appindicator
@@ -463,17 +474,21 @@ class StatusIconAppIndicator(StatusIconDBus):
 
 
 class StatusIconProxy(StatusIcon):
-	def __init__(self, *args):
-		StatusIcon.__init__(self, *args)
+	def __init__(self, *args, **kwargs):
+		StatusIcon.__init__(self, *args, **kwargs)
 		
-		self._arguments  = args
+		self._arguments  = (args, kwargs)
 		self._status_fb  = None
 		self._status_gtk = None
 		self.set("si-unknown", "")
 		
+		# Do not ever force-show indicators when they do not think they'll work
+		if "force" in self._arguments[1]:
+			del self._arguments[1]["force"]
+		
 		try:
 			# Try loading GTK native status icon
-			self._status_gtk = StatusIconGTK3(*args)
+			self._status_gtk = StatusIconGTK3(*args, **kwargs)
 			self._status_gtk.connect(b"clicked",        self._on_click)
 			self._status_gtk.connect(b"notify::active", self._on_notify_active_gtk)
 			self._on_notify_active_gtk()
@@ -514,7 +529,7 @@ class StatusIconProxy(StatusIcon):
 		if not self._status_fb:
 			for StatusIconBackend in status_icon_backends:
 				try:
-					self._status_fb = StatusIconBackend(*self._arguments)
+					self._status_fb = StatusIconBackend(*self._arguments[0], **self._arguments[1])
 					self._status_fb.connect(b"clicked",        self._on_click)
 					self._status_fb.connect(b"notify::active", self._on_notify_active_fb)
 					self._on_notify_active_fb()
@@ -551,13 +566,15 @@ class StatusIconProxy(StatusIcon):
 		if self._status_fb:
 			self._status_fb.show()
 
-def get_status_icon(*args):
+def get_status_icon(*args, **kwargs):
 	# Try selecting backend based on environment variable
 	if "SYNCTHING_STATUS_BACKEND" in os.environ:
+		kwargs["force"] = True
+		
 		status_icon_backend_name = "StatusIcon%s" % (os.environ.get("SYNCTHING_STATUS_BACKEND"))
 		if status_icon_backend_name in globals():
 			try:
-				status_icon = globals()[status_icon_backend_name](*args)
+				status_icon = globals()[status_icon_backend_name](*args, **kwargs)
 				log.info("StatusIcon: Using requested backend %s" % (status_icon_backend_name))
 				return status_icon
 			except NotImplementedError:
@@ -565,7 +582,7 @@ def get_status_icon(*args):
 		else:
 			log.error("StatusIcon: Requested backend %s does not exist" % (status_icon_backend_name))
 		
-		return StatusIconDummy(*args)
+		return StatusIconDummy(*args, **kwargs)
 	
 	# Use proxy backend to determine the correct backend while the application is running
-	return StatusIconProxy(*args)
+	return StatusIconProxy(*args, **kwargs)

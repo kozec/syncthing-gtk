@@ -18,7 +18,7 @@ if IS_WINDOWS:
 	from subprocess import Popen, PIPE, STARTUPINFO, \
 		STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE, \
 		CREATE_NEW_PROCESS_GROUP
-	from syncthing_gtk.windows import WinPopenReader
+	from syncthing_gtk.windows import WinPopenReader, nice_to_priority_class
 elif not HAS_SUBPROCESS:
 	# Gio.Subprocess is not available in Gio < 3.12
 	from subprocess import Popen, PIPE
@@ -33,16 +33,25 @@ class DaemonProcess(GObject.GObject):
 		b"failed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 	}
 	SCROLLBACK_SIZE = 500	# Maximum number of output lines stored in memory
+	PRIORITY_LOWEST		= 19
+	PRIORITY_LOW		= 10
+	PRIORITY_NORMAL		= 0
+	PRIORITY_HIGH		= -10
+	PRIORITY_HIGHEST	= -20
 	
-	def __init__(self, commandline):
+	def __init__(self, commandline, priority=PRIORITY_NORMAL, max_cpus=0):
 		""" commandline should be list of arguments """
 		GObject.GObject.__init__(self)
 		self.commandline = commandline
+		self.priority = priority
+		self.max_cpus = max_cpus
 		self._proc = None
 	
 	def start(self):
 		os.environ["STNORESTART"] = "1"	# see syncthing --help
 		os.environ["STNOUPGRADE"] = "1"	# hopefully implemented later
+		if self.max_cpus > 0:
+			os.environ["GOMAXPROCS"] = str(self.max_cpus)
 		try:
 			self._cancel = Gio.Cancellable()
 			if IS_WINDOWS:
@@ -50,20 +59,29 @@ class DaemonProcess(GObject.GObject):
 				sinfo = STARTUPINFO()
 				sinfo.dwFlags = STARTF_USESHOWWINDOW
 				sinfo.wShowWindow = 0
+				cflags = nice_to_priority_class(self.priority)
 				self._proc = Popen(self.commandline,
 							stdin=PIPE, stdout=PIPE, stderr=PIPE,
-							startupinfo=sinfo)
+							startupinfo=sinfo, creationflags=cflags)
 				self._stdout = WinPopenReader(self._proc)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 			elif HAS_SUBPROCESS:
 				# New Gio
 				flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
-				self._proc = Gio.Subprocess.new(self.commandline, flags)
+				if self.priority == 0:
+					self._proc = Gio.Subprocess.new(self.commandline, flags)
+				else:
+					# I just really do hope that there is no distro w/out nice command
+					self._proc = Gio.Subprocess.new([ "nice", "-%s" % self.priority ] + self.commandline, flags)
 				self._proc.wait_check_async(None, self._cb_finished)
 				self._stdout = self._proc.get_stdout_pipe()
 			else:
 				# Gio < 3.12 - Gio.Subprocess is missing :(
-				self._proc = Popen(self.commandline, stdout=PIPE)
+				if self.priority == 0:
+					self._proc = Popen(self.commandline, stdout=PIPE)
+				else:
+					# still hoping
+					self._proc = Popen([ "nice", "-%s" % self.priority ], stdout=PIPE)
 				self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 		except Exception, e:
@@ -97,6 +115,12 @@ class DaemonProcess(GObject.GObject):
 		Repeatedly check if process is still alive.
 		Called only on windows
 		"""
+		if self._proc == None:
+			# Never started or killed really fast
+			self.emit('exit', 1)
+			self._cancel.cancel()
+			if IS_WINDOWS: self._stdout.close()
+			return False
 		self._proc.poll()
 		if self._proc.returncode is None:
 			# Repeat until finished or canceled
@@ -118,7 +142,11 @@ class DaemonProcess(GObject.GObject):
 		except GLib.GError:
 			# Exited with exit code
 			log.info("Subprocess exited with code %s", proc.get_exit_status())
-		self.emit('exit', proc.get_exit_status())
+		if proc.get_exit_status() == 127:
+			# Command not found
+			self.emit("failed", Exception("Command not found"))
+		else:
+			self.emit('exit', proc.get_exit_status())
 		if IS_WINDOWS: self._stdout.close()
 		self._cancel.cancel()
 	

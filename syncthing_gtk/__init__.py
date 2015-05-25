@@ -4,12 +4,13 @@ import os
 from timermanager		import TimerManager
 from daemonprocess		import DaemonProcess
 from daemon				import Daemon, InvalidConfigurationException, \
-							TLSUnsupportedException, ConnectionRestarted
+					TLSUnsupportedException, ConnectionRestarted, \
+					TLSErrorException
 if not "GTK2APP" in os.environ:
 	# Condition above prevents __init__ from loading stuff that
 	# depends on GTK3-only features, allowing GTK2 apps to use
 	# Daemon object to interact with Syncthing
-	from watcher			import Watcher, HAS_INOTIFY
+	from watcher			import Watcher
 	from uibuilder			import UIBuilder
 	from notifications		import Notifications, HAS_DESKTOP_NOTIFY
 	from infobox			import InfoBox

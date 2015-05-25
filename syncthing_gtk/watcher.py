@@ -26,12 +26,13 @@ if HAS_INOTIFY:
 			self.app = app
 			self.daemon = daemon
 			self.wds = {}
+			self.enabled = False
 			self.wm = pyinotify.WatchManager()
 			self.notifier = pyinotify.Notifier(self.wm, timeout=10, default_proc_fun=self._process)
 			self.glibsrc = GLib.idle_add(self._process_events)
 		
 		def watch(self, path):
-			""" Starts recursive watching on specified directory """
+			""" Sets recursive watching on specified directory """
 			added = self.wm.add_watch(path.encode("utf-8"),
 				pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
 				pyinotify.IN_DELETE | pyinotify.IN_CREATE, rec=True, quiet=False
@@ -41,13 +42,7 @@ if HAS_INOTIFY:
 				self.wds[path] = added[path]
 			log.verbose("Watching %s", path)
 		
-		def remove(self, path):
-			""" Cancels watching on specified directory """
-			if path in self.wds:
-				self.wm.rm_watch(self.wds[path], rec=True, quiet=True)
-				del self.wds[path]
-		
-		def clear(self):
+		def _clear(self):
 			""" Cancels watching on everything """
 			wds_v = self.wds.values()
 			self.wds = {}
@@ -60,10 +55,15 @@ if HAS_INOTIFY:
 			if self.glibsrc > 0:
 				GLib.source_remove(self.glibsrc)
 				self.glibsrc = -1
-			self.clear()
+			self._clear()
+			self.enabled = False
 			del self.notifier
 			del self.wm
-			
+		
+		def start(self):
+			""" Starts watching """
+			self.enabled = True
+		
 		def _process(self, event):
 			""" Inotify event callback """
 			if event.mask & pyinotify.IN_ISDIR != 0:
@@ -101,6 +101,7 @@ if HAS_INOTIFY:
 			return True	# Repeat until killed
 		
 		def _report_created(self, path):
+			if not enabled: return
 			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Created %s %s > %s", folder_id, path, relpath)
@@ -108,6 +109,7 @@ if HAS_INOTIFY:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_changed(self, path):
+			if not enabled: return
 			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Changed %s %s > %s", folder_id, path, relpath)
@@ -115,6 +117,7 @@ if HAS_INOTIFY:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_deleted(self, path):
+			if not enabled: return
 			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Deleted %s %s > %s", folder_id, path, relpath)
