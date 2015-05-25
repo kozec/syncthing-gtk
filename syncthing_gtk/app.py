@@ -901,7 +901,7 @@ class App(Gtk.Application, TimerManager):
 			)
 		if not self.watcher is None:
 			if rid in self.config["use_inotify"]:
-				self.watcher.watch(box["norm_path"])
+				self.watcher.watch(box["id"], box["norm_path"])
 	
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always
@@ -1424,6 +1424,8 @@ class App(Gtk.Application, TimerManager):
 				# Always kill subprocess on windows
 				self.process.kill()
 				self.process = None
+				if not self.watcher is None:
+					self.watcher.kill()
 			elif self.config["autokill_daemon"] == 2:	# Ask
 				d = Gtk.MessageDialog(
 					self["window"],

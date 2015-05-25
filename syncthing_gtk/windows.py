@@ -7,9 +7,9 @@ from syncthing_gtk import windows
 """
 
 from __future__ import unicode_literals
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
 from gi.repository import Gio, GLib, GObject, Gtk, Gdk
-import os, logging, codecs, msvcrt, win32pipe, win32api, _winreg
+import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 import win32process
 log = logging.getLogger("windows.py")
 
@@ -94,14 +94,14 @@ class WinPopenReader:
 	console window on Windows.
 	"""
 	
-	def __init__(self, process):
+	def __init__(self, pipe):
 		# Prepare stuff
-		self._process = process
+		self._pipe = pipe
 		self._waits_for_read = None
 		self._buffer = ""
 		self._buffer_size = 32
 		self._closed = False
-		self._stdouthandle = msvcrt.get_osfhandle(self._process.stdout.fileno())
+		self._osfhandle = msvcrt.get_osfhandle(self._pipe.fileno())
 		# Start reading
 		GLib.idle_add(self._peek)
 	
@@ -109,9 +109,9 @@ class WinPopenReader:
 		if self._closed:
 			return False
 		# Check if there is anything to read and read if available
-		(read, nAvail, nMessage) = win32pipe.PeekNamedPipe(self._stdouthandle, 0)
+		(read, nAvail, nMessage) = win32pipe.PeekNamedPipe(self._osfhandle, 0)
 		if nAvail >= self._buffer_size:
-			data = self._process.stdout.read(self._buffer_size)
+			data = self._pipe.read(self._buffer_size)
 			self._buffer += data
 		# If there is read_async callback and buffer has enought of data,
 		# send them right away
@@ -235,3 +235,67 @@ def WinConfiguration():
 				return value
 		
 	return _WinConfiguration
+
+def WinWatcher():
+	if hasattr(sys, "frozen"):
+		path = os.path.dirname(unicode(sys.executable, encoding))
+	else:
+		import __main__
+		path = os.path.dirname(__main__.__file__)
+	exe = os.path.join(path, "syncthing-inotify.exe")
+	
+	from daemonprocess import DaemonProcess
+	class _WinWatcher:
+		"""
+		Filesystem watcher implementation for Windows. Passes watched
+		directories to syncthing-notify executable ran on background.
+		
+		Available only if executable is found in same folder as
+		syncthing-gtk.exe is.
+		"""
+		
+		def __init__(self, app, daemon):
+			self.watched_ids = []
+			self.app = app
+			self.proc = None
+			self.log = logging.getLogger("Watcher")
+		
+		def watch(self, id, path):
+			self.watched_ids += [id]
+		
+		def kill(self):
+			""" Cancels & deallocates everything """
+			self.watched_ids = []
+			if not self.proc is None:
+				self.proc.kill()
+			self.proc = None
+		
+		def start(self):
+			if not self.proc is None:
+				self.proc.kill()
+			if len(self.watched_ids) > 0:
+				self.proc = DaemonProcess([
+					exe,
+					"-home", os.path.join(get_config_dir(), "syncthing"),
+					"-folders", ",".join(self.watched_ids)
+					])
+				self.proc.connect("line", self._on_output)
+				self.proc.connect("exit", self._on_exit)
+				self.proc.connect("failed", self._on_failed)
+				self.proc.start()
+		
+		def _on_output(self, *a):
+			print a
+		
+		def _on_exit(self, proc, code):
+			self.log.warning("syncthing-inotify exited with code %s" % (code,))
+		
+		def _on_failed(self, proc, error):
+			self.log.error("Failed to start syncthing-inotify: %s" % (error,))
+			self.proc = None
+	
+	if os.path.exists(exe):
+		return _WinWatcher
+	else:
+		return None
+
