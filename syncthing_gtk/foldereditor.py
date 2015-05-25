@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
 from syncthing_gtk.editordialog import EditorDialog, strip_v
-from syncthing_gtk import EditorDialog, HAS_INOTIFY
+from syncthing_gtk import EditorDialog, Watcher
 import os, sys, re, logging
 _ = lambda (a) : a
 log = logging.getLogger("FolderEditor")
@@ -149,7 +149,7 @@ class FolderEditorDialog(EditorDialog):
 			log.exception(e)
 			self.close()
 			return False
-		if not HAS_INOTIFY:
+		if Watcher is None:
 			self["vinotify"].set_sensitive(False)
 			self["lblinotify"].set_sensitive(False)
 			self["vinotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))

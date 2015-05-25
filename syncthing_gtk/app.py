@@ -323,7 +323,7 @@ class App(Gtk.Application, TimerManager):
 			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
-		if HAS_INOTIFY:
+		if not Watcher is None:
 			self.watcher = Watcher(self, self.daemon)
 		if HAS_DESKTOP_NOTIFY:
 			if self.config["notification_for_update"] or self.config["notification_for_error"]:
@@ -694,7 +694,7 @@ class App(Gtk.Application, TimerManager):
 		# Refresh daemon data from UI
 		log.debug("Config saved")
 		self.refresh()
-
+	
 	def cb_config_loaded(self, daemon, config):
 		# Called after connection to daemon is initialized;
 		# Used to change indicating UI components
@@ -716,6 +716,9 @@ class App(Gtk.Application, TimerManager):
 			# User did not responded to usage reporting yet. Ask
 			self.ask_for_ur()
 		
+		if not self.watcher is None:
+			self.watcher.start()
+	
 	def cb_syncthing_error(self, daemon, message):
 		""" Daemon argument is not used """
 		if message in self.error_messages:
@@ -1334,7 +1337,7 @@ class App(Gtk.Application, TimerManager):
 		self.error_messages = set([])
 		self.cancel_all() # timers
 		if not self.watcher is None:
-			self.watcher.clear()
+			self.watcher.kill()
 		self.daemon.reconnect()
 	
 	def refresh(self):
@@ -1346,7 +1349,7 @@ class App(Gtk.Application, TimerManager):
 		"""
 		log.debug("Reloading config...")
 		if not self.watcher is None:
-			self.watcher.clear()
+			self.watcher.kill()
 		self.daemon.reload_config()
 	
 	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
