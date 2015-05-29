@@ -284,8 +284,8 @@ def WinWatcher():
 				self.proc.connect("failed", self._on_failed)
 				self.proc.start()
 		
-		def _on_output(self, *a):
-			print a
+		def _on_output(self, proc, message):
+			self.log.info(message)
 		
 		def _on_exit(self, proc, code):
 			self.log.warning("syncthing-inotify exited with code %s" % (code,))
