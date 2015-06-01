@@ -114,11 +114,11 @@ class WinPopenReader:
 		if nAvail >= self._buffer_size:
 			data = self._pipe.read(self._buffer_size)
 			self._buffer += data
-		# If there is read_async callback and buffer has enought of data,
+		# If there is read_async callback and buffer has some data,
 		# send them right away
-		if not self._waits_for_read is None and len(self._buffer) > self._buffer_size:
-			r = WinPopenReader.Results(self._buffer[0:self._buffer_size])
-			self._buffer = self._buffer[self._buffer_size:]
+		if not self._waits_for_read is None and len(self._buffer) > 0:
+			r = WinPopenReader.Results(self._buffer)
+			self._buffer = ""
 			callback, data = self._waits_for_read
 			self._waits_for_read = None
 			callback(self, r, *data)
