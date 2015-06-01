@@ -241,7 +241,7 @@ class App(Gtk.Application, TimerManager):
 			return action
 		add_simple_action('webui', self.cb_menu_webui)
 		add_simple_action('daemon_output', self.cb_menu_daemon_output).set_enabled(False)
-		add_simple_action('inotify_output', self.cb_menu_inotify_output)
+		add_simple_action('inotify_output', self.cb_menu_inotify_output).set_enabled(False)
 		add_simple_action('preferences', self.cb_menu_ui_settings)
 		add_simple_action('about', self.cb_about)
 		add_simple_action('quit', self.cb_exit)
@@ -891,6 +891,7 @@ class App(Gtk.Application, TimerManager):
 				device.set_status(_("Up to Date"))
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
+		print "cb_syncthing_folder_added", rid
 		box = self.show_folder(
 			rid, r["path"], r["path"],
 			r["readOnly"], r["ignorePerms"], 
@@ -903,6 +904,8 @@ class App(Gtk.Application, TimerManager):
 		if not self.watcher is None:
 			if rid in self.config["use_inotify"]:
 				self.watcher.watch(box["id"], box["norm_path"])
+				if IS_WINDOWS:
+					self.lookup_action('inotify_output').set_enabled(True)
 	
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always
@@ -1351,7 +1354,11 @@ class App(Gtk.Application, TimerManager):
 		log.debug("Reloading config...")
 		if not self.watcher is None:
 			self.watcher.kill()
-		self.daemon.reload_config()
+			self.lookup_action('inotify_output').set_enabled(False)
+		def callback(*a):
+			if not self.watcher is None:
+				GLib.timeout_add_seconds(1, self.watcher.start)
+		self.daemon.reload_config(callback)
 	
 	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
 		"""

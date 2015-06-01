@@ -1065,7 +1065,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self.close()
 		GLib.idle_add(self._request_config)
 	
-	def reload_config(self, error_callback=None):
+	def reload_config(self, callback=None, error_callback=None):
 		"""
 		Reloads config from syncthing daemon.
 		Calling this will cause or may cause emiting following events
@@ -1076,6 +1076,8 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		def reload_config_cb(config):
 			self._parse_dev_n_folders(config)
+			if not callback is None:
+				callback()
 			self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
 		self._rest_request("system/config", reload_config_cb, error_callback)
 	
