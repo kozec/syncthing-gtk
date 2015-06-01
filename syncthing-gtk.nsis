@@ -3,7 +3,7 @@
 # Initial stuff
 !include MUI2.nsh
 !define APP_NAME SyncthingGTK
-!define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.6.4.zip"
+!define LIBRARIES_FILE "syncthing-gtk-windows-libraries-0.7.2.zip"
 !define LIBRARIES_URL "http://kozec.com/${LIBRARIES_FILE}"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\syncthing-gtk.exe"
 !include "build\version.nsh"
