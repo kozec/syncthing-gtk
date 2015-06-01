@@ -49,7 +49,7 @@ NotRunning:
 	File /r build\exe.win32-2.7\icons
 	# Check if random file that should be part of libraries zip exists
 	# and download&extract zip if not
-	IfFileExists $INSTDIR\win32process.pyd SkipDownload DoDownload
+	IfFileExists $INSTDIR\syncthing-inotify-v0.6.3.exe SkipDownload DoDownload
 DoDownload:
 	NSISdl::download ${LIBRARIES_URL} $TEMP\${LIBRARIES_FILE}
 	ZipDLL::extractall $TEMP\${LIBRARIES_FILE} $INSTDIR

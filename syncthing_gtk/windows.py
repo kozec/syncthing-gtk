@@ -14,6 +14,7 @@ import win32process
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
+ST_INOTIFY_EXE = "syncthing-inotify-v0.6.3.exe"
 
 def fix_localized_system_error_messages():
 	"""
@@ -238,11 +239,11 @@ def WinConfiguration():
 
 def WinWatcher():
 	if hasattr(sys, "frozen"):
-		path = os.path.dirname(unicode(sys.executable, encoding))
+		path = os.path.dirname(unicode(sys.executable))
 	else:
 		import __main__
 		path = os.path.dirname(__main__.__file__)
-	exe = os.path.join(path, "syncthing-inotify.exe")
+	exe = os.path.join(path, ST_INOTIFY_EXE)
 	
 	from daemonprocess import DaemonProcess
 	class _WinWatcher:

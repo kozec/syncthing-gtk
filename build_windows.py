@@ -9,6 +9,7 @@ from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
 from win32verstamp import stamp
 from setup import get_version as _get_version
+from syncthing_gtk.windows import ST_INOTIFY_EXE
 
 gnome_dll_path = "/Python27/Lib/site-packages/gnome"
 build_dir = "./build/exe.win32-2.7/"
@@ -67,6 +68,9 @@ include_files += [ (os.path.join(gnome_dll_path, x), x) for x in missing_dll ]
 # Data files
 include_files += [ x for x in os.listdir(".") if x.endswith(".glade") ]
 include_files += [ "./icons" ]
+
+# syncthing-inotify
+include_files += [ ST_INOTIFY_EXE ]
 
 executables = [
 	Executable(
