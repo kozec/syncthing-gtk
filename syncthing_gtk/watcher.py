@@ -6,15 +6,23 @@ Watches for filesystem changes and reports them to daemon
 """
 
 from __future__ import unicode_literals
+from tools import IS_WINDOWS
 
 HAS_INOTIFY = False
 Watcher = None
 
-try:
-	import pyinotify
-	HAS_INOTIFY = True
-except ImportError:
-	pass
+if IS_WINDOWS:
+	from windows import WinWatcher
+	Watcher = WinWatcher()	# May return None if syncthing-inotify.exe is
+							# not available
+	HAS_INOTIFY = False
+else:
+	try:
+		import pyinotify
+		HAS_INOTIFY = True
+	except ImportError:
+		pass
+
 if HAS_INOTIFY:
 	from gi.repository import GLib
 	import os, sys, logging
@@ -31,7 +39,7 @@ if HAS_INOTIFY:
 			self.notifier = None
 			self.glibsrc = None
 		
-		def watch(self, path):
+		def watch(self, id, path):
 			""" Sets recursive watching on specified directory """
 			if self.notifier is None:
 				self.wm = pyinotify.WatchManager()
