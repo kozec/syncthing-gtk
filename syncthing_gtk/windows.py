@@ -258,7 +258,6 @@ def WinWatcher():
 			self.watched_ids = []
 			self.app = app
 			self.proc = None
-			self.log = logging.getLogger("Watcher")
 		
 		def watch(self, id, path):
 			self.watched_ids += [id]
@@ -279,19 +278,15 @@ def WinWatcher():
 					"-home", os.path.join(get_config_dir(), "syncthing"),
 					"-folders", ",".join(self.watched_ids)
 					])
-				self.proc.connect("line", self._on_output)
 				self.proc.connect("exit", self._on_exit)
 				self.proc.connect("failed", self._on_failed)
 				self.proc.start()
 		
-		def _on_output(self, proc, message):
-			self.log.info(message)
-		
 		def _on_exit(self, proc, code):
-			self.log.warning("syncthing-inotify exited with code %s" % (code,))
+			log.warning("syncthing-inotify exited with code %s" % (code,))
 		
 		def _on_failed(self, proc, error):
-			self.log.error("Failed to start syncthing-inotify: %s" % (error,))
+			log.error("Failed to start syncthing-inotify: %s" % (error,))
 			self.proc = None
 	
 	if os.path.exists(exe):

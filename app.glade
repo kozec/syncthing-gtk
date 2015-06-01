@@ -232,6 +232,18 @@
 			</object>
 		</child>
 		
+		<child if="is_windows">
+			<object class="GtkImageMenuItem" id="menu-inotify-output">
+				<property name="visible">True</property>
+				<property name="can_focus">False</property>
+				<property name="label" translatable="yes">Display Syncthing-Inotify Output</property>
+				<property name="use_underline">True</property>
+				<property name="always_show_image">True</property>
+				<property name="image">menu-inotify-image</property>
+				<property name="action-name">app.inotify_output</property>
+			</object>
+		</child>
+		
 		<child>
 			<object class="GtkSeparatorMenuItem" id="menu-separator15">
 				<property name="visible">True</property>
@@ -846,6 +858,13 @@
 	</object>
 
 	<object class="GtkImage" id="menu-daemon-output-image">
+		<property name="visible">True</property>
+		<property name="can_focus">False</property>
+		<property name="icon_size">1</property>
+		<property name="icon_name">utilities-terminal</property>
+	</object>
+
+	<object class="GtkImage" id="menu-inotify-image">
 		<property name="visible">True</property>
 		<property name="can_focus">False</property>
 		<property name="icon_size">1</property>

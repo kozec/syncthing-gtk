@@ -241,6 +241,7 @@ class App(Gtk.Application, TimerManager):
 			return action
 		add_simple_action('webui', self.cb_menu_webui)
 		add_simple_action('daemon_output', self.cb_menu_daemon_output).set_enabled(False)
+		add_simple_action('inotify_output', self.cb_menu_inotify_output)
 		add_simple_action('preferences', self.cb_menu_ui_settings)
 		add_simple_action('about', self.cb_about)
 		add_simple_action('quit', self.cb_exit)
@@ -1735,6 +1736,22 @@ class App(Gtk.Application, TimerManager):
 		if self.process != None:
 			d = DaemonOutputDialog(self, self.process)
 			d.show(self["window"])
+	
+	def cb_menu_inotify_output(self, *a):
+		# Available & called only on Windows
+		if hasattr(self.watcher, "proc") and not self.watcher.proc is None:
+			d = DaemonOutputDialog(self, self.watcher.proc)
+			d.show(self["window"], _("Syncthing-Inotify Output"))
+		else:
+			d = Gtk.MessageDialog(
+					self["window"],
+					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+					_("Syncthing-Inotify is unavailable or failed to start")
+				)
+			r = d.run()
+			d.hide()
+			d.destroy()
 	
 	def cb_statusicon_click(self, *a):
 		""" Called when user clicks on status icon """
