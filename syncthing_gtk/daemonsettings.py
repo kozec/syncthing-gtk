@@ -41,9 +41,9 @@ class DaemonSettingsDialog(EditorDialog):
 	#@Overrides
 	def set_value(self, key, value):
 		if key == "listenAddress":
-			self.values[key] = [ strip_v(x) for x in value.split(",") ]
+			self.values[key] = [ x.strip(" \t") for x in value.split(",") ]
 		elif key == "globalAnnounceServers":
-			self.values[key] = [ strip_v(x) for x in value.split(",") ]
+			self.values[key] = [ x.strip(" \t") for x in value.split(",") ]
 		elif key == "urAccepted":
 			self.values[key] = 1 if value else -1
 		elif key == "maxSendKbpsEnabled":
