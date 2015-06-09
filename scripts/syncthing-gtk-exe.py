@@ -8,6 +8,7 @@ if __name__ == "__main__":
 		# Usually
 		from syncthing_gtk.tools import get_install_path
 		path = get_install_path()
+		os.chdir(path)
 	
 	# Tell cx_Freeze that I really need this library
 	gi.require_foreign('cairo')
