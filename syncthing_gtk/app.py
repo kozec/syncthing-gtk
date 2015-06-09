@@ -891,7 +891,6 @@ class App(Gtk.Application, TimerManager):
 				device.set_status(_("Up to Date"))
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
-		print "cb_syncthing_folder_added", rid
 		box = self.show_folder(
 			rid, r["path"], r["path"],
 			r["readOnly"], r["ignorePerms"], 
