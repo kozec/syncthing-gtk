@@ -82,7 +82,7 @@ if HAS_INOTIFY:
 			if event.mask & pyinotify.IN_ISDIR != 0:
 				if event.mask & pyinotify.IN_CREATE != 0:
 					# New dir - Add watch to created dir as well
-					self.watch(event.pathname.decode("utf-8"))
+					self.watch(None, event.pathname.decode("utf-8"))
 					self._report_created(event.pathname)
 				elif event.mask & pyinotify.IN_DELETE != 0:
 					# Deleted dir - Remove watch to deleted dir
@@ -114,7 +114,7 @@ if HAS_INOTIFY:
 			return True	# Repeat until killed
 		
 		def _report_created(self, path):
-			if not enabled: return
+			if not self.enabled: return
 			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Created %s %s > %s", folder_id, path, relpath)
@@ -122,7 +122,7 @@ if HAS_INOTIFY:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_changed(self, path):
-			if not enabled: return
+			if not self.enabled: return
 			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Changed %s %s > %s", folder_id, path, relpath)
@@ -130,7 +130,7 @@ if HAS_INOTIFY:
 				self.daemon.rescan(folder_id, relpath)
 		
 		def _report_deleted(self, path):
-			if not enabled: return
+			if not self.enabled: return
 			path = path.decode("utf-8")
 			folder_id, relpath = self.app.get_folder_n_path(path)
 			log.debug("File Deleted %s %s > %s", folder_id, path, relpath)
