@@ -463,7 +463,7 @@
 		<object class="GtkImageMenuItem" id="menu-popup-override">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">Override Changes</property>
+			<property name="label" translatable="yes">Override Remote Changes</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
