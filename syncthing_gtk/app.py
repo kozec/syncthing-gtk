@@ -761,12 +761,18 @@ class App(Gtk.Application, TimerManager):
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, address):
-		address = address.split(":")[0]	# Remove port from address, it's random by default anyway
+		# Remove port from address, it's random by default anyway
+		if "[" in address:
+			# IPv6 address
+			address = address.split("]:")[0] + "]"
+		else:
+			# IPv4
+			address = address.split(":")[0]
 		if (nid, address) in self.error_messages:
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Device "<b>%s</b>" at IP "<b>%s</b> wants to connect. Add new device?"') % (nid, address)
+		markup = _('Device "<b>%s</b>" at IP "<b>%s</b>" wants to connect. Add new device?') % (nid, address)
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
