@@ -43,6 +43,7 @@ NotRunning:
 	SetOutPath $INSTDIR
 	# Install good stuff
 	File build\exe.win32-2.7\syncthing-gtk.exe
+	File build\exe.win32-2.7\syncthing-gtk-console.exe
 	File build\exe.win32-2.7\library.zip
 	File build\exe.win32-2.7\*.glade
 	File build\exe.win32-2.7\__version__

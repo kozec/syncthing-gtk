@@ -79,6 +79,13 @@ executables = [
 		targetName = "syncthing-gtk.exe",
 		base = "Win32GUI",
 		icon = "icons/st-logo-128.ico",
+	),
+	Executable(
+		"scripts/syncthing-gtk-exe.py",
+		compress = True,
+		targetName = "syncthing-gtk-console.exe",
+		base = "console",
+		icon = "icons/st-logo-128.ico",
 	)
 ]
 
