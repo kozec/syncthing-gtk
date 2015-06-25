@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from distutils.core import setup
+from setuptools.command.build_py import build_py
 from subprocess import Popen, PIPE
 import glob, os
 ICON_SIZES = (16, 24, 32, 64, 128, 256)
@@ -29,6 +30,33 @@ def get_version():
 			break
 		path = path[0:-1]
 	return version
+
+class BuildPyEx(build_py):
+	""" Little extension to install command; Allows --nostupdater argument """
+	user_options = build_py.user_options + [
+		"""
+		Note to self: use
+		# ./setup.py build_py --nostdownloader install
+		to enable this option
+		"""
+		('nostdownloader', None, 'prevents installing StDownloader module; disables autoupdate capability'),
+	]
+	
+	def run(self):
+		build_py.run(self)
+	
+	def initialize_options(self):
+		build_py.initialize_options(self)
+		self.nostdownloader = False
+	
+	def find_package_modules(self, package, package_dir):
+		rv = build_py.find_package_modules(self, package, package_dir)
+		if self.nostdownloader:
+			for i in rv:
+				if i[1] == "stdownloader":
+					rv.remove(i)
+					break
+		return rv
 
 if __name__ == "__main__" : 
 	data_files = [
@@ -60,4 +88,5 @@ if __name__ == "__main__" :
 		packages = ['syncthing_gtk'],
 		data_files = data_files,
 		scripts = [ "scripts/syncthing-gtk" ],
-)
+		cmdclass = { 'build_py': BuildPyEx },
+	)
