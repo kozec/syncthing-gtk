@@ -346,7 +346,7 @@ def get_executable():
 	if IS_WINDOWS:
 		return os.path.join(get_install_path(), "syncthing-gtk.exe")
 	else:
-		executable = __main__.__file__
+		executable = __main__.__file__.decode("utf-8")
 		if not os.path.isabs(executable):
 			executable = os.path.normpath(os.path.join(os.getcwd(), executable))
 		if executable.endswith(".py"):
