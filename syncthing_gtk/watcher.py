@@ -85,8 +85,7 @@ if HAS_INOTIFY:
 					self.watch(None, event.pathname.decode("utf-8"))
 					self._report_created(event.pathname)
 				elif event.mask & pyinotify.IN_DELETE != 0:
-					# Deleted dir - Remove watch to deleted dir
-					self.remove(event.pathname)
+					# Deleted dir
 					self._report_deleted(event.pathname)
 			elif event.mask & pyinotify.IN_CREATE != 0:
 				# New file - ignore event, 'IN_CLOSE_WRITE' is enought for my purpose
