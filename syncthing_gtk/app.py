@@ -1265,7 +1265,8 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("path",	display_path)
 		box.set_value("master",	_("Yes") if is_master else _("No"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
-		box.set_value("rescan",	"%s s" % (rescan_interval,))
+		box.set_value("rescan",	"%s s%s" % (
+			rescan_interval, " " + _("(watch)" if id in self.config["use_inotify"] else "" )))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)
