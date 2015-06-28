@@ -1219,15 +1219,18 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
-		def on_error(*a):
-			log.error(a)
-		self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
+		# Errors here are ignored; Syncthing rescans stuff periodicaly,
+		# so it's not big problem if call fails.
+		if path is None:
+			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: a, folder_id)
+		else:
+			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
 		# Errors here are non-fatal, not expected and thus ignored.
 		def on_error(*a):
-			log.error(a)
+			print a
 		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
 	
 	def request_events(self):
