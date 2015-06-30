@@ -1656,6 +1656,7 @@ class App(Gtk.Application, TimerManager):
 		path = os.path.expanduser(box["path"])
 		if IS_WINDOWS:
 			# Don't attempt anything, use Windows Explorer on Windows
+			path = path.replace("/", "\\")
 			os.system('explorer "%s"' % (path,))
 		else:
 			# Try to use any of following, known commands to
