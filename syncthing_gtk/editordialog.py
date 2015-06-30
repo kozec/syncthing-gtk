@@ -317,8 +317,12 @@ class EditorDialog(GObject.GObject):
 			value = self[x].get_text().strip()
 			if len(value) == 0:
 				# Empty value in field
-				self["btSave"].set_sensitive(False)
-				self.hide_error_message(x)
+				if self.checks[x](value):
+					# ... but empty value is OK
+					self.hide_error_message(x)
+				else:
+					self["btSave"].set_sensitive(False)
+					self.hide_error_message(x)
 			elif not self.checks[x](value):
 				# Invalid value in any field
 				self["btSave"].set_sensitive(False)

@@ -21,8 +21,9 @@ RE_FOLDER_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
 VALUES = [ "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
-	"vversionsPath", "vinotify"
+	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand"
 	]
+VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
 
 class FolderEditorDialog(EditorDialog):
 	MESSAGES = {
@@ -77,6 +78,10 @@ class FolderEditorDialog(EditorDialog):
 			return self.get_burried_value("versioning/params/keep", self.values, 0, int)
 		elif key == "maxAge":
 			return self.get_burried_value("versioning/params/maxAge", self.values, 0, int) / 86400 # seconds to days
+		elif key == "cleanoutDays":
+			return self.get_burried_value("versioning/params/cleanoutDays", self.values, 0, int)
+		elif key == "command":
+			return self.get_burried_value("versioning/params/command", self.values, "")
 		elif key == "versionsPath":
 			return self.get_burried_value("versioning/params/versionsPath", self.values, "")
 		elif key == "versioning":
@@ -96,10 +101,18 @@ class FolderEditorDialog(EditorDialog):
 			# Create structure if needed
 			self.create_dicts(self.values, ("versioning", "params", "keep"))
 			self.values["versioning"]["params"]["keep"] = str(int(value))
+		elif key == "cleanoutDays":
+			# Create structure if needed
+			self.create_dicts(self.values, ("versioning", "params", "cleanoutDays"))
+			self.values["versioning"]["params"]["cleanoutDays"] = str(int(value))
 		elif key == "maxAge":
 			# Create structure if needed
 			self.create_dicts(self.values, ("versioning", "params", "maxAge"))
 			self.values["versioning"]["params"]["maxAge"] = str(int(value) * 86400) # days to seconds
+		elif key == "command":
+			# Create structure if needed
+			self.create_dicts(self.values, ("versioning", "params", "command"))
+			self.values["versioning"]["params"]["command"] = value
 		elif key == "versionsPath":
 			# Create structure if needed
 			self.create_dicts(self.values, ("versioning", "params", "versionsPath"))
@@ -123,8 +136,9 @@ class FolderEditorDialog(EditorDialog):
 				self.values = { strip_v(x) : "" for x in VALUES }
 				self.checks = {
 					"vid" : self.check_folder_id,
-					"vpath" : self.check_path
-					}
+					"vpath" : self.check_path,
+					"vcommand" : self.check_command,
+				}
 				if self.id != None:
 					try:
 						v = [ x for x in self.config["folders"] if x["id"] == self.id ][0]
@@ -140,7 +154,9 @@ class FolderEditorDialog(EditorDialog):
 				self.set_value("keepVersions", 10)
 			else:
 				self.values = [ x for x in self.config["folders"] if x["id"] == self.id ][0]
-				self.checks = {}
+				self.checks = {
+					"vcommand" : self.check_command,
+				}
 				self["vpath"].set_sensitive(False)
 				self["btBrowse"].set_sensitive(False)
 		except KeyError, e:
@@ -179,8 +195,8 @@ class FolderEditorDialog(EditorDialog):
 			if self["rvversioning"].get_reveal_child():
 				self["rvversioning"].set_reveal_child(False)
 		else:
-			self["bxVersioningSimple"].set_visible(self.get_value("versioning") == "simple")
-			self["bxVersioningStaggered"].set_visible(self.get_value("versioning") == "staggered")
+			for x in VERSIONING_TYPES:
+				self["bxVersioning_" + x].set_visible(self.get_value("versioning") == x)
 			if not self["rvversioning"].get_reveal_child():
 				self["rvversioning"].set_reveal_child(True)
 	
@@ -222,7 +238,15 @@ class FolderEditorDialog(EditorDialog):
 				))
 			box.set_color_hex(COLOR_NEW)
 	
+	#@Overrides
+	def ui_value_changed(self, w, *a):
+		EditorDialog.ui_value_changed(self, w, *a)
+		self.cb_check_value(w, *a)
+	
 	def check_folder_id(self, value):
+		if len(value.strip()) == 0:
+			# Empty value
+			return False
 		if value in self.app.folders:
 			# Duplicate folder id
 			return False
@@ -233,7 +257,11 @@ class FolderEditorDialog(EditorDialog):
 	
 	def check_path(self, value):
 		# Any non-empty path is OK
-		return True
+		return len(value.strip()) > 0
+	
+	def check_command(self, value):
+		# Any non-empty command is OK
+		return self.get_value("versioning") != "external" or len(value.strip()) > 0
 	
 	def fill_folder_id(self, rid):
 		""" Pre-fills folder Id for new-folder dialog """
