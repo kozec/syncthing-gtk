@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from distutils.core import setup
-from setuptools.command.build_py import build_py
+from distutils.command.build_py import build_py
 from subprocess import Popen, PIPE
 import glob, os
 ICON_SIZES = (16, 24, 32, 64, 128, 256)
@@ -34,11 +34,10 @@ def get_version():
 class BuildPyEx(build_py):
 	""" Little extension to install command; Allows --nostupdater argument """
 	user_options = build_py.user_options + [
-		"""
-		Note to self: use
-		# ./setup.py build_py --nostdownloader install
-		to enable this option
-		"""
+		# Note to self: use
+		# # ./setup.py build_py --nostdownloader install
+		# to enable this option
+		#
 		('nostdownloader', None, 'prevents installing StDownloader module; disables autoupdate capability'),
 	]
 	
