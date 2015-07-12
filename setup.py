@@ -70,7 +70,7 @@ if __name__ == "__main__" :
 					'shutdown', 'show_id', 'sync', 'thumb_up',
 					'up_rate', 'version'
 			)]),
-		('share/pixmaps', glob.glob("icons/emblem-*.png") ),
+		('share/icons/hicolor/64x64/emblems', glob.glob("icons/emblem-*.png") ),
 		('share/pixmaps', ["icons/syncthing-gtk.png"]),
 		('share/applications', ['syncthing-gtk.desktop'] ),
 	] + [
