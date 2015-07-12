@@ -348,7 +348,8 @@ def get_executable():
 	else:
 		executable = __main__.__file__.decode("utf-8")
 		if not os.path.isabs(executable):
-			executable = os.path.normpath(os.path.join(os.getcwd(), executable))
+			cwd = os.getcwd().decode("utf-8")
+			executable = os.path.normpath(os.path.join(cwd, executable))
 		if executable.endswith(".py"):
 			executable = "/usr/bin/env python2 %s" % (executable,)
 		return executable
@@ -423,8 +424,8 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 				# Already exists
 				pass
 			try:
-				file(desktopfile, "w").write(DESKTOP_FILE % (
-					program_name, executable, icon, description))
+				file(desktopfile, "w").write((DESKTOP_FILE % (
+					program_name, executable, icon, description)).encode('utf-8'))
 			except Exception, e:
 				# IO errors or out of disk space... Not really
 				# expected, but may happen
