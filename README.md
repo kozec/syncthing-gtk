@@ -28,7 +28,7 @@ Dependencies:
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
 - <a href="http://syncthing.net">Syncthing</a> v0.11 or newer
 
-Optional Dependencies:  
+Optional Dependencies:
 - <a href="https://github.com/seb-m/pyinotify/wiki">pyinotify</a> for instant synchronization.
 - libnotify for desktop notifications.
 - nautilus-python, nemo-python or caja-python for filemanager integration
@@ -42,5 +42,5 @@ Packages:
 
 Related links:
 - http://syncthing.net
-- https://discourse.syncthing.net/t/syncthing-gtk-gui-for-syncthing/709
-- https://discourse.syncthing.net/t/lxle-a-respin-of-lubuntu-now-has-syncthing-included-by-default/1392
+- https://forum.syncthing.net/t/syncthing-gtk-gui-for-syncthing-now-with-inotify-support/709
+- https://forum.syncthing.net/t/lxle-a-respin-of-lubuntu-now-has-syncthing-included-by-default/1392
