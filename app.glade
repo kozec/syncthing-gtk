@@ -149,7 +149,7 @@
 			<child>
 				<object class="GtkSeparator" id="separator_the_hell">
 					<property name="visible">True</property>
-				    <property name="can_focus">False</property>
+					<property name="can_focus">False</property>
 					<property name="orientation">horizontal</property>
 				</object>
 			</child>
@@ -164,31 +164,55 @@
 				<property name="position_set">True</property>
 				<!-- Left panel -->
 				<child>
-					<object class="GtkBox" id="folderlist">
+				  <object class="GtkScrolledWindow" id="swL">
+					<property name="visible">True</property>
+					<property name="can_focus">True</property>
+					<child>
+					  <object class="GtkViewport" id="wpL">
 						<property name="visible">True</property>
 						<property name="can_focus">False</property>
-						<property name="orientation">vertical</property>
-						<property name="border_width">6</property>
-						<!-- Script adds widgets here -->
-					</object>
-					<packing>
-						<property name="resize">False</property>
-						<property name="shrink">False</property>
-					</packing>
+						  <child>
+							<object class="GtkBox" id="folderlist">
+								<property name="visible">True</property>
+								<property name="can_focus">False</property>
+								<property name="orientation">vertical</property>
+								<property name="border_width">6</property>
+								<!-- Script adds widgets here -->
+							</object>
+				 		  </child>
+					  </object>
+					</child>
+				  </object>
+				  <packing>
+					<property name="resize">False</property>
+					<property name="shrink">False</property>
+				  </packing>
 				</child>
 				<!-- Right panel -->
 				<child>
-					<object class="GtkBox" id="devicelist">
+				  <object class="GtkScrolledWindow" id="swR">
+					<property name="visible">True</property>
+					<property name="can_focus">True</property>
+					<child>
+					  <object class="GtkViewport" id="wpR">
 						<property name="visible">True</property>
 						<property name="can_focus">False</property>
-						<property name="orientation">vertical</property>
-						<property name="border_width">6</property>
-						<!-- Script adds widgets here -->
-					</object> <!-- /GtkBox -->
-					<packing>
-						<property name="resize">False</property>
-						<property name="shrink">False</property>
-					</packing>
+						<child>
+						  <object class="GtkBox" id="devicelist">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<property name="orientation">vertical</property>
+							<property name="border_width">6</property>
+							<!-- Script adds widgets here -->
+						  </object> <!-- /GtkBox -->
+						</child>
+					  </object>
+					</child>
+				  </object>
+				  <packing>
+					<property name="resize">False</property>
+					<property name="shrink">False</property>
+				  </packing>
 				</child>
 			</object>
 			<packing>
