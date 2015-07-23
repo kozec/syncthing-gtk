@@ -198,7 +198,7 @@ class IntroPage(Page):
 			"\n\n" +
 			_("It looks like you never have used Syncthing.") + " " +
 			_("Initial configuration should be created.") +  " " +
-			_("Please click <b>Continue</b> to create a Syncthing configuration file or <b>Quit</b> to exit") +
+			_("Please click <b>Next</b> to create a Syncthing configuration file or <b>Quit</b> to exit") +
 			"\n\n" +
 			(_("If you already had Syncthing daemon configured, please, "
 			  "exit this wizard and check your %s folder") % config_folder_link )
