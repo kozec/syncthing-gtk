@@ -891,7 +891,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _syncthing_cb_folder_data(self, data, rid):
 		state = data['state']
-		if len(data['invalid'].strip()) > 0:
+		if state in ('error', 'stopped'):
 			if not rid in self._stopped_folders:
 				self._stopped_folders.add(rid)
 				self.emit("folder-stopped", rid, data["invalid"])
