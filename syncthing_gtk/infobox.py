@@ -5,7 +5,8 @@ Syncthing-GTK - InfoBox
 Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, GLib, GObject, Pango
+from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
+import cairo
 from syncthing_gtk.ribar import RevealerClass
 import os, logging, math
 _ = lambda (a) : a
@@ -14,6 +15,8 @@ log = logging.getLogger("InfoBox")
 COLOR_CHANGE_TIMER	= 10	# ms
 COLOR_CHANGE_STEP	= 0.05
 HILIGHT_INTENSITY	= 0.3	# 0.0 to 1.0
+
+svg_cache = {}
 
 class InfoBox(Gtk.Container):
 	""" Expandlable widget displaying folder/device data """
@@ -421,8 +424,15 @@ class InfoBox(Gtk.Container):
 	
 	def add_value(self, key, icon, title, value="", visible=True):
 		""" Adds new line with provided properties """
-		if "." in icon:
-			# Icon is filename
+		if icon.endswith(".svg"):
+			# Icon is svg file
+			if not icon in svg_cache:
+				svg = Rsvg.Handle.new_from_file(os.path.join(self.app.iconpath, icon))
+				pixbuf = svg.get_pixbuf()
+				svg_cache[icon] = pixbuf
+			wIcon = Gtk.Image.new_from_pixbuf(svg_cache[icon])
+		elif "." in icon:
+			# Icon is other image file (png)
 			wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
 		else:
 			# Icon is theme icon name
