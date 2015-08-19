@@ -6,7 +6,6 @@ Colorfull, expandlable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
-import cairo
 from syncthing_gtk.ribar import RevealerClass
 import os, logging, math
 _ = lambda (a) : a
@@ -15,6 +14,7 @@ log = logging.getLogger("InfoBox")
 COLOR_CHANGE_TIMER	= 10	# ms
 COLOR_CHANGE_STEP	= 0.05
 HILIGHT_INTENSITY	= 0.3	# 0.0 to 1.0
+DARKEN_FACTOR		= 0.75	# 0.0 to 1.0
 
 svg_cache = {}
 
@@ -45,6 +45,7 @@ class InfoBox(Gtk.Container):
 		self.icon = icon
 		self.color = (1, 0, 1, 1)		# rgba
 		self.background = (1, 1, 1, 1)	# rgba
+		self.dark_color  = None			# Overrides background if set
 		self.text_color = (0, 0, 0, 1)	# rgba (text color)
 		self.real_color = self.color	# set color + hilight
 		self.border_width = 2
@@ -287,7 +288,11 @@ class InfoBox(Gtk.Container):
 		Called to computes actual color every time when self.color or
 		self.hilight_factor changes.
 		"""
-		self.real_color = tuple([ min(1.0, x + HILIGHT_INTENSITY * math.sin(self.hilight_factor)) for x in self.color])
+		if self.dark_color is None:
+			self.real_color = tuple([ min(1.0, x + HILIGHT_INTENSITY * math.sin(self.hilight_factor)) for x in self.color])
+		else:
+			# Darken colors when dark bacground is enabled
+			self.real_color = tuple([ min(1.0, DARKEN_FACTOR * (x + HILIGHT_INTENSITY * math.sin(self.hilight_factor))) for x in self.color])
 		gdkcol = Gdk.RGBA(*self.real_color)
 		self.header.override_background_color(Gtk.StateType.NORMAL, gdkcol)
 		try:
@@ -308,8 +313,10 @@ class InfoBox(Gtk.Container):
 	### Methods
 	def set_title(self, t):
 		self.str_title = t
+		inverted = self.header_inverted and self.dark_color is None
+		col = "black" if inverted else "white"
 		self.title.set_markup('<span color="%s" %s>%s</span>' % (
-			"black" if self.header_inverted else "white",
+			col,
 			self.app.config["infobox_style"],
 			t
 		))
@@ -393,23 +400,34 @@ class InfoBox(Gtk.Container):
 		"""
 		return (self.color == (r, g, b, a))
 	
+	def set_dark_color(self, r, g, b, a):
+		""" 
+		Overrides background color, inverts icon colors and darkens some borders
+		"""
+		# Override background
+		self.background = self.dark_color = (r, g, b, a)
+		self.set_bg_color(*self.background)
+		# Recolor existing widgets
+		self.text_color = (1, 1, 1, 1)
+		col = Gdk.RGBA(*self.text_color)
+		for key in self.value_widgets:
+			for w in self.value_widgets[key]:
+				w.override_color(Gtk.StateFlags.NORMAL, col)
+		# Recolor borders
+		self.recolor()
+		# Recolor header
+		self.set_title(self.str_title)
+	
 	def set_bg_color(self, r, g, b, a):
 		""" Expects floats """
-		self.background = (r, g, b, a)
+		if self.dark_color == None:
+			self.background = (r, g, b, a)
 		col = Gdk.RGBA(r, g, b, a)
 		for key in self.value_widgets:
 			for w in self.value_widgets[key ]:
 				w.override_background_color(Gtk.StateFlags.NORMAL, col)
 		self.eb.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(*self.background))
 		self.grid.override_background_color(Gtk.StateType.NORMAL, col)
-	
-	def set_text_color(self, r, g, b, a):
-		""" Expects floats """
-		self.text_color = (r, g, b, a)
-		col = Gdk.RGBA(r, g, b, a)
-		for key in self.value_widgets:
-			for w in self.value_widgets[key ]:
-				w.override_color(Gtk.StateFlags.NORMAL, col)
 	
 	def set_border(self, width):
 		self.border_width = width

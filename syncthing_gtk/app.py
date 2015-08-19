@@ -92,8 +92,7 @@ class App(Gtk.Application, TimerManager):
 		self.connect_dialog = None
 		# Used when upgrading from incompatibile version
 		self.restart_after_update = None
-		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
-		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
+		self.dark_color = None			# RGBA. None by default, changes with dark themes
 		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
 		self.send_limit = -1			# -//-
 		self.ur_question_shown = False	# Used to prevent showing 'Do you wan't usage reporting'
@@ -790,7 +789,6 @@ class App(Gtk.Application, TimerManager):
 			self["devicelist"].reorder_child(device, 0)
 			# Modify header & color
 			device.set_status("")
-			device.get_icon().set_color(*self.box_text_color)
 			device.invert_header(True)
 			device.set_color_hex(COLOR_OWN_DEVICE)
 			if self.use_headerbar:
@@ -1247,9 +1245,9 @@ class App(Gtk.Application, TimerManager):
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 			# Setup display & signal
 			box.set_status("Unknown")
+			if not self.dark_color is None:
+				box.set_dark_color(*self.dark_color)
 			box.set_color_hex(COLOR_FOLDER)
-			box.set_bg_color(*self.box_background)
-			box.set_text_color(*self.box_text_color)
 			box.set_vexpand(False)
 			GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
 			self["folderlist"].pack_start(box, False, False, 3)
@@ -1304,9 +1302,9 @@ class App(Gtk.Application, TimerManager):
 			box.add_hidden_value("time", 0)
 			box.add_hidden_value("online", False)
 			# Setup display & signal
+			if not self.dark_color is None:
+				box.set_dark_color(*self.dark_color)
 			box.set_color_hex(COLOR_DEVICE)
-			box.set_bg_color(*self.box_background)
-			box.set_text_color(*self.box_text_color)
 			box.set_vexpand(False)
 			box.set_open(id in self.open_boxes)
 			box.get_icon().set_size_request(22, 22)
@@ -1533,16 +1531,14 @@ class App(Gtk.Application, TimerManager):
 		light_color = False
 		for c in list(color)[0:3]:
 			if c > 0.75: light_color = True
-		"""
-		# Black background will clash with black icons, so this one is no-go for now
 		if not light_color:
-			self.box_background = (color.red, color.green, color.blue, 1.0)
+			# Set dark color based on current window background
+			self.dark_color = (color.red, color.green, color.blue, 1.0)
+			# Recolor all boxes
 			for box in self.folders.values():
-				box.set_bg_color(self.box_background)
-			self.box_text_color = (1,1,1,1)
+				box.set_dark_color(*self.dark_color)
 			for box in self.devices.values():
-				box.set_bg_color(self.box_text_color)
-		"""
+				box.set_dark_color(*self.dark_color)
 	
 	def cb_box_mouse_enter(self, box, *a):
 		self.hilight([box])
