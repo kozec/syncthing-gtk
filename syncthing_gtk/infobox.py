@@ -38,6 +38,7 @@ class InfoBox(Gtk.Container):
 		self.str_status = None
 		self.header_inverted = False
 		self.values = {}
+		self.icons = {}
 		self.value_widgets = {}
 		self.hilight = False
 		self.hilight_factor = 0.0
@@ -412,7 +413,20 @@ class InfoBox(Gtk.Container):
 		col = Gdk.RGBA(*self.text_color)
 		for key in self.value_widgets:
 			for w in self.value_widgets[key]:
-				w.override_color(Gtk.StateFlags.NORMAL, col)
+				if isinstance(w, Gtk.Image):
+					la = self.grid.child_get_property(w, "left-attach")
+					ta = self.grid.child_get_property(w, "top-attach")
+					vis = not w.get_no_show_all()
+					wIcon = self._prepare_icon(self.icons[key])
+					w.get_parent().remove(w)
+					self.grid.attach(wIcon, la, ta, 1, 1)
+					if not vis:
+						wIcon.set_no_show_all(True)
+						wIcon.set_visible(False)
+					wValue, trash, wTitle = self.value_widgets[key]
+					self.value_widgets[key] = (wValue, wIcon, wTitle)
+				else:
+					w.override_color(Gtk.StateFlags.NORMAL, col)
 		# Recolor borders
 		self.recolor()
 		# Recolor header
@@ -440,24 +454,36 @@ class InfoBox(Gtk.Container):
 		""" Returns True if box is open """
 		return self.rev.get_reveal_child()
 	
-	def add_value(self, key, icon, title, value="", visible=True):
-		""" Adds new line with provided properties """
+	def _prepare_icon(self, icon):
 		if icon.endswith(".svg"):
 			# Icon is svg file
-			if not icon in svg_cache:
-				svg = Rsvg.Handle.new_from_file(os.path.join(self.app.iconpath, icon))
+			key = icon if self.dark_color is None else icon + "-dark"
+			if not key in svg_cache:
+				if not self.dark_color is None:
+					# Recolor svg for dark theme
+					svg_source = file(os.path.join(self.app.iconpath, icon), "r").read()
+					svg_source = svg_source.replace('fill:rgb(0%,0%,0%)', 'fill:rgb(100%,100%,100%)')
+					svg = Rsvg.Handle.new_from_data(svg_source.encode("utf-8"))
+				else:
+					# Load svg directly
+					svg = Rsvg.Handle.new_from_file(os.path.join(self.app.iconpath, icon))
 				pixbuf = svg.get_pixbuf()
-				svg_cache[icon] = pixbuf
-			wIcon = Gtk.Image.new_from_pixbuf(svg_cache[icon])
+				svg_cache[key] = pixbuf
+			return Gtk.Image.new_from_pixbuf(svg_cache[key])
 		elif "." in icon:
 			# Icon is other image file (png)
-			wIcon = Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
+			return Gtk.Image.new_from_file(os.path.join(self.app.iconpath, icon))
 		else:
 			# Icon is theme icon name
-			wIcon = Gtk.Image.new_from_icon_name(icon, 1)
+			return Gtk.Image.new_from_icon_name(icon, 1)
+	
+	def add_value(self, key, icon, title, value="", visible=True):
+		""" Adds new line with provided properties """
+		wIcon = self._prepare_icon(icon)
 		wTitle, wValue = Gtk.Label(), Gtk.Label()
 		self.value_widgets[key] = (wValue, wIcon, wTitle)
 		self.set_value(key, value)
+		self.icons[key] = icon
 		wTitle.set_text(title)
 		wTitle.set_alignment(0.0, 0.5)
 		wValue.set_alignment(1.0, 0.5)
