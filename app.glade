@@ -857,7 +857,7 @@
 		<property name="visible">True</property>
 		<property name="can_focus">False</property>
 		<property name="icon_size">1</property>
-		<property name="pixbuf">icons/show_id.png</property>
+		<property name="pixbuf">icons/show_id.svg</property>
 	</object>
 
 	<object class="GtkImage" id="menu-shutdown-image">
@@ -909,7 +909,7 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
-	<property name="pixbuf">icons/show_id.png</property>
+	<property name="pixbuf">icons/show_id.svg</property>
 </object>
 
 <object class="GtkImage" id="menu-si-shutdown-image">
@@ -960,14 +960,14 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
-	<property name="pixbuf">icons/eye.png</property>
+	<property name="pixbuf">icons/eye.svg</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-show-id-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
-	<property name="pixbuf">icons/show_id.png</property>
+	<property name="pixbuf">icons/show_id.svg</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-override-image">
