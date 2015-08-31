@@ -289,9 +289,10 @@ class Daemon(GObject.GObject, TimerManager):
 		self._last_error_time = None # Time is taken for first event
 		# last_id is id of last event recieved from daemon
 		self._last_id = 0
-		# Epoch is incereased when reconnect() method is called; It is
+		# Epoch is increased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
 		self._epoch = 1
+		self._instance_id = None
 		self._my_id = None
 		self._read_config()
 	
@@ -853,6 +854,18 @@ class Daemon(GObject.GObject, TimerManager):
 		if "extAnnounceOK" in data:
 			announce = data["extAnnounceOK"]
 		
+		if "startTime" in data:
+			if self._instance_id is None:
+				self._instance_id = data["startTime"]
+			else:
+				if self._instance_id != data["startTime"]:
+					log.warning("Daemon instance was replaced unexpedtedly. Disconnecting from daemon.")
+					if self._connected:
+						self._connected = False
+						self.emit("disconnected", Daemon.UNEXPECTED, "Daemon instance replaced")
+					self.cancel_all()
+					return
+		
 		self.emit('system-data-updated',
 			data["sys"], float(data["cpuPercent"]),
 			announce)
@@ -1088,6 +1101,7 @@ class Daemon(GObject.GObject, TimerManager):
 		Works like reconnect(), but without reconnecting.
 		"""
 		self._my_id = None
+		self._instance_id = None
 		self._connected = False
 		self._syncing_folders = set()
 		self._stopped_folders = set()
