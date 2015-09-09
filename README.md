@@ -22,7 +22,8 @@ Additional features:
 
 Dependencies:
 - python 2.7, GTK 3.8 or newer and [PyGObject](https://live.gnome.org/PyGObject)
-- [python-gi-cairo](https://packages.debian.org/jessie/python-gi-cairo) on debian based distros (included in PyGObject elsewhere)
+- [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo) on debian based distros (included in PyGObject elsewhere)
+- [gir1.2-rsvg-2.0](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
 - [setuptools](https://pypi.python.org/pypi/setuptools)
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
