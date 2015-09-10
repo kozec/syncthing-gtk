@@ -583,6 +583,16 @@ class App(Gtk.Application, TimerManager):
 		self["menu-si-show-id"].set_sensitive(True)
 		self["menu-si-recvlimit"].set_sensitive(True)
 		self["menu-si-sendlimit"].set_sensitive(True)
+		if IS_WINDOWS and not self.use_headerbar:
+			# Stupid way to reconfigure window content and keep windows
+			# decorations visible on Windows
+			r = RIBar(
+				_("Connected to Syncthing daemon"),
+				Gtk.MessageType.INFO
+				)
+			self.show_info_box(r)
+			self.cb_infobar_close(r)
+			
 	
 	def cb_syncthing_disconnected(self, daemon, reason, message):
 		# if reason == Daemon.UNEXPECTED
