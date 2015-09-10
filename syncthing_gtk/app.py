@@ -119,7 +119,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def do_local_options(self, trash, lo):
 		self.parse_local_options(lo.contains)
-		return 0
+		return -1
 	
 	def parse_local_options(self, is_option):
 		""" Test for expected options using specified method """
