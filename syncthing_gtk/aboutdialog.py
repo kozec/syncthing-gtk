@@ -43,8 +43,9 @@ class AboutDialog(object):
 				vfile = file(os.path.join(get_install_path(), "__version__"), "r")
 				app_ver = vfile.read().strip(" \t\r\n")
 			else:
-				import pkg_resources
-				app_ver = pkg_resources.require("syncthing-gtk")[0].version
+				import pkg_resources, syncthing_gtk
+				if syncthing_gtk.__file__.startswith(pkg_resources.require("syncthing-gtk")[0].location):
+					app_ver = pkg_resources.require("syncthing-gtk")[0].version
 		except:
 			# pkg_resources is not available or __version__ file missing
 			# There is no reason to crash on this.
