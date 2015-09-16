@@ -79,29 +79,20 @@ if HAS_INOTIFY:
 		
 		def _process(self, event):
 			""" Inotify event callback """
-			if event.mask & pyinotify.IN_ISDIR != 0:
-				if event.mask & pyinotify.IN_CREATE != 0:
+			if event.mask & (pyinotify.IN_CREATE | pyinotify.IN_MOVED_TO) != 0:
+				if event.mask & pyinotify.IN_ISDIR != 0:
 					# New dir - Add watch to created dir as well
 					self.watch(None, event.pathname.decode("utf-8"))
 					self._report_created(event.pathname)
-				elif event.mask & pyinotify.IN_DELETE != 0:
-					# Deleted dir
-					self._report_deleted(event.pathname)
-			elif event.mask & pyinotify.IN_CREATE != 0:
-				# New file - ignore event, 'IN_CLOSE_WRITE' is enought for my purpose
-				return
+				else:
+					# New file
+					self._report_changed(event.pathname)
 			elif event.mask & pyinotify.IN_CLOSE_WRITE != 0:
 				# Changed file
 				self._report_changed(event.pathname)
-			elif event.mask & pyinotify.IN_DELETE != 0:
-				# Deleted file
+			elif event.mask & (pyinotify.IN_DELETE | pyinotify.IN_MOVED_FROM) != 0:
+				# Deleted file or directory
 				self._report_deleted(event.pathname)
-			elif event.mask & pyinotify.IN_MOVED_FROM != 0:
-				# Moved out = deleted
-				self._report_deleted(event.pathname)
-			elif event.mask & pyinotify.IN_MOVED_TO != 0:
-				# Moved in = created
-				self._report_created(event.pathname)
 		
 		def _process_events(self):
 			""" Called from GLib.idle_add """
