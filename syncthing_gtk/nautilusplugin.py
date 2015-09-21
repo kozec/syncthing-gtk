@@ -236,9 +236,12 @@ def build_class(plugin_module):
 		
 		### InfoProvider stuff
 		def update_file_info(self, file):
+			# TODO: This remembers every file user ever saw in Nautilus.
+			# There *has* to be memory effecient alternative...
+			path = self._get_path(file)
+			self.files[path] = file
 			if not self.ready: return plugin_module.OperationResult.COMPLETE
 			# Check if folder is one of repositories managed by syncthing
-			path = self._get_path(file)
 			if path in self.downloads:
 				file.add_emblem("syncthing-active")
 			elif path in self.repos:
@@ -266,9 +269,6 @@ def build_class(plugin_module):
 				else:
 					# Default (i-have-no-idea-what-happened) state
 					file.add_emblem("syncthing-offline")
-			# TODO: This remembers every file user ever saw in Nautilus.
-			# There *has* to be memory effecient alternative...
-			self.files[path] = file
 			return plugin_module.OperationResult.COMPLETE
 		
 		### MenuProvider stuff
