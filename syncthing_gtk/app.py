@@ -346,6 +346,8 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("last-seen-changed", self.cb_syncthing_last_seen_changed)
 		self.daemon.connect("device-connected", self.cb_syncthing_device_state_changed, True)
 		self.daemon.connect("device-disconnected", self.cb_syncthing_device_state_changed, False)
+		self.daemon.connect("device-paused", self.cb_syncthing_device_paused_resumed, True)
+		self.daemon.connect("device-resumed", self.cb_syncthing_device_paused_resumed, False)
 		self.daemon.connect("device-sync-started", self.cb_syncthing_device_sync_progress)
 		self.daemon.connect("device-sync-progress", self.cb_syncthing_device_sync_progress)
 		self.daemon.connect("device-sync-finished", self.cb_syncthing_device_sync_progress, 1.0)
@@ -870,6 +872,19 @@ class App(Gtk.Application, TimerManager):
 			else:
 				dtf = dt.strftime("%Y-%m-%d %H:%M")
 				device['last-seen'] = str(dtf)
+	
+	def cb_syncthing_device_paused_resumed(self, daemon, nid, paused):
+		if nid in self.devices:	# Should be always
+			device = self.devices[nid]
+			device.set_status(_("Paused") if paused else _("Disconnected"))
+			device.set_color_hex(COLOR_DEVICE_OFFLINE)
+			device["online"] = False
+			device["connected"] = False
+			# Update visible values
+			device.hide_values("sync", "inbps", "outbps", "version")
+			device.show_values("last-seen")
+		self.update_folders()
+		self.set_status(True)
 	
 	def cb_syncthing_device_state_changed(self, daemon, nid, connected):
 		if nid in self.devices:	# Should be always

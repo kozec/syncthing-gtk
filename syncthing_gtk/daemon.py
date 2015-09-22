@@ -129,6 +129,14 @@ class Daemon(GObject.GObject, TimerManager):
 				id:			id of device
 				last_seen:	datetime object or None, if device was never seen
 		
+		device-paused (id):
+			Emited when synchronization with device is paused
+				id:		id of folder
+		
+		device-resumed (id):
+			Emited when synchronization with device is resumed
+				id:		id of folder
+		
 		device-sync-started (id, progress):
 			Emited after device synchronization is started
 				id:			id of folder
@@ -228,6 +236,8 @@ class Daemon(GObject.GObject, TimerManager):
 			b"device-discovered"	: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
 			b"device-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, object, object)),
 			b"last-seen-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"device-paused"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"device-resumed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"device-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"device-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -787,11 +797,16 @@ class Daemon(GObject.GObject, TimerManager):
 					if cons[id][key] != "":							# Happens for 'total'
 						device_data[key] = cons[id][key]
 			
-			# Send "device-connected" signal, if device was disconnected until now
-			if cons[id]["connected"]:
-				if not device_data["connected"] and nid != self._my_id:
-					device_data["connected"] = True
-					self.emit("device-connected", nid)
+			if cons[id]["paused"]:
+				# Send "device-paused" signal if device needed
+				device_data["connected"] = False
+				self.emit("device-paused", nid)
+			else:
+				# Send "device-connected" signal, if device was disconnected until now
+				if cons[id]["connected"]:
+					if not device_data["connected"] and nid != self._my_id:
+						device_data["connected"] = True
+						self.emit("device-connected", nid)
 			# Send "device-data-changed" signal
 			self.emit("device-data-changed", nid, 
 				device_data["address"],
@@ -1028,13 +1043,19 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["id"]
 			self.emit("device-connected", nid)
 		elif eType == "DeviceDisconnected":
-			nid = e["data"]["id"]
-			self.emit("device-disconnected", nid)
-			self._request_last_seen()
+			   nid = e["data"]["id"]
+			   self.emit("device-disconnected", nid)
 		elif eType == "DeviceDiscovered":
 			nid = e["data"]["device"]
 			addresses = e["data"]["addrs"]
 			self.emit("device-discovered", nid, addresses)
+		elif eType == "DevicePaused":
+			nid = e["data"]["device"]
+			self.emit("device-paused", nid)
+		elif eType == "DeviceResumed":
+			nid = e["data"]["device"]
+			self.emit("device-resumed", nid)
+			self._request_last_seen()
 		elif eType == "FolderRejected":
 			nid = e["data"]["device"]
 			rid = e["data"]["folder"]
