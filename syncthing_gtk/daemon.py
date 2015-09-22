@@ -168,6 +168,11 @@ class Daemon(GObject.GObject, TimerManager):
 			daemon needs to be restarted
 				id:		id of folder
 		
+		folder-scan-progress (id, progress):
+			Emited repeatedly while folder is being scanned
+				id:			id of folder
+				progress:	scan progress (0.0 to 1.0)
+		
 		folder-sync-progress (id, progress):
 			Emited repeatedly while folder is being synchronized
 				id:			id of folder
@@ -244,12 +249,12 @@ class Daemon(GObject.GObject, TimerManager):
 			b"folder-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"folder-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"folder-data-failed"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"folder-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-			b"folder-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"folder-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"folder-stopped"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
@@ -1020,9 +1025,7 @@ class Daemon(GObject.GObject, TimerManager):
 					self.emit("folder-sync-started", rid)
 		elif state == "scanning":
 			if not rid in self._stopped_folders:
-				if rid in self._scanning_folders:
-					self.emit("folder-scan-progress", rid)
-				else:
+				if not rid in self._scanning_folders:
 					self._scanning_folders.add(rid)
 					self.emit("folder-scan-started", rid)
 	
@@ -1064,6 +1067,13 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["device"]
 			address = e["data"]["address"]
 			self.emit("device-rejected", nid, address)
+		elif eType == "FolderScanProgress":
+			rid = e["data"]["folder"]
+			total = float(e["data"]["total"])
+			if total > 0:
+				# ^^ just in case
+				status = float(e["data"]["current"]) / total
+				self.emit("folder-scan-progress", rid, status)
 		elif eType == "ItemStarted":
 			rid = e["data"]["folder"]
 			filename = e["data"]["item"]

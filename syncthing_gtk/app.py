@@ -358,6 +358,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
 		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_up_to_date)
 		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
+		self.daemon.connect("folder-scan-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SCANNING, _("Scanning"))
 		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_up_to_date)
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
