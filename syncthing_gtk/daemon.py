@@ -1092,11 +1092,8 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("item-updated", rid, filename, mtime)
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
-		elif eType == "ItemFinished":
-			# Not handled (yet?)
-			pass
-		elif eType == "DownloadProgress":
-			# Not handled (yet?)
+		elif eType in ("ItemFinished", "DownloadProgress", "RelayStateChanged"):
+			# Not handled
 			pass
 		else:
 			log.warning("Unhandled event type: %s", e)
