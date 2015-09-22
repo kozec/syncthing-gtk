@@ -594,6 +594,29 @@
 		</object>
 	</child>
 	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-pause-device">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">gtk-media-pause</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_pause_device" swapped="no"/>
+		</object>
+	</child>
+	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-resume-device">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Resume</property>
+			<property name="image">menu-popup-resume-image</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<signal name="activate" handler="cb_menu_popup_resume_device" swapped="no"/>
+		</object>
+	</child>
+	<child>
 		<object class="GtkImageMenuItem" id="menu-popup-delete-device">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -987,6 +1010,13 @@
 	<property name="can_focus">False</property>
 	<property name="icon-name">folder-open</property>
 </object>
+
+<object class="GtkImage" id="menu-popup-resume-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon-name">gtk-media-play</property>
+</object>
+
 <!-- /Popup menu icon images -->
 
 </interface>

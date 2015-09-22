@@ -1643,6 +1643,8 @@ class App(Gtk.Application, TimerManager):
 		b = box["id"] != self.daemon.get_my_id()
 		self["menu-popup-edit-device"].set_visible(b)
 		self["menu-popup-delete-device"].set_visible(b)
+		self["menu-popup-pause-device"].set_visible(box.get_status() != _("Paused"))
+		self["menu-popup-resume-device"].set_visible(box.get_status() == _("Paused"))
 		self["popup-menu-device"].popup(None, None, None, None, button, time)
 	
 	def cb_menu_popup(self, source, menu):
@@ -1704,8 +1706,15 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_popup_delete_device(self, *a):
 		""" Handler for other 'edit' context menu item """
-		# Editing device
 		self.check_delete("device", self.rightclick_box["id"], self.rightclick_box.get_title())
+	
+	def cb_menu_popup_pause_device(self, *a):
+		""" Handler for 'resume device' context menu item """
+		self.daemon.pause(self.rightclick_box["id"])
+	
+	def cb_menu_popup_resume_device(self, *a):
+		""" Handler for 'resume device' context menu item """
+		self.daemon.resume(self.rightclick_box["id"])
 	
 	def check_delete(self, mode, id, name):
 		"""

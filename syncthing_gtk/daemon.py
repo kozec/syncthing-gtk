@@ -1254,21 +1254,27 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns True if daemon is known to be alive """
 		return self._connected
 	
-	def rescan(self, folder_id, path=None):
-		""" Asks daemon to rescan entire folder or specified path """
+	def pause(self, device_id):
+		""" Pauses synchronization with specified device """
+		self._rest_post("system/pause?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
+	
+	def resume(self, device_id):
+		""" Resumes synchronization with specified device """
 		def on_error(*a):
 			log.error(a)
+		self._rest_post("system/resume?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
+	
+	def rescan(self, folder_id, path=None):
+		""" Asks daemon to rescan entire folder or specified path """
 		if path is None:
-			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
+			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 		else:
 			path_enc = urllib.quote(path.encode('utf-8'), ''.encode('utf-8'))
 			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, on_error, folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
-		def on_error(*a):
-			log.error(a)
-		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
+		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def request_events(self):
 		"""
