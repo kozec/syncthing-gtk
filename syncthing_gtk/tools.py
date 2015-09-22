@@ -213,6 +213,16 @@ def init_logging():
 	def verbose(self, msg, *args, **kwargs):
 		return self.log(15, msg, *args, **kwargs)
 	logging.Logger.verbose = verbose
+	# Wrap Logger._log in something that can handle utf-8 exceptions
+	old_log = logging.Logger._log
+	def _log(self, level, msg, args, exc_info=None, extra=None):
+		args = tuple([
+			(c if type(c) is unicode else str(c).decode("utf-8"))
+			for c in args
+		])
+		msg = msg if type(msg) is unicode else str(msg).decode("utf-8")
+		old_log(self, level, msg, args, exc_info, extra)
+	logging.Logger._log = _log
 
 def set_logging_level(verbose, debug):
 	""" Sets logging level """

@@ -16,7 +16,14 @@ if __name__ == "__main__":
 	from syncthing_gtk.tools import init_logging
 	init_logging()
 	
-	from syncthing_gtk import windows
+	from syncthing_gtk import windows, Configuration
+	
+	# Force dark theme if reqested
+	config = Configuration()
+	if config["force_dark_theme"]:
+	os.environ["GTK_THEME"] = "Adwaita:dark"
+	
+	# Fix various windows-only problems
 	windows.fix_localized_system_error_messages()
 	windows.dont_use_localization_in_gtk()
 	windows.override_menu_borders()

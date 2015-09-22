@@ -17,9 +17,10 @@ log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
-		"vdaemon_priority", "vfolder_as_path", "vnotification_for_update",
-		"vnotification_for_folder", "vnotification_for_error",
-		"vst_autoupdate", "vsyncthing_binary", "vmax_cpus",
+		"vforce_dark_theme", "vdaemon_priority", "vfolder_as_path",
+		"vnotification_for_update", "vnotification_for_folder",
+		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
+		"vmax_cpus",
 	]
 
 # Values for filemanager integration. Key is ID of checkbox widget
@@ -86,6 +87,7 @@ class UISettingsDialog(EditorDialog):
 			self["rbOnExitLeave"].set_sensitive(False)
 			self["rbOnExitAsk"].set_sensitive(False)
 			self["rbOnExitTerminate"].set_active(True)
+			self["vforce_dark_theme"].set_visible(True)
 		# Check for filemanager python bindings current state of plugins
 		status = []
 		for widget_id in FM_DATA:

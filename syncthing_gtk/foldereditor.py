@@ -118,13 +118,17 @@ class FolderEditorDialog(EditorDialog):
 			self.create_dicts(self.values, ("versioning", "params", "versionsPath"))
 			self.values["versioning"]["params"]["versionsPath"] = value
 		elif key == "inotify":
+			id = self.id
+			if id is None:
+				# Happens when saving new folder
+				id = self["vid"].get_text().strip()
 			l = self.app.config["use_inotify"]
 			if value:
-				if not self.id in l:
-					l.append(self.id)
+				if not id in l:
+					l.append(id)
 			else:
-				while self.id in l:
-					l.remove(self.id)
+				while id in l:
+					l.remove(id)
 			self.app.config["use_inotify"] = l
 		else:
 			EditorDialog.set_value(self, key, value)
