@@ -642,7 +642,7 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process and not StDownloader is None:
+		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process is None and not StDownloader is None:
 			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
 			# Try to update.
 			from configuration import LONG_AGO
