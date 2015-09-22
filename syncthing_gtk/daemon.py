@@ -20,7 +20,7 @@ import json, os, sys, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
-MIN_VERSION = "0.11"
+MIN_VERSION = "0.12"
 
 # Random constant used as key when adding headers to returned data in
 # REST requests; Anything goes, as long as it isn't string
