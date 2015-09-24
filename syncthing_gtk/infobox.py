@@ -414,8 +414,8 @@ class InfoBox(Gtk.Container):
 		for key in self.value_widgets:
 			for w in self.value_widgets[key]:
 				if isinstance(w, Gtk.Image):
-					la = self.grid.child_get_property(w, "left-attach")
-					ta = self.grid.child_get_property(w, "top-attach")
+					la = self.grid.child_get_property(w, "left-attach", None)
+					ta = self.grid.child_get_property(w, "top-attach", None)
 					vis = not w.get_no_show_all()
 					wIcon = self._prepare_icon(self.icons[key])
 					w.get_parent().remove(w)
