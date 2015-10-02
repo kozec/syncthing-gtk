@@ -111,7 +111,7 @@ setup(
 	name = "Syncthing GTK",
 	author = "Kozec",
 	version = get_version(),
-	description = "Windows port of Sycnthing GTK",
+	description = "Windows port of Syncthing GTK",
 	options = dict(
 		build_exe = dict(
 			compressed = False,
