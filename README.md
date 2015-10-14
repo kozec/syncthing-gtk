@@ -22,8 +22,7 @@ Additional features:
 
 Dependencies:
 - python 2.7, GTK 3.8 or newer and [PyGObject](https://live.gnome.org/PyGObject)
-- [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo) on debian based distros (included in PyGObject elsewhere)
-- [gir1.2-rsvg-2.0](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
+- [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo) and [gir1.2-rsvg-2.0](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
 - [setuptools](https://pypi.python.org/pypi/setuptools)
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
@@ -36,8 +35,9 @@ Optional Dependencies:
 
 Packages:
 - Ubuntu (deb-based distros): in [Web Upd8 PPA](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/) (thanks!) or [DEBs](http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/)
-- SUSE, Fedora (rpm-based distros): in [OpenSUSE Build Service](http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk). You can install [Syncthing Package](http://software.opensuse.org/package/syncthing) first.
 - Arch Linux: In [[community] repository](https://www.archlinux.org/packages/community/any/syncthing-gtk/)
+- Fedora: [in decathorpe's copr repository](https://copr.fedoraproject.org/coprs/decathorpe/syncthing/)
+- SUSE (and other rpm-based distros): in [OpenSUSE Build Service](http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk).
 - Windows: Get [latest installer from here](https://github.com/kozec/syncthing-gui/releases/latest), or use [the Chocolatey package](https://chocolatey.org/packages/syncthing-gtk).
 - Or, in worst case scenario, download [latest tarball](https://github.com/kozec/syncthing-gui/releases/latest), extract it and run syncthing-gtk.py.
 
