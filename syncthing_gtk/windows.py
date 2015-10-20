@@ -148,9 +148,9 @@ class WinPopenReader:
 			return self._data
 
 def WinConfiguration():
-	from syncthing_gtk.configuration import _Configuration as Configuration
+	from syncthing_gtk.configuration import _Configuration
 	from syncthing_gtk.configuration import serializer
-	class _WinConfiguration(Configuration):
+	class _WinConfiguration(_Configuration):
 		"""
 		Configuration implementation for Windows - stores values
 		in registry
