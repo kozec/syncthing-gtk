@@ -158,28 +158,6 @@ def WinConfiguration():
 		
 		#@ Overrides
 		def load(self):
-			if os.path.exists(self.get_config_file()):
-				# Copy file-based cofiguration to registry and remove
-				# configuration folder
-				#
-				# TODO: Remove this later
-				log.info("Converting old configuration to registry...")
-				Configuration.load(self)
-				self.convert_values()
-				self.check_values()
-				self.save()
-				try:
-					os.unlink(self.get_config_file())
-					try:
-						os.rmdir(self.get_config_dir())
-					except Exception, e:
-						# May happen, no problem here
-						pass
-				except Exception, e:
-					# Shouldn't happen, report problem here
-					log.warning("Failed to remove old config file")
-					log.warning(e)
-				return
 			self.values = {}
 			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
 			for key in Configuration.REQUIRED_KEYS:
