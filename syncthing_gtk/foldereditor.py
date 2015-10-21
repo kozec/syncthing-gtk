@@ -15,8 +15,6 @@ _ = lambda (a) : a
 log = logging.getLogger("FolderEditor")
 
 COLOR_NEW				= "#A0A0A0"
-# Regexp to check if folder id is valid
-RE_FOLDER_ID = re.compile("^([a-zA-Z0-9\-\._]{1,64})$")
 # Regexp to generate folder id from filename
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
 VALUES = [ "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
@@ -253,9 +251,6 @@ class FolderEditorDialog(EditorDialog):
 			return False
 		if value in self.app.folders:
 			# Duplicate folder id
-			return False
-		if RE_FOLDER_ID.match(value) is None:
-			# Invalid string
 			return False
 		return True
 	
