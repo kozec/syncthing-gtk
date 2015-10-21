@@ -21,7 +21,7 @@ if __name__ == "__main__":
 	# Force dark theme if reqested
 	config = Configuration()
 	if config["force_dark_theme"]:
-	os.environ["GTK_THEME"] = "Adwaita:dark"
+		os.environ["GTK_THEME"] = "Adwaita:dark"
 	
 	# Fix various windows-only problems
 	windows.fix_localized_system_error_messages()
