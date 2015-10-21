@@ -751,11 +751,12 @@ class Daemon(GObject.GObject, TimerManager):
 		self.timer("event", self._refresh_interval, self._request_events)
 	
 	def _syncthing_cb_errors(self, errors):
-		for e in errors["errors"]:
-			t = parsetime(e["time"])
-			if t > self._last_error_time:
-				self.emit("error", e["error"])
-				self._last_error_time = t
+		if errors["errors"] is not None:
+			for e in errors["errors"]:
+				t = parsetime(e["time"])
+				if t > self._last_error_time:
+					self.emit("error", e["error"])
+					self._last_error_time = t
 		self.timer("errors", self._refresh_interval * 5, self._rest_request, "system/error", self._syncthing_cb_errors)
 	
 	def _syncthing_cb_events_error(self, exception, command):
