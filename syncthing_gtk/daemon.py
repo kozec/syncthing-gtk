@@ -929,7 +929,8 @@ class Daemon(GObject.GObject, TimerManager):
 		if state in ('error', 'stopped'):
 			if not rid in self._stopped_folders:
 				self._stopped_folders.add(rid)
-				self.emit("folder-stopped", rid, data["invalid"])
+				reason = data["invalid"] or data["error"]
+				self.emit("folder-stopped", rid, reason)
 		self.emit('folder-data-changed', rid, data)
 		p = 0.0
 		if state == "syncing":
