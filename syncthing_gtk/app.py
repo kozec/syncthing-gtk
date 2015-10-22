@@ -1905,6 +1905,7 @@ class App(Gtk.Application, TimerManager):
 			self.quit()
 	
 	def cb_daemon_exit(self, proc, error_code):
+		print "cb_daemon_exit", proc, self.process
 		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
@@ -1942,6 +1943,6 @@ class App(Gtk.Application, TimerManager):
 		r = d.run()
 		d.destroy()
 		if r == FindDaemonDialog.RESPONSE_SAVED:
-			self.cb_daemon_exit(None, -1)
+			self.cb_daemon_exit(self.process, -1)
 		else:
 			self.quit()
