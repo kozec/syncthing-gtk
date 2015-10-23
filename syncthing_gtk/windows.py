@@ -11,6 +11,7 @@ from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
 from gi.repository import Gio, GLib, GObject, Gtk, Gdk
 import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 import win32process
+from win32com.shell import shell, shellcon
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
@@ -84,6 +85,9 @@ def override_menu_borders():
 		style_provider,     
 		Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
 	)
+
+def get_unicode_home():
+	return shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA, None, 0)
 
 class WinPopenReader:
 	"""
