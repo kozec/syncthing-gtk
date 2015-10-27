@@ -37,6 +37,7 @@ SI_FRAMES				= 12 # Number of animation frames for status icon
 RESPONSE_RESTART		= 256
 RESPONSE_FIX_FOLDER_ID	= 257
 RESPONSE_FIX_NEW_DEVICE	= 258
+RESPONSE_FIX_IGNORE		= 259
 RESPONSE_QUIT			= 260
 RESPONSE_START_DAEMON	= 271
 RESPONSE_SLAIN_DAEMON	= 272
@@ -790,6 +791,7 @@ class App(Gtk.Application, TimerManager):
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
+		r.add_button(RIBar.build_button(_("_Ignore")), RESPONSE_FIX_IGNORE)
 		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
@@ -1379,9 +1381,11 @@ class App(Gtk.Application, TimerManager):
 				GLib.timeout_add_seconds(1, self.watcher.start)
 		self.daemon.reload_config(callback)
 	
-	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
+	def change_setting_async(self, setting_name, value, retry_on_error=False, restart=True):
 		"""
-		Changes one value in daemon configuration and restarts daemon
+		Asynchronously changes one value in daemon configuration and
+		optionaly restarts daemon.
+		
 		This will:
 		 - call daemon.read_config() to read configuration from daemon
 		 - change value in recieved YAML document
@@ -1389,58 +1393,66 @@ class App(Gtk.Application, TimerManager):
 		 - call daemon.restart()
 		Everthing will be done asynchronously and will be repeated
 		until succeed, if retry_on_error is set to True.
-		Even if retry_on_error is True, error in write_config will
+		Even if retry_on_error is False, error in write_config will
 		be only logged.
 		
 		It is possible to change nested setting using '/' as separator.
 		That may cause error if parent setting node is not present and
 		this error will not cause retrying process as well.
+		
+		If value is callable, it's called instead of setting it.
+		In such case, callable is called as:
+		   value(config_node_as_dict, setting_name)
 		"""
 		# ^^ Longest comment in entire project
 		
 		# Callbacks
 		def csnr_error(e, trash, setting_name, value, retry_on_error):
 			"""
-			Error handler for change_setting_n_restart method
+			Error handler for change_setting_async method
 			"""
-			log.error("change_setting_n_restart: Failed to read configuration: %s", e)
+			log.error("change_setting_async: Failed to read configuration: %s", e)
 			if retry_on_error:
 				log.error("Retrying...")
-				change_setting_n_restart(setting_name, value, True)
+				change_setting_async(setting_name, value, retry_on_error, restart)
 			else:
 				log.error("Giving up.")
 		
 		def csnr_save_error(e, *a):
 			"""
-			Another error handler for change_setting_n_restart method.
+			Another error handler for change_setting_async method.
 			This one just reports failure.
 			"""
-			log.error("change_setting_n_restart: Failed to store configuration: %s", e)
+			log.error("change_setting_async: Failed to store configuration: %s", e)
 			log.error("Giving up.")
 		
 		def csnr_config_read(config, setting_name, value, retry_on_error):
 			"""
-			Handler for change_setting_n_restart
+			Handler for change_setting_async
 			Modifies recieved config and post it back.
 			"""
 			c, setting = config, setting_name
 			while "/" in setting:
 				key, setting = setting.split("/", 1)
 				c = c[key]
-			c[setting] = value
+			if hasattr(value, '__call__'):
+				value(c, setting)
+			else:
+				c[setting] = value
 			self.daemon.write_config(config, csnr_config_saved, csnr_save_error, setting_name, value)
 		
 		def csnr_config_saved(setting_name, value):
 			"""
-			Handler for change_setting_n_restart
+			Handler for change_setting_async
 			Reports good stuff and restarts daemon.
 			"""
 			log.verbose("Configuration value '%s' set to '%s'", setting_name, value)
-			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
-			self.display_connect_dialog(message)
-			self.set_status(False)
-			self.restart()
-			GLib.idle_add(self.daemon.restart)
+			if restart:
+				message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
+				self.display_connect_dialog(message)
+				self.set_status(False)
+				self.restart()
+				GLib.idle_add(self.daemon.restart)
 		
 		# Call
 		self.daemon.read_config(csnr_config_read, csnr_error, setting_name, value, retry_on_error)
@@ -1584,11 +1596,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.recv_limit != speed:
-			self.change_setting_n_restart("options/maxRecvKbps", speed)
+			self.change_setting_async("options/maxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.send_limit != speed:
-			self.change_setting_n_restart("options/maxSendKbps", speed)
+			self.change_setting_async("options/maxSendKbps", speed)
 	
 	def cb_menu_recvlimit_other(self, menuitem):
 		return self.cb_menu_limit_other(menuitem, self.recv_limit)
@@ -1831,12 +1843,19 @@ class App(Gtk.Application, TimerManager):
 			e = DeviceEditorDialog(self, True, additional_data["nid"])
 			e.load()
 			e.show(self["window"])
+		elif response_id == RESPONSE_FIX_IGNORE:
+			# Ignore unknown device
+			def add_ignored(target, trash):
+				if not "ignoredDevices" in target:
+					target["ignoredDevices"] = []
+				target["ignoredDevices"].append(additional_data["nid"])
+			self.change_setting_async("ignoredDevices", add_ignored, restart=False)
 		elif response_id == RESPONSE_UR_ALLOW:
 			# Allow Usage reporting
-			self.change_setting_n_restart("options/urAccepted", 1)
+			self.change_setting_async("options/urAccepted", 1)
 		elif response_id == RESPONSE_UR_FORBID:
 			# Allow Usage reporting
-			self.change_setting_n_restart("options/urAccepted", -1)
+			self.change_setting_async("options/urAccepted", -1)
 		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):
