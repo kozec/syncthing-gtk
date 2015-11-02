@@ -19,7 +19,7 @@ except ImportError:
 	pass
 
 if HAS_DESKTOP_NOTIFY:
-	from gi.repository import GdkPixbuf
+	from gi.repository import Gtk
 	from syncthing_gtk import TimerManager
 	from syncthing_gtk.tools import parsetime
 	from syncthing_gtk.tools import _ # gettext function
@@ -44,8 +44,8 @@ if HAS_DESKTOP_NOTIFY:
 			self.icon = None
 			self.error_icon = None
 			try:
-				self.icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.app.iconpath, "st-logo-64.png"))
-				self.error_icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.app.iconpath, "error-64.png"))
+				self.icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk", 64, Gtk.IconLookupFlags.FORCE_SIZE)
+				self.error_icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk-error", 64, Gtk.IconLookupFlags.FORCE_SIZE)
 			except Exception, e:
 				log.error("Failed to load icon: %s", e)
 			# Make deep connection with daemon

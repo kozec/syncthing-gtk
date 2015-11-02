@@ -7,13 +7,15 @@ from syncthing_gtk import windows
 """
 
 from __future__ import unicode_literals
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
 from gi.repository import Gio, GLib, GObject, Gtk, Gdk
-import os, logging, codecs, msvcrt, win32pipe, win32api, _winreg
+import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 import win32process
+from win32com.shell import shell, shellcon
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
+ST_INOTIFY_EXE = "syncthing-inotify-v0.6.3.exe"
 
 def fix_localized_system_error_messages():
 	"""
@@ -84,6 +86,9 @@ def override_menu_borders():
 		Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
 	)
 
+def get_unicode_home():
+	return shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA, None, 0)
+
 class WinPopenReader:
 	"""
 	Reads from PIPE using GLib timers or idle_add. Emulates part of
@@ -94,14 +99,14 @@ class WinPopenReader:
 	console window on Windows.
 	"""
 	
-	def __init__(self, process):
+	def __init__(self, pipe):
 		# Prepare stuff
-		self._process = process
+		self._pipe = pipe
 		self._waits_for_read = None
 		self._buffer = ""
 		self._buffer_size = 32
 		self._closed = False
-		self._stdouthandle = msvcrt.get_osfhandle(self._process.stdout.fileno())
+		self._osfhandle = msvcrt.get_osfhandle(self._pipe.fileno())
 		# Start reading
 		GLib.idle_add(self._peek)
 	
@@ -109,15 +114,15 @@ class WinPopenReader:
 		if self._closed:
 			return False
 		# Check if there is anything to read and read if available
-		(read, nAvail, nMessage) = win32pipe.PeekNamedPipe(self._stdouthandle, 0)
+		(read, nAvail, nMessage) = win32pipe.PeekNamedPipe(self._osfhandle, 0)
 		if nAvail >= self._buffer_size:
-			data = self._process.stdout.read(self._buffer_size)
+			data = self._pipe.read(self._buffer_size)
 			self._buffer += data
-		# If there is read_async callback and buffer has enought of data,
+		# If there is read_async callback and buffer has some data,
 		# send them right away
-		if not self._waits_for_read is None and len(self._buffer) > self._buffer_size:
-			r = WinPopenReader.Results(self._buffer[0:self._buffer_size])
-			self._buffer = self._buffer[self._buffer_size:]
+		if not self._waits_for_read is None and len(self._buffer) > 0:
+			r = WinPopenReader.Results(self._buffer)
+			self._buffer = ""
 			callback, data = self._waits_for_read
 			self._waits_for_read = None
 			callback(self, r, *data)
@@ -235,3 +240,63 @@ def WinConfiguration():
 				return value
 		
 	return _WinConfiguration
+
+def WinWatcher():
+	if hasattr(sys, "frozen"):
+		path = os.path.dirname(unicode(sys.executable))
+	else:
+		import __main__
+		path = os.path.dirname(__main__.__file__)
+	exe = os.path.join(path, ST_INOTIFY_EXE)
+	
+	from daemonprocess import DaemonProcess
+	class _WinWatcher:
+		"""
+		Filesystem watcher implementation for Windows. Passes watched
+		directories to syncthing-notify executable ran on background.
+		
+		Available only if executable is found in same folder as
+		syncthing-gtk.exe is.
+		"""
+		
+		def __init__(self, app, daemon):
+			self.watched_ids = []
+			self.app = app
+			self.proc = None
+		
+		def watch(self, id, path):
+			self.watched_ids += [id]
+		
+		def kill(self):
+			""" Cancels & deallocates everything """
+			self.watched_ids = []
+			if not self.proc is None:
+				self.proc.kill()
+			self.proc = None
+		
+		def start(self):
+			if not self.proc is None:
+				self.proc.kill()
+			if len(self.watched_ids) > 0:
+				self.proc = DaemonProcess([
+					exe,
+					"-home", os.path.join(get_config_dir(), "syncthing"),
+					"-folders", ",".join(self.watched_ids)
+					])
+				self.proc.connect("exit", self._on_exit)
+				self.proc.connect("failed", self._on_failed)
+				log.info("Starting syncthing-inotify for %s" % (",".join(self.watched_ids)))
+				self.proc.start()
+		
+		def _on_exit(self, proc, code):
+			log.warning("syncthing-inotify exited with code %s" % (code,))
+		
+		def _on_failed(self, proc, error):
+			log.error("Failed to start syncthing-inotify: %s" % (error,))
+			self.proc = None
+	
+	if os.path.exists(exe):
+		return _WinWatcher
+	else:
+		return None
+

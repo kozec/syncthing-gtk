@@ -7,7 +7,8 @@
 	<property name="default-height">600</property>
 	<signal name="delete-event" handler="cb_delete_event" swapped="no"/>
 	<signal name="realize" handler="cb_realized" swapped="no"/>
-	<property name="icon">icons/st-logo-128.png</property>
+	<property if="!is_windows" name="icon-name">syncthing-gtk</property>
+	<property if="is_windows"  name="icon">icons/32x32/apps/syncthing-gtk.png</property>
 
 	<!-- Header Bar -->
 	<child if="header_bar" type="titlebar">
@@ -30,8 +31,9 @@
 					<child>
 						<object class="GtkImage" id="app-menu-button-icon">
 							<property name="visible">True</property>
-							<property name="pixbuf">icons/st-logo-24.png</property>
-							<property name="icon-size">1</property>
+							<property if="!is_windows" name="icon-name">syncthing-gtk</property>
+							<property if="!is_windows" name="icon-size">24</property>
+							<property if="is_windows"  name="file">icons/24x24/apps/syncthing-gtk.png</property>
 						</object>
 					</child>
 				</object>
@@ -53,7 +55,7 @@
 					<property name="visible">True</property>
 					<property name="sensitive">False</property>
 					<property name="valign">center</property>
-					<property name="image">edit-menu-button-image</property>
+					<property name="image">edit-menu-button-icon</property>
 					<IF condition="icons_in_menu | old_gtk">
 						<property name="popup">edit-menu-icons</property>
 					<ELSE>
@@ -147,7 +149,7 @@
 			<child>
 				<object class="GtkSeparator" id="separator_the_hell">
 					<property name="visible">True</property>
-				    <property name="can_focus">False</property>
+					<property name="can_focus">False</property>
 					<property name="orientation">horizontal</property>
 				</object>
 			</child>
@@ -162,31 +164,55 @@
 				<property name="position_set">True</property>
 				<!-- Left panel -->
 				<child>
-					<object class="GtkBox" id="folderlist">
+				  <object class="GtkScrolledWindow" id="swL">
+					<property name="visible">True</property>
+					<property name="can_focus">True</property>
+					<child>
+					  <object class="GtkViewport" id="wpL">
 						<property name="visible">True</property>
 						<property name="can_focus">False</property>
-						<property name="orientation">vertical</property>
-						<property name="border_width">6</property>
-						<!-- Script adds widgets here -->
-					</object>
-					<packing>
-						<property name="resize">False</property>
-						<property name="shrink">False</property>
-					</packing>
+						  <child>
+							<object class="GtkBox" id="folderlist">
+								<property name="visible">True</property>
+								<property name="can_focus">False</property>
+								<property name="orientation">vertical</property>
+								<property name="border_width">6</property>
+								<!-- Script adds widgets here -->
+							</object>
+				 		  </child>
+					  </object>
+					</child>
+				  </object>
+				  <packing>
+					<property name="resize">False</property>
+					<property name="shrink">False</property>
+				  </packing>
 				</child>
 				<!-- Right panel -->
 				<child>
-					<object class="GtkBox" id="devicelist">
+				  <object class="GtkScrolledWindow" id="swR">
+					<property name="visible">True</property>
+					<property name="can_focus">True</property>
+					<child>
+					  <object class="GtkViewport" id="wpR">
 						<property name="visible">True</property>
 						<property name="can_focus">False</property>
-						<property name="orientation">vertical</property>
-						<property name="border_width">6</property>
-						<!-- Script adds widgets here -->
-					</object> <!-- /GtkBox -->
-					<packing>
-						<property name="resize">False</property>
-						<property name="shrink">False</property>
-					</packing>
+						<child>
+						  <object class="GtkBox" id="devicelist">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<property name="orientation">vertical</property>
+							<property name="border_width">6</property>
+							<!-- Script adds widgets here -->
+						  </object> <!-- /GtkBox -->
+						</child>
+					  </object>
+					</child>
+				  </object>
+				  <packing>
+					<property name="resize">False</property>
+					<property name="shrink">False</property>
+				  </packing>
 				</child>
 			</object>
 			<packing>
@@ -227,6 +253,18 @@
 				<property name="always_show_image">True</property>
 				<property name="image">menu-daemon-output-image</property>
 				<property name="action-name">app.daemon_output</property>
+			</object>
+		</child>
+		
+		<child if="is_windows">
+			<object class="GtkImageMenuItem" id="menu-inotify-output">
+				<property name="visible">True</property>
+				<property name="can_focus">False</property>
+				<property name="label" translatable="yes">Display Syncthing-Inotify Output</property>
+				<property name="use_underline">True</property>
+				<property name="always_show_image">True</property>
+				<property name="image">menu-inotify-image</property>
+				<property name="action-name">app.inotify_output</property>
 			</object>
 		</child>
 		
@@ -449,7 +487,7 @@
 		<object class="GtkImageMenuItem" id="menu-popup-override">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">Override Changes</property>
+			<property name="label" translatable="yes">Override Remote Changes</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
@@ -775,13 +813,16 @@
 <IF condition="traditional_header">
 	<object class="GtkImage" id="app-menu-button-icon">
 		<property name="visible">True</property>
-		<property name="pixbuf">icons/st-logo-16.png</property>
-	</object>
-	<object class="GtkImage" id="edit-menu-button-icon">
-		<property name="visible">True</property>
-		<property name="icon_name">emblem-system-symbolic</property>
+		<property if="!is_windows" name="icon-name">syncthing-gtk</property>
+		<property if="!is_windows" name="icon-size">16</property>
+		<property if="is_windows"  name="pixbuf">icons/16x16/apps/syncthing-gtk.png</property>
 	</object>
 </IF>
+
+<object class="GtkImage" id="edit-menu-button-icon">
+	<property name="visible">True</property>
+	<property name="icon_name">emblem-system-symbolic</property>
+</object>
 
 <object class="GtkImage" id="menu-add-folder-image">
 	<property name="visible">True</property>
@@ -817,7 +858,7 @@
 		<property name="visible">True</property>
 		<property name="can_focus">False</property>
 		<property name="icon_size">1</property>
-		<property name="pixbuf">icons/show_id.png</property>
+		<property name="pixbuf">icons/show_id.svg</property>
 	</object>
 
 	<object class="GtkImage" id="menu-shutdown-image">
@@ -848,6 +889,13 @@
 		<property name="icon_name">utilities-terminal</property>
 	</object>
 
+	<object class="GtkImage" id="menu-inotify-image">
+		<property name="visible">True</property>
+		<property name="can_focus">False</property>
+		<property name="icon_size">1</property>
+		<property name="icon_name">utilities-terminal</property>
+	</object>
+
 	<object class="GtkImage" id="menu-exit-image">
 		<property name="visible">True</property>
 		<property name="can_focus">False</property>
@@ -862,7 +910,7 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
-	<property name="pixbuf">icons/show_id.png</property>
+	<property name="pixbuf">icons/show_id.svg</property>
 </object>
 
 <object class="GtkImage" id="menu-si-shutdown-image">
@@ -913,14 +961,14 @@
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
-	<property name="pixbuf">icons/eye.png</property>
+	<property name="pixbuf">icons/eye.svg</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-show-id-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
-	<property name="pixbuf">icons/show_id.png</property>
+	<property name="pixbuf">icons/show_id.svg</property>
 </object>
 
 <object class="GtkImage" id="menu-popup-override-image">

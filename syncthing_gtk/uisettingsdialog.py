@@ -7,7 +7,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
-from syncthing_gtk import Notifications, HAS_DESKTOP_NOTIFY
+from syncthing_gtk import Notifications, StDownloader, HAS_DESKTOP_NOTIFY
 from syncthing_gtk.tools import *
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.configuration import LONG_AGO
@@ -17,9 +17,10 @@ log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
-		"vdaemon_priority", "vfolder_as_path", "vnotification_for_update",
-		"vnotification_for_folder", "vnotification_for_error",
-		"vst_autoupdate", "vsyncthing_binary", "vmax_cpus",
+		"vforce_dark_theme", "vdaemon_priority", "vfolder_as_path",
+		"vnotification_for_update", "vnotification_for_folder",
+		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
+		"vmax_cpus",
 	]
 
 # Values for filemanager integration. Key is ID of checkbox widget
@@ -86,6 +87,7 @@ class UISettingsDialog(EditorDialog):
 			self["rbOnExitLeave"].set_sensitive(False)
 			self["rbOnExitAsk"].set_sensitive(False)
 			self["rbOnExitTerminate"].set_active(True)
+			self["vforce_dark_theme"].set_visible(True)
 		# Check for filemanager python bindings current state of plugins
 		status = []
 		for widget_id in FM_DATA:
@@ -105,7 +107,9 @@ class UISettingsDialog(EditorDialog):
 			else:
 				log.warning("Cannot find %s.py required to support %s", plugin, name)
 		self["fmLblIntegrationStatus"].set_text("\n".join(status))
-		
+		if StDownloader is None:
+			self["vst_autoupdate"].set_visible(False)
+			self["lblAutoupdate"].set_visible(False)
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	
@@ -238,7 +242,12 @@ def library_exists(name):
 	"""
 	Checks if there is specified so file installed in one of known prefixes
 	"""
-	PREFIXES = [ "/usr/lib", "/usr/local/lib/",
+	PREFIXES = [
+		"/usr/lib64",	# Fedora
+		"/usr/lib",
+		"/usr/local/lib/",
+		"/usr/x86_64-pc-linux-gnu/lib/",
+		"/usr/i686-pc-linux-gnu/lib/",
 		"/usr/lib/x86_64-linux-gnu/",
 		"/usr/lib/i386-linux-gnu/",
 	]

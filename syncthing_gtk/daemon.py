@@ -16,7 +16,7 @@ from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, sys, time, logging
+import json, os, sys, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
@@ -289,9 +289,10 @@ class Daemon(GObject.GObject, TimerManager):
 		self._last_error_time = None # Time is taken for first event
 		# last_id is id of last event recieved from daemon
 		self._last_id = 0
-		# Epoch is incereased when reconnect() method is called; It is
+		# Epoch is increased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
 		self._epoch = 1
+		self._instance_id = None
 		self._my_id = None
 		self._read_config()
 	
@@ -853,6 +854,18 @@ class Daemon(GObject.GObject, TimerManager):
 		if "extAnnounceOK" in data:
 			announce = data["extAnnounceOK"]
 		
+		if "startTime" in data:
+			if self._instance_id is None:
+				self._instance_id = data["startTime"]
+			else:
+				if self._instance_id != data["startTime"]:
+					log.warning("Daemon instance was replaced unexpedtedly. Disconnecting from daemon.")
+					if self._connected:
+						self._connected = False
+						self.emit("disconnected", Daemon.UNEXPECTED, "Daemon instance replaced")
+					self.cancel_all()
+					return
+		
 		self.emit('system-data-updated',
 			data["sys"], float(data["cpuPercent"]),
 			announce)
@@ -891,7 +904,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _syncthing_cb_folder_data(self, data, rid):
 		state = data['state']
-		if len(data['invalid'].strip()) > 0:
+		if state in ('error', 'stopped'):
 			if not rid in self._stopped_folders:
 				self._stopped_folders.add(rid)
 				self.emit("folder-stopped", rid, data["invalid"])
@@ -1065,7 +1078,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self.close()
 		GLib.idle_add(self._request_config)
 	
-	def reload_config(self, error_callback=None):
+	def reload_config(self, callback=None, error_callback=None):
 		"""
 		Reloads config from syncthing daemon.
 		Calling this will cause or may cause emiting following events
@@ -1076,6 +1089,8 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		def reload_config_cb(config):
 			self._parse_dev_n_folders(config)
+			if not callback is None:
+				callback()
 			self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
 		self._rest_request("system/config", reload_config_cb, error_callback)
 	
@@ -1086,6 +1101,7 @@ class Daemon(GObject.GObject, TimerManager):
 		Works like reconnect(), but without reconnecting.
 		"""
 		self._my_id = None
+		self._instance_id = None
 		self._connected = False
 		self._syncing_folders = set()
 		self._stopped_folders = set()
@@ -1217,18 +1233,18 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
-		# Errors here are ignored; Syncthing rescans stuff periodicaly,
-		# so it's not big problem if call fails.
+		def on_error(*a):
+			log.error(a)
 		if path is None:
-			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: a, folder_id)
+			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
 		else:
-			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path), {}, lambda *a: a, lambda *a: a, folder_id)
+			path_enc = urllib.quote(path.encode('utf-8'), ''.encode('utf-8'))
+			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, on_error, folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
-		# Errors here are non-fatal, not expected and thus ignored.
 		def on_error(*a):
-			print a
+			log.error(a)
 		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
 	
 	def request_events(self):

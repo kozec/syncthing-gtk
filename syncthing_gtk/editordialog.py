@@ -42,6 +42,16 @@ class EditorDialog(GObject.GObject):
 		# Used by get_widget_id
 		self.widget_to_id = {}
 		self.setup_widgets(gladefile, title)
+		# Move entire dialog content to ScrolledWindow if screen height
+		# is too small
+		if Gdk.Screen.get_default().height() < 900:
+			if not self["editor-content"] is None:
+				parent = self["editor-content"].get_parent()
+				parent.remove(self["editor-content"])
+				sw = Gtk.ScrolledWindow()
+				sw.add_with_viewport(self["editor-content"])
+				parent.pack_start(sw, True, True, 0)
+				self["editor"].resize(self["editor"].get_size()[0], Gdk.Screen.get_default().height() * 2 / 3)
 	
 	def load(self):
 		""" Loads configuration data and pre-fills values to fields """
@@ -307,8 +317,12 @@ class EditorDialog(GObject.GObject):
 			value = self[x].get_text().strip()
 			if len(value) == 0:
 				# Empty value in field
-				self["btSave"].set_sensitive(False)
-				self.hide_error_message(x)
+				if self.checks[x](value):
+					# ... but empty value is OK
+					self.hide_error_message(x)
+				else:
+					self["btSave"].set_sensitive(False)
+					self.hide_error_message(x)
 			elif not self.checks[x](value):
 				# Invalid value in any field
 				self["btSave"].set_sensitive(False)
@@ -352,7 +366,7 @@ class EditorDialog(GObject.GObject):
 		if isinstance(w, Gtk.SpinButton):
 			self.set_value(strip_v(key), int(w.get_adjustment().get_value()))
 		elif isinstance(w, Gtk.Entry):
-			self.set_value(strip_v(key), w.get_text())
+			self.set_value(strip_v(key), w.get_text().decode("utf-8"))
 		elif isinstance(w, Gtk.CheckButton):
 			self.set_value(strip_v(key), w.get_active())
 		elif isinstance(w, Gtk.ComboBox):

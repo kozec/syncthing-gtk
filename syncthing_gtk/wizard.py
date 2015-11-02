@@ -7,7 +7,7 @@ values afterwards.
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
@@ -46,7 +46,10 @@ class Wizard(Gtk.Assistant):
 		self.set_size_request(720, -1)
 		self.set_default_size(720, 300)
 		self.set_deletable(True)
-		self.set_icon_from_file(os.path.join(self.iconpath, "st-logo-24.png"))
+		if IS_WINDOWS:
+			self.set_icon_list([GdkPixbuf.Pixbuf.new_from_file("icons/32x32/apps/syncthing-gtk.png")])
+		else:
+			self.set_icon_name("syncthing-gtk")
 		self.set_title("%s %s" % (_("Syncthing-GTK"), _("First run wizard")))
 		# Add "Quit" button
 		self.quit_button = Gtk.Button.new_from_stock("gtk-quit")
@@ -196,7 +199,7 @@ class IntroPage(Page):
 			"\n\n" +
 			_("It looks like you never have used Syncthing.") + " " +
 			_("Initial configuration should be created.") +  " " +
-			_("Please click <b>Continue</b> to create a Syncthing configuration file or <b>Quit</b> to exit") +
+			_("Please click <b>Next</b> to create a Syncthing configuration file or <b>Quit</b> to exit") +
 			"\n\n" +
 			(_("If you already had Syncthing daemon configured, please, "
 			  "exit this wizard and check your %s folder") % config_folder_link )
@@ -226,11 +229,14 @@ class FindDaemonPage(Page):
 	def prepare(self):
 		self.paths = [ "./" ]
 		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
-		suffix, trash = StDownloader.determine_platform()
-		self.binaries = ["syncthing", "syncthing%s" % (suffix,)]
-		if suffix == "x64":
-			# Allow 32bit binary on 64bit
-			self.binaries += ["syncthing.x86"]
+		if StDownloader is None:
+			self.binaries = ["syncthing"]
+		else:
+			suffix, trash = StDownloader.determine_platform()
+			self.binaries = ["syncthing", "syncthing%s" % (suffix,)]
+			if suffix == "x64":
+				# Allow 32bit binary on 64bit
+				self.binaries += ["syncthing.x86"]
 		if IS_WINDOWS:
 			self.paths += [ "c:/Program Files/syncthing",
 				"c:/Program Files (x86)/syncthing",
@@ -256,8 +262,17 @@ class FindDaemonPage(Page):
 				# directly
 				self.parent.insert_and_go(DownloadSTPage())
 				return False
+			elif StDownloader is None:
+				# On Linux with updater disabled, generate and
+				# display error page
+				title = _("Syncthing daemon not found.")
+				message = _("Please, use package manager to install the Syncthing package.")
+				page = self.parent.error(self, title, message, False)
+				page.show_all()
+				return False
 			else:
-				# On Linux, generate and display error page
+				# On Linux with updater generate similar display error
+				# and offer download
 				from syncthing_gtk.app import MIN_ST_VERSION
 				target_folder_link = '<a href="file://%s">%s</a>' % (
 						os.path.expanduser(StDownloader.get_target_folder()),
@@ -305,7 +320,7 @@ class FindDaemonPage(Page):
 				page.show_all()
 				# Add Download page
 				self.parent.insert(DownloadSTPage())
-				return
+				return False
 		
 		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)

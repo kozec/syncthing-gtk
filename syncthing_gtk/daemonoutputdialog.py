@@ -27,9 +27,11 @@ class DaemonOutputDialog(object):
 		self["dialog"].show_all()
 		self["tvOutput"].get_buffer().set_text("\n".join(lines))
 
-	def show(self, parent=None):
+	def show(self, parent=None, title=None):
 		if not parent is None:
 			self["dialog"].set_transient_for(parent)
+		if not title is None:
+			self["dialog"].set_title(title)
 		self["dialog"].show_all()
 		self["tvOutput"].get_buffer().set_text("\n".join(self.proc.get_output()))
 		self.handler = self.proc.connect('line', self.cb_line)

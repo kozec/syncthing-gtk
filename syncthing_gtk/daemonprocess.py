@@ -63,7 +63,7 @@ class DaemonProcess(GObject.GObject):
 				self._proc = Popen(self.commandline,
 							stdin=PIPE, stdout=PIPE, stderr=PIPE,
 							startupinfo=sinfo, creationflags=cflags)
-				self._stdout = WinPopenReader(self._proc)
+				self._stdout = WinPopenReader(self._proc.stdout)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 			elif HAS_SUBPROCESS:
 				# New Gio
@@ -72,7 +72,7 @@ class DaemonProcess(GObject.GObject):
 					self._proc = Gio.Subprocess.new(self.commandline, flags)
 				else:
 					# I just really do hope that there is no distro w/out nice command
-					self._proc = Gio.Subprocess.new([ "nice", "-%s" % self.priority ] + self.commandline, flags)
+					self._proc = Gio.Subprocess.new([ "nice", "-n", "%s" % self.priority ] + self.commandline, flags)
 				self._proc.wait_check_async(None, self._cb_finished)
 				self._stdout = self._proc.get_stdout_pipe()
 			else:
@@ -81,7 +81,7 @@ class DaemonProcess(GObject.GObject):
 					self._proc = Popen(self.commandline, stdout=PIPE)
 				else:
 					# still hoping
-					self._proc = Popen([ "nice", "-%s" % self.priority ], stdout=PIPE)
+					self._proc = Popen([ "nice", "-n", "%s" % self.priority ], stdout=PIPE)
 				self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
 		except Exception, e:
@@ -92,14 +92,14 @@ class DaemonProcess(GObject.GObject):
 		self._buffer = ""
 		self._stdout.read_bytes_async(256, 0, self._cancel, self._cb_read, ())
 	
-	def _cb_read(self, proc, results, *a):
+	def _cb_read(self, pipe, results, *a):
 		""" Handler for read_bytes_async """
 		try:
-			response = proc.read_bytes_finish(results)
+			response = pipe.read_bytes_finish(results)
 		except Exception, e:
 			if not self._cancel.is_cancelled():
 				log.exception(e)
-				GLib.idle_add(self._stdout.read_bytes_async, 256, 1, None, self._cb_read)
+				GLib.idle_add(pipe.read_bytes_async, 256, 1, None, self._cb_read)
 			return
 		response = response.get_data().decode('utf-8')
 		self._buffer = "%s%s" % (self._buffer, response)
@@ -108,7 +108,7 @@ class DaemonProcess(GObject.GObject):
 			self._lines.append(line)
 			self.emit('line', line)
 		if not self._cancel.is_cancelled():
-			GLib.idle_add(self._stdout.read_bytes_async, 256, 1, None, self._cb_read, ())
+			GLib.idle_add(pipe.read_bytes_async, 256, 1, None, self._cb_read, ())
 	
 	def _cb_check_alive(self, *a):
 		"""

@@ -37,6 +37,7 @@ SI_FRAMES				= 12 # Number of animation frames for status icon
 RESPONSE_RESTART		= 256
 RESPONSE_FIX_FOLDER_ID	= 257
 RESPONSE_FIX_NEW_DEVICE	= 258
+RESPONSE_FIX_IGNORE		= 259
 RESPONSE_QUIT			= 260
 RESPONSE_START_DAEMON	= 271
 RESPONSE_SLAIN_DAEMON	= 272
@@ -92,8 +93,7 @@ class App(Gtk.Application, TimerManager):
 		self.connect_dialog = None
 		# Used when upgrading from incompatibile version
 		self.restart_after_update = None
-		self.box_background = (1,1,1,1)	# RGBA. White by default, changes with dark themes
-		self.box_text_color = (0,0,0,1)	# RGBA. Black by default, changes with dark themes
+		self.dark_color = None			# RGBA. None by default, changes with dark themes
 		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
 		self.send_limit = -1			# -//-
 		self.ur_question_shown = False	# Used to prevent showing 'Do you wan't usage reporting'
@@ -120,7 +120,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def do_local_options(self, trash, lo):
 		self.parse_local_options(lo.contains)
-		return 0
+		return -1
 	
 	def parse_local_options(self, is_option):
 		""" Test for expected options using specified method """
@@ -143,11 +143,12 @@ class App(Gtk.Application, TimerManager):
 			if cl.get_options_dict().contains("quit"):
 				self.cb_exit()
 				return 0
-			if cl.get_options_dict().contains("force-update"):
-				self.force_update_version = \
-					cl.get_options_dict().lookup_value("force-update").get_string()
-				if not self.force_update_version.startswith("v"):
-					self.force_update_version = "v%s" % (self.force_update_version,)
+			if not StDownloader is None:
+				if cl.get_options_dict().contains("force-update"):
+					self.force_update_version = \
+						cl.get_options_dict().lookup_value("force-update").get_string()
+					if not self.force_update_version.startswith("v"):
+						self.force_update_version = "v%s" % (self.force_update_version,)
 			if cl.get_options_dict().contains("add-repo"):
 				path = os.path.abspath(os.path.expanduser(
 					cl.get_options_dict().lookup_value("add-repo").get_string()))
@@ -229,9 +230,10 @@ class App(Gtk.Application, TimerManager):
 				GLib.OptionArg.STRING)
 		aso("remove-repo", 0, "If there is repository assigned with specified path, opens 'remove repository' dialog",
 				GLib.OptionArg.STRING)
-		aso("force-update", 0,
-				"Force updater to download specific daemon version",
-				GLib.OptionArg.STRING, GLib.OptionFlags.HIDDEN)
+		if not StDownloader is None:
+			aso("force-update", 0,
+					"Force updater to download specific daemon version",
+					GLib.OptionArg.STRING, GLib.OptionFlags.HIDDEN)
 	
 	def setup_actions(self):
 		def add_simple_action(name, callback):
@@ -241,6 +243,7 @@ class App(Gtk.Application, TimerManager):
 			return action
 		add_simple_action('webui', self.cb_menu_webui)
 		add_simple_action('daemon_output', self.cb_menu_daemon_output).set_enabled(False)
+		add_simple_action('inotify_output', self.cb_menu_inotify_output).set_enabled(False)
 		add_simple_action('preferences', self.cb_menu_ui_settings)
 		add_simple_action('about', self.cb_about)
 		add_simple_action('quit', self.cb_exit)
@@ -323,7 +326,7 @@ class App(Gtk.Application, TimerManager):
 			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
-		if HAS_INOTIFY:
+		if not Watcher is None:
 			self.watcher = Watcher(self, self.daemon)
 		if HAS_DESKTOP_NOTIFY:
 			if self.config["notification_for_update"] or self.config["notification_for_error"]:
@@ -424,6 +427,9 @@ class App(Gtk.Application, TimerManager):
 		# User response is handled in App.cb_infobar_response
 	
 	def check_for_upgrade(self, *a):
+		if StDownloader is None:
+			# Can't, someone stole my updater module :(
+			return
 		self.cancel_timer("updatecheck")
 		if not self.config["st_autoupdate"]:
 			# Disabled, don't even bother
@@ -578,6 +584,16 @@ class App(Gtk.Application, TimerManager):
 		self["menu-si-show-id"].set_sensitive(True)
 		self["menu-si-recvlimit"].set_sensitive(True)
 		self["menu-si-sendlimit"].set_sensitive(True)
+		if IS_WINDOWS and not self.use_headerbar:
+			# Stupid way to reconfigure window content and keep windows
+			# decorations visible on Windows
+			r = RIBar(
+				_("Connected to Syncthing daemon"),
+				Gtk.MessageType.INFO
+				)
+			self.show_info_box(r)
+			self.cb_infobar_close(r)
+			
 	
 	def cb_syncthing_disconnected(self, daemon, reason, message):
 		# if reason == Daemon.UNEXPECTED
@@ -625,7 +641,7 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and self.process != None:
+		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process and not StDownloader is None:
 			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
 			# Try to update.
 			from configuration import LONG_AGO
@@ -694,7 +710,7 @@ class App(Gtk.Application, TimerManager):
 		# Refresh daemon data from UI
 		log.debug("Config saved")
 		self.refresh()
-
+	
 	def cb_config_loaded(self, daemon, config):
 		# Called after connection to daemon is initialized;
 		# Used to change indicating UI components
@@ -716,6 +732,9 @@ class App(Gtk.Application, TimerManager):
 			# User did not responded to usage reporting yet. Ask
 			self.ask_for_ur()
 		
+		if not self.watcher is None:
+			self.watcher.start()
+	
 	def cb_syncthing_error(self, daemon, message):
 		""" Daemon argument is not used """
 		if message in self.error_messages:
@@ -760,18 +779,25 @@ class App(Gtk.Application, TimerManager):
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, address):
-		address = address.split(":")[0]	# Remove port from address, it's random by default anyway
+		# Remove port from address, it's random by default anyway
+		if "[" in address:
+			# IPv6 address
+			address = address.split("]:")[0] + "]"
+		else:
+			# IPv4
+			address = address.split(":")[0]
 		if (nid, address) in self.error_messages:
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Device "%(device)s" at IP "%(ip)s" wants to connect. Add new device?') % {
+		markup = _('Device "<b>%(device)s</b>" at IP "<b>%(ip)s</b>" wants to connect. Add new device?') % {
 			'device' : "<b>%s</b>" % nid,
 			'ip' : "<b>%s</b>" % address
 			}
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
+		r.add_button(RIBar.build_button(_("_Ignore")), RESPONSE_FIX_IGNORE)
 		self.show_error_box(r, {"nid" : nid, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
@@ -781,7 +807,6 @@ class App(Gtk.Application, TimerManager):
 			self["devicelist"].reorder_child(device, 0)
 			# Modify header & color
 			device.set_status("")
-			device.get_icon().set_color(*self.box_text_color)
 			device.invert_header(True)
 			device.set_color_hex(COLOR_OWN_DEVICE)
 			if self.use_headerbar:
@@ -790,12 +815,12 @@ class App(Gtk.Application, TimerManager):
 				self["server-name"].set_markup("<b>%s</b>" % (device.get_title(),))
 			# Modify values
 			device.clear_values()
-			device.add_value("ram",		"ram.png",		_("RAM Utilization"),	"")
-			device.add_value("cpu",		"cpu.png",		_("CPU Utilization"),	"")
-			device.add_value("inbps",	"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)")
-			device.add_value("outbps",	"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)")
-			device.add_value("announce",	"announce.png",	_("Announce Server"),	"")
-			device.add_value("version",	"version.png",	_("Version"),			"?")
+			device.add_value("ram",		"ram.svg",		_("RAM Utilization"),	"")
+			device.add_value("cpu",		"cpu.svg",		_("CPU Utilization"),	"")
+			device.add_value("inbps",	"dl_rate.svg",	_("Download Rate"),		"0 B/s (0 B)")
+			device.add_value("outbps",	"up_rate.svg",	_("Upload Rate"),		"0 B/s (0 B)")
+			device.add_value("announce",	"announce.svg",	_("Announce Server"),	"")
+			device.add_value("version",	"version.svg",	_("Version"),			"?")
 			device.show_all()
 			# Expand my own device box right after startup
 			if self.devices_never_loaded:
@@ -904,7 +929,9 @@ class App(Gtk.Application, TimerManager):
 			)
 		if not self.watcher is None:
 			if rid in self.config["use_inotify"]:
-				self.watcher.watch(box["norm_path"])
+				self.watcher.watch(box["id"], box["norm_path"])
+				if IS_WINDOWS:
+					self.lookup_action('inotify_output').set_enabled(True)
 	
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always
@@ -1219,15 +1246,15 @@ class App(Gtk.Application, TimerManager):
 			# Create new box
 			box = InfoBox(self, title, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 			# Add visible lines
-			box.add_value("id",			"version.png",	_("Folder ID"))
-			box.add_value("path",		"folder.png",	_("Path"))
-			box.add_value("global",		"global.png",	_("Global State"),		"? items, ?B")
-			box.add_value("local",		"home.png",		_("Local State"),		"? items, ?B")
-			box.add_value("oos",		"dl_rate.png",	_("Out Of Sync"),		"? items, ?B")
-			box.add_value("master",		"lock.png",		_("Folder Master"))
-			box.add_value("ignore",		"ignore.png",	_("Ignore Permissions"))
-			box.add_value("rescan",		"restart.png",	_("Rescan Interval"))
-			box.add_value("shared",		"shared.png",	_("Shared With"))
+			box.add_value("id",			"version.svg",	_("Folder ID"))
+			box.add_value("path",		"folder.svg",	_("Path"))
+			box.add_value("global",		"global.svg",	_("Global State"),		"? items, ?B")
+			box.add_value("local",		"home.svg",		_("Local State"),		"? items, ?B")
+			box.add_value("oos",		"dl_rate.svg",	_("Out Of Sync"),		"? items, ?B")
+			box.add_value("master",		"lock.svg",		_("Folder Master"))
+			box.add_value("ignore",		"ignore.svg",	_("Ignore Permissions"))
+			box.add_value("rescan",		"rescan.svg",	_("Rescan Interval"))
+			box.add_value("shared",		"shared.svg",	_("Shared With"))
 			# Add hidden stuff
 			box.add_hidden_value("id", id)
 			box.add_hidden_value("b_master", is_master)
@@ -1236,9 +1263,9 @@ class App(Gtk.Application, TimerManager):
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
 			# Setup display & signal
 			box.set_status("Unknown")
+			if not self.dark_color is None:
+				box.set_dark_color(*self.dark_color)
 			box.set_color_hex(COLOR_FOLDER)
-			box.set_bg_color(*self.box_background)
-			box.set_text_color(*self.box_text_color)
 			box.set_vexpand(False)
 			GLib.idle_add(box.show_all)	# Window border will dissapear without this on Windows
 			self["folderlist"].pack_start(box, False, False, 3)
@@ -1254,7 +1281,8 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("path",	display_path)
 		box.set_value("master",	_("Yes") if is_master else _("No"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
-		box.set_value("rescan",	"%s s" % (rescan_interval,))
+		box.set_value("rescan",	"%s s%s" % (
+			rescan_interval, " " + _("(watch)" if id in self.config["use_inotify"] else "" )))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)
@@ -1277,14 +1305,14 @@ class App(Gtk.Application, TimerManager):
 			# Create new box
 			box = InfoBox(self, name, IdentIcon(id))
 			# Add visible lines
-			box.add_value("address",	"address.png",	_("Address"),			"?")
-			box.add_value("sync",		"sync.png",		_("Synchronization"),	"0%", visible=False)
-			box.add_value("compress",	"compress.png",	_("Compression"))
-			box.add_value("inbps",		"dl_rate.png",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
-			box.add_value("outbps",		"up_rate.png",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
-			box.add_value("introducer",	"thumb_up.png",	_("Introducer"))
-			box.add_value("version",	"version.png",	_("Version"),			"?", visible=False)
-			box.add_value('last-seen',	"clock.png",	_("Last Seen"),			_("Never"))
+			box.add_value("address",	"address.svg",	_("Address"),			"?")
+			box.add_value("sync",		"sync.svg",		_("Synchronization"),	"0%", visible=False)
+			box.add_value("compress",	"compress.svg",	_("Compression"))
+			box.add_value("inbps",		"dl_rate.svg",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
+			box.add_value("outbps",		"up_rate.svg",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
+			box.add_value("introducer",	"thumb_up.svg",	_("Introducer"))
+			box.add_value("version",	"version.svg",	_("Version"),			"?", visible=False)
+			box.add_value('last-seen',	"clock.svg",	_("Last Seen"),			_("Never"))
 			# Add hidden stuff
 			box.add_hidden_value("id", id)
 			box.add_hidden_value("connected", False)
@@ -1292,9 +1320,9 @@ class App(Gtk.Application, TimerManager):
 			box.add_hidden_value("time", 0)
 			box.add_hidden_value("online", False)
 			# Setup display & signal
+			if not self.dark_color is None:
+				box.set_dark_color(*self.dark_color)
 			box.set_color_hex(COLOR_DEVICE)
-			box.set_bg_color(*self.box_background)
-			box.set_text_color(*self.box_text_color)
 			box.set_vexpand(False)
 			box.set_open(id in self.open_boxes)
 			box.get_icon().set_size_request(22, 22)
@@ -1340,7 +1368,7 @@ class App(Gtk.Application, TimerManager):
 		self.error_messages = set([])
 		self.cancel_all() # timers
 		if not self.watcher is None:
-			self.watcher.clear()
+			self.watcher.kill()
 		self.daemon.reconnect()
 	
 	def refresh(self):
@@ -1352,12 +1380,18 @@ class App(Gtk.Application, TimerManager):
 		"""
 		log.debug("Reloading config...")
 		if not self.watcher is None:
-			self.watcher.clear()
-		self.daemon.reload_config()
+			self.watcher.kill()
+			self.lookup_action('inotify_output').set_enabled(False)
+		def callback(*a):
+			if not self.watcher is None:
+				GLib.timeout_add_seconds(1, self.watcher.start)
+		self.daemon.reload_config(callback)
 	
-	def change_setting_n_restart(self, setting_name, value, retry_on_error=False):
+	def change_setting_async(self, setting_name, value, retry_on_error=False, restart=True):
 		"""
-		Changes one value in daemon configuration and restarts daemon
+		Asynchronously changes one value in daemon configuration and
+		optionaly restarts daemon.
+		
 		This will:
 		 - call daemon.read_config() to read configuration from daemon
 		 - change value in recieved YAML document
@@ -1365,58 +1399,66 @@ class App(Gtk.Application, TimerManager):
 		 - call daemon.restart()
 		Everthing will be done asynchronously and will be repeated
 		until succeed, if retry_on_error is set to True.
-		Even if retry_on_error is True, error in write_config will
+		Even if retry_on_error is False, error in write_config will
 		be only logged.
 		
 		It is possible to change nested setting using '/' as separator.
 		That may cause error if parent setting node is not present and
 		this error will not cause retrying process as well.
+		
+		If value is callable, it's called instead of setting it.
+		In such case, callable is called as:
+		   value(config_node_as_dict, setting_name)
 		"""
 		# ^^ Longest comment in entire project
 		
 		# Callbacks
 		def csnr_error(e, trash, setting_name, value, retry_on_error):
 			"""
-			Error handler for change_setting_n_restart method
+			Error handler for change_setting_async method
 			"""
-			log.error("change_setting_n_restart: Failed to read configuration: %s", e)
+			log.error("change_setting_async: Failed to read configuration: %s", e)
 			if retry_on_error:
 				log.error("Retrying...")
-				change_setting_n_restart(setting_name, value, True)
+				change_setting_async(setting_name, value, retry_on_error, restart)
 			else:
 				log.error("Giving up.")
 		
 		def csnr_save_error(e, *a):
 			"""
-			Another error handler for change_setting_n_restart method.
+			Another error handler for change_setting_async method.
 			This one just reports failure.
 			"""
-			log.error("change_setting_n_restart: Failed to store configuration: %s", e)
+			log.error("change_setting_async: Failed to store configuration: %s", e)
 			log.error("Giving up.")
 		
 		def csnr_config_read(config, setting_name, value, retry_on_error):
 			"""
-			Handler for change_setting_n_restart
+			Handler for change_setting_async
 			Modifies recieved config and post it back.
 			"""
 			c, setting = config, setting_name
 			while "/" in setting:
 				key, setting = setting.split("/", 1)
 				c = c[key]
-			c[setting] = value
+			if hasattr(value, '__call__'):
+				value(c, setting)
+			else:
+				c[setting] = value
 			self.daemon.write_config(config, csnr_config_saved, csnr_save_error, setting_name, value)
 		
 		def csnr_config_saved(setting_name, value):
 			"""
-			Handler for change_setting_n_restart
+			Handler for change_setting_async
 			Reports good stuff and restarts daemon.
 			"""
 			log.verbose("Configuration value '%s' set to '%s'", setting_name, value)
-			message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
-			self.display_connect_dialog(message)
-			self.set_status(False)
-			self.restart()
-			GLib.idle_add(self.daemon.restart)
+			if restart:
+				message = "%s %s..." % (_("Syncthing is restarting."), _("Please wait"))
+				self.display_connect_dialog(message)
+				self.set_status(False)
+				self.restart()
+				GLib.idle_add(self.daemon.restart)
 		
 		# Call
 		self.daemon.read_config(csnr_config_read, csnr_error, setting_name, value, retry_on_error)
@@ -1427,6 +1469,8 @@ class App(Gtk.Application, TimerManager):
 				# Always kill subprocess on windows
 				self.process.kill()
 				self.process = None
+				if not self.watcher is None:
+					self.watcher.kill()
 			elif self.config["autokill_daemon"] == 2:	# Ask
 				d = Gtk.MessageDialog(
 					self["window"],
@@ -1515,16 +1559,14 @@ class App(Gtk.Application, TimerManager):
 		light_color = False
 		for c in list(color)[0:3]:
 			if c > 0.75: light_color = True
-		"""
-		# Black background will clash with black icons, so this one is no-go for now
 		if not light_color:
-			self.box_background = (color.red, color.green, color.blue, 1.0)
+			# Set dark color based on current window background
+			self.dark_color = (color.red, color.green, color.blue, 1.0)
+			# Recolor all boxes
 			for box in self.folders.values():
-				box.set_bg_color(self.box_background)
-			self.box_text_color = (1,1,1,1)
+				box.set_dark_color(*self.dark_color)
 			for box in self.devices.values():
-				box.set_bg_color(self.box_text_color)
-		"""
+				box.set_dark_color(*self.dark_color)
 	
 	def cb_box_mouse_enter(self, box, *a):
 		self.hilight([box])
@@ -1560,11 +1602,11 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_recvlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.recv_limit != speed:
-			self.change_setting_n_restart("options/maxRecvKbps", speed)
+			self.change_setting_async("options/maxRecvKbps", speed)
 	
 	def cb_menu_sendlimit(self, menuitem, speed=0):
 		if menuitem.get_active() and self.send_limit != speed:
-			self.change_setting_n_restart("options/maxSendKbps", speed)
+			self.change_setting_async("options/maxSendKbps", speed)
 	
 	def cb_menu_recvlimit_other(self, menuitem):
 		return self.cb_menu_limit_other(menuitem, self.recv_limit)
@@ -1638,6 +1680,7 @@ class App(Gtk.Application, TimerManager):
 		path = os.path.expanduser(box["path"])
 		if IS_WINDOWS:
 			# Don't attempt anything, use Windows Explorer on Windows
+			path = path.replace("/", "\\")
 			os.system('explorer "%s"' % (path,))
 		else:
 			# Try to use any of following, known commands to
@@ -1737,6 +1780,22 @@ class App(Gtk.Application, TimerManager):
 			d = DaemonOutputDialog(self, self.process)
 			d.show(self["window"])
 	
+	def cb_menu_inotify_output(self, *a):
+		# Available & called only on Windows
+		if hasattr(self.watcher, "proc") and not self.watcher.proc is None:
+			d = DaemonOutputDialog(self, self.watcher.proc)
+			d.show(self["window"], _("Syncthing-Inotify Output"))
+		else:
+			d = Gtk.MessageDialog(
+					self["window"],
+					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+					_("Syncthing-Inotify is unavailable or failed to start")
+				)
+			r = d.run()
+			d.hide()
+			d.destroy()
+	
 	def cb_statusicon_click(self, *a):
 		""" Called when user clicks on status icon """
 		# Hide / show main window
@@ -1749,8 +1808,9 @@ class App(Gtk.Application, TimerManager):
 		""" Called when the status icon changes its "inaccessible for sure" state """
 		# Show main window if the status icon is sure that no icon will be shown to the user
 		if not self.statusicon.get_active():
-			if not IS_GNOME:
+			if not (IS_GNOME or IS_I3):
 				# Gnome sometimes lag on this, but always ends displaying icon later
+				# ... and i3 as well
 				self.show()
 	
 	def cb_infobar_close(self, bar):
@@ -1789,12 +1849,19 @@ class App(Gtk.Application, TimerManager):
 			e = DeviceEditorDialog(self, True, additional_data["nid"])
 			e.load()
 			e.show(self["window"])
+		elif response_id == RESPONSE_FIX_IGNORE:
+			# Ignore unknown device
+			def add_ignored(target, trash):
+				if not "ignoredDevices" in target:
+					target["ignoredDevices"] = []
+				target["ignoredDevices"].append(additional_data["nid"])
+			self.change_setting_async("ignoredDevices", add_ignored, restart=False)
 		elif response_id == RESPONSE_UR_ALLOW:
 			# Allow Usage reporting
-			self.change_setting_n_restart("options/urAccepted", 1)
+			self.change_setting_async("options/urAccepted", 1)
 		elif response_id == RESPONSE_UR_FORBID:
 			# Allow Usage reporting
-			self.change_setting_n_restart("options/urAccepted", -1)
+			self.change_setting_async("options/urAccepted", -1)
 		self.cb_infobar_close(bar)
 	
 	def cb_open_closed(self, box):
@@ -1841,7 +1908,7 @@ class App(Gtk.Application, TimerManager):
 		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
-			if self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
+			if not StDownloader is None and self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
 				self.swap_updated_binary()

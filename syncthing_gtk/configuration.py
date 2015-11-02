@@ -43,6 +43,7 @@ class _Configuration(object):
 		"last_updatecheck"			: (datetime, LONG_AGO),
 		"window_position"			: (tuple, None),
 		"infobox_style"				: (str, 'font_weight="bold" font_size="large"'),
+		"force_dark_theme"			: (bool, False),	# Windows-only
 	}
 	
 	# Overrides some default values on Windows
@@ -58,7 +59,7 @@ class _Configuration(object):
 			self.load()
 		except Exception, e:
 			log.warning("Failed to load configuration; Creating new one.")
-			log.warning("Reason: %s", e)
+			log.warning("Reason: %s", (e,))
 			self.create()
 		
 		# Convert objects serialized as string back to object

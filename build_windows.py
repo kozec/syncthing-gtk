@@ -9,6 +9,7 @@ from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
 from win32verstamp import stamp
 from setup import get_version as _get_version
+from syncthing_gtk.windows import ST_INOTIFY_EXE
 
 gnome_dll_path = "/Python27/Lib/site-packages/gnome"
 build_dir = "./build/exe.win32-2.7/"
@@ -68,12 +69,22 @@ include_files += [ (os.path.join(gnome_dll_path, x), x) for x in missing_dll ]
 include_files += [ x for x in os.listdir(".") if x.endswith(".glade") ]
 include_files += [ "./icons" ]
 
+# syncthing-inotify
+include_files += [ ST_INOTIFY_EXE ]
+
 executables = [
 	Executable(
 		"scripts/syncthing-gtk-exe.py",
 		compress = True,
 		targetName = "syncthing-gtk.exe",
 		base = "Win32GUI",
+		icon = "icons/st-logo-128.ico",
+	),
+	Executable(
+		"scripts/syncthing-gtk-exe.py",
+		compress = True,
+		targetName = "syncthing-gtk-console.exe",
+		base = "console",
 		icon = "icons/st-logo-128.ico",
 	)
 ]
@@ -100,7 +111,7 @@ setup(
 	name = "Syncthing GTK",
 	author = "Kozec",
 	version = get_version(),
-	description = "Windows port of Sycnthing GTK",
+	description = "Windows port of Syncthing GTK",
 	options = dict(
 		build_exe = dict(
 			compressed = False,
@@ -182,6 +193,13 @@ if 'build' in sys.argv:
 			os.path.join(src_path, theme, "index.theme"),
 			os.path.join(target_path, theme, "index.theme")
 		)
+	
+	print "Copying even more icons"
+	shutil.copy(
+		os.path.join(build_dir, "icons/128x128/apps/syncthing-gtk.png"),
+		os.path.join(build_dir, "icons/syncthing-gtk.png")
+	)
+
 	print "Copying glib schemas"
 	if not os.path.exists(os.path.join(build_dir, "/share/glib-2.0/schemas")):
 		target_path = os.path.join(build_dir, "share/glib-2.0/schemas")

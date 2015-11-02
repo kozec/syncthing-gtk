@@ -15,13 +15,14 @@ log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
 IS_XP = IS_WINDOWS and platform.release() in ("XP", "2000", "2003")
-IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON = [False] * 4
+IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON, IS_I3 = [False] * 5
 
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
 	IS_UNITY = (os.environ["XDG_CURRENT_DESKTOP"] == "Unity")
 	IS_KDE   = (os.environ["XDG_CURRENT_DESKTOP"] == "KDE")
 	IS_CINNAMON = (os.environ["XDG_CURRENT_DESKTOP"] == "X-Cinnamon")
+	IS_I3 = (os.environ["XDG_CURRENT_DESKTOP"] == "i3")
 if "DESKTOP_SESSION" in os.environ:
 	if os.environ["DESKTOP_SESSION"] == "gnome":
 		# Fedora...
@@ -216,6 +217,16 @@ def init_logging():
 	def verbose(self, msg, *args, **kwargs):
 		return self.log(15, msg, *args, **kwargs)
 	logging.Logger.verbose = verbose
+	# Wrap Logger._log in something that can handle utf-8 exceptions
+	old_log = logging.Logger._log
+	def _log(self, level, msg, args, exc_info=None, extra=None):
+		args = tuple([
+			(c if type(c) is unicode else str(c).decode("utf-8"))
+			for c in args
+		])
+		msg = msg if type(msg) is unicode else str(msg).decode("utf-8")
+		old_log(self, level, msg, args, exc_info, extra)
+	logging.Logger._log = _log
 
 def init_locale(localedir=None):
 	"""
@@ -313,6 +324,12 @@ def get_config_dir():
 	Returns ~/.config, %APPDATA% or whatever has user set as
 	configuration directory.
 	"""
+	if IS_WINDOWS:
+		try:
+			import windows
+			return windows.get_unicode_home()
+		except Exception:
+			pass
 	confdir = GLib.get_user_config_dir()
 	if confdir is None or IS_XP:
 		if IS_WINDOWS:
@@ -358,9 +375,10 @@ def get_executable():
 	if IS_WINDOWS:
 		return os.path.join(get_install_path(), "syncthing-gtk.exe")
 	else:
-		executable = __main__.__file__
+		executable = __main__.__file__.decode("utf-8")
 		if not os.path.isabs(executable):
-			executable = os.path.normpath(os.path.join(os.getcwd(), executable))
+			cwd = os.getcwd().decode("utf-8")
+			executable = os.path.normpath(os.path.join(cwd, executable))
 		if executable.endswith(".py"):
 			executable = "/usr/bin/env python2 %s" % (executable,)
 		return executable
@@ -435,8 +453,8 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 				# Already exists
 				pass
 			try:
-				file(desktopfile, "w").write(DESKTOP_FILE % (
-					program_name, executable, icon, description))
+				file(desktopfile, "w").write((DESKTOP_FILE % (
+					program_name, executable, icon, description)).encode('utf-8'))
 			except Exception, e:
 				# IO errors or out of disk space... Not really
 				# expected, but may happen

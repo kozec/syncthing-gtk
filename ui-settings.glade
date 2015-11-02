@@ -121,8 +121,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">9</property>
+                    <property name="top_attach">10</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -138,8 +139,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">10</property>
+                    <property name="top_attach">11</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -155,7 +157,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">11</property>
+                    <property name="top_attach">12</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -171,7 +175,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">12</property>
+                    <property name="top_attach">13</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -184,8 +190,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">13</property>
+                    <property name="top_attach">14</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -201,7 +208,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">14</property>
+                    <property name="top_attach">15</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -217,7 +226,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">15</property>
+                    <property name="top_attach">16</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -233,7 +244,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">16</property>
+                    <property name="top_attach">17</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -251,6 +264,7 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -263,8 +277,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">5</property>
+                    <property name="top_attach">6</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -279,7 +294,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">6</property>
+                    <property name="top_attach">7</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -294,7 +311,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">8</property>
+                    <property name="top_attach">9</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -309,7 +328,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">7</property>
+                    <property name="top_attach">8</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -326,6 +347,7 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -342,6 +364,7 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -356,8 +379,9 @@
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">3</property>
+                    <property name="top_attach">4</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -372,8 +396,26 @@
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">4</property>
+                    <property name="top_attach">5</property>
                     <property name="width">3</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="vforce_dark_theme">
+                    <property name="label" translatable="yes">Force _dark theme</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="no_show_all">True</property>
+                    <property name="use_underline">True</property>
+                    <property name="xalign">0</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                    <property name="width">3</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -465,6 +507,8 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -482,6 +526,8 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -498,6 +544,8 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -514,6 +562,8 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">3</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -523,7 +573,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_top">7</property>
                     <property name="xalign">0</property>
-                    <property name="label">Install blahblahblah to enable Nemo support
+                    <property name="label" translatable="yes">Install blahblahblah to enable Nemo support
 Install blahblahblah to enable Nautilus support
 Install blahblahblah to enable Caja support</property>
                     <attributes>
@@ -533,6 +583,8 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -549,6 +601,8 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">4</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
               </object>
@@ -590,6 +644,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -602,6 +657,8 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -618,6 +675,8 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">1</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -635,6 +694,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -642,6 +702,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="no_show_all">True</property>
                     <property name="margin_top">10</property>
                     <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
@@ -661,12 +722,14 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">9</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="label8">
+                  <object class="GtkLabel" id="lblAutoupdate">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
                     <property name="margin_left">10</property>
                     <property name="xalign">0</property>
                     <property name="label" translatable="yes">If enabled, Syncthing-GTK will automatically check for new daemon releases and replace binary with latest version.</property>
@@ -677,6 +740,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">10</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -694,6 +758,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">3</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -712,6 +777,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">4</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -728,6 +794,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -745,6 +812,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">6</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -761,6 +829,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">8</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -777,6 +846,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">7</property>
                     <property name="width">2</property>
+                    <property name="height">1</property>
                   </packing>
                 </child>
               </object>
