@@ -15,12 +15,14 @@ Usage:
 from __future__ import unicode_literals
 from gi.repository import Gtk
 from xml.dom import minidom
+from tools import GETTEXT_DOMAIN
 import logging
 log = logging.getLogger("UIBuilder")
 
 class UIBuilder(Gtk.Builder):
 	def __init__(self):
 		Gtk.Builder.__init__(self)
+		self.set_translation_domain(GETTEXT_DOMAIN)
 		self.conditions = set([])
 		self.icon_paths = []
 		self.xml = None

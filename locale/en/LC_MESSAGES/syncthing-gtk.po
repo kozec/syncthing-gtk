@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-21 17:13+0200\n"
+"POT-Creation-Date: 2015-11-02 23:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -226,8 +226,7 @@ msgstr ""
 msgid "%(online)s/%(total)s online"
 msgstr ""
 
-#: syncthing_gtk/app.py:877 syncthing_gtk/app.py:1315
-#: syncthing_gtk/app.py:1340
+#: syncthing_gtk/app.py:877 syncthing_gtk/app.py:1315 syncthing_gtk/app.py:1340
 msgid "Never"
 msgstr ""
 
@@ -981,16 +980,8 @@ msgstr ""
 msgid "Override Remote Changes"
 msgstr ""
 
-#: app.glade:508 app.glade:577
-msgid "gtk-edit"
-msgstr ""
-
 #: app.glade:519
 msgid "Edit _Ignore Patterns"
-msgstr ""
-
-#: app.glade:530 app.glade:600
-msgid "gtk-delete"
 msgstr ""
 
 #: app.glade:547
@@ -1069,10 +1060,6 @@ msgstr ""
 msgid "Global Discovery _Servers"
 msgstr ""
 
-#: daemon-settings.glade:304
-msgid "50"
-msgstr ""
-
 #: daemon-settings.glade:327
 msgid "_Incoming Rate Limit (KiB/s)"
 msgstr ""
@@ -1129,16 +1116,8 @@ msgstr ""
 msgid "XYZ-123-ABC"
 msgstr ""
 
-#: find-daemon.glade:81
-msgid "... message goes here ..."
-msgstr ""
-
 #: find-daemon.glade:111 ui-settings.glade:666
 msgid "_Browse..."
-msgstr ""
-
-#: find-daemon.glade:142
-msgid " "
 msgstr ""
 
 #: find-daemon.glade:164
@@ -1166,7 +1145,7 @@ msgid "Folder _ID"
 msgstr ""
 
 #: folder-edit.glade:159
-msgid "Short identifier for the folder. Must be the same on all devices"
+msgid "Short identifier for the folder. Must be the same on all devices."
 msgstr ""
 
 #: folder-edit.glade:174
@@ -1200,7 +1179,7 @@ msgstr ""
 #: folder-edit.glade:325
 msgid ""
 "File permission bits are ignored when looking for changes. Use on FAT "
-"filesystems"
+"filesystems."
 msgstr ""
 
 #: folder-edit.glade:339
@@ -1208,7 +1187,7 @@ msgid "Share With _Devices"
 msgstr ""
 
 #: folder-edit.glade:372
-msgid "Select the devices to share this folder with"
+msgid "Select the devices to share this folder with."
 msgstr ""
 
 #: folder-edit.glade:400
@@ -1223,10 +1202,6 @@ msgstr ""
 
 #: folder-edit.glade:470
 msgid "_Keep Versions"
-msgstr ""
-
-#: folder-edit.glade:488 folder-edit.glade:572 folder-edit.glade:684
-msgid "5"
 msgstr ""
 
 #: folder-edit.glade:507
@@ -1248,6 +1223,10 @@ msgstr ""
 
 #: folder-edit.glade:553
 msgid "Ma_ximum Age"
+msgstr ""
+
+#: folder-edit.glade:572 folder-edit.glade:684
+msgid "5"
 msgstr ""
 
 #: folder-edit.glade:592
@@ -1340,7 +1319,7 @@ msgid "Syncthing-GTK Settings"
 msgstr ""
 
 #: ui-settings.glade:120
-msgid "When starting and syncthing daemon is not running..."
+msgid "When starting and Syncthing daemon is not running..."
 msgstr ""
 
 #: ui-settings.glade:131
@@ -1431,13 +1410,6 @@ msgstr ""
 msgid "Caja (MATE Desktop)"
 msgstr ""
 
-#: ui-settings.glade:576
-msgid ""
-"Install blahblahblah to enable Nemo support\n"
-"Install blahblahblah to enable Nautilus support\n"
-"Install blahblahblah to enable Caja support"
-msgstr ""
-
 #: ui-settings.glade:597
 msgid ""
 "<b>Note:</b> You may need to restart your filemanager after toggling "
@@ -1488,10 +1460,6 @@ msgid ""
 "Sets the maximum number of CPU cores for daemon to use. This value will be "
 "used only if \"<i>start daemon in background</i>\" option is checked on "
 "\"<i>Interface</i>\" page."
-msgstr ""
-
-#: ui-settings.glade:840
-msgid "1"
 msgstr ""
 
 #: ui-settings.glade:862

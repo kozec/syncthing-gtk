@@ -117,7 +117,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_top">10</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">When starting and syncthing daemon is not running...</property>
+                    <property name="label" translatable="yes">When starting and Syncthing daemon is not running...</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -573,7 +573,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_top">7</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Install blahblahblah to enable Nemo support
+                    <property name="label">Install blahblahblah to enable Nemo support
 Install blahblahblah to enable Nautilus support
 Install blahblahblah to enable Caja support</property>
                     <attributes>
@@ -837,7 +837,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="margin_bottom">10</property>
-                    <property name="text" translatable="yes">1</property>
+                    <property name="text">1</property>
                     <property name="adjustment">adjMaxCPUs</property>
                     <property name="value">1</property>
                     <signal name="value-changed" handler="cb_vmax_cpus_value_changed" swapped="no"/>

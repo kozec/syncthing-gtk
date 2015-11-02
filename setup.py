@@ -57,6 +57,15 @@ class BuildPyEx(build_py):
 					break
 		return rv
 
+def find_mos(parent, lst=[]):
+	for f in os.listdir(parent):
+		fp = os.path.join(parent, f)
+		if os.path.isdir(fp):
+			find_mos(fp, lst)
+		elif fp.endswith(".mo"):
+			lst += [ fp ]
+	return lst
+
 if __name__ == "__main__" : 
 	data_files = [
 		('share/syncthing-gtk', glob.glob("*.glade") ),
@@ -80,6 +89,8 @@ if __name__ == "__main__" :
 			'share/icons/hicolor/%sx%s/apps' % (size,size),
 			glob.glob("icons/%sx%s/apps/*" % (size,size))
 		) for size in ICON_SIZES 
+	] + [
+		("share/" + os.path.split(x)[0], (x,)) for x in find_mos("locale/")
 	]
 	setup(
 		name = 'syncthing-gtk',
