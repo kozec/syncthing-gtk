@@ -7,6 +7,7 @@ Displays output from daemon subprocess
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio
+from syncthing_gtk import UIBuilder
 import os, tempfile
 
 class DaemonOutputDialog(object):
@@ -44,7 +45,7 @@ class DaemonOutputDialog(object):
 	
 	def setup_widgets(self):
 		# Load glade file
-		self.builder = Gtk.Builder()
+		self.builder = UIBuilder()
 		self.builder.add_from_file(os.path.join(self.app.gladepath, "daemon-output.glade"))
 		self.builder.connect_signals(self)
 		self["tvOutput"].connect('size-allocate', self.scroll)

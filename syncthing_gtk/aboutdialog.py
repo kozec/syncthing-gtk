@@ -6,6 +6,7 @@ Syncthing-GTK - About dialog
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib
 from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk import UIBuilder
 import os, sys, tempfile
 
 class AboutDialog(object):
@@ -29,7 +30,7 @@ class AboutDialog(object):
 	
 	def setup_widgets(self, app):
 		# Load glade file
-		self.builder = Gtk.Builder()
+		self.builder = UIBuilder()
 		self.builder.add_from_file(os.path.join(self.gladepath, "about.glade"))
 		self.builder.connect_signals(self)
 		self.dialog = self.builder.get_object("dialog")

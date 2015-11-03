@@ -33,15 +33,19 @@ def fix_localized_system_error_messages():
 	
 	codecs.register_error("strict", handle_error)
 
-def dont_use_localization_in_gtk():
+def enable_localization():
 	"""
-	Set's LANGUAGE environment variable to en_US, preventing
-	use of localized labels on GTK stock menus and widgets.
-	
-	This will prevent interface from being 'half-translated' until
-	real translation support is done.
+	Updates environment variables with windows locale.
 	"""
-	os.environ['LANGUAGE'] = 'en_US'
+	loc = "en"
+	domain = "syncthing-gtk"
+	try:
+		import locale
+		loc = locale.getdefaultlocale()[0]
+	except Exception, e:
+		pass
+	os.environ['LANGUAGE'] = loc
+	print "LANG", os.environ['LANGUAGE']
 
 def is_shutting_down():
 	""" Returns True if Windows initiated shutdown process """

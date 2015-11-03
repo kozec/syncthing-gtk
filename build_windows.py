@@ -8,7 +8,7 @@ import os, site, sys, shutil, re
 from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
 from win32verstamp import stamp
-from setup import get_version as _get_version
+from setup import get_version as _get_version, find_mos
 from syncthing_gtk.windows import ST_INOTIFY_EXE
 
 gnome_dll_path = "/Python27/Lib/site-packages/gnome"
@@ -58,6 +58,9 @@ wrong_sized_dll = [	'libcairo-gobject-2.dll',
 					'libgthread-2.0-0.dll',
 ]
 
+# List of languages that are copied from GTK and included in installation
+enabled_gtk_locales = [ "sk", "cs" ]
+
 include_files = []
 
 # Stuff required by GTK
@@ -65,9 +68,19 @@ gtk_dirs = ('etc', 'lib')
 include_files += [ (os.path.join(gnome_dll_path, x), x) for x in gtk_dirs ]
 include_files += [ (os.path.join(gnome_dll_path, x), x) for x in missing_dll ]
 
+# GTK locales
+include_files += [ (os.path.join(gnome_dll_path, "share/locale", x), "share/locale/" + x ) for x in enabled_gtk_locales ]
+enabled_gtk_locales
+
 # Data files
 include_files += [ x for x in os.listdir(".") if x.endswith(".glade") ]
 include_files += [ "./icons" ]
+d = [ (x, x) for x in find_mos("locale/") ]
+include_files += d
+import pprint
+pprint.pprint(include_files)
+#sys.exit(0)
+
 
 # syncthing-inotify
 include_files += [ ST_INOTIFY_EXE ]
@@ -199,7 +212,7 @@ if 'build' in sys.argv:
 		os.path.join(build_dir, "icons/128x128/apps/syncthing-gtk.png"),
 		os.path.join(build_dir, "icons/syncthing-gtk.png")
 	)
-
+	
 	print "Copying glib schemas"
 	if not os.path.exists(os.path.join(build_dir, "/share/glib-2.0/schemas")):
 		target_path = os.path.join(build_dir, "share/glib-2.0/schemas")

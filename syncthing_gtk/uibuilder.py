@@ -15,7 +15,8 @@ Usage:
 from __future__ import unicode_literals
 from gi.repository import Gtk
 from xml.dom import minidom
-from tools import GETTEXT_DOMAIN
+from tools import GETTEXT_DOMAIN, IS_WINDOWS
+from syncthing_gtk.tools import _ # gettext function
 import logging
 log = logging.getLogger("UIBuilder")
 
@@ -30,7 +31,12 @@ class UIBuilder(Gtk.Builder):
 	def add_from_file(self, filename):
 		""" Builds UI from file """
 		log.debug("Loading glade file %s", filename)
-		self.add_from_string(file(filename, "r").read())
+		if len(self.conditions) == 0 and not IS_WINDOWS:
+			# There is no need to do any magic in this case; Just use
+			# Gtk.Builder directly
+			Gtk.Builder.add_from_file(self, filename)
+		else:
+			self.add_from_string(file(filename, "r").read())
 	
 	def add_from_string(self, string):
 		""" Builds UI from string """
@@ -93,10 +99,33 @@ class UIBuilder(Gtk.Builder):
 		log.debug("Enabled conditions: %s", self.conditions)
 		self._replace_icon_paths(self.xml.documentElement)
 		self._find_conditions(self.xml.documentElement)
+		if IS_WINDOWS:
+			self._find_translatables()
 		# Now this will convert parsed DOM tree back to XML and fed it
 		# to Gtk.Builder XML parser.
 		# God probably kills kitten every time when method is called...
 		Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8"))
+	
+	def _find_translatables(self, node=None):
+		"""
+		Fuck GTK devs.
+		With cacti.
+		https://bugzilla.gnome.org/show_bug.cgi?id=574520
+		"""
+		if node is None:
+			node = self.xml.documentElement
+		for child in node.childNodes:
+			if child.nodeType == child.ELEMENT_NODE:
+				if child.tagName.lower() == "property":
+					if child.getAttribute("translatable") == "yes":
+						self._translate(child)
+				else:
+					self._find_translatables(child)
+	
+	def _translate(self, node):
+		for child in node.childNodes:
+			if child.nodeType == child.TEXT_NODE:
+				child.nodeValue = _(child.nodeValue)
 	
 	def _replace_icon_paths(self, node):
 		""" Recursive part for _build - icon paths """
