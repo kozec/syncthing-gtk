@@ -569,7 +569,7 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="margin_bottom">10</property>
-                                <property name="text" translatable="yes">5</property>
+                                <property name="text">5</property>
                                 <property name="adjustment">adjMaxAge</property>
                                 <property name="climb_rate">1</property>
                                 <property name="snap_to_ticks">True</property>
@@ -681,7 +681,7 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="width_request">300</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="text" translatable="yes">5</property>
+                                <property name="text">5</property>
                                 <property name="adjustment">adjvCleanoutDays</property>
                                 <property name="climb_rate">1</property>
                                 <property name="snap_to_ticks">True</property>

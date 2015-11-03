@@ -25,8 +25,8 @@ msgstr ""
 msgid "%s kB/s"
 msgstr ""
 
-#: syncthing_gtk/app.py:298 syncthing_gtk/notifications.py:77
-msgid "Syncthing GTK"
+#: syncthing_gtk/app.py:298 syncthing_gtk/notifications.py:77 syncthing_gtk/wizard.py:53
+msgid "Syncthing-GTK"
 msgstr ""
 
 #: syncthing_gtk/app.py:356 syncthing_gtk/app.py:357 syncthing_gtk/app.py:915
@@ -661,10 +661,6 @@ msgid "Browse for Syncthing binary"
 msgstr ""
 
 #: syncthing_gtk/wizard.py:53
-msgid "Syncthing-GTK"
-msgstr ""
-
-#: syncthing_gtk/wizard.py:53
 msgid "First run wizard"
 msgstr ""
 
@@ -1223,10 +1219,6 @@ msgstr ""
 
 #: folder-edit.glade:553
 msgid "Ma_ximum Age"
-msgstr ""
-
-#: folder-edit.glade:572 folder-edit.glade:684
-msgid "5"
 msgstr ""
 
 #: folder-edit.glade:592
