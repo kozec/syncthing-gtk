@@ -15,9 +15,9 @@ _ = lambda (a) : a
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.7"
+INTERNAL_VERSION		= "v0.8"
 # Minimal Syncthing version supported by App
-MIN_ST_VERSION			= "0.11.0"
+MIN_ST_VERSION			= "0.12.0"
 
 COLOR_DEVICE			= "#707070"					# Dark-gray
 COLOR_DEVICE_SYNCING	= "#2A89C8"					# Blue
@@ -347,6 +347,8 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("last-seen-changed", self.cb_syncthing_last_seen_changed)
 		self.daemon.connect("device-connected", self.cb_syncthing_device_state_changed, True)
 		self.daemon.connect("device-disconnected", self.cb_syncthing_device_state_changed, False)
+		self.daemon.connect("device-paused", self.cb_syncthing_device_paused_resumed, True)
+		self.daemon.connect("device-resumed", self.cb_syncthing_device_paused_resumed, False)
 		self.daemon.connect("device-sync-started", self.cb_syncthing_device_sync_progress)
 		self.daemon.connect("device-sync-progress", self.cb_syncthing_device_sync_progress)
 		self.daemon.connect("device-sync-finished", self.cb_syncthing_device_sync_progress, 1.0)
@@ -357,6 +359,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("folder-sync-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SYNCING, _("Syncing"))
 		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_up_to_date)
 		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_state_changed, 1.0, COLOR_FOLDER_SCANNING, _("Scanning"))
+		self.daemon.connect("folder-scan-progress", self.cb_syncthing_folder_state_changed, COLOR_FOLDER_SCANNING, _("Scanning"))
 		self.daemon.connect("folder-scan-finished", self.cb_syncthing_folder_up_to_date)
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped) 
 		self.daemon.connect("system-data-updated", self.cb_syncthing_system_data)
@@ -641,7 +644,7 @@ class App(Gtk.Application, TimerManager):
 					else:
 						self.display_run_daemon_dialog()
 			self.set_status(False)
-		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process and not StDownloader is None:
+		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process is None and not StDownloader is None:
 			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
 			# Try to update.
 			from configuration import LONG_AGO
@@ -872,6 +875,19 @@ class App(Gtk.Application, TimerManager):
 			else:
 				dtf = dt.strftime("%Y-%m-%d %H:%M")
 				device['last-seen'] = str(dtf)
+	
+	def cb_syncthing_device_paused_resumed(self, daemon, nid, paused):
+		if nid in self.devices:	# Should be always
+			device = self.devices[nid]
+			device.set_status(_("Paused") if paused else _("Disconnected"))
+			device.set_color_hex(COLOR_DEVICE_OFFLINE)
+			device["online"] = False
+			device["connected"] = False
+			# Update visible values
+			device.hide_values("sync", "inbps", "outbps", "version")
+			device.show_values("last-seen")
+		self.update_folders()
+		self.set_status(True)
 	
 	def cb_syncthing_device_state_changed(self, daemon, nid, connected):
 		if nid in self.devices:	# Should be always
@@ -1640,6 +1656,8 @@ class App(Gtk.Application, TimerManager):
 		b = box["id"] != self.daemon.get_my_id()
 		self["menu-popup-edit-device"].set_visible(b)
 		self["menu-popup-delete-device"].set_visible(b)
+		self["menu-popup-pause-device"].set_visible(box.get_status() != _("Paused"))
+		self["menu-popup-resume-device"].set_visible(box.get_status() == _("Paused"))
 		self["popup-menu-device"].popup(None, None, None, None, button, time)
 	
 	def cb_menu_popup(self, source, menu):
@@ -1701,8 +1719,15 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_popup_delete_device(self, *a):
 		""" Handler for other 'edit' context menu item """
-		# Editing device
 		self.check_delete("device", self.rightclick_box["id"], self.rightclick_box.get_title())
+	
+	def cb_menu_popup_pause_device(self, *a):
+		""" Handler for 'resume device' context menu item """
+		self.daemon.pause(self.rightclick_box["id"])
+	
+	def cb_menu_popup_resume_device(self, *a):
+		""" Handler for 'resume device' context menu item """
+		self.daemon.resume(self.rightclick_box["id"])
 	
 	def check_delete(self, mode, id, name):
 		"""
@@ -1899,6 +1924,7 @@ class App(Gtk.Application, TimerManager):
 			self.quit()
 	
 	def cb_daemon_exit(self, proc, error_code):
+		print "cb_daemon_exit", proc, self.process
 		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
 			# restart it
@@ -1936,6 +1962,6 @@ class App(Gtk.Application, TimerManager):
 		r = d.run()
 		d.destroy()
 		if r == FindDaemonDialog.RESPONSE_SAVED:
-			self.cb_daemon_exit(None, -1)
+			self.cb_daemon_exit(self.process, -1)
 		else:
 			self.quit()

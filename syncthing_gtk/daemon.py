@@ -20,7 +20,7 @@ import json, os, sys, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
-MIN_VERSION = "0.11"
+MIN_VERSION = "0.12"
 
 # Random constant used as key when adding headers to returned data in
 # REST requests; Anything goes, as long as it isn't string
@@ -129,6 +129,14 @@ class Daemon(GObject.GObject, TimerManager):
 				id:			id of device
 				last_seen:	datetime object or None, if device was never seen
 		
+		device-paused (id):
+			Emited when synchronization with device is paused
+				id:		id of folder
+		
+		device-resumed (id):
+			Emited when synchronization with device is resumed
+				id:		id of folder
+		
 		device-sync-started (id, progress):
 			Emited after device synchronization is started
 				id:			id of folder
@@ -159,6 +167,11 @@ class Daemon(GObject.GObject, TimerManager):
 			most likely beacause folder was just added and syncthing
 			daemon needs to be restarted
 				id:		id of folder
+		
+		folder-scan-progress (id, progress):
+			Emited repeatedly while folder is being scanned
+				id:			id of folder
+				progress:	scan progress (0.0 to 1.0)
 		
 		folder-sync-progress (id, progress):
 			Emited repeatedly while folder is being synchronized
@@ -228,18 +241,20 @@ class Daemon(GObject.GObject, TimerManager):
 			b"device-discovered"	: (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
 			b"device-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, object, object)),
 			b"last-seen-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"device-paused"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"device-resumed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"device-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"device-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"folder-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"folder-data-failed"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"folder-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-			b"folder-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-sync-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-scan-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"folder-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-scan-started"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"folder-scan-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"folder-stopped"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
@@ -736,11 +751,12 @@ class Daemon(GObject.GObject, TimerManager):
 		self.timer("event", self._refresh_interval, self._request_events)
 	
 	def _syncthing_cb_errors(self, errors):
-		for e in errors["errors"]:
-			t = parsetime(e["time"])
-			if t > self._last_error_time:
-				self.emit("error", e["error"])
-				self._last_error_time = t
+		if errors["errors"] is not None:
+			for e in errors["errors"]:
+				t = parsetime(e["time"])
+				if t > self._last_error_time:
+					self.emit("error", e["error"])
+					self._last_error_time = t
 		self.timer("errors", self._refresh_interval * 5, self._rest_request, "system/error", self._syncthing_cb_errors)
 	
 	def _syncthing_cb_events_error(self, exception, command):
@@ -783,13 +799,20 @@ class Daemon(GObject.GObject, TimerManager):
 				cons[id]["outbps"] = 0.0
 			# Store updated device_data
 			for key in cons[id]:
-				if key != "clientVersion" or cons[id][key] != "":	# Happens for 'total'
-					device_data[key] = cons[id][key]
+				if not key in ('clientVersion', 'connected'):		# Don't want copy those
+					if cons[id][key] != "":							# Happens for 'total'
+						device_data[key] = cons[id][key]
 			
-			# Send "device-connected" signal, if device was disconnected until now
-			if not device_data["connected"] and nid != self._my_id:
-				device_data["connected"] = True
-				self.emit("device-connected", nid)
+			if cons[id]["paused"]:
+				# Send "device-paused" signal if device needed
+				device_data["connected"] = False
+				self.emit("device-paused", nid)
+			else:
+				# Send "device-connected" signal, if device was disconnected until now
+				if cons[id]["connected"]:
+					if not device_data["connected"] and nid != self._my_id:
+						device_data["connected"] = True
+						self.emit("device-connected", nid)
 			# Send "device-data-changed" signal
 			self.emit("device-data-changed", nid, 
 				device_data["address"],
@@ -907,7 +930,8 @@ class Daemon(GObject.GObject, TimerManager):
 		if state in ('error', 'stopped'):
 			if not rid in self._stopped_folders:
 				self._stopped_folders.add(rid)
-				self.emit("folder-stopped", rid, data["invalid"])
+				reason = data["invalid"] or data["error"]
+				self.emit("folder-stopped", rid, reason)
 		self.emit('folder-data-changed', rid, data)
 		p = 0.0
 		if state == "syncing":
@@ -1003,9 +1027,7 @@ class Daemon(GObject.GObject, TimerManager):
 					self.emit("folder-sync-started", rid)
 		elif state == "scanning":
 			if not rid in self._stopped_folders:
-				if rid in self._scanning_folders:
-					self.emit("folder-scan-progress", rid)
-				else:
+				if not rid in self._scanning_folders:
 					self._scanning_folders.add(rid)
 					self.emit("folder-scan-started", rid)
 	
@@ -1026,13 +1048,19 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["id"]
 			self.emit("device-connected", nid)
 		elif eType == "DeviceDisconnected":
-			nid = e["data"]["id"]
-			self.emit("device-disconnected", nid)
-			self._request_last_seen()
+			   nid = e["data"]["id"]
+			   self.emit("device-disconnected", nid)
 		elif eType == "DeviceDiscovered":
 			nid = e["data"]["device"]
 			addresses = e["data"]["addrs"]
 			self.emit("device-discovered", nid, addresses)
+		elif eType == "DevicePaused":
+			nid = e["data"]["device"]
+			self.emit("device-paused", nid)
+		elif eType == "DeviceResumed":
+			nid = e["data"]["device"]
+			self.emit("device-resumed", nid)
+			self._request_last_seen()
 		elif eType == "FolderRejected":
 			nid = e["data"]["device"]
 			rid = e["data"]["folder"]
@@ -1041,6 +1069,13 @@ class Daemon(GObject.GObject, TimerManager):
 			nid = e["data"]["device"]
 			address = e["data"]["address"]
 			self.emit("device-rejected", nid, address)
+		elif eType == "FolderScanProgress":
+			rid = e["data"]["folder"]
+			total = float(e["data"]["total"])
+			if total > 0:
+				# ^^ just in case
+				status = float(e["data"]["current"]) / total
+				self.emit("folder-scan-progress", rid, status)
 		elif eType == "ItemStarted":
 			rid = e["data"]["folder"]
 			filename = e["data"]["item"]
@@ -1059,11 +1094,8 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("item-updated", rid, filename, mtime)
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
-		elif eType == "ItemFinished":
-			# Not handled (yet?)
-			pass
-		elif eType == "DownloadProgress":
-			# Not handled (yet?)
+		elif eType in ("ItemFinished", "DownloadProgress", "RelayStateChanged"):
+			# Not handled
 			pass
 		else:
 			log.warning("Unhandled event type: %s", e)
@@ -1231,21 +1263,27 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Returns True if daemon is known to be alive """
 		return self._connected
 	
-	def rescan(self, folder_id, path=None):
-		""" Asks daemon to rescan entire folder or specified path """
+	def pause(self, device_id):
+		""" Pauses synchronization with specified device """
+		self._rest_post("system/pause?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
+	
+	def resume(self, device_id):
+		""" Resumes synchronization with specified device """
 		def on_error(*a):
 			log.error(a)
+		self._rest_post("system/resume?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
+	
+	def rescan(self, folder_id, path=None):
+		""" Asks daemon to rescan entire folder or specified path """
 		if path is None:
-			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
+			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 		else:
 			path_enc = urllib.quote(path.encode('utf-8'), ''.encode('utf-8'))
 			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, on_error, folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
-		def on_error(*a):
-			log.error(a)
-		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, on_error, folder_id)
+		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def request_events(self):
 		"""
