@@ -116,7 +116,7 @@ class UIBuilder(Gtk.Builder):
 			node = self.xml.documentElement
 		for child in node.childNodes:
 			if child.nodeType == child.ELEMENT_NODE:
-				if child.tagName.lower() == "property":
+				if child.tagName.lower() in ("property", "col"):
 					if child.getAttribute("translatable") == "yes":
 						self._translate(child)
 				else:
