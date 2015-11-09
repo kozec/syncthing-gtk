@@ -1269,8 +1269,6 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def resume(self, device_id):
 		""" Resumes synchronization with specified device """
-		def on_error(*a):
-			log.error(a)
 		self._rest_post("system/resume?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
 	
 	def rescan(self, folder_id, path=None):
@@ -1279,7 +1277,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 		else:
 			path_enc = urllib.quote(path.encode('utf-8'), ''.encode('utf-8'))
-			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, on_error, folder_id)
+			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
