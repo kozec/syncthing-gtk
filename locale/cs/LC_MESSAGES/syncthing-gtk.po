@@ -1,0 +1,1455 @@
+# Syncthing-GTK
+# Copyright (C) 2014-2015 Kozec and contributors
+# This file is distributed under the same license as the Syncthing-GTK package.
+# 
+# Translators:
+# Václav Obrtlík, 2015
+msgid ""
+msgstr ""
+"Project-Id-Version: syncthing-gtk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-11-02 23:51+0100\n"
+"PO-Revision-Date: 2015-11-03 13:13+0000\n"
+"Last-Translator: Václav Obrtlík\n"
+"Language-Team: Czech (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/cs/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: syncthing_gtk/app.py:190
+msgid "Syncthing-GTK started and running in notification area"
+msgstr "Syncthing-GTK je spuštěný a běží v oznamovací oblasti"
+
+#: syncthing_gtk/app.py:284
+#, python-format
+msgid "%s kB/s"
+msgstr "%s kB/s"
+
+#: syncthing_gtk/app.py:298 syncthing_gtk/notifications.py:77
+#: syncthing_gtk/wizard.py:53
+msgid "Syncthing-GTK"
+msgstr "Syncthing-GTK"
+
+#: syncthing_gtk/app.py:356 syncthing_gtk/app.py:357 syncthing_gtk/app.py:915
+msgid "Syncing"
+msgstr "Synchronizuje se"
+
+#: syncthing_gtk/app.py:359
+msgid "Scanning"
+msgstr "Skenování"
+
+#: syncthing_gtk/app.py:382 syncthing_gtk/app.py:639
+msgid "Starting Syncthing daemon"
+msgstr "Syncthing démon se spouští"
+
+#: syncthing_gtk/app.py:411
+msgid "Allow Anonymous Usage Reporting?"
+msgstr "Povolit anonymní hlášení o používání?"
+
+#: syncthing_gtk/app.py:413
+msgid "The encrypted usage report is sent daily."
+msgstr "Šifrovaná data o využití jsou zasílána denně."
+
+#: syncthing_gtk/app.py:414
+msgid "It is used to track common platforms, folder sizes and app versions."
+msgstr "Jsou používána pro zjištění nejobvyklejších platforem, velikosti adresářů a verzí aplikace."
+
+#: syncthing_gtk/app.py:415
+msgid ""
+"If the reported data set is changed you will be prompted with this dialog "
+"again."
+msgstr "Pokud se hlášená data změní, budete opět upozorněni tímto dialogem."
+
+#: syncthing_gtk/app.py:417
+msgid "The aggregated statistics are publicly available at"
+msgstr "Souhrnné statistiky jsou veřejně dostupné na"
+
+#: syncthing_gtk/app.py:473
+msgid "Extracting update..."
+msgstr "Extrahuji aktualizaci..."
+
+#: syncthing_gtk/app.py:478
+msgid "Restarting daemon..."
+msgstr "Restartuji démona..."
+
+#: syncthing_gtk/app.py:494
+#, python-format
+msgid "Failed to download upgrade: %s"
+msgstr "Stažení aktualizace selhalo: %s"
+
+#: syncthing_gtk/app.py:512
+#, python-format
+msgid "Downloading Syncthing %s"
+msgstr "Stahování Syncthing %s"
+
+#: syncthing_gtk/app.py:591
+msgid "Connected to Syncthing daemon"
+msgstr "Připojeno k démonu Syncthing"
+
+#: syncthing_gtk/app.py:601
+msgid "Connection to Syncthing daemon lost."
+msgstr "Připojení k démonu Syncthing ztraceno."
+
+#: syncthing_gtk/app.py:602
+msgid "Syncthing is probably restarting or has been shut down."
+msgstr "Syncthing se nejspíš restartuje nebo byl ukončen."
+
+#: syncthing_gtk/app.py:604
+msgid "Syncthing has been shut down."
+msgstr "Syncthing byl ukončen."
+
+#: syncthing_gtk/app.py:608 syncthing_gtk/app.py:1457
+msgid "Syncthing is restarting."
+msgstr "Syncthing se restartuje."
+
+#: syncthing_gtk/app.py:608 syncthing_gtk/app.py:1457
+msgid "Please wait"
+msgstr "Čekejte prosím"
+
+#: syncthing_gtk/app.py:631
+#, python-format
+msgid "Connecting to Syncthing daemon at %s..."
+msgstr "Připojuji se k démonu Syncthing na %s..."
+
+#: syncthing_gtk/app.py:636
+#, python-format
+msgid "Waiting for Syncthing daemon at %s..."
+msgstr "Čekám na démona Syncthing na %s..."
+
+#: syncthing_gtk/app.py:651
+msgid "Your syncthing daemon is too old."
+msgstr "Váš démon Syncthing je příliš starý."
+
+#: syncthing_gtk/app.py:651
+msgid "Attempting to download recent, please wait..."
+msgstr "Pokouším se stáhnout aktuálního, čekejte prosím..."
+
+#: syncthing_gtk/app.py:657
+msgid ""
+"Cannot authorize with daemon. Please, use WebUI to generate API key or "
+"disable password authentication."
+msgstr "Nemůžu se autorizovat démonu. Použijte prosím webové rozhraní pro vygenerování API klíče nebo vypněte autentifikaci heslem."
+
+#: syncthing_gtk/app.py:659
+#, python-format
+msgid ""
+"Your syncthing daemon is too old.\n"
+"Please, upgrade syncthing package at least to version %s and try again."
+msgstr "Váš démon Syncthing je příliš starý.\nAktualizujte prosím Syncthing alespoň na verzi %s a zkuste to znovu."
+
+#: syncthing_gtk/app.py:661
+msgid ""
+"Sorry, connecting to HTTPS is not supported on this platform.\n"
+"Please, use WebUI to disable HTTPS try again."
+msgstr "Je mi líto, ale připojení k HTTPS není na této platformě podporováno.\nPoužijte prosím webové rozhraní pro vypnutí HTTPS a zkuste to znovu."
+
+#: syncthing_gtk/app.py:664
+msgid "Connection to daemon failed. Check your configuration and try again."
+msgstr "Připojení k démonu selhalo. Zkontrolujte svou konfiguraci a zkuste to znovu."
+
+#: syncthing_gtk/app.py:665 syncthing_gtk/app.py:1936
+#: syncthing_gtk/editordialog.py:305
+msgid "Error message:"
+msgstr "Chybová zpráva:"
+
+#: syncthing_gtk/app.py:676
+msgid "More info"
+msgstr "Více informací"
+
+#: syncthing_gtk/app.py:702
+msgid ""
+"The configuration has been saved but not activated.\n"
+"Syncthing must restart to activate the new configuration."
+msgstr "Konfigurace byla uložena, ale nebyla aktivována.\nAby bylo nové nastavení aktivováno, Syncthing se musí restartovat."
+
+#: syncthing_gtk/app.py:704
+msgid "_Restart"
+msgstr "_Restartovat"
+
+#: syncthing_gtk/app.py:771
+#, python-format
+msgid "%(device)s wants to share folder \"%(folder)s\". Add new folder?"
+msgstr "%(device)s chce sdílet adresář \"%(folder)s\". Přidat nový adresář?"
+
+#: syncthing_gtk/app.py:778 syncthing_gtk/app.py:799
+msgid "_Add"
+msgstr "_Přidat"
+
+#: syncthing_gtk/app.py:793
+#, python-format
+msgid ""
+"Device \"<b>%(device)s</b>\" at IP \"<b>%(ip)s</b>\" wants to connect. Add "
+"new device?"
+msgstr "Přístroj \"<b>%(device)s</b>\" na IP \"<b>%(ip)s</b>\" se chce připojit. Přidat nový přístroj?"
+
+#: syncthing_gtk/app.py:800
+msgid "_Ignore"
+msgstr "_Ignorovat"
+
+#: syncthing_gtk/app.py:818
+msgid "RAM Utilization"
+msgstr "Využití RAM"
+
+#: syncthing_gtk/app.py:819
+msgid "CPU Utilization"
+msgstr "Využití CPU"
+
+#: syncthing_gtk/app.py:820 syncthing_gtk/app.py:1311
+msgid "Download Rate"
+msgstr "Rychlost stahování"
+
+#: syncthing_gtk/app.py:821 syncthing_gtk/app.py:1312
+msgid "Upload Rate"
+msgstr "Rychlost odesílání"
+
+#: syncthing_gtk/app.py:822
+msgid "Announce Server"
+msgstr "Oznamování"
+
+#: syncthing_gtk/app.py:823 syncthing_gtk/app.py:1314
+msgid "Version"
+msgstr "Verze"
+
+#: syncthing_gtk/app.py:846 syncthing_gtk/editordialog.py:385
+msgid "disabled"
+msgstr "vypnuto"
+
+#: syncthing_gtk/app.py:848
+msgid "Online"
+msgstr "Dostupné"
+
+#: syncthing_gtk/app.py:848
+msgid "offline"
+msgstr "nedostupné"
+
+#: syncthing_gtk/app.py:850
+#, python-format
+msgid "%(online)s/%(total)s online"
+msgstr "%(online)s/%(total)s dostupné"
+
+#: syncthing_gtk/app.py:877 syncthing_gtk/app.py:1315
+#: syncthing_gtk/app.py:1340
+msgid "Never"
+msgstr "Novější"
+
+#: syncthing_gtk/app.py:889
+msgid "Connected"
+msgstr "Připojeno"
+
+#: syncthing_gtk/app.py:897 syncthing_gtk/app.py:912
+#: syncthing_gtk/infobox.py:60
+msgid "Disconnected"
+msgstr "Nepřipojeno"
+
+#: syncthing_gtk/app.py:918 syncthing_gtk/app.py:953 syncthing_gtk/app.py:996
+#: syncthing_gtk/app.py:997 syncthing_gtk/app.py:1036
+msgid "Up to Date"
+msgstr "Aktuální"
+
+#: syncthing_gtk/app.py:939 syncthing_gtk/app.py:940 syncthing_gtk/app.py:941
+msgid "Files"
+msgstr "Soubory"
+
+#: syncthing_gtk/app.py:953 syncthing_gtk/app.py:1034
+msgid "Cluster out of sync"
+msgstr "Cluster nesesynchronizován"
+
+#: syncthing_gtk/app.py:968
+msgid "Stopped"
+msgstr "Zastaveno"
+
+#: syncthing_gtk/app.py:971
+msgid "Error"
+msgstr "Chyba"
+
+#: syncthing_gtk/app.py:990
+#, python-format
+msgid "Synchronizing '%s'"
+msgstr "Synchronizuje se '%s'"
+
+#: syncthing_gtk/app.py:992
+#, python-format
+msgid "Synchronizing %s folders"
+msgstr "Synchronizuje se '%s' složek"
+
+#: syncthing_gtk/app.py:1001 syncthing_gtk/app.py:1002
+msgid "All devices offline"
+msgstr "Všechny přístroje nedostupné"
+
+#: syncthing_gtk/app.py:1006 syncthing_gtk/app.py:1007
+msgid "Connecting to Syncthing daemon..."
+msgstr "Připojování k démonu Syncthing..."
+
+#: syncthing_gtk/app.py:1045
+msgid "Unshared"
+msgstr "Nesdíleno"
+
+#: syncthing_gtk/app.py:1048
+msgid "Offline"
+msgstr "Nedostupné"
+
+#: syncthing_gtk/app.py:1142
+msgid "Hide Window"
+msgstr "Skrýt okno"
+
+#: syncthing_gtk/app.py:1161 app.glade:628
+msgid "Show Window"
+msgstr "Zobrazit okno"
+
+#: syncthing_gtk/app.py:1210
+msgid "Syncthing daemon doesn't appear to be running."
+msgstr "Vypadá to, že démon Syncthing neběží."
+
+#: syncthing_gtk/app.py:1211
+msgid "Start it now?"
+msgstr "Spustit jej nyní?"
+
+#: syncthing_gtk/app.py:1214
+msgid "Always start daemon automatically"
+msgstr "Vždy spouštět démona automaticky"
+
+#: syncthing_gtk/app.py:1249
+msgid "Folder ID"
+msgstr "ID adresáře"
+
+#: syncthing_gtk/app.py:1250
+msgid "Path"
+msgstr "Cesta"
+
+#: syncthing_gtk/app.py:1251
+msgid "Global State"
+msgstr "Globální status"
+
+#: syncthing_gtk/app.py:1252
+msgid "Local State"
+msgstr "Místní status"
+
+#: syncthing_gtk/app.py:1253
+msgid "Out Of Sync"
+msgstr "Nesesynchronizováno"
+
+#: syncthing_gtk/app.py:1254
+msgid "Folder Master"
+msgstr "Master adresář"
+
+#: syncthing_gtk/app.py:1255
+msgid "Ignore Permissions"
+msgstr "Ignorovat oprávnění"
+
+#: syncthing_gtk/app.py:1256
+msgid "Rescan Interval"
+msgstr "Interval opakování skenování"
+
+#: syncthing_gtk/app.py:1257
+msgid "Shared With"
+msgstr "Sdíleno s"
+
+#: syncthing_gtk/app.py:1282 syncthing_gtk/app.py:1283
+#: syncthing_gtk/app.py:1339
+msgid "Yes"
+msgstr "Ano"
+
+#: syncthing_gtk/app.py:1282 syncthing_gtk/app.py:1283
+#: syncthing_gtk/app.py:1339
+msgid "No"
+msgstr "Ne"
+
+#: syncthing_gtk/app.py:1285
+msgid "(watch)"
+msgstr "(sleduji)"
+
+#: syncthing_gtk/app.py:1299
+msgid "Unused"
+msgstr "Nepoužito"
+
+#: syncthing_gtk/app.py:1308
+msgid "Address"
+msgstr "Adresa"
+
+#: syncthing_gtk/app.py:1309
+msgid "Synchronization"
+msgstr "Synchronizace"
+
+#: syncthing_gtk/app.py:1310
+msgid "Compression"
+msgstr "Komprese"
+
+#: syncthing_gtk/app.py:1313
+msgid "Introducer"
+msgstr "Zavaděč"
+
+#: syncthing_gtk/app.py:1315
+msgid "Last Seen"
+msgstr "Naposledy spatřen"
+
+#: syncthing_gtk/app.py:1336 device-edit.glade:22
+msgid "All Data"
+msgstr "Všechna data"
+
+#: syncthing_gtk/app.py:1337 device-edit.glade:26 folder-edit.glade:38
+msgid "Off"
+msgstr "Vypnuta"
+
+#: syncthing_gtk/app.py:1338 device-edit.glade:30
+msgid "Metadata Only"
+msgstr "Pouze metadata"
+
+#: syncthing_gtk/app.py:1480
+msgid "Exiting."
+msgstr "Ukončuje se."
+
+#: syncthing_gtk/app.py:1481
+msgid "Shutdown Syncthing daemon as well?"
+msgstr "Ukončit také démona Syncthing?"
+
+#: syncthing_gtk/app.py:1486
+msgid "Always do same; Don't show this window again"
+msgstr "Použít pokaždé; Příště se neptat"
+
+#: syncthing_gtk/app.py:1717
+#, python-format
+msgid "Do you really want to permanently stop synchronizing directory '%s'?"
+msgstr "Opravdu chcete natrvalo zastavit synchronizaci adresáře '%s'?"
+
+#: syncthing_gtk/app.py:1719
+#, python-format
+msgid "Do you really want remove device '%s' from Syncthing?"
+msgstr "Opravdu chcete ze Syncthing odstranit přístroj '%s'?"
+
+#: syncthing_gtk/app.py:1787
+msgid "Syncthing-Inotify Output"
+msgstr "Výstup Syncthing-inotify"
+
+#: syncthing_gtk/app.py:1793
+msgid "Syncthing-Inotify is unavailable or failed to start"
+msgstr "Syncthing-inotify je nedostupné nebo selhalo jeho spuštění"
+
+#: syncthing_gtk/app.py:1935
+msgid "Failed to start Syncthing daemon."
+msgstr "Selhalo spuštění démona Syncthing."
+
+#: syncthing_gtk/app.py:1937
+msgid ""
+"Please, check your installation or set new path to Syncthing daemon binary."
+msgstr "Zkontrolujete prosím svou instalaci nebo nastavte novou cestu ke spustitelnému souboru démona Syncthing."
+
+#: syncthing_gtk/daemonsettings.py:24
+msgid "Syncthing Daemon Settings"
+msgstr "Nastavení démona Syncthing"
+
+#: syncthing_gtk/deviceeditor.py:24
+msgid ""
+"The entered device ID does not look valid. It should be a 52 character "
+"string consisting of letters and numbers, with spaces and dashes being "
+"optional."
+msgstr "Zadané ID přístroje není platné. Mělo by mít 52 znaků a mělo by obsahovat písmena a čísla. Mezery a pomlčky jsou nepovinné."
+
+#: syncthing_gtk/editordialog.py:303
+msgid "Failed to load configuration from daemon."
+msgstr "Načtení nastavení démona selhalo."
+
+#: syncthing_gtk/editordialog.py:304
+msgid "Try again."
+msgstr "Zkuste to znovu."
+
+#: syncthing_gtk/editordialog.py:378 syncthing_gtk/editordialog.py:387
+#, python-format
+msgid "%ss"
+msgstr "%ss"
+
+#: syncthing_gtk/editordialog.py:394
+msgid "never delete"
+msgstr "nikdy nemazat"
+
+#: syncthing_gtk/editordialog.py:396
+#, python-format
+msgid "%s day"
+msgstr "%s den"
+
+#: syncthing_gtk/editordialog.py:398
+#, python-format
+msgid "%s days"
+msgstr "%s dnů"
+
+#: syncthing_gtk/editordialog.py:431
+msgid "Failed to save configuration."
+msgstr "Uložení nastavení selhalo."
+
+#: syncthing_gtk/finddaemondialog.py:24 find-daemon.glade:7
+msgid "Can't invoke the daemon"
+msgstr "Nemůžu vyvolat démona"
+
+#: syncthing_gtk/finddaemondialog.py:26
+msgid "Syncthing binary"
+msgstr "Spustitelný soubor Syncthing"
+
+#: syncthing_gtk/finddaemondialog.py:28 syncthing_gtk/finddaemondialog.py:37
+msgid "Syncthing daemon binary cannot be found."
+msgstr "Nemůžu najít spustitelný soubor démona Syncthing."
+
+#: syncthing_gtk/finddaemondialog.py:29
+#, python-format
+msgid ""
+"If you have Syncthing installed, please, set path to %s bellow or click on "
+"<b>Download</b> button to download latest Syncthing package."
+msgstr "Pokud máte Syncthing nainstalován, nastavte prosím cestu k %s níže nebo klikněte na tlačítko <b>Stáhnout</b> pro stažení nejnovější verze Syncthing."
+
+#: syncthing_gtk/finddaemondialog.py:38
+#, python-format
+msgid "If you have Syncthing installed, please, set path to %s bellow"
+msgstr "Pokud máte Syncthing nainstalován, nastavte prosím cestu k %s níže"
+
+#: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:409
+msgid "Cannot download Syncthing daemon."
+msgstr "Nemůžu stáhnout démona Syncthing."
+
+#: syncthing_gtk/finddaemondialog.py:83 syncthing_gtk/wizard.py:410
+#, python-format
+msgid "This platform (%s) is not supported"
+msgstr "Tato platforma (%s) není podporována"
+
+#: syncthing_gtk/finddaemondialog.py:100
+msgid "Downloading..."
+msgstr "Stahuji..."
+
+#: syncthing_gtk/finddaemondialog.py:153 syncthing_gtk/stdownloader.py:248
+#: syncthing_gtk/stdownloader.py:276
+msgid "Download failed."
+msgstr "Stahování selhalo."
+
+#: syncthing_gtk/finddaemondialog.py:175 syncthing_gtk/wizard.py:456
+msgid "Download finished."
+msgstr "Stahování dokončeno."
+
+#: syncthing_gtk/foldereditor.py:31
+msgid ""
+"The Folder ID must be a short, unique identifier (64 characters or less) "
+"consisting of letters, numbers and the the dot (.), dash (-) and underscode "
+"(_) characters only"
+msgstr "ID adresáře musí být stručný, jedinečný popisek (64 znaků nebo méně) obsahující pouze písmena, čísla, tečku (.), pomlčku (-) a nebo podtržítko (_)."
+
+#: syncthing_gtk/foldereditor.py:54
+msgid "Select Folder for new Folder"
+msgstr "Vyberte složku pro nový adresář"
+
+#: syncthing_gtk/foldereditor.py:175 syncthing_gtk/foldereditor.py:176
+msgid "Please, install pyinotify package to use this feature"
+msgstr "Instalujte prosím pyinotify balíček pro použití této funkce"
+
+#: syncthing_gtk/ignoreeditor.py:43
+msgid "File location:"
+msgstr "Umístění souboru:"
+
+#: syncthing_gtk/notifications.py:120
+#, python-format
+msgid "Unexpected folder ID sent from device \"%s\"."
+msgstr "Neočekávané ID adresáře přijato od přístroje \"%s\"."
+
+#: syncthing_gtk/notifications.py:124
+msgid "Unknown device is trying to connect to syncthing daemon."
+msgstr "Neznámý přístroj se snaží připojit k démonu Syncthing."
+
+#: syncthing_gtk/notifications.py:153
+#, python-format
+msgid "Synchronization of folder '%s' is completed."
+msgstr "Synchronizace adresáře '%s' je dokončena."
+
+#: syncthing_gtk/notifications.py:160
+#, python-format
+msgid "The file '%s' was updated on remote device."
+msgstr "Soubor '%s' na vzdáleném přístroji byl aktualizován."
+
+#: syncthing_gtk/notifications.py:165
+#, python-format
+msgid "The file '%s' was deleted on remote device."
+msgstr "Soubor '%s' na vzdáleném přístroji byl smazán."
+
+#: syncthing_gtk/notifications.py:168
+#, python-format
+msgid "%s files were updated on remote device."
+msgstr "%s souborů na vzdáleném přístroji bylo aktualizováno."
+
+#: syncthing_gtk/notifications.py:171
+#, python-format
+msgid "%s files were deleted on remote device."
+msgstr "%s souborů na vzdáleném přístroji bylo smazáno."
+
+#: syncthing_gtk/notifications.py:175
+#, python-format
+msgid ""
+"%(updated)s files were updated and %(deleted)s deleted on remote device."
+msgstr "%(updated)s souborů na vzdáleném přístroji bylo aktualizováno a %(deleted)s bylo smazáno."
+
+#: syncthing_gtk/statusicon.py:48
+msgid "Syncthing"
+msgstr "Syncthing"
+
+#: syncthing_gtk/stdownloader.py:171 syncthing_gtk/stdownloader.py:214
+#: syncthing_gtk/stdownloader.py:310 syncthing_gtk/stdownloader.py:341
+msgid "Failed to determine latest Syncthing version."
+msgstr "Rozpoznání nejnovější verze Syncthing selhalo."
+
+#: syncthing_gtk/stdownloader.py:233
+msgid "Failed to create temporaly file."
+msgstr "Vytvoření dočasného souboru selhalo."
+
+#: syncthing_gtk/stdownloader.py:291
+msgid "Downloaded file is corrupted."
+msgstr "Stažený soubor je porušený."
+
+#: syncthing_gtk/tools.py:182
+#, python-format
+msgid "~%s hours ago"
+msgstr "před ~%s hodinami"
+
+#: syncthing_gtk/tools.py:184
+#, python-format
+msgid "%s minutes ago"
+msgstr "před %s minutami"
+
+#: syncthing_gtk/tools.py:186
+#, python-format
+msgid "%s seconds ago"
+msgstr "před %s vteřinami"
+
+#: syncthing_gtk/tools.py:187
+msgid "just now"
+msgstr "právě teď"
+
+#: syncthing_gtk/tools.py:189
+#, python-format
+msgid "%s days ago"
+msgstr "před %s dny"
+
+#: syncthing_gtk/tools.py:193
+#, python-format
+msgid "in %s days"
+msgstr "v %s dnech"
+
+#: syncthing_gtk/tools.py:195
+#, python-format
+msgid "~%s hours from now"
+msgstr "za ~%s hodin"
+
+#: syncthing_gtk/tools.py:197
+#, python-format
+msgid "%s minutes from now"
+msgstr "za %s minut"
+
+#: syncthing_gtk/tools.py:199
+#, python-format
+msgid "%s seconds from now"
+msgstr "za %s vteřin"
+
+#: syncthing_gtk/tools.py:200
+msgid "in a moment"
+msgstr "za chvilku"
+
+#: syncthing_gtk/uisettingsdialog.py:54
+msgid "UI Settings"
+msgstr "Nastavení UI"
+
+#: syncthing_gtk/uisettingsdialog.py:66
+msgid "Unlimited"
+msgstr "Neomezeno"
+
+#: syncthing_gtk/uisettingsdialog.py:103
+#, python-format
+msgid "Install %(package)s package to enable %(feature)s support"
+msgstr "Instalujte %(package)s balíček pro podporu funkce %(feature)s"
+
+#: syncthing_gtk/uisettingsdialog.py:308
+msgid "Browse for Syncthing binary"
+msgstr "Procházet pro spustitelný soubor Syncthing"
+
+#: syncthing_gtk/wizard.py:53
+msgid "First run wizard"
+msgstr "Průvodce prvním spuštěním"
+
+#: syncthing_gtk/wizard.py:137
+#, python-format
+msgid "Please, check error log and fill bug report on %s."
+msgstr "Zkontrolujte prosím chybový výstup a nahlaste chybu (New issue) na %s."
+
+#: syncthing_gtk/wizard.py:141
+msgid "Display error log"
+msgstr "Zobrazit chybový výstup"
+
+#: syncthing_gtk/wizard.py:191
+msgid "Intro"
+msgstr "Intro"
+
+#: syncthing_gtk/wizard.py:198
+msgid "Welcome to Syncthing-GTK first run wizard!"
+msgstr "Vítejte v průvodci pro první spuštění Syncthing-GTK!"
+
+#: syncthing_gtk/wizard.py:200
+msgid "It looks like you never have used Syncthing."
+msgstr "Vypadá to, že používáte Syncthing poprvé."
+
+#: syncthing_gtk/wizard.py:201
+msgid "Initial configuration should be created."
+msgstr "Mělo by být vytvořeno prvotní nastavení."
+
+#: syncthing_gtk/wizard.py:202
+msgid ""
+"Please click <b>Next</b> to create a Syncthing configuration file or "
+"<b>Quit</b> to exit"
+msgstr "Prosím klikněte na <b>Další</b> pro vytvoření konfiguračního souboru Syncthing nebo na <b>Ukončit</b> pro ukončení."
+
+#: syncthing_gtk/wizard.py:204
+#, python-format
+msgid ""
+"If you already had Syncthing daemon configured, please, exit this wizard and"
+" check your %s folder"
+msgstr "Pokud už máte démona Syncthing nastaveného, ukončete prosím tohoto průvodce a zkontrolujte svou složku %s"
+
+#: syncthing_gtk/wizard.py:215
+msgid "Find Daemon"
+msgstr "Najít démona"
+
+#: syncthing_gtk/wizard.py:220
+msgid "Searching for Syncthing daemon."
+msgstr "Hledám démona Syncthing."
+
+#: syncthing_gtk/wizard.py:222 syncthing_gtk/wizard.py:392
+msgid "Please wait..."
+msgstr "Prosím čekejte..."
+
+#: syncthing_gtk/wizard.py:268 syncthing_gtk/wizard.py:285
+msgid "Syncthing daemon not found."
+msgstr "Démon Syncthing nebyl nalezen."
+
+#: syncthing_gtk/wizard.py:269
+msgid "Please, use package manager to install the Syncthing package."
+msgstr "Použijte prosím manažer balíčků pro instalaci balíčku Syncthing."
+
+#: syncthing_gtk/wizard.py:281
+msgid "download latest binary"
+msgstr "stáhněte nejnovější spustitelný soubor"
+
+#: syncthing_gtk/wizard.py:286 syncthing_gtk/wizard.py:300
+#, python-format
+msgid ""
+"Please, use package manager to install the Syncthing package or "
+"%(download_link)s from Syncthing page and save it to your %(target)s "
+"directory."
+msgstr "Použijte prosím manažer balíčků pro instalaci balíčku Syncthing nebo %(download_link)s ze stránky Syncthing a uložte jej ho své složky %(target)s."
+
+#: syncthing_gtk/wizard.py:294
+msgid "Syncthing daemon is too old."
+msgstr "Démon Syncthing je příliš starý."
+
+#: syncthing_gtk/wizard.py:295
+#, python-format
+msgid ""
+"Syncthing-GTK needs Syncthing daemon %(min)s or newer, but only %(actual)s "
+"were found."
+msgstr "Syncthing-GTK potřebuje démona Syncthing %(min)s nebo novějšího, ale byl nalezen pouze %(actual)s."
+
+#: syncthing_gtk/wizard.py:307
+msgid "Alternatively, Syncthing-GTK can download Syncthing binary"
+msgstr "Nebo Syncthing-GTK může stáhnout spustitelný soubor Syncthing"
+
+#: syncthing_gtk/wizard.py:308
+#, python-format
+msgid "to %s and keep it up-to-date, but this option is meant as"
+msgstr "do %s a udržovat jej aktuální, ale tato možnost je brána jako"
+
+#: syncthing_gtk/wizard.py:310
+msgid "last resort and generally not suggested."
+msgstr "poslední možnost a obecně není doporučena."
+
+#: syncthing_gtk/wizard.py:313
+msgid "_Download Syncthing binary"
+msgstr "_Stáhnout spustitelný soubor Syncthing"
+
+#: syncthing_gtk/wizard.py:317
+msgid "Auto_update downloaded binary"
+msgstr "_Automaticky aktualizovat stáhnutý spustitelný soubor"
+
+#: syncthing_gtk/wizard.py:373
+msgid "Syncthing daemon binary found."
+msgstr "Nalezen spustitelný soubor démona Syncthing."
+
+#: syncthing_gtk/wizard.py:375 syncthing_gtk/wizard.py:458
+msgid "Binary path:"
+msgstr "Cesta ke spustitelnému souboru:"
+
+#: syncthing_gtk/wizard.py:376
+msgid "Version:"
+msgstr "Verze:"
+
+#: syncthing_gtk/wizard.py:387
+msgid "Download Daemon"
+msgstr "Stáhnout démona"
+
+#: syncthing_gtk/wizard.py:391
+msgid "Downloading Syncthing daemon."
+msgstr "Stahování démona Syncthing."
+
+#: syncthing_gtk/wizard.py:439
+msgid "Failed to download Syncthing daemon package."
+msgstr "Stahování balíčku démona Syncthing selhalo."
+
+#: syncthing_gtk/wizard.py:465
+msgid "Generate Keys"
+msgstr "Generování klíčů"
+
+#: syncthing_gtk/wizard.py:469
+msgid "Syncthing is generating RSA key and certificate."
+msgstr "Syncthing generuje RSA klíč a certifikát."
+
+#: syncthing_gtk/wizard.py:471
+msgid "This may take a while..."
+msgstr "Toto může chvíli trvat..."
+
+#: syncthing_gtk/wizard.py:512
+msgid "Failed to generate keys"
+msgstr "Generování klíčů selhalo"
+
+#: syncthing_gtk/wizard.py:513
+msgid "Syncthing daemon failed to generate RSA key or certificate."
+msgstr "Démon Syncthing nedokázal vygenerovat RSA klíč nebo certifikát."
+
+#: syncthing_gtk/wizard.py:518
+msgid "Setup WebUI"
+msgstr "Nastavit webového rozhraní"
+
+#: syncthing_gtk/wizard.py:523
+msgid "WebUI setup"
+msgstr "Nastavení webového rozhraní"
+
+#: syncthing_gtk/wizard.py:525
+msgid ""
+"Syncthing can be managed remotely using WebUI and even if you are going to "
+"use Syncthing-GTK, WebUI needs to be enabled, as Syncthing-GTK uses it to "
+"communicate with the Syncthing daemon."
+msgstr "Syncthing je možné spravovat vzdáleně přes webové rozhraní. Přestože budete používat Syncthing-GTK, webové rozhraní je nutné povolit, protože Syncthing-GTK jej používá pro komunikaci s démonem Syncthing."
+
+#: syncthing_gtk/wizard.py:530
+msgid ""
+"If you prefer to be able to manage Syncthing remotely, over the internet or "
+"on your local network, select <b>listen on all interfaces</b> and set "
+"username and password to protect Syncthing from unauthorized access."
+msgstr "Pokud upřednostňujete možnost spravovat Syncthing vzdáleně přes internet nebo na své lokální síti, vyberte <b>naslouchat na všech zařízeních</b> a nastavte uživatelské jméno a heslo pro ochranu Syncthing před neověřeným přístupem."
+
+#: syncthing_gtk/wizard.py:535
+msgid ""
+"Otherwise, select <b>listen on localhost</b>, so only users and programs on "
+"this computer will be able to interact with Syncthing."
+msgstr "V opačném případě vyberte <b>naslouchat na tomto zařízení</b> aby jenom uživatelé a programy na tomto počítači mohly pracovat se Syncthing."
+
+#: syncthing_gtk/wizard.py:541
+msgid "WebUI Listen Addresses"
+msgstr "Adresa naslouchání webového rozhraní"
+
+#: syncthing_gtk/wizard.py:542
+msgid "Listen on _localhost"
+msgstr "Naslouchat na _tomto zařízení"
+
+#: syncthing_gtk/wizard.py:544
+msgid "Listen on _all interfaces"
+msgstr "Naslouchat na _všech zařízeních"
+
+#: syncthing_gtk/wizard.py:551
+msgid "_Username"
+msgstr "_Uživatelské jméno"
+
+#: syncthing_gtk/wizard.py:552
+msgid "_Password"
+msgstr "_Heslo"
+
+#: syncthing_gtk/wizard.py:603
+msgid "Save Settings"
+msgstr "Uložit nastavení"
+
+#: syncthing_gtk/wizard.py:606
+msgid "Saving settings..."
+msgstr "Ukládání nastavení..."
+
+#: syncthing_gtk/wizard.py:607
+msgid "Checking for available port..."
+msgstr "Kontrola dostupného portu..."
+
+#: syncthing_gtk/wizard.py:628
+msgid "Failed to find unused port for listening."
+msgstr "Hledání volného portu pro naslouchání selhalo."
+
+#: syncthing_gtk/wizard.py:629
+msgid "Please, check your firewall settings and try again."
+msgstr "Zkontrolujte prosím nastavení svého firewallu a zkuste to znovu."
+
+#: syncthing_gtk/wizard.py:643
+msgid "Saving..."
+msgstr "Ukládání..."
+
+#: syncthing_gtk/wizard.py:675
+msgid "Failed to load Syncthing configuration"
+msgstr "Nahrávání nastavení Syncthing selhalo"
+
+#: syncthing_gtk/wizard.py:702
+msgid "Failed to modify Syncthing configuration"
+msgstr "Upravování nastavení Syncthing selhalo"
+
+#: syncthing_gtk/wizard.py:712
+msgid "Failed to save Syncthing configuration"
+msgstr "Ukládání nastavení Syncthing selhalo"
+
+#: syncthing_gtk/wizard.py:722
+msgid "Finish"
+msgstr "Dokončit"
+
+#: syncthing_gtk/wizard.py:726
+msgid "Done."
+msgstr "Hotovo."
+
+#: syncthing_gtk/wizard.py:728
+msgid "Syncthing has been successfully configured."
+msgstr "Syncthing byl úspěšně nastaven."
+
+#: syncthing_gtk/wizard.py:730
+msgid ""
+"You can configure more details later, in <b>UI Settings</b> and <b>Daemon "
+"Settings</b> menus in main window of application."
+msgstr "Můžete nastavit více možností později, v <b>Nastavení rozhraní</b> a <b>Nastavení démona</b> v hlavním okně aplikace."
+
+#: about.glade:9
+msgid "Code&UI © 2014 Kozec"
+msgstr "Kód&UI © 2014 Kozec"
+
+#: about.glade:10
+msgid "GTK GUI and notification area icon for Syncthing"
+msgstr "GTK rozhraní a Syncthing ikona oznamovací oblasti"
+
+#: about.glade:12
+msgid "GitHub"
+msgstr "GitHub"
+
+#: app.glade:239 app.glade:420 app.glade:779
+msgid "Open _Web Interface"
+msgstr "Otevřít _webové rozhraní"
+
+#: app.glade:251 app.glade:424
+msgid "Display _Daemon Output"
+msgstr "Zobrazit výstup _démona"
+
+#: app.glade:263
+msgid "Display Syncthing-Inotify Output"
+msgstr "Zobrazit výstup Syncthing-_inotify"
+
+#: app.glade:280 app.glade:430
+msgid "UI _Settings"
+msgstr "Nastavení rozhraní"
+
+#: app.glade:325 app.glade:451
+msgid "Add Shared _Folder"
+msgstr "Přidat sdílenou _složku"
+
+#: app.glade:338 app.glade:455
+msgid "Add _Device"
+msgstr "Přidat sdílený _přístroj"
+
+#: app.glade:356 app.glade:461
+msgid "Daemon _Settings"
+msgstr "Nastavení _démona"
+
+#: app.glade:371 app.glade:465 app.glade:588 app.glade:765
+msgid "Show _ID"
+msgstr "Zobrazit _ID"
+
+#: app.glade:391 app.glade:471
+msgid "Sh_utdown Daemon"
+msgstr "_Ukončit démona"
+
+#: app.glade:404 app.glade:475
+msgid "_Restart Daemon"
+msgstr "_Restartovat démona"
+
+#: app.glade:436
+msgid "_About"
+msgstr "_O programu"
+
+#: app.glade:440
+msgid "_Quit"
+msgstr "U_končit"
+
+#: app.glade:490
+msgid "Override Remote Changes"
+msgstr "Přepsat vzdálené změny"
+
+#: app.glade:519
+msgid "Edit _Ignore Patterns"
+msgstr "Upravit _ignorované vzory"
+
+#: app.glade:547
+msgid "_Rescan"
+msgstr "_Opakovat skenování"
+
+#: app.glade:559
+msgid "_Browse"
+msgstr "_Prohlížet"
+
+#: app.glade:618
+msgid "Connecting to daemon..."
+msgstr "Připojuji se k démonu..."
+
+#: app.glade:646
+msgid "S_top Syncthing"
+msgstr "_Zastavit Syncthing"
+
+#: app.glade:660
+msgid "Resume Sync_thing"
+msgstr "_Obnovit Syncthing"
+
+#: app.glade:672
+msgid "_Incoming Rate Limit"
+msgstr "Omezení rychlosti s_tahování"
+
+#: app.glade:686 app.glade:728
+msgid "_Unlimited"
+msgstr "_Neomezeno"
+
+#: app.glade:695 app.glade:737
+msgid "_Other"
+msgstr "_Ostatní"
+
+#: app.glade:714
+msgid "_Ongoing Rate Limit"
+msgstr "Omezení rychlost o_desílání"
+
+#: daemon-output.glade:7
+msgid "Daemon Output"
+msgstr "Výstup démona"
+
+#: daemon-settings.glade:100
+msgid "Sync Protocol Listen Addresses"
+msgstr "Adresa naslouchání synchronizačního protokolu"
+
+#: daemon-settings.glade:129
+msgid "Enable Local _Discovery"
+msgstr "Povolit _lokální oznamování"
+
+#: daemon-settings.glade:146
+msgid "Enable _UPnP"
+msgstr "Povolit _UPnP"
+
+#: daemon-settings.glade:165
+msgid "Local Discovery _Port"
+msgstr "_Port lokálního oznamování"
+
+#: daemon-settings.glade:204
+msgid "Outgoing _Rate Limit (KiB/s)"
+msgstr "Omezení rychlosti _odesílání (KiB/s)"
+
+#: daemon-settings.glade:221
+msgid "Open browser with _WebUI when daemon is starting"
+msgstr "Při startu démona otevřít prohlížeč s _webovým rozhraním"
+
+#: daemon-settings.glade:238
+msgid "Enable _Anonymous Usage Reporting"
+msgstr "Povolit _anonymní hlášení o používání"
+
+#: daemon-settings.glade:254
+msgid "Enable _Global Discovery"
+msgstr "Povolit _globální oznamování"
+
+#: daemon-settings.glade:274
+msgid "Global Discovery _Servers"
+msgstr "S_ervery globálního oznamování"
+
+#: daemon-settings.glade:327
+msgid "_Incoming Rate Limit (KiB/s)"
+msgstr "Omezení rychlosti odes_ílání (KiB/s)"
+
+#: device-edit.glade:102
+msgid "Device _ID"
+msgstr "_ID přístroje"
+
+#: device-edit.glade:134
+msgid "Device _Name"
+msgstr "_Název přístroje"
+
+#: device-edit.glade:166
+msgid "Shown instead of Device ID in the cluster status."
+msgstr "Zobrazuje se místo ID přístroje v listu přístrojů."
+
+#: device-edit.glade:181
+msgid "_Addresses"
+msgstr "_Adresy"
+
+#: device-edit.glade:213
+msgid ""
+"Enter comma separated \"ip:port\" addresses or \"dynamic\" to perform "
+"automatic discovery of the address."
+msgstr "Zadejte adresy oddělené čárkou \"ip:port\" nebo \"dynamic\" pro automatické zjišťování adres."
+
+#: device-edit.glade:242
+msgid "Share _Folders"
+msgstr "Sdílet _adresář"
+
+#: device-edit.glade:276
+msgid "Select the folders to share with this device"
+msgstr "Vyberte adresáře sdílené s tímto přístrojem"
+
+#: device-edit.glade:287
+msgid "_Introducer"
+msgstr "_Zavaděč"
+
+#: device-edit.glade:308
+msgid ""
+"Any devices configured on an introducer device will be added to this device "
+"as well."
+msgstr "Jakékoliv přístroje nakonfigurované na zavaděči budou přidány také na tento přístroj."
+
+#: device-edit.glade:323
+msgid "_Compression"
+msgstr "_Komprese"
+
+#: device-id.glade:14
+msgid "Device Identification"
+msgstr "Identifikace přístroje"
+
+#: device-id.glade:68
+msgid "XYZ-123-ABC"
+msgstr "XYZ-123-ABC"
+
+#: find-daemon.glade:111 ui-settings.glade:666
+msgid "_Browse..."
+msgstr "_Procházet..."
+
+#: find-daemon.glade:164
+msgid "_Download..."
+msgstr "_Stáhnout..."
+
+#: folder-edit.glade:42
+msgid "Simple"
+msgstr "Jednoduché"
+
+#: folder-edit.glade:46
+msgid "Staggered"
+msgstr "Postupné"
+
+#: folder-edit.glade:50
+msgid "Trashcan"
+msgstr "Odpadkový koš"
+
+#: folder-edit.glade:54
+msgid "External"
+msgstr "Externí"
+
+#: folder-edit.glade:126
+msgid "Folder _ID"
+msgstr "ID adresáře"
+
+#: folder-edit.glade:159
+msgid "Short identifier for the folder. Must be the same on all devices."
+msgstr "Krátký identifikátor tohoto adresáře. Musí být stejný na všech přístrojích."
+
+#: folder-edit.glade:174
+msgid "_Path"
+msgstr "_Cesta"
+
+#: folder-edit.glade:193
+msgid ""
+"Path to the folder on the local computer. Will be created if it does not "
+"exist."
+msgstr "Cesta k adresáři na lokálním počítači. Pokud neexistuje, bude vytvořen."
+
+#: folder-edit.glade:208
+msgid "Rescan _Interval"
+msgstr "_Interval opakování skenování"
+
+#: folder-edit.glade:258
+msgid "Folder _Master"
+msgstr "_Master adresář"
+
+#: folder-edit.glade:281
+msgid ""
+"Files are protected from changes made on other devices, but changes made on "
+"this device will be sent to the rest of the cluster."
+msgstr "Soubory jsou chráněny před změnami na ostatních přístrojích, ale změny provedené z tohoto přístroje budou rozeslány na zbytek clusteru."
+
+#: folder-edit.glade:302
+msgid "Ignore P_ermissions"
+msgstr "Ignorovat o_právnění"
+
+#: folder-edit.glade:325
+msgid ""
+"File permission bits are ignored when looking for changes. Use on FAT "
+"filesystems."
+msgstr "Bity označující práva souborů jsou při hledání změn ignorovány. Použít pro souborové systémy FAT."
+
+#: folder-edit.glade:339
+msgid "Share With _Devices"
+msgstr "S_dílet s přístroji"
+
+#: folder-edit.glade:372
+msgid "Select the devices to share this folder with."
+msgstr "Vybrat přístroje, se kterými sdílet tento adresář."
+
+#: folder-edit.glade:400
+msgid "File Versioning"
+msgstr "Verzování souborů"
+
+#: folder-edit.glade:455
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when "
+"replaced or deleted by syncthing."
+msgstr "Po nahrazení nebo smazání aplikací Syncthing jsou soubory přesunuty do verzí označených daty v adresáři .stversions."
+
+#: folder-edit.glade:470
+msgid "_Keep Versions"
+msgstr "Ponechat _verze"
+
+#: folder-edit.glade:507
+msgid "The number of old versions to keep, per file."
+msgstr "Počet starších verzí k zachování pro každý soubor."
+
+#: folder-edit.glade:536
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing. Versions are automatically deleted if they are older than the maximum age or exceed the number of files allowed in an interval.\n"
+"\n"
+"The following intervals are used: for the first hour a version is kept every 30 seconds, for the first day a version is kept every hour, for the first 30 days a version is kept every day, until the maximum age a version is kept every week."
+msgstr "Po nahrazení nebo smazání aplikací Syncthing jsou soubory přesunuty do verzí označených daty v adresáři .stversions. Verze jsou automaticky smazány, pokud jsou starší než maximální časový limit nebo překročí počet souborů povolených pro interval.\n\nJsou použity následující intervaly: za první hodinu jsou ponechány verze pro každých 30 sekund, za první den jsou ponechány verze pro každou hodinu, za prvních 30 dní jsou ponechány verze pro každý den a do nejvyššího nastaveného stáří jsou ponechány verze pro každý týden."
+
+#: folder-edit.glade:553
+msgid "Ma_ximum Age"
+msgstr "Ma_ximální časový limit"
+
+#: folder-edit.glade:592
+msgid "Versions _Path"
+msgstr "Cesta _k verzím"
+
+#: folder-edit.glade:624
+msgid ""
+"Path where versions should be stored (leave empty for the default "
+".stversions folder)."
+msgstr "Cesta pro ukládání verzí (nechat prázdné pro výchozí podadresář .stversions)."
+
+#: folder-edit.glade:651
+msgid ""
+"Files are moved to .stversions folder when replaced or deleted by Syncthing"
+msgstr "Po nahrazení nebo smazání aplikací Syncthing jsou soubory přesunuty do adresáře .stversions."
+
+#: folder-edit.glade:666
+msgid "Clean out _after"
+msgstr "V_yčistit po"
+
+#: folder-edit.glade:705
+msgid "The number of days to keep files in the trash can."
+msgstr "Počet dní, po který budou soubory uchovány v koši."
+
+#: folder-edit.glade:734
+msgid ""
+"An external command handles the versioning. It has to remove the file from "
+"the synced folder."
+msgstr "Verzování obstarává externí příkaz. Musí odstranit soubor ze sdíleného adresáře."
+
+#: folder-edit.glade:749
+msgid "Command"
+msgstr "Příkaz"
+
+#: folder-edit.glade:782
+msgid ""
+"The first command line parameter is the folder path and the second parameter"
+" is the relative path in the folder."
+msgstr "První parametr příkazové řádky je cesta k adresáři, druhý je relativní cesta v témže adresáři."
+
+#: folder-edit.glade:827
+msgid "Monitor filesystem for _changes"
+msgstr "Sledovat _změny v souborovém systému"
+
+#: folder-edit.glade:850
+msgid ""
+"If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
+"Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
+msgstr "Při povolení jsou změněné, vytvořené a smazané soubory synchronizovány okamžitě, pokud je Syncthing-GTK spuštěn.\nPoznámka: Používání této funkce spolu s nastaveným intervalem opakování skenování (<300s) může více zatěžovat systém."
+
+#: folder-edit.glade:879
+msgid "Browse..."
+msgstr "Procházet..."
+
+#: ignore-editor.glade:9
+msgid "Ignore Patterns"
+msgstr "Ignorované vzory"
+
+#: ignore-editor.glade:100
+msgid ""
+"See <a href=\"http://docs.syncthing.net/users/ignoring.html\">Syncthing "
+"documentation</a> for list of supported patterns"
+msgstr "Navštivte <a href=\"http://docs.syncthing.net/users/ignoring.html\">dokumentaci Syncthing</a> pro získání seznamu podporovaných vzorů"
+
+#: ignore-editor.glade:115
+msgid "File location: "
+msgstr "Umístění souboru:"
+
+#: ui-settings.glade:27
+msgid "Lowest"
+msgstr "Nejnižší"
+
+#: ui-settings.glade:31
+msgid "Low"
+msgstr "Nízká"
+
+#: ui-settings.glade:35
+msgid "Normal"
+msgstr "Normální"
+
+#: ui-settings.glade:39
+msgid "Above Normal"
+msgstr "Větší než normální"
+
+#: ui-settings.glade:45
+msgid "Syncthing-GTK Settings"
+msgstr "Nastavení Syncthing-GTK"
+
+#: ui-settings.glade:120
+msgid "When starting and Syncthing daemon is not running..."
+msgstr "Pokud při startu neběží démon Syncthing..."
+
+#: ui-settings.glade:131
+msgid "... _wait for daemon"
+msgstr "... _počkat na démona"
+
+#: ui-settings.glade:149
+msgid "... start daemon in _background"
+msgstr "... _spustit démona na pozadí"
+
+#: ui-settings.glade:167
+msgid "... _ask me what to do"
+msgstr "... _zeptat se co dělat"
+
+#: ui-settings.glade:189
+msgid "When exiting after daemon was started in background..."
+msgstr "Při ukončování poté, co byl démon spuštěný na pozadí..."
+
+#: ui-settings.glade:200
+msgid "... terminate _daemon"
+msgstr "... _ukončit démona"
+
+#: ui-settings.glade:218
+msgid "... leave daemon _running"
+msgstr "... _nechat démona běžet"
+
+#: ui-settings.glade:236
+msgid "... ask me w_hat to do"
+msgstr "... zeptat se _co dělat"
+
+#: ui-settings.glade:254
+msgid "Us_e traditional window header"
+msgstr "Používat _tradiční hlavičku okna"
+
+#: ui-settings.glade:276
+msgid "Display desktop notifications for..."
+msgstr "Zobrazit oznámení na ploše pro..."
+
+#: ui-settings.glade:287
+msgid "... file updates"
+msgstr "... aktualizované soubory"
+
+#: ui-settings.glade:304
+msgid "... errors"
+msgstr "... chyby"
+
+#: ui-settings.glade:321
+msgid "... synchronization completion"
+msgstr "... dokončené synchronizace"
+
+#: ui-settings.glade:338
+msgid "Start Syncthing-GTK when I login to my desktop"
+msgstr "Spustit Syncthing-GTK po přihlášení"
+
+#: ui-settings.glade:355
+msgid "Minimize to _tray on start"
+msgstr "Minimalizovat do _lišty při startu"
+
+#: ui-settings.glade:372
+msgid "Use _icons in menu"
+msgstr "Používat _ikony v menu"
+
+#: ui-settings.glade:389
+msgid "Display paths in directories panel"
+msgstr "Zobrazovat cesty v panelu adresářů"
+
+#: ui-settings.glade:406
+msgid "Force _dark theme"
+msgstr "Používat _tmavé téma"
+
+#: ui-settings.glade:481
+msgid "_Interface"
+msgstr "_Rozhraní"
+
+#: ui-settings.glade:500
+msgid "Integrate Syncthing with filemanagers"
+msgstr "Integrovat Syncthing se souborovými manažery"
+
+#: ui-settings.glade:516
+msgid "Nemo (Cinamon Desktop)"
+msgstr "Nemo (Cinamon Desktop)"
+
+#: ui-settings.glade:535
+msgid "Nautilus (Ubuntu/GNOME)"
+msgstr "Nautilus (Ubuntu/GNOME)"
+
+#: ui-settings.glade:553
+msgid "Caja (MATE Desktop)"
+msgstr "Caja (MATE Desktop)"
+
+#: ui-settings.glade:597
+msgid ""
+"<b>Note:</b> You may need to restart your filemanager after toggling "
+"integration."
+msgstr "<b>Poznámka:</b> Po úpravě nastavení integrace možná budete muset restartovat váš souborový manažer"
+
+#: ui-settings.glade:617
+msgid "_Integration"
+msgstr "_Integrace"
+
+#: ui-settings.glade:637
+msgid "Syncthing binary location"
+msgstr "Umístění spustitelného souboru Syncthing"
+
+#: ui-settings.glade:689
+msgid ""
+"This binary will be started when syncthing daemon is not running and "
+"\"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "Tento spustitelný soubor bude spuštěn když nebude běžet démon Syncthing a bude zaškrtnuta možnost \"<i>spustit démona na pozadí</i>\" na záložce \"<i>Rozhraní</i>\"."
+
+#: ui-settings.glade:714
+msgid "Keep Syncthing binary up-to-date"
+msgstr "Udržovat spustitelný soubor Syncthing aktuální"
+
+#: ui-settings.glade:735
+msgid ""
+"If enabled, Syncthing-GTK will automatically check for new daemon releases "
+"and replace binary with latest version."
+msgstr "Pokud je povoleno, Syncthing-GTK bude automaticky kontrolovat dostupnost nové verze démona a nahrazovat spustitelný soubor nejnovější verzí."
+
+#: ui-settings.glade:751
+msgid "Daemon process priority"
+msgstr "Priorita procesu démona"
+
+#: ui-settings.glade:789
+msgid ""
+"Priority will be used only if \"<i>start daemon in background</i>\" option "
+"is checked on \"<i>Interface</i>\" page."
+msgstr "Priorita bude použita pouze pokud bude zaškrtnuta možnost \"<i>spustit démona na pozadí</i>\" na záložce \"<i>Rozhraní</i>\"."
+
+#: ui-settings.glade:805
+msgid "Maximum number of CPU cores"
+msgstr "Maximální počet CPU jader"
+
+#: ui-settings.glade:824
+msgid ""
+"Sets the maximum number of CPU cores for daemon to use. This value will be "
+"used only if \"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "Nastaví maximální počet CPU jader která může démon použít. Tato hodnota bude použita pouze pokud bude zaškrtnuta možnost \"<i>spustit démona na pozadí</i>\" na záložce \"<i>Rozhraní</i>\"."
+
+#: ui-settings.glade:862
+msgid "_Advanced"
+msgstr "_Pokročilé"
