@@ -803,6 +803,9 @@ class Daemon(GObject.GObject, TimerManager):
 					if cons[id][key] != "":							# Happens for 'total'
 						device_data[key] = cons[id][key]
 			
+			if "clientVersion" in cons[id] and cons[id]["clientVersion"] != "":
+				device_data["clientVersion"] = cons[id]["clientVersion"]
+			
 			if cons[id]["paused"]:
 				# Send "device-paused" signal if device needed
 				device_data["connected"] = False
