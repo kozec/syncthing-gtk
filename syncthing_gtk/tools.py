@@ -228,13 +228,24 @@ def init_logging():
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
+_localedir = None
+
 def init_locale(localedir=None):
 	"""
 	Initializes gettext-related stuff
 	"""
+	global _localedir
+	_localedir = localedir
 	gettext.bindtextdomain(GETTEXT_DOMAIN, localedir)
 	gettext.bind_textdomain_codeset(GETTEXT_DOMAIN, "utf-8")
 	gettext.textdomain(GETTEXT_DOMAIN)
+
+def get_locale_dir():
+	"""
+	Returns localedir passed to init_locale or None
+	"""
+	global _localedir
+	return _localedir
 
 def set_logging_level(verbose, debug):
 	""" Sets logging level """
