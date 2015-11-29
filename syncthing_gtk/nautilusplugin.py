@@ -175,8 +175,10 @@ def build_class(plugin_module):
 			re-read emblem.
 			"""
 			path = os.path.expanduser(r["path"])
+			if path.endswith(os.path.sep):
+				path = path.rstrip("/")
 			self.rid_to_path[rid] = path
-			self.path_to_rid[path.rstrip("/")] = rid
+			self.path_to_rid[path] = rid
 			self.repos[path] = STATE_OFFLINE
 			self._invalidate(path)
 			# Store repo id in dict of associated devices
