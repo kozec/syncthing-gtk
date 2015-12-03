@@ -7,10 +7,18 @@ def sigint(*a):
 
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigint)
-	path = "/usr/share/syncthing-gtk"
-	if os.path.exists("/usr/local/share/syncthing-gtk"):
-		path = "/usr/local/share/syncthing-gtk"
-	
+	systempath = "/usr/share/syncthing-gtk"
+	installpath =  os.path.join(os.path.dirname(os.path.realpath(__file__)),
+		           '..',   # '..', '..', '..',
+		           'share', 'syncthing-gtk')
+	localpath = "/usr/local/share/syncthing-gtk"
+	paths = (systempath, localpath, installpath)
+	for path in paths:
+	    if os.path.exists(path):
+	        break
+	else:
+	    raise IOError("Could not find files in %r", paths)
+
 	from syncthing_gtk.tools import init_logging
 	init_logging()
 	
