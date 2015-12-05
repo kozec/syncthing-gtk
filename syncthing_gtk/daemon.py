@@ -204,11 +204,11 @@ class Daemon(GObject.GObject, TimerManager):
 				filename:	synchronized file
 				time:		event timestamp
 		
-		item-updated (folder_id, filename, mtime):
+		item-updated (folder_id, filename, time):
 			Emited when change in local file is detected (LocalIndexUpdated event)
 				folder_id:	id of folder that contains file
 				filename:	updated file
-				mtime:		last modification time of updated file
+				time:		event timestamp
 		
 		startup-complete():
 			Emited when daemon initialization is complete.
@@ -1089,15 +1089,15 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "FolderSummary":
 			rid = e["data"]["folder"]
 			self._syncthing_cb_folder_data(e["data"]["summary"], rid)
-		elif eType == "LocalIndexUpdated":
-			rid = e["data"]["folder"]
-			if "name" in e["data"]:
-				filename = e["data"]["name"]
-				mtime = parsetime(e["data"]["modified"])
-				self.emit("item-updated", rid, filename, mtime)
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
-		elif eType in ("ItemFinished", "DownloadProgress", "RelayStateChanged"):
+		elif eType == "ItemFinished":
+			rid = e["data"]["folder"]
+			if e["data"]["error"] is None:
+				filename = e["data"]["item"]
+				t = parsetime(e["time"])
+				self.emit("item-updated", rid, filename, t)
+		elif eType in ("ItemFinished", "DownloadProgress", "RelayStateChanged", "LocalIndexUpdated"):
 			# Not handled
 			pass
 		else:
