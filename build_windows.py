@@ -59,7 +59,7 @@ wrong_sized_dll = [	'libcairo-gobject-2.dll',
 ]
 
 # List of languages that are copied from GTK and included in installation
-enabled_gtk_locales = [ "sk", "cs" ]
+enabled_gtk_locales = [ "sk", "cs", "de" ]
 
 include_files = []
 
@@ -110,7 +110,7 @@ get_version = lambda : "%s-win32" % (_get_version(),)
 RE_NUMBER = re.compile(r'v?([0-9]+).*')
 extract_number = lambda x : RE_NUMBER.match(x).group(1) if \
 		RE_NUMBER.match(x) else "0"
-win32version = lambda x : ".".join([ extract_number(i) for i in x.split(".") ])
+win32version = lambda x : ".".join([ extract_number(i) for i in x.split(".")[0:4] ])
 Freezer._AddVersionResource = lambda self, filename : \
 	stamp(filename, VersionInfo(
 			win32version(self.metadata.version),
