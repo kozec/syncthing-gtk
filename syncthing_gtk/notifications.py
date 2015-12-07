@@ -22,10 +22,10 @@ if HAS_DESKTOP_NOTIFY:
 	from gi.repository import Gtk
 	from syncthing_gtk import TimerManager
 	from syncthing_gtk.tools import parsetime
+	from syncthing_gtk.tools import _ # gettext function
 	from dateutil import tz
 	from datetime import datetime
 	import os, sys, logging
-	_ = lambda (a) : a
 	log = logging.getLogger("Notifications")
 	
 	class NotificationsCls(TimerManager):
@@ -74,7 +74,7 @@ if HAS_DESKTOP_NOTIFY:
 		
 		def info(self, text, icon=None):
 			n = Notify.Notification.new(
-					_("Syncthing GTK"),
+					_("Syncthing-GTK"),
 					text,
 					None
 				)
@@ -117,7 +117,7 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_syncthing_folder_rejected(self, daemon, nid, rid):
 			if nid in self.app.devices:
 				device = self.app.devices[nid].get_title()
-				markup = _('Unexpected folder ID sent from device "<b>%s</b>".') % (device,)
+				markup = _('Unexpected folder ID sent from device "%s".') % ("<b>%s</b>" % device,)
 				self.info(markup)
 		
 		def cb_syncthing_device_rejected(self, daemon, nid, address):
@@ -172,8 +172,11 @@ if HAS_DESKTOP_NOTIFY:
 			elif len(self.deleted) > 0 and len(self.updated) > 0:
 				 # Multiple deleted, multiple updated
 				self.info(
-					_("%s files were updated and %s deleted on remote device.") % 
-					(len(self.updated), len(self.deleted)))
+					_("%(updated)s files were updated and %(deleted)s deleted on remote device.") % {
+						'updated' : len(self.updated),
+						'deleted' : len(self.deleted)
+						}
+					)
 			self.updated = set([])
 			self.deleted = set([])
 		

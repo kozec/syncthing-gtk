@@ -27,6 +27,12 @@ if __name__ == "__main__":
 			path = get_install_path()
 			os.chdir(path)
 	
+	from syncthing_gtk.tools import init_logging, init_locale
+	from syncthing_gtk import windows
+	windows.enable_localization()
+	init_logging()
+	init_locale(os.path.join(path, "locale"))
+	
 	# Tell cx_Freeze that I really need this library
 	gi.require_foreign('cairo')
 	
@@ -42,6 +48,7 @@ if __name__ == "__main__":
 		# Override syncthing_binary value in _Configuration class
 		from syncthing_gtk.configuration import _Configuration
 		_Configuration.WINDOWS_OVERRIDE["syncthing_binary"] = (str, ".\\data\\syncthing.exe")
+	
 	from syncthing_gtk import windows, Configuration
 	config = Configuration()
 	
@@ -51,7 +58,6 @@ if __name__ == "__main__":
 	
 	# Fix various windows-only problems
 	windows.fix_localized_system_error_messages()
-	windows.dont_use_localization_in_gtk()
 	windows.override_menu_borders()
 	
 	from gi.repository import Gtk

@@ -10,9 +10,9 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import EditorDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, IS_XP
+from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.uisettingsdialog import browse_for_binary
 import os, platform
-_ = lambda (a) : a
 
 VALUES = [ "vsyncthing_binary" ]
 
@@ -172,6 +172,6 @@ class FindDaemonDialog(EditorDialog):
 		self["vsyncthing_binary"].set_sensitive(True)
 		self["btBrowse"].set_sensitive(True)
 		self["vsyncthing_binary"].set_text(downloader.get_target())
-		self["lblDownloadProgress"].set_markup(_("<b>Download finished.</b>"))
+		self["lblDownloadProgress"].set_markup("<b>" + _("Download finished.") + "</b>")
 		self["pbDownload"].set_visible(False)
 		self["btSave"].set_sensitive(True)

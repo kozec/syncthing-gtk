@@ -10,9 +10,9 @@ from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
 from syncthing_gtk.tools import get_config_dir, compare_version
 from syncthing_gtk.tools import IS_WINDOWS, is_portable
+from syncthing_gtk.tools import _ # gettext function
 import os, sys, stat, json, platform
 import tempfile, tarfile, zipfile, logging
-_ = lambda (a) : a
 log = logging.getLogger("StDownloader")
 
 CHUNK_SIZE = 102400

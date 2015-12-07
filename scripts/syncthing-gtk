@@ -11,7 +11,8 @@ if __name__ == "__main__":
 	if os.path.exists("/usr/local/share/syncthing-gtk"):
 		path = "/usr/local/share/syncthing-gtk"
 	
-	from syncthing_gtk.tools import init_logging
+	from syncthing_gtk.tools import init_logging, init_locale
+	init_locale()
 	init_logging()
 	
 	from syncthing_gtk import App

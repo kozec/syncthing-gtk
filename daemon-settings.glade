@@ -301,7 +301,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
-                <property name="text" translatable="yes">50</property>
+                <property name="text">50</property>
                 <property name="adjustment">adjlocalAnnouncePort</property>
                 <property name="value">50</property>
               </object>

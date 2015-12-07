@@ -7,7 +7,6 @@ Infobar wrapped in Revealer, for greater justice
 from __future__ import unicode_literals
 from gi.repository import Gtk, GLib, GObject, Pango
 import os
-_ = lambda (a) : a
 RevealerClass = None
 if hasattr(Gtk, "Revealer"):
 	RevealerClass = Gtk.Revealer
