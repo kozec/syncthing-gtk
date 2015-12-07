@@ -468,9 +468,10 @@ class GenerateKeysPage(Page):
 	def init_page(self):
 		""" Displayed while Syncthing binary is being searched for """
 		self.label = WrappedLabel(
-			"<b>" + _("Syncthing is generating RSA key and certificate.") + "</b"> +
-			"\n\n" +
-			_("This may take a while...")
+			"<b>%s</b>\n\n%s" % (
+				_("Syncthing is generating RSA key and certificate."),
+				_("This may take a while...")
+			)
 		)
 		self.attach(self.label, 0, 0, 1, 1)
 	

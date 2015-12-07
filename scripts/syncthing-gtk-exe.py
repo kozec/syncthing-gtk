@@ -10,6 +10,7 @@ if __name__ == "__main__":
 	
 	if portable:
 		# Running from current directory
+		path = "."
 		data_path = os.path.join(os.getcwd(), "data")
 		config_dir = os.path.join(data_path, "syncthing-gtk")
 		if not os.path.exists(config_dir):
