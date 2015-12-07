@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-11-02 23:51+0100\n"
-"PO-Revision-Date: 2015-11-03 08:40+0000\n"
+"PO-Revision-Date: 2015-12-07 12:19+0000\n"
 "Last-Translator: kozec <kozec2@kozec.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/sk/)\n"
 "MIME-Version: 1.0\n"
@@ -190,7 +190,7 @@ msgstr "_Ignorovať"
 
 #: syncthing_gtk/app.py:818
 msgid "RAM Utilization"
-msgstr "Vyťaženie RAM"
+msgstr "Využitie RAM"
 
 #: syncthing_gtk/app.py:819
 msgid "CPU Utilization"
@@ -206,7 +206,7 @@ msgstr "Rýchlosť odosielania"
 
 #: syncthing_gtk/app.py:822
 msgid "Announce Server"
-msgstr "Ohasovací server"
+msgstr "Ohlasovací server"
 
 #: syncthing_gtk/app.py:823 syncthing_gtk/app.py:1314
 msgid "Version"
@@ -708,7 +708,7 @@ msgstr "Ak už máte Syncthing nakonfigurovaný, prosím, ukončite sprievodcu a
 
 #: syncthing_gtk/wizard.py:215
 msgid "Find Daemon"
-msgstr "Hľadanie démona"
+msgstr "Hľadanie Démona"
 
 #: syncthing_gtk/wizard.py:220
 msgid "Searching for Syncthing daemon."
@@ -784,7 +784,7 @@ msgstr "Verzia:"
 
 #: syncthing_gtk/wizard.py:387
 msgid "Download Daemon"
-msgstr "Stiahnuť Démona"
+msgstr "Sťahovanie Démona"
 
 #: syncthing_gtk/wizard.py:391
 msgid "Downloading Syncthing daemon."
@@ -864,7 +864,7 @@ msgstr "_Heslo"
 
 #: syncthing_gtk/wizard.py:603
 msgid "Save Settings"
-msgstr "Uložiť Nastavenia"
+msgstr "Uloženie Nastavení"
 
 #: syncthing_gtk/wizard.py:606
 msgid "Saving settings..."
@@ -900,7 +900,7 @@ msgstr "Nepodarilo sa uložiť konfiguráciu Syncthing"
 
 #: syncthing_gtk/wizard.py:722
 msgid "Finish"
-msgstr "Koniec"
+msgstr "Hotovo"
 
 #: syncthing_gtk/wizard.py:726
 msgid "Done."
@@ -1202,7 +1202,7 @@ msgstr "Súbory sú označené časovou známkou a presunuté do adresára \".st
 
 #: folder-edit.glade:470
 msgid "_Keep Versions"
-msgstr "_Zahovať Verzie"
+msgstr "_Zachovať Verzie"
 
 #: folder-edit.glade:507
 msgid "The number of old versions to keep, per file."

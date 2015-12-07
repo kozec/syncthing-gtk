@@ -69,7 +69,7 @@ class Wizard(Gtk.Assistant):
 		index = self.append_page(page)
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
-		self.set_page_title(page, page.TITLE)
+		self.set_page_title(page, _(page.TITLE) + "  ")
 		return index
 	
 	def insert(self, page):
@@ -80,7 +80,7 @@ class Wizard(Gtk.Assistant):
 		index = self.insert_page(page, index + 1)
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
-		self.set_page_title(page, page.TITLE)
+		self.set_page_title(page, _(page.TITLE) + "  ")
 		return index
 	
 	def insert_and_go(self, page):
@@ -188,7 +188,7 @@ class Page(Gtk.Grid):
 
 class IntroPage(Page):
 	TYPE = Gtk.AssistantPageType.INTRO
-	TITLE = _("Intro")
+	TITLE = "Intro"
 	def init_page(self):
 		""" First, intro page. Just static text that explains what's going on """ 
 		config_folder = "~/.config/syncthing"
@@ -212,7 +212,7 @@ class FindDaemonPage(Page):
 	# that.
 	# To prevent this 'window jumping', padding is added here, so
 	# this page is always one with longest name.
-	TITLE = _("Find Daemon") + "                 "
+	TITLE = "Find Daemon"
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	def init_page(self):
 		""" Displayed while Syncthing binary is being searched for """
@@ -386,7 +386,7 @@ class FindDaemonPage(Page):
 
 class DownloadSTPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Download Daemon")
+	TITLE = "Download Daemon"
 	
 	def init_page(self):
 		""" Displayed while wizard downloads and extracts daemon """
@@ -464,7 +464,7 @@ class DownloadSTPage(Page):
 	
 class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Generate Keys")
+	TITLE = "Generate Keys"
 	def init_page(self):
 		""" Displayed while Syncthing binary is being searched for """
 		self.label = WrappedLabel(
@@ -518,7 +518,7 @@ class GenerateKeysPage(Page):
 
 class HttpSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.CONTENT
-	TITLE = _("Setup WebUI")
+	TITLE = "Setup WebUI"
 	def init_page(self):
 		""" Permits user to set WebUI settings """
 		# Wall of text
@@ -603,7 +603,7 @@ class HttpSettingsPage(Page):
 
 class SaveSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Save Settings")
+	TITLE = "Save Settings"
 	def init_page(self):
 		""" Displayed while settings are being saved """
 		self.label = WrappedLabel("<b>" + _("Saving settings...") + "</b>" + "\n\n")
@@ -722,7 +722,7 @@ class SaveSettingsPage(Page):
 
 class LastPage(GenerateKeysPage):
 	TYPE = Gtk.AssistantPageType.SUMMARY
-	TITLE = _("Finish")
+	TITLE = "Finish"
 	def init_page(self):
 		""" Well, it's last page. """
 		label = WrappedLabel(
