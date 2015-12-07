@@ -87,13 +87,6 @@ executables = [
 		base = "console",
 		icon = "icons/st-logo-128.ico",
 	),
-	Executable(
-		"scripts/syncthing-gtk-portable-exe.py",
-		compress = True,
-		targetName = "syncthing-gtk-portable.exe",
-		base = "console",
-		icon = "icons/st-logo-128.ico",
-	)
 ]
 
 

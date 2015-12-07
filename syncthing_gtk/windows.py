@@ -160,8 +160,8 @@ def WinConfiguration():
 		def load(self):
 			self.values = {}
 			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			for key in Configuration.REQUIRED_KEYS:
-				tp, trash = Configuration.REQUIRED_KEYS[key]
+			for key in _Configuration.REQUIRED_KEYS:
+				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				try:
 					self.values[key] = self._read(r, key, tp)
 				except WindowsError:
@@ -172,8 +172,8 @@ def WinConfiguration():
 		#@ Overrides
 		def save(self):
 			r = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			for key in Configuration.REQUIRED_KEYS:
-				tp, trash = Configuration.REQUIRED_KEYS[key]
+			for key in _Configuration.REQUIRED_KEYS:
+				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				value = self.values[key]
 				self._store(r, key, tp, value)
 			_winreg.CloseKey(r)
@@ -213,7 +213,7 @@ def WinConfiguration():
 					value = - (value - 0xFFFF)
 				return value
 		
-	return _WinConfiguration
+	return _WinConfiguration()
 
 def WinWatcher():
 	if hasattr(sys, "frozen"):
