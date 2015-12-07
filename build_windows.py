@@ -86,7 +86,7 @@ executables = [
 		targetName = "syncthing-gtk-console.exe",
 		base = "console",
 		icon = "icons/st-logo-128.ico",
-	)
+	),
 ]
 
 

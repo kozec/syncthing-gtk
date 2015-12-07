@@ -41,6 +41,8 @@ Hidden=false
 Type=Application
 """
 
+portable_mode_enabled = False
+
 if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
 	import wmi, _winreg
@@ -224,6 +226,20 @@ def init_logging():
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
+def make_portable():
+	"""
+	Set's IS_PORTABLE flag to True. Has to be called before
+	everything else.
+	"""
+	global portable_mode_enabled
+	log.warning("Portable mode enabled")
+	portable_mode_enabled = True
+
+def is_portable():
+	""" Returns True after make_portable() is called. """
+	global portable_mode_enabled
+	return portable_mode_enabled
+
 def set_logging_level(verbose, debug):
 	""" Sets logging level """
 	logger = logging.getLogger()
@@ -312,6 +328,8 @@ def get_config_dir():
 	Returns ~/.config, %APPDATA% or whatever has user set as
 	configuration directory.
 	"""
+	if is_portable():
+		return os.environ["XDG_CONFIG_HOME"]
 	if IS_WINDOWS:
 		try:
 			import windows
@@ -344,6 +362,8 @@ if IS_WINDOWS:
 		Returns installation path from registry.
 		Available only on Windows
 		"""
+		if is_portable():
+			return os.environ["XDG_CONFIG_HOME"]
 		try:
 			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
 			path, keytype = _winreg.QueryValueEx(key, "InstallPath")

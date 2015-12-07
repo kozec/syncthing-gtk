@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
-from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
+from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, is_portable
 from syncthing_gtk.tools import can_upgrade_binary, compare_version
 import os, sys, socket, random, string
 import logging, traceback, platform
@@ -228,6 +228,8 @@ class FindDaemonPage(Page):
 	def prepare(self):
 		self.paths = [ "./" ]
 		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
+		if is_portable():
+			self.paths += [ ".\\data" ]
 		if StDownloader is None:
 			self.binaries = ["syncthing"]
 		else:

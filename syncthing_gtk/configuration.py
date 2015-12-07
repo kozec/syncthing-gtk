@@ -183,7 +183,10 @@ def serializer(obj):
 		return obj.isoformat()
 	raise TypeError("Can't serialize object of type %s" % (type(obj),))
 
-Configuration = _Configuration
-if IS_WINDOWS:
-	from syncthing_gtk.windows import WinConfiguration
-	Configuration = WinConfiguration()
+def Configuration(*a, **b):
+	if IS_WINDOWS and not is_portable():
+		from syncthing_gtk.windows import WinConfiguration
+		return WinConfiguration(*a, **b)
+	return _Configuration(*a, **b)
+Configuration.REQUIRED_KEYS = _Configuration.REQUIRED_KEYS
+Configuration.WINDOWS_OVERRIDE = _Configuration.WINDOWS_OVERRIDE

@@ -152,9 +152,9 @@ class WinPopenReader:
 			return self._data
 
 def WinConfiguration():
-	from syncthing_gtk.configuration import _Configuration as Configuration
+	from syncthing_gtk.configuration import _Configuration
 	from syncthing_gtk.configuration import serializer
-	class _WinConfiguration(Configuration):
+	class _WinConfiguration(_Configuration):
 		"""
 		Configuration implementation for Windows - stores values
 		in registry
@@ -162,32 +162,10 @@ def WinConfiguration():
 		
 		#@ Overrides
 		def load(self):
-			if os.path.exists(self.get_config_file()):
-				# Copy file-based cofiguration to registry and remove
-				# configuration folder
-				#
-				# TODO: Remove this later
-				log.info("Converting old configuration to registry...")
-				Configuration.load(self)
-				self.convert_values()
-				self.check_values()
-				self.save()
-				try:
-					os.unlink(self.get_config_file())
-					try:
-						os.rmdir(self.get_config_dir())
-					except Exception, e:
-						# May happen, no problem here
-						pass
-				except Exception, e:
-					# Shouldn't happen, report problem here
-					log.warning("Failed to remove old config file")
-					log.warning(e)
-				return
 			self.values = {}
 			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			for key in Configuration.REQUIRED_KEYS:
-				tp, trash = Configuration.REQUIRED_KEYS[key]
+			for key in _Configuration.REQUIRED_KEYS:
+				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				try:
 					self.values[key] = self._read(r, key, tp)
 				except WindowsError:
@@ -198,8 +176,8 @@ def WinConfiguration():
 		#@ Overrides
 		def save(self):
 			r = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			for key in Configuration.REQUIRED_KEYS:
-				tp, trash = Configuration.REQUIRED_KEYS[key]
+			for key in _Configuration.REQUIRED_KEYS:
+				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				value = self.values[key]
 				self._store(r, key, tp, value)
 			_winreg.CloseKey(r)
@@ -239,7 +217,7 @@ def WinConfiguration():
 					value = - (value - 0xFFFF)
 				return value
 		
-	return _WinConfiguration
+	return _WinConfiguration()
 
 def WinWatcher():
 	if hasattr(sys, "frozen"):
