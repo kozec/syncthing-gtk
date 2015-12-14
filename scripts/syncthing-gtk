@@ -8,11 +8,13 @@ def sigint(*a):
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigint)
 	path = "/usr/share/syncthing-gtk"
+	localedir = None	# let gettext to decide
 	if os.path.exists("/usr/local/share/syncthing-gtk"):
 		path = "/usr/local/share/syncthing-gtk"
+		localedir = "/usr/local/share/locale"
 	
 	from syncthing_gtk.tools import init_logging, init_locale
-	init_locale()
+	init_locale(localedir)
 	init_logging()
 	
 	from syncthing_gtk import App
