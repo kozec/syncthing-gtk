@@ -753,9 +753,17 @@ class Daemon(GObject.GObject, TimerManager):
 	def _syncthing_cb_errors(self, errors):
 		if errors["errors"] is not None:
 			for e in errors["errors"]:
-				t = parsetime(e["time"])
+				if "time" in e:
+					t = parsetime(e["time"])
+					msg = e["error"]
+				elif "when" in e:
+					t = parsetime(e["when"])
+					msg = e["message"]
+				else:
+					# Can't decode this
+					continue
 				if t > self._last_error_time:
-					self.emit("error", e["error"])
+					self.emit("error", msg)
 					self._last_error_time = t
 		self.timer("errors", self._refresh_interval * 5, self._rest_request, "system/error", self._syncthing_cb_errors)
 	
