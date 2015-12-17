@@ -7,8 +7,8 @@ Colorfull, expandlable widget displaying folder/device data
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
 from syncthing_gtk.ribar import RevealerClass
+from syncthing_gtk.tools import _ # gettext function
 import os, logging, math
-_ = lambda (a) : a
 log = logging.getLogger("InfoBox")
 
 COLOR_CHANGE_TIMER	= 10	# ms

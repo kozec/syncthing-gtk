@@ -8,9 +8,10 @@ Base class and universal handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject, GLib
 from syncthing_gtk.tools import ints
+from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.daemon import ConnectionRestarted
+from syncthing_gtk import UIBuilder
 import os, sys, logging
-_ = lambda (a) : a
 log = logging.getLogger("EditorDialog")
 
 class EditorDialog(GObject.GObject):
@@ -109,7 +110,7 @@ class EditorDialog(GObject.GObject):
 	
 	def setup_widgets(self, gladefile, title):
 		# Load glade file
-		self.builder = Gtk.Builder()
+		self.builder = UIBuilder()
 		self.builder.add_from_file(os.path.join(self.app.gladepath, gladefile))
 		self.builder.connect_signals(self)
 		self["editor"].set_title(title)

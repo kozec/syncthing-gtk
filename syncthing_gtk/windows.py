@@ -15,7 +15,7 @@ from win32com.shell import shell, shellcon
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
-ST_INOTIFY_EXE = "syncthing-inotify-v0.6.3.exe"
+ST_INOTIFY_EXE = "syncthing-inotify-v0.6.7.exe"
 
 def fix_localized_system_error_messages():
 	"""
@@ -33,15 +33,18 @@ def fix_localized_system_error_messages():
 	
 	codecs.register_error("strict", handle_error)
 
-def dont_use_localization_in_gtk():
+def enable_localization():
 	"""
-	Set's LANGUAGE environment variable to en_US, preventing
-	use of localized labels on GTK stock menus and widgets.
-	
-	This will prevent interface from being 'half-translated' until
-	real translation support is done.
+	Updates environment variables with windows locale.
 	"""
-	os.environ['LANGUAGE'] = 'en_US'
+	loc = "en"
+	domain = "syncthing-gtk"
+	try:
+		import locale
+		loc = locale.getdefaultlocale()[0]
+	except Exception, e:
+		pass
+	os.environ['LANGUAGE'] = loc
 
 def is_shutting_down():
 	""" Returns True if Windows initiated shutdown process """
@@ -152,9 +155,9 @@ class WinPopenReader:
 			return self._data
 
 def WinConfiguration():
-	from syncthing_gtk.configuration import _Configuration as Configuration
+	from syncthing_gtk.configuration import _Configuration
 	from syncthing_gtk.configuration import serializer
-	class _WinConfiguration(Configuration):
+	class _WinConfiguration(_Configuration):
 		"""
 		Configuration implementation for Windows - stores values
 		in registry
@@ -162,32 +165,10 @@ def WinConfiguration():
 		
 		#@ Overrides
 		def load(self):
-			if os.path.exists(self.get_config_file()):
-				# Copy file-based cofiguration to registry and remove
-				# configuration folder
-				#
-				# TODO: Remove this later
-				log.info("Converting old configuration to registry...")
-				Configuration.load(self)
-				self.convert_values()
-				self.check_values()
-				self.save()
-				try:
-					os.unlink(self.get_config_file())
-					try:
-						os.rmdir(self.get_config_dir())
-					except Exception, e:
-						# May happen, no problem here
-						pass
-				except Exception, e:
-					# Shouldn't happen, report problem here
-					log.warning("Failed to remove old config file")
-					log.warning(e)
-				return
 			self.values = {}
 			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			for key in Configuration.REQUIRED_KEYS:
-				tp, trash = Configuration.REQUIRED_KEYS[key]
+			for key in _Configuration.REQUIRED_KEYS:
+				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				try:
 					self.values[key] = self._read(r, key, tp)
 				except WindowsError:
@@ -198,8 +179,8 @@ def WinConfiguration():
 		#@ Overrides
 		def save(self):
 			r = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			for key in Configuration.REQUIRED_KEYS:
-				tp, trash = Configuration.REQUIRED_KEYS[key]
+			for key in _Configuration.REQUIRED_KEYS:
+				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				value = self.values[key]
 				self._store(r, key, tp, value)
 			_winreg.CloseKey(r)
@@ -239,7 +220,7 @@ def WinConfiguration():
 					value = - (value - 0xFFFF)
 				return value
 		
-	return _WinConfiguration
+	return _WinConfiguration()
 
 def WinWatcher():
 	if hasattr(sys, "frozen"):

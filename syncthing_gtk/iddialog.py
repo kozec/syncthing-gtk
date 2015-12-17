@@ -8,10 +8,11 @@ Dialog with Device ID and generated QR code
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from tools import IS_WINDOWS
+from syncthing_gtk.tools import _ # gettext function
+from syncthing_gtk import UIBuilder
 import urllib2, httplib, ssl
 import os, tempfile, logging
 log = logging.getLogger("IDDialog")
-_ = lambda (a) : a
 
 class IDDialog(object):
 	""" Dialog with Device ID and generated QR code """
@@ -37,7 +38,7 @@ class IDDialog(object):
 	
 	def setup_widgets(self):
 		# Load glade file
-		self.builder = Gtk.Builder()
+		self.builder = UIBuilder()
 		self.builder.add_from_file(os.path.join(self.app.gladepath, "device-id.glade"))
 		self.builder.connect_signals(self)
 		self["vID"].set_text(self.device_id)

@@ -10,12 +10,13 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 from syncthing_gtk import Configuration, DaemonProcess
 from syncthing_gtk import DaemonOutputDialog, StDownloader
-from syncthing_gtk.tools import get_config_dir, IS_WINDOWS
+from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, is_portable
 from syncthing_gtk.tools import can_upgrade_binary, compare_version
+from syncthing_gtk.tools import _ # gettext function
 import os, sys, socket, random, string
 import logging, traceback, platform
 from xml.dom import minidom
-_ = lambda (a) : a
+
 log = logging.getLogger("Wizard")
 
 DEFAULT_PORT = 8080
@@ -68,7 +69,7 @@ class Wizard(Gtk.Assistant):
 		index = self.append_page(page)
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
-		self.set_page_title(page, page.TITLE)
+		self.set_page_title(page, _(page.TITLE) + "  ")
 		return index
 	
 	def insert(self, page):
@@ -79,7 +80,7 @@ class Wizard(Gtk.Assistant):
 		index = self.insert_page(page, index + 1)
 		page.parent = self
 		self.set_page_type(page, page.TYPE)
-		self.set_page_title(page, page.TITLE)
+		self.set_page_title(page, _(page.TITLE) + "  ")
 		return index
 	
 	def insert_and_go(self, page):
@@ -187,14 +188,14 @@ class Page(Gtk.Grid):
 
 class IntroPage(Page):
 	TYPE = Gtk.AssistantPageType.INTRO
-	TITLE = _("Intro")
+	TITLE = "Intro"
 	def init_page(self):
 		""" First, intro page. Just static text that explains what's going on """ 
 		config_folder = "~/.config/syncthing"
 		config_folder_link = '<a href="file://%s">%s</a>' % (
 				os.path.expanduser(config_folder), config_folder)
 		self.attach(WrappedLabel(
-			_("<b>Welcome to Syncthing-GTK first run wizard!</b>") +
+			"<b>" + _("Welcome to Syncthing-GTK first run wizard!") + "</b>" +
 			"\n\n" +
 			_("It looks like you never have used Syncthing.") + " " +
 			_("Initial configuration should be created.") +  " " +
@@ -211,12 +212,12 @@ class FindDaemonPage(Page):
 	# that.
 	# To prevent this 'window jumping', padding is added here, so
 	# this page is always one with longest name.
-	TITLE = _("Find Daemon") + "                 "
+	TITLE = "Find Daemon"
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	def init_page(self):
 		""" Displayed while Syncthing binary is being searched for """
 		self.label = WrappedLabel(
-			_("<b>Searching for Syncthing daemon.</b>") +
+			"<b>" + _("Searching for Syncthing daemon.") + "</b>" +
 			"\n\n" +
 			_("Please wait...")
 		)
@@ -228,6 +229,8 @@ class FindDaemonPage(Page):
 	def prepare(self):
 		self.paths = [ "./" ]
 		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
+		if is_portable():
+			self.paths += [ ".\\data" ]
 		if StDownloader is None:
 			self.binaries = ["syncthing"]
 		else:
@@ -282,19 +285,26 @@ class FindDaemonPage(Page):
 				if self.ignored_version == None:
 					# No binary was found
 					title = _("Syncthing daemon not found.")
-					message += _("Please, use package manager to install the Syncthing package") + " "
-					message += _("or %s from Syncthing page and save it to your %s directory.") % \
-								(dll_link, target_folder_link)
+					message += _("Please, use package manager to install the Syncthing package "
+								 "or %(download_link)s from Syncthing page and save it to your "
+								 "%(target)s directory.") % {
+						'download_link' : dll_link,
+						'target' : target_folder_link
+					}
 				else:
 					# Binary was found, but it was too old to be ussable
 					title = _("Syncthing daemon is too old.")
-					message += _("Syncthing-GTK needs Syncthing daemon %s or newer, but only %s") % \
-							(MIN_ST_VERSION, self.ignored_version) + " "
-					message += _("were found.")
+					message += _("Syncthing-GTK needs Syncthing daemon %(min)s or newer, but only %(actual)s were found.") % {
+						'min' : MIN_ST_VERSION,
+						'actual' : self.ignored_version
+					}
 					message += "\n"
-					message += _("Please, use package manager to install the Syncthing package") + " "
-					message += _("or %s from Syncthing page and save it to your %s directory.") % \
-								(dll_link, target_folder_link)
+					message += _("Please, use package manager to install the Syncthing package "
+								 "or %(download_link)s from Syncthing page and save it to your "
+								 "%(target)s directory.") % {
+						'download_link' : dll_link,
+						'target' : target_folder_link
+					}
 				message += "\n\n"
 				message += _("Alternatively, Syncthing-GTK can download Syncthing binary") + " "
 				message += _("to %s and keep it up-to-date, but this option is meant as") % \
@@ -362,7 +372,7 @@ class FindDaemonPage(Page):
 				self.parent.config["st_autoupdate"] = False
 			self.parent.set_page_complete(self, True)
 			self.label.set_markup(
-					_("<b>Syncthing daemon binary found.</b>") +
+					"<b>" + _("Syncthing daemon binary found.") + "</b>" +
 					"\n\n" +
 					_("Binary path:") + " " + bin_path + "\n" +
 					_("Version:") + " " + self.version_string
@@ -376,11 +386,11 @@ class FindDaemonPage(Page):
 
 class DownloadSTPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Download Daemon")
+	TITLE = "Download Daemon"
 	
 	def init_page(self):
 		""" Displayed while wizard downloads and extracts daemon """
-		self.label = WrappedLabel(_("<b>Downloading Syncthing daemon.</b>"))
+		self.label = WrappedLabel("<b>" + _("Downloading Syncthing daemon.") + "</b>")
 		self.version = WrappedLabel(_("Please wait..."))
 		self.pb = Gtk.ProgressBar()
 		self.label.props.margin_bottom = 15
@@ -445,7 +455,7 @@ class DownloadSTPage(Page):
 	def on_extract_finished(self, *a):
 		""" Called after extraction is finished """
 		# Everything done. Praise supernatural entities...
-		self.label.set_markup(_("<b>Download finished.</b>"))
+		self.label.set_markup("<b>" + _("Download finished.") + "</b>")
 		self.parent.config["syncthing_binary"] = self.target
 		self.version.set_markup(_("Binary path:") +
 				" " + self.target)
@@ -454,13 +464,14 @@ class DownloadSTPage(Page):
 	
 class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Generate Keys")
+	TITLE = "Generate Keys"
 	def init_page(self):
 		""" Displayed while Syncthing binary is being searched for """
 		self.label = WrappedLabel(
-			_("<b>Syncthing is generating RSA key and certificate.</b>") +
-			"\n\n" +
-			_("This may take a while...")
+			"<b>%s</b>\n\n%s" % (
+				_("Syncthing is generating RSA key and certificate."),
+				_("This may take a while...")
+			)
 		)
 		self.attach(self.label, 0, 0, 1, 1)
 	
@@ -507,12 +518,12 @@ class GenerateKeysPage(Page):
 
 class HttpSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.CONTENT
-	TITLE = _("Setup WebUI")
+	TITLE = "Setup WebUI"
 	def init_page(self):
 		""" Permits user to set WebUI settings """
 		# Wall of text
 		label = WrappedLabel(
-			_("<b>WebUI setup</b>") +
+			"<b>" + _("WebUI setup") + "</b>" +
 			"\n\n" +
 			_("Syncthing can be managed remotely using WebUI and "
 			  "even if you are going to use Syncthing-GTK, WebUI needs "
@@ -530,7 +541,7 @@ class HttpSettingsPage(Page):
 			"\n"
 		)
 		# Radiobuttons
-		lbl_radios = WrappedLabel("<b>WebUI Listen Addresses</b>")
+		lbl_radios = WrappedLabel("<b>" + _("WebUI Listen Addresses") + "</b>")
 		self.rb_localhost = Gtk.RadioButton(label=_("Listen on _localhost"))
 		self.rb_all_intfs = Gtk.RadioButton.new_from_widget(self.rb_localhost)
 		self.rb_all_intfs.set_label(_("Listen on _all interfaces"))
@@ -592,10 +603,10 @@ class HttpSettingsPage(Page):
 
 class SaveSettingsPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
-	TITLE = _("Save Settings")
+	TITLE = "Save Settings"
 	def init_page(self):
 		""" Displayed while settings are being saved """
-		self.label = WrappedLabel(_("<b>Saving settings...</b>") + "\n\n")
+		self.label = WrappedLabel("<b>" + _("Saving settings...") + "</b>" + "\n\n")
 		self.status = Gtk.Label(_("Checking for available port..."))
 		self.attach(self.label,		0, 0, 1, 1)
 		self.attach(self.status,	0, 1, 1, 1)
@@ -711,11 +722,11 @@ class SaveSettingsPage(Page):
 
 class LastPage(GenerateKeysPage):
 	TYPE = Gtk.AssistantPageType.SUMMARY
-	TITLE = _("Finish")
+	TITLE = "Finish"
 	def init_page(self):
 		""" Well, it's last page. """
 		label = WrappedLabel(
-			_("<b>Done.</b>") +
+			"<b>" + _("Done.") + "</b>" +
 			"\n\n" +
 			_("Syncthing has been successfully configured.") +
 			"\n" +

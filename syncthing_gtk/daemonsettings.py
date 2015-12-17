@@ -8,7 +8,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.editordialog import EditorDialog, strip_v
-_ = lambda (a) : a
+from syncthing_gtk.tools import _ # gettext function
 
 VALUES = [ "vlistenAddress", "vlocalAnnounceEnabled", "vupnpEnabled",
 		"vstartBrowser", "vmaxSendKbpsEnabled", "vmaxSendKbps",
@@ -21,7 +21,7 @@ VALUES = [ "vlistenAddress", "vlocalAnnounceEnabled", "vupnpEnabled",
 class DaemonSettingsDialog(EditorDialog):
 	def __init__(self, app):
 		EditorDialog.__init__(self, app, "daemon-settings.glade",
-			"Syncthing Daemon Settings")
+			_("Syncthing Daemon Settings"))
 	
 	#@Overrides
 	def get_value(self, key):

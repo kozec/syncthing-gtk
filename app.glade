@@ -505,7 +505,7 @@
 		<object class="GtkImageMenuItem" id="menu-popup-edit-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">gtk-edit</property>
+			<property name="label">gtk-edit</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
@@ -527,7 +527,7 @@
 		<object class="GtkImageMenuItem" id="menu-popup-delete-folder">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">gtk-delete</property>
+			<property name="label">gtk-delete</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
@@ -574,7 +574,7 @@
 		<object class="GtkImageMenuItem" id="menu-popup-edit-device">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">gtk-edit</property>
+			<property name="label">gtk-edit</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>
@@ -620,7 +620,7 @@
 		<object class="GtkImageMenuItem" id="menu-popup-delete-device">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
-			<property name="label" translatable="yes">gtk-delete</property>
+			<property name="label">gtk-delete</property>
 			<property name="use_underline">True</property>
 			<property name="use_stock">True</property>
 			<property name="always_show_image">True</property>

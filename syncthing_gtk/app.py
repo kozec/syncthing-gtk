@@ -9,9 +9,9 @@ from __future__ import unicode_literals
 from gi.repository import Gtk, Gio, Gdk
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
+from syncthing_gtk.tools import _ # gettext function
 from datetime import datetime
 import os, webbrowser, sys, logging, shutil, re
-_ = lambda (a) : a
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
@@ -295,7 +295,7 @@ class App(Gtk.Application, TimerManager):
 					self["edit-menu-icon"].set_from_icon_name("emblem-system-symbolic", self["edit-menu-icon"].get_icon_name()[1])
 		
 		# Set window title in way that even Gnome can understand
-		self["window"].set_title(_("Syncthing GTK"))
+		self["window"].set_title(_("Syncthing-GTK"))
 		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
 		self.add_window(self["window"])
 	
@@ -651,13 +651,13 @@ class App(Gtk.Application, TimerManager):
 			self.config["last_updatecheck"] = LONG_AGO
 			self.restart_after_update = True
 			self.close_connect_dialog()
-			self.display_connect_dialog(_("Your syncthing daemon is too old.\nAttempting to download recent, please wait..."))
+			self.display_connect_dialog(_("Your syncthing daemon is too old.") + "\n" + _("Attempting to download recent, please wait..."))
 			self.set_status(False)
 			self.check_for_upgrade()
 		else:
 			# All other errors are fatal for now. Error dialog is displayed and program exits.
 			if reason == Daemon.NOT_AUTHORIZED:
-				message = _("Cannot authorize with daemon failed. Please, use WebUI to generate API key or disable password authentication.")
+				message = _("Cannot authorize with daemon. Please, use WebUI to generate API key or disable password authentication.")
 			elif reason == Daemon.OLD_VERSION:
 				message = _("Your syncthing daemon is too old.\nPlease, upgrade syncthing package at least to version %s and try again.") % (self.daemon.get_min_version(),)
 			elif reason == Daemon.TLS_UNSUPPORTED:
@@ -771,7 +771,10 @@ class App(Gtk.Application, TimerManager):
 		if nid in self.devices:
 			device = self.devices[nid].get_title()
 			can_fix = True
-		markup = _('<b>%s</b> wants to share folder "<b>%s</b>". Add new folder?') % (device, rid)
+		markup = _('%(device)s wants to share folder "%(folder)s". Add new folder?') % {
+			'device' : "<b>%s</b>" % device,
+			'folder' : "<b>%s</b>" % rid
+			}
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
@@ -790,7 +793,10 @@ class App(Gtk.Application, TimerManager):
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Device "<b>%s</b>" at IP "<b>%s</b>" wants to connect. Add new device?') % (nid, address)
+		markup = _('Device "<b>%(device)s</b>" at IP "<b>%(ip)s</b>" wants to connect. Add new device?') % {
+			'device' : "<b>%s</b>" % nid,
+			'ip' : "<b>%s</b>" % address
+			}
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
@@ -844,10 +850,10 @@ class App(Gtk.Application, TimerManager):
 			elif len(announce) == 1:
 				device["announce"] = _("Online") if announce.values()[0] else _("offline")
 			else:
-				device["announce"] = _("%s/%s online") % (
-						len([ x for x in announce.values() if x ]),
-						len(announce)
-					)
+				device["announce"] = _("%(online)s/%(total)s online") % {
+						'online' : len([ x for x in announce.values() if x ]),
+						'total'  : len(announce)
+					}
 	
 	def cb_syncthing_device_added(self, daemon, nid, name, used, data):
 		self.show_device(nid, name,
@@ -933,7 +939,7 @@ class App(Gtk.Application, TimerManager):
 			r["readOnly"], r["ignorePerms"], 
 			r["rescanIntervalS"],
 			sorted(
-				[ self.devices[n["deviceID"]] for n in r["devices"] ],
+				[ self.devices[n["deviceID"]] for n in r["devices"] if n["deviceID"] in self.devices ],
 				key=lambda x : x.get_title().lower()
 				)
 			)
@@ -1292,7 +1298,7 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("master",	_("Yes") if is_master else _("No"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s%s" % (
-			rescan_interval, " " + _("(watch)" if id in self.config["use_inotify"] else "" )))
+			rescan_interval, " " + _("(watch)") if id in self.config["use_inotify"] else "" ))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)

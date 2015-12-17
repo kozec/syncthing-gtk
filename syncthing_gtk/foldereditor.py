@@ -8,10 +8,10 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import check_device_id
+from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.editordialog import EditorDialog, strip_v
 from syncthing_gtk import EditorDialog, Watcher
 import os, sys, re, logging
-_ = lambda (a) : a
 log = logging.getLogger("FolderEditor")
 
 COLOR_NEW				= "#A0A0A0"

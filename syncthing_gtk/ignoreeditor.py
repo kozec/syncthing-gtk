@@ -5,8 +5,9 @@ Syncthing-GTK - Ignore Pattern Editor
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GLib
+from syncthing_gtk.tools import _ # gettext function
+from syncthing_gtk import UIBuilder
 import os, sys, re, logging
-_ = lambda (a) : a
 log = logging.getLogger("IgnoreEditor")
 
 class IgnoreEditor(object):
@@ -35,7 +36,7 @@ class IgnoreEditor(object):
 	
 	def setup_widgets(self):
 		# Load glade file
-		self.builder = Gtk.Builder()
+		self.builder = UIBuilder()
 		self.builder.add_from_file(os.path.join(self.app.gladepath, "ignore-editor.glade"))
 		self.builder.connect_signals(self)
 		self["lblLocation"].set_markup(

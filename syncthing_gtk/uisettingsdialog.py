@@ -9,10 +9,10 @@ from gi.repository import Gtk, Gdk
 from syncthing_gtk import EditorDialog
 from syncthing_gtk import Notifications, StDownloader, HAS_DESKTOP_NOTIFY
 from syncthing_gtk.tools import *
+from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.configuration import LONG_AGO
 import os, logging
 
-_ = lambda (a) : a
 log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
@@ -100,7 +100,10 @@ class UISettingsDialog(EditorDialog):
 					)
 				else:
 					log.warning("Cannot find %s required to support %s", so_file, name)
-					status.append(_("Install %s package to enable %s support") % (package, name))
+					status.append(_("Install %(package)s package to enable %(feature)s support") % {
+						'package' : package,
+						'feature' : name
+					})
 			else:
 				log.warning("Cannot find %s.py required to support %s", plugin, name)
 		self["fmLblIntegrationStatus"].set_text("\n".join(status))

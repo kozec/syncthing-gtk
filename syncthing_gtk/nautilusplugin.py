@@ -225,6 +225,10 @@ def build_class(plugin_module):
 				log.debug("Download started %s", filepath)
 				self.downloads.add(filepath)
 				self._invalidate(filepath)
+				placeholderpath = os.path.join(path, ".syncthing.%s.tmp" % filename)
+				if placeholderpath in self.files:
+					self._invalidate(placeholderpath)
+				
 		
 		def cb_syncthing_item_updated(self, daemon, rid, filename, *a):
 			""" Called after file is downloaded """
@@ -241,11 +245,18 @@ def build_class(plugin_module):
 			# TODO: This remembers every file user ever saw in Nautilus.
 			# There *has* to be memory effecient alternative...
 			path = self._get_path(file)
+			pathonly, filename = os.path.split(path)
 			self.files[path] = file
 			if not self.ready: return plugin_module.OperationResult.COMPLETE
 			# Check if folder is one of repositories managed by syncthing
 			if path in self.downloads:
 				file.add_emblem("syncthing-active")
+			if filename.startswith(".syncthing.") and filename.endswith(".tmp"):
+				# Check for placeholder files
+				realpath = os.path.join(pathonly, filename[11:-4])
+				if realpath in self.downloads:
+					file.add_emblem("syncthing-active")
+					return plugin_module.OperationResult.COMPLETE
 			elif path in self.repos:
 				# Determine what emblem should be used
 				state = self.repos[path]
