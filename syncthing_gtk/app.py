@@ -395,6 +395,7 @@ class App(Gtk.Application, TimerManager):
 					return
 			self.ct_process()
 			self.lookup_action('daemon_output').set_enabled(True)
+			self["menu-si-daemon-output"].set_enabled(True)
 	
 	def ct_process(self):
 		"""

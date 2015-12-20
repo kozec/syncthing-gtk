@@ -808,6 +808,25 @@
 	</child>
 	
 	<child>
+		<object class="GtkImageMenuItem" id="menu-si-daemon-output">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Display _Daemon Output</property>
+			<property name="use_underline">True</property>
+			<property name="always_show_image">True</property>
+			<property name="image">menu-si-daemon-output-image</property>
+			<signal name="activate" handler="cb_menu_daemon_output" swapped="no"/>
+		</object>
+	</child>
+	
+	<child>
+		<object class="GtkSeparatorMenuItem" id="menu-si-separator3">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+		</object>
+	</child>
+	
+	<child>
 		<object class="GtkImageMenuItem" id="menu-si-about">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -962,6 +981,13 @@
 	<property name="can_focus">False</property>
 	<property name="icon_size">1</property>
 	<property name="icon_name">text-html</property>
+</object>
+
+<object class="GtkImage" id="menu-si-daemon-output-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon_size">1</property>
+	<property name="icon_name">utilities-terminal</property>
 </object>
 
 <object class="GtkImage" id="menu-si-recvlimit-image">
