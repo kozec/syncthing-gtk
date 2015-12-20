@@ -27,7 +27,7 @@ class FindDaemonDialog(EditorDialog):
 		self["lblMessage"].set_markup("%s\n%s" % (
 			_("Syncthing daemon binary cannot be found."),
 			_("If you have Syncthing installed, please, set path to "
-			  "%s bellow or click on <b>Download</b> "
+			  "%s below or click on <b>Download</b> "
 			  "button to download latest Syncthing package.") % (exe,)
 		))
 		if IS_XP or StDownloader is None:
@@ -36,7 +36,7 @@ class FindDaemonDialog(EditorDialog):
 			self["lblMessage"].set_markup("%s\n%s" % (
 				_("Syncthing daemon binary cannot be found."),
 				_("If you have Syncthing installed, please, set path to "
-				  "%s bellow") % (exe,)
+				  "%s below") % (exe,)
 			))
 			self.hide_download_button()
 	

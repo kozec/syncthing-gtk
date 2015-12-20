@@ -164,7 +164,7 @@ class InfoBox(Gtk.Container):
 		# Add border size
 		min_width += self.border_width * 2	# Left + right border
 		nat_width += self.border_width * 2
-		min_height += self.border_width * 3	# Top + bellow header + bottom
+		min_height += self.border_width * 3	# Top + below header + bottom
 		nat_height += self.border_width * 3
 		return(min_width, nat_width, min_height, nat_height)
  
@@ -253,7 +253,7 @@ class InfoBox(Gtk.Container):
 	
 	def on_header_click(self, eventbox, event):
 		"""
-		Hides or reveals everything bellow header
+		Hides or reveals everything below header
 		Displays popup menu on right click
 		"""
 		if event.button == 1:	# left

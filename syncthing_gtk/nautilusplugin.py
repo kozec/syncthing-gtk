@@ -62,7 +62,7 @@ def build_class(plugin_module):
 			self.online_nids = set()
 			# Set of online repos (at least one associated device connected)
 			self.onlide_rids = set()
-			# List (cache) for folders that are known to be placed bellow
+			# List (cache) for folders that are known to be placed below
 			# some syncthing repo
 			self.subfolders = set()
 			# List (cache) for files that plugin were asked about

@@ -440,7 +440,7 @@ class EditorDialog(GObject.GObject):
 	def call_after_loaded(self, callback, *data):
 		""" Calls callback when 'loaded' event is emited """
 		self.connect("loaded",
-			# lambda bellow throws 'event_source' argument and
+			# lambda below throws 'event_source' argument and
 			# calls callback with rest of arguments
 			lambda obj, callback, *a : callback(*a),
 			callback, *data
