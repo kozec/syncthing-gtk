@@ -17,8 +17,8 @@ log = logging.getLogger("UISettingsDialog")
 
 VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vautostart", "vuse_old_header", "vicons_in_menu",
-		"vforce_dark_theme", "vdaemon_priority", "vfolder_as_path",
-		"vnotification_for_update", "vnotification_for_folder",
+		"vforce_dark_theme", "vdaemon_priority", "vdaemon_iopriority",
+		"vfolder_as_path", "vnotification_for_update", "vnotification_for_folder",
 		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
 		"vmax_cpus",
 	]
@@ -152,7 +152,7 @@ class UISettingsDialog(EditorDialog):
 			set_run_on_startup(value, "Syncthing-GTK", get_executable(),
 				"/usr/share/syncthing-gtk/icons/st-logo-128.png",
 				"GUI for Syncthing")
-		elif key == "daemon_priority":
+		elif key in ("daemon_priority", "daemon_iopriority"):
 			return EditorDialog.set_value(self, key, int(value))
 		else:
 			return EditorDialog.set_value(self, key, value)

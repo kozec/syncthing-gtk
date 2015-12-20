@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.19.0 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAdjustment" id="adjKeepVersions">
@@ -14,7 +14,7 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkListStore" id="lststrPriority">
+  <object class="GtkListStore" id="lststrIoPriority">
     <columns>
       <!-- column-name key -->
       <column type="gint"/>
@@ -23,20 +23,20 @@
     </columns>
     <data>
       <row>
-        <col id="0">19</col>
-        <col id="1" translatable="yes">Lowest</col>
+        <col id="0">3</col>
+        <col id="1" translatable="yes">Idle</col>
       </row>
       <row>
-        <col id="0">10</col>
-        <col id="1" translatable="yes">Low</col>
+        <col id="0">2</col>
+        <col id="1" translatable="yes">Best Effort</col>
       </row>
       <row>
         <col id="0">0</col>
-        <col id="1" translatable="yes">Normal</col>
+        <col id="1" translatable="yes">Default</col>
       </row>
       <row>
-        <col id="0">-10</col>
-        <col id="1" translatable="yes">Above Normal</col>
+        <col id="0">1</col>
+        <col id="1" translatable="yes">Realtime</col>
       </row>
     </data>
   </object>
@@ -116,14 +116,13 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">10</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">When starting and Syncthing daemon is not running...</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">10</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -141,7 +140,6 @@
                     <property name="left_attach">1</property>
                     <property name="top_attach">11</property>
                     <property name="width">2</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -158,8 +156,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">12</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -176,8 +172,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">13</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -185,14 +179,13 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">10</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">When exiting after daemon was started in background...</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">14</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -209,8 +202,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">15</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -227,8 +218,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">16</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -245,8 +234,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">17</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -264,7 +251,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -272,14 +258,13 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">10</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Display desktop notifications for...</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">6</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -295,8 +280,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">7</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -312,8 +295,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">9</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -329,8 +310,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">8</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -347,7 +326,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -364,7 +342,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -381,7 +358,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">4</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -398,7 +374,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -415,7 +390,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">3</property>
                     <property name="width">3</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -496,10 +470,10 @@
                   <object class="GtkLabel" id="label10">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Integrate Syncthing with filemanagers</property>
                     <property name="use_underline">True</property>
                     <property name="ellipsize">end</property>
+                    <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -507,8 +481,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -526,8 +498,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -544,8 +514,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -562,8 +530,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">3</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -572,10 +538,10 @@
                     <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">7</property>
-                    <property name="xalign">0</property>
                     <property name="label">Install blahblahblah to enable Nemo support
 Install blahblahblah to enable Nautilus support
 Install blahblahblah to enable Caja support</property>
+                    <property name="xalign">0</property>
                     <attributes>
                       <attribute name="style" value="italic"/>
                     </attributes>
@@ -583,8 +549,6 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -592,17 +556,15 @@ Install blahblahblah to enable Caja support</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">8</property>
-                    <property name="xalign">0</property>
                     <property name="xpad">3</property>
                     <property name="label" translatable="yes">&lt;b&gt;Note:&lt;/b&gt; You may need to restart your filemanager after toggling integration.</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">4</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
               </object>
@@ -633,9 +595,9 @@ Install blahblahblah to enable Caja support</property>
                   <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Syncthing binary location</property>
                     <property name="use_underline">True</property>
+                    <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -644,7 +606,6 @@ Install blahblahblah to enable Caja support</property>
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
                     <property name="width">2</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -657,8 +618,6 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -675,8 +634,6 @@ Install blahblahblah to enable Caja support</property>
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -685,16 +642,15 @@ Install blahblahblah to enable Caja support</property>
                     <property name="can_focus">False</property>
                     <property name="margin_left">10</property>
                     <property name="margin_bottom">10</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">This binary will be started when syncthing daemon is not running and "&lt;i&gt;start daemon in background&lt;/i&gt;" option is checked on "&lt;i&gt;Interface&lt;/i&gt;" page.</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
                     <property name="width">2</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -703,15 +659,14 @@ Install blahblahblah to enable Caja support</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="no_show_all">True</property>
-                    <property name="margin_top">10</property>
                     <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
                     <child>
                       <object class="GtkLabel" id="label7">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">0</property>
                         <property name="label" translatable="yes">Keep Syncthing binary up-to-date</property>
+                        <property name="xalign">0</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -720,9 +675,8 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">9</property>
+                    <property name="top_attach">4</property>
                     <property name="width">2</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -731,122 +685,163 @@ Install blahblahblah to enable Caja support</property>
                     <property name="can_focus">False</property>
                     <property name="no_show_all">True</property>
                     <property name="margin_left">10</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">If enabled, Syncthing-GTK will automatically check for new daemon releases and replace binary with latest version.</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">10</property>
-                    <property name="width">2</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label12">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Daemon process priority</property>
-                    <property name="use_underline">True</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">3</property>
-                    <property name="width">2</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkComboBox" id="vdaemon_priority">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="model">lststrPriority</property>
-                    <child>
-                      <object class="GtkCellRendererText" id="cellrenderertext1"/>
-                      <attributes>
-                        <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">4</property>
-                    <property name="width">2</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label13">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_bottom">10</property>
-                    <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Priority will be used only if "&lt;i&gt;start daemon in background&lt;/i&gt;" option is checked on "&lt;i&gt;Interface&lt;/i&gt;" page.</property>
-                    <property name="use_markup">True</property>
-                    <property name="wrap">True</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
                     <property name="width">2</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="label14">
+                  <object class="GtkGrid" id="grid1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Maximum number of CPU cores</property>
-                    <property name="use_underline">True</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"/>
-                    </attributes>
+                    <child>
+                      <object class="GtkLabel" id="label12">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Daemon process settings</property>
+                        <property name="use_underline">True</property>
+                        <property name="xalign">0</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label8">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="hexpand">False</property>
+                        <property name="xpad">10</property>
+                        <property name="label" translatable="yes">Scheduling priority (nice value)</property>
+                        <property name="mnemonic_widget">vdaemon_priority</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="vdaemon_priority">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="hexpand">True</property>
+                        <property name="model">lststrPriority</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label16">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="hexpand">False</property>
+                        <property name="xpad">10</property>
+                        <property name="label" translatable="yes">IO priority</property>
+                        <property name="mnemonic_widget">vdaemon_iopriority</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="vdaemon_iopriority">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="hexpand">True</property>
+                        <property name="model">lststrIoPriority</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label13">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_bottom">10</property>
+                        <property name="label" translatable="yes">Daemon process settings are used only if "&lt;i&gt;start daemon in background&lt;/i&gt;" option is selected on "&lt;i&gt;Interface&lt;/i&gt;" page.</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">4</property>
+                        <property name="width">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label17">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="hexpand">False</property>
+                        <property name="xpad">10</property>
+                        <property name="label" translatable="yes">Maximum number of CPU cores</property>
+                        <property name="mnemonic_widget">vmax_cpus</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="vmax_cpus">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="text">1</property>
+                        <property name="adjustment">adjMaxCPUs</property>
+                        <property name="value">1</property>
+                        <signal name="value-changed" handler="cb_vmax_cpus_value_changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">6</property>
+                    <property name="top_attach">3</property>
                     <property name="width">2</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label15">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_bottom">10</property>
-                    <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Sets the maximum number of CPU cores for daemon to use. This value will be used only if "&lt;i&gt;start daemon in background&lt;/i&gt;" option is checked on "&lt;i&gt;Interface&lt;/i&gt;" page.</property>
-                    <property name="use_markup">True</property>
-                    <property name="wrap">True</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">8</property>
-                    <property name="width">2</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="vmax_cpus">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin_bottom">10</property>
-                    <property name="text">1</property>
-                    <property name="adjustment">adjMaxCPUs</property>
-                    <property name="value">1</property>
-                    <signal name="value-changed" handler="cb_vmax_cpus_value_changed" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">7</property>
-                    <property name="width">2</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
               </object>
@@ -877,5 +872,31 @@ Install blahblahblah to enable Caja support</property>
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkListStore" id="lststrPriority">
+    <columns>
+      <!-- column-name key -->
+      <column type="gint"/>
+      <!-- column-name text -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">19</col>
+        <col id="1" translatable="yes">Lowest</col>
+      </row>
+      <row>
+        <col id="0">10</col>
+        <col id="1" translatable="yes">Low</col>
+      </row>
+      <row>
+        <col id="0">0</col>
+        <col id="1" translatable="yes">Normal</col>
+      </row>
+      <row>
+        <col id="0">-10</col>
+        <col id="1" translatable="yes">Above Normal</col>
+      </row>
+    </data>
   </object>
 </interface>

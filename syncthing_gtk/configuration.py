@@ -29,6 +29,7 @@ class _Configuration(object):
 		"autostart_daemon"			: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
 		"autokill_daemon"			: (int, 2),	# 0 - never kill, 1 - always kill, 2 - ask
 		"daemon_priority"			: (int, 0), # uses nice values
+		"daemon_iopriority"			: (int, 0), # uses nice values
 		"max_cpus"					: (int, 0), # 0 for all cpus
 		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
 		"minimize_on_start"			: (bool, False),
