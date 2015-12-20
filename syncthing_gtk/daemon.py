@@ -1098,6 +1098,9 @@ class Daemon(GObject.GObject, TimerManager):
 		elif eType == "FolderSummary":
 			rid = e["data"]["folder"]
 			self._syncthing_cb_folder_data(e["data"]["summary"], rid)
+		elif eType == "FolderErrors":
+			# TODO: Handle this!
+			pass
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
 		elif eType == "ItemFinished":

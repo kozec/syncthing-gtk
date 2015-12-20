@@ -40,6 +40,32 @@
       </row>
     </data>
   </object>
+  <object class="GtkListStore" id="lststrPriority">
+    <columns>
+      <!-- column-name key -->
+      <column type="gint"/>
+      <!-- column-name text -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">19</col>
+        <col id="1" translatable="yes">Lowest</col>
+      </row>
+      <row>
+        <col id="0">10</col>
+        <col id="1" translatable="yes">Low</col>
+      </row>
+      <row>
+        <col id="0">0</col>
+        <col id="1" translatable="yes">Normal</col>
+      </row>
+      <row>
+        <col id="0">-10</col>
+        <col id="1" translatable="yes">Above Normal</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Syncthing-GTK Settings</property>
@@ -754,7 +780,7 @@ Install blahblahblah to enable Caja support</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label16">
+                      <object class="GtkLabel" id="lblIOPriority">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
@@ -872,31 +898,5 @@ Install blahblahblah to enable Caja support</property>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="lststrPriority">
-    <columns>
-      <!-- column-name key -->
-      <column type="gint"/>
-      <!-- column-name text -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">19</col>
-        <col id="1" translatable="yes">Lowest</col>
-      </row>
-      <row>
-        <col id="0">10</col>
-        <col id="1" translatable="yes">Low</col>
-      </row>
-      <row>
-        <col id="0">0</col>
-        <col id="1" translatable="yes">Normal</col>
-      </row>
-      <row>
-        <col id="0">-10</col>
-        <col id="1" translatable="yes">Above Normal</col>
-      </row>
-    </data>
   </object>
 </interface>
