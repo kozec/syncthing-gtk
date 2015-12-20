@@ -353,6 +353,7 @@ class App(Gtk.Application, TimerManager):
 		self.daemon.connect("device-sync-progress", self.cb_syncthing_device_sync_progress)
 		self.daemon.connect("device-sync-finished", self.cb_syncthing_device_sync_progress, 1.0)
 		self.daemon.connect("folder-added", self.cb_syncthing_folder_added)
+		self.daemon.connect("folder-error", self.cb_syncthing_folder_error)
 		self.daemon.connect("folder-data-changed", self.cb_syncthing_folder_data_changed)
 		self.daemon.connect("folder-data-failed", self.cb_syncthing_folder_state_changed, 0.0, COLOR_NEW, "")
 		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, 0.0, COLOR_FOLDER_SYNCING, _("Syncing"))
@@ -989,6 +990,13 @@ class App(Gtk.Application, TimerManager):
 			folder.set_status(_("Stopped"), 0)
 			# Color, theme-based icon is used here. It's intentional and
 			# supposed to draw attention
+			folder.add_value("error", "dialog-error", _("Error"), message)
+			folder.show_value('error')
+	
+	def cb_syncthing_folder_error(self, daemon, rid, errors):
+		if rid in self.folders:	# Should be always
+			folder = self.folders[rid]
+			message = "%(path)s: %(error)s" % errors[-1]
 			folder.add_value("error", "dialog-error", _("Error"), message)
 			folder.show_value('error')
 	

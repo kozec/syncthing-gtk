@@ -156,6 +156,11 @@ class Daemon(GObject.GObject, TimerManager):
 				id:		id of loaded folder
 				data:	dict with rest of folder data
 		
+		folder-error (id, errors)
+			Emited when when a folder cannot be successfully synchronized
+				id:		id of loaded folder
+				errors:	list with errors
+		
 		folder-data-changed (id, data):
 			Emited when change in folder data (/rest/model call)
 			is detected and sucesfully loaded.
@@ -247,6 +252,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"device-sync-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
 			b"device-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+			b"folder-error"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"folder-data-changed"	: (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
 			b"folder-data-failed"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-sync-finished"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -1099,8 +1105,8 @@ class Daemon(GObject.GObject, TimerManager):
 			rid = e["data"]["folder"]
 			self._syncthing_cb_folder_data(e["data"]["summary"], rid)
 		elif eType == "FolderErrors":
-			# TODO: Handle this!
-			pass
+			rid = e["data"]["folder"]
+			self.emit("folder-error", rid, e["data"]["errors"])
 		elif eType == "ConfigSaved":
 			self.emit("config-saved")
 		elif eType == "ItemFinished":
