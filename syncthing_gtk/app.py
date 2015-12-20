@@ -1804,13 +1804,13 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_daemon_output(self, *a):
 		if self.process != None:
 			d = DaemonOutputDialog(self, self.process)
-			d.show(self["window"])
+			d.show(None)
 	
 	def cb_menu_inotify_output(self, *a):
 		# Available & called only on Windows
 		if hasattr(self.watcher, "proc") and not self.watcher.proc is None:
 			d = DaemonOutputDialog(self, self.watcher.proc)
-			d.show(self["window"], _("Syncthing-Inotify Output"))
+			d.show(None, _("Syncthing-Inotify Output"))
 		else:
 			d = Gtk.MessageDialog(
 					self["window"],

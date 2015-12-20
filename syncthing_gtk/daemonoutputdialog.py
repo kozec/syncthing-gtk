@@ -29,7 +29,9 @@ class DaemonOutputDialog(object):
 		self["tvOutput"].get_buffer().set_text("\n".join(lines))
 
 	def show(self, parent=None, title=None):
-		if not parent is None:
+		if parent is None:
+			self["dialog"].set_modal(False)
+		else:
 			self["dialog"].set_transient_for(parent)
 		if not title is None:
 			self["dialog"].set_title(title)
