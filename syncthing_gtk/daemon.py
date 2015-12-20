@@ -754,6 +754,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if errors["errors"] is not None:
 			for e in errors["errors"]:
 				if "time" in e:
+					# TODO: Remove this next time support for older daemon is dropped
 					t = parsetime(e["time"])
 					msg = e["error"]
 				elif "when" in e:

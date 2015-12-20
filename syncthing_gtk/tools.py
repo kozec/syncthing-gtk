@@ -48,8 +48,9 @@ if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
 	import wmi, _winreg
 
-""" Localization lambda """
-_ = lambda (a) : gettext.gettext(a).decode("utf-8")
+""" Localization lambdas """
+_ = lambda(a): _uc(gettext.gettext(a))
+_uc = lambda(b): b if type(b) == unicode else b.decode("utf-8")
 
 def luhn_b32generate(s):
 	"""
