@@ -9,18 +9,17 @@ if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigint)
 	systempath = "/usr/share/syncthing-gtk"
 	installpath =  os.path.join(os.path.dirname(os.path.realpath(__file__)),
-		           '..',   # '..', '..', '..',
-		           'share', 'syncthing-gtk')
+			'..', 'share', 'syncthing-gtk')
 	localpath = "/usr/local/share/syncthing-gtk"
 	paths = (systempath, localpath, installpath)
 	localedir = None	# let gettext to decide
 	for path in paths:
-	    if os.path.exists(path):
-	        localedir = os.path.join(path, '..', 'locale')
-	        break
+		if os.path.exists(path):
+			localedir = os.path.join(path, '..', 'locale')
+			break
 	else:
-	    raise IOError("Could not find files in %r", paths)
-
+		raise IOError("Could not find files in %r", paths)
+	
 	from syncthing_gtk.tools import init_logging, init_locale
 	init_locale(localedir)
 	init_logging()
