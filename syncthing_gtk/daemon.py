@@ -732,7 +732,7 @@ class Daemon(GObject.GObject, TimerManager):
 			try:
 				self._last_error_time = parsetime(events[-1]["time"])
 			except ValueError:
-				self._last_error_time = datetime.datetime.now()
+				self._last_error_time = datetime.now()
 			self._rest_request("system/error", self._syncthing_cb_errors)
 			self._request_events()
 		else:
