@@ -160,19 +160,23 @@ def parsetime(m):
 def parse_config_arguments(lst):
 	"""
 	Parses list of arguments and variables set in configuration
-	Returns tuple of (variables_dict, arguments_list)
+	Returns tuple of (variables_dict, prefix_arguments, arguments_list)
 	"""
-	vars, args = {}, []
-	for i in shlex.split(lst, False, False):
+	vars, preargs, args = {}, [], []
+	split = shlex.split(lst, False, False)
+	args_target = preargs if "!" in split else args
+	for i in split:
 		if "=" in i and not i.startswith("-"):
 			# Environment variable
 			k, v = i.split("=", 1)
 			vars[k] = v
 			continue
+		elif i == "!":
+			args_target = args
 		elif len(i.strip()) > 0:
 			# Argument
-			args.append(i.strip())
-	return vars, args
+			args_target.append(i.strip())
+	return vars, preargs, args
 
 def delta_to_string(d):
 	"""

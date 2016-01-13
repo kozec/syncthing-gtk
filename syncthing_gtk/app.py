@@ -404,8 +404,8 @@ class App(Gtk.Application, TimerManager):
 		Just so I don't have to write same code all over the place.
 		"""
 		cmdline = [self.config["syncthing_binary"], "-no-browser"]
-		vars, args = parse_config_arguments(self.config["syncthing_arguments"])
-		cmdline += args
+		vars, preargs, args = parse_config_arguments(self.config["syncthing_arguments"])
+		cmdline = preargs + cmdline + args
 		
 		self.process = DaemonProcess(cmdline, self.config["daemon_priority"], self.config["max_cpus"], env=vars)
 		self.process.connect('failed', self.cb_daemon_startup_failed)
