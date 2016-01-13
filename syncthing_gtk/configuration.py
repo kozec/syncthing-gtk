@@ -31,6 +31,7 @@ class _Configuration(object):
 		"daemon_priority"			: (int, 0), # uses nice values
 		"max_cpus"					: (int, 0), # 0 for all cpus
 		"syncthing_binary"			: (str, "/usr/bin/syncthing"),
+		"syncthing_arguments"		: (str, ""),
 		"minimize_on_start"			: (bool, False),
 		"folder_as_path"			: (bool, True),
 		"use_inotify"				: (list, []),
