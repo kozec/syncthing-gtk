@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the Syncthing-GTK package.
 # 
 # Translators:
-# kozec <kozec2@kozec.com>, 2015
+# kozec <kozec2@kozec.com>, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-11-02 23:51+0100\n"
-"PO-Revision-Date: 2015-12-07 12:19+0000\n"
+"PO-Revision-Date: 2016-01-13 19:10+0000\n"
 "Last-Translator: kozec <kozec2@kozec.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/sk/)\n"
 "MIME-Version: 1.0\n"
@@ -492,13 +492,13 @@ msgstr "Súbor démona Syncthing nebol nájdený."
 #: syncthing_gtk/finddaemondialog.py:29
 #, python-format
 msgid ""
-"If you have Syncthing installed, please, set path to %s bellow or click on "
+"If you have Syncthing installed, please, set path to %s below or click on "
 "<b>Download</b> button to download latest Syncthing package."
 msgstr "Ak máte nainštalovaný Syncthing, prosím, nastavte cestu k %s, alebo kliknutím na tlačidlo <b>Stiahnuť</b> stiahnite aktuálnu verziu."
 
 #: syncthing_gtk/finddaemondialog.py:38
 #, python-format
-msgid "If you have Syncthing installed, please, set path to %s bellow"
+msgid "If you have Syncthing installed, please, set path to %s below"
 msgstr "Ak máte nainštalovaný balíček syncthing, prosím, prosím, nastavte cestu k %s."
 
 #: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:409

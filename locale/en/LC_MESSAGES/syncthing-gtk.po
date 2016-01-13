@@ -488,13 +488,13 @@ msgstr ""
 #: syncthing_gtk/finddaemondialog.py:29
 #, python-format
 msgid ""
-"If you have Syncthing installed, please, set path to %s bellow or click on "
+"If you have Syncthing installed, please, set path to %s below or click on "
 "<b>Download</b> button to download latest Syncthing package."
 msgstr ""
 
 #: syncthing_gtk/finddaemondialog.py:38
 #, python-format
-msgid "If you have Syncthing installed, please, set path to %s bellow"
+msgid "If you have Syncthing installed, please, set path to %s below"
 msgstr ""
 
 #: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:409
