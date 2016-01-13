@@ -403,7 +403,11 @@ class App(Gtk.Application, TimerManager):
 		Sets self.process, adds related handlers and starts daemon.
 		Just so I don't have to write same code all over the place.
 		"""
-		self.process = DaemonProcess([self.config["syncthing_binary"], "-no-browser"], self.config["daemon_priority"], self.config["max_cpus"])
+		cmdline = [self.config["syncthing_binary"], "-no-browser"]
+		vars, args = parse_config_arguments(self.config["syncthing_arguments"])
+		cmdline += args
+		
+		self.process = DaemonProcess(cmdline, self.config["daemon_priority"], self.config["max_cpus"], env=vars)
 		self.process.connect('failed', self.cb_daemon_startup_failed)
 		self.process.connect('exit', self.cb_daemon_exit)
 		self.process.start()
