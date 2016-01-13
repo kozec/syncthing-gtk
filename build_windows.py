@@ -59,7 +59,7 @@ wrong_sized_dll = [	'libcairo-gobject-2.dll',
 ]
 
 # List of languages that are copied from GTK and included in installation
-enabled_gtk_locales = [ "sk", "cs", "de" ]
+enabled_gtk_locales = [ "sk", "cs", "de", "fr", "vi" ]
 
 include_files = []
 

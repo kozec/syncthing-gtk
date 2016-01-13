@@ -1,0 +1,1456 @@
+# Syncthing-GTK
+# Copyright (C) 2014-2015 Kozec and contributors
+# This file is distributed under the same license as the Syncthing-GTK package.
+# 
+# Translators:
+# dd721411 <dd721411@tutanota.de>, 2015-2016
+# kozec <kozec2@kozec.com>, 2016
+msgid ""
+msgstr ""
+"Project-Id-Version: syncthing-gtk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-11-02 23:51+0100\n"
+"PO-Revision-Date: 2016-01-13 19:11+0000\n"
+"Last-Translator: kozec <kozec2@kozec.com>\n"
+"Language-Team: Vietnamese (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/vi/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: vi\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: syncthing_gtk/app.py:190
+msgid "Syncthing-GTK started and running in notification area"
+msgstr "Syncthing-GTK đã khởi động và đang chạy trong khu vực thông báo"
+
+#: syncthing_gtk/app.py:284
+#, python-format
+msgid "%s kB/s"
+msgstr "%s kB/s"
+
+#: syncthing_gtk/app.py:298 syncthing_gtk/notifications.py:77
+#: syncthing_gtk/wizard.py:53
+msgid "Syncthing-GTK"
+msgstr "Syncthing-GTK"
+
+#: syncthing_gtk/app.py:356 syncthing_gtk/app.py:357 syncthing_gtk/app.py:915
+msgid "Syncing"
+msgstr "Đang đồng bộ"
+
+#: syncthing_gtk/app.py:359
+msgid "Scanning"
+msgstr "Đang quét"
+
+#: syncthing_gtk/app.py:382 syncthing_gtk/app.py:639
+msgid "Starting Syncthing daemon"
+msgstr "Đang khởi động chương trình nền Syncthing"
+
+#: syncthing_gtk/app.py:411
+msgid "Allow Anonymous Usage Reporting?"
+msgstr "Cho phép báo cáo sử dụng ẩn danh?"
+
+#: syncthing_gtk/app.py:413
+msgid "The encrypted usage report is sent daily."
+msgstr "Báo cáo sử dụng đã mã khoá sẽ được gửi đi hằng ngày."
+
+#: syncthing_gtk/app.py:414
+msgid "It is used to track common platforms, folder sizes and app versions."
+msgstr "Nó được dùng để thu thập số liệu về các hệ điều hành phổ biến, kích cỡ thư mục và phiên bản ứng dụng."
+
+#: syncthing_gtk/app.py:415
+msgid ""
+"If the reported data set is changed you will be prompted with this dialog "
+"again."
+msgstr "Nếu bộ dữ liệu báo cáo có thay đổi, bạn sẽ được nhắc nhở thông qua hộp thoại này."
+
+#: syncthing_gtk/app.py:417
+msgid "The aggregated statistics are publicly available at"
+msgstr "Thống kê tổng hợp được đăng công khai trên"
+
+#: syncthing_gtk/app.py:473
+msgid "Extracting update..."
+msgstr "Đang giải nén cập nhật..."
+
+#: syncthing_gtk/app.py:478
+msgid "Restarting daemon..."
+msgstr "Đang khởi động lại chương trình nền..."
+
+#: syncthing_gtk/app.py:494
+#, python-format
+msgid "Failed to download upgrade: %s"
+msgstr "Thất bại khi tải bản nâng cấp: %s"
+
+#: syncthing_gtk/app.py:512
+#, python-format
+msgid "Downloading Syncthing %s"
+msgstr "Đang tải Syncthing %s"
+
+#: syncthing_gtk/app.py:591
+msgid "Connected to Syncthing daemon"
+msgstr "Đã kết nối đến chương trình nền Syncthing"
+
+#: syncthing_gtk/app.py:601
+msgid "Connection to Syncthing daemon lost."
+msgstr "Mất kết nối đến chương trình nền Syncthing."
+
+#: syncthing_gtk/app.py:602
+msgid "Syncthing is probably restarting or has been shut down."
+msgstr "Có lẽ Syncthing đang khởi động lại hoặc nó đã bị tắt."
+
+#: syncthing_gtk/app.py:604
+msgid "Syncthing has been shut down."
+msgstr "Đã tắt Syncthing."
+
+#: syncthing_gtk/app.py:608 syncthing_gtk/app.py:1457
+msgid "Syncthing is restarting."
+msgstr "Syncthing đang khởi động lại."
+
+#: syncthing_gtk/app.py:608 syncthing_gtk/app.py:1457
+msgid "Please wait"
+msgstr "Xin chờ"
+
+#: syncthing_gtk/app.py:631
+#, python-format
+msgid "Connecting to Syncthing daemon at %s..."
+msgstr "Đang kết nối đến chương trình nền Syncthing tại %s..."
+
+#: syncthing_gtk/app.py:636
+#, python-format
+msgid "Waiting for Syncthing daemon at %s..."
+msgstr "Đang chờ chương trình nền Syncthing tại %s..."
+
+#: syncthing_gtk/app.py:651
+msgid "Your syncthing daemon is too old."
+msgstr "Chương trình nền Syncthing này quá cũ."
+
+#: syncthing_gtk/app.py:651
+msgid "Attempting to download recent, please wait..."
+msgstr "Đang thử tải về tập tin gần đây, xin chờ..."
+
+#: syncthing_gtk/app.py:657
+msgid ""
+"Cannot authorize with daemon. Please, use WebUI to generate API key or "
+"disable password authentication."
+msgstr "Không thể xác minh bằng chương trình nền. Xin dùng WebUI để tạo khoá API hoặc tắt xác minh mật khẩu."
+
+#: syncthing_gtk/app.py:659
+#, python-format
+msgid ""
+"Your syncthing daemon is too old.\n"
+"Please, upgrade syncthing package at least to version %s and try again."
+msgstr "Chương trình nền Syncthing này quá cũ.\nÍt nhất hãy nâng cấp gói Syncthing lên phiên bản %s và thử lại."
+
+#: syncthing_gtk/app.py:661
+msgid ""
+"Sorry, connecting to HTTPS is not supported on this platform.\n"
+"Please, use WebUI to disable HTTPS try again."
+msgstr "Xin lỗi, việc kết nối đến HTTPS không được hỗ trợ trên hệ điều hành này.\nHãy dùng WebUI để tắt HTTPS và thử lại."
+
+#: syncthing_gtk/app.py:664
+msgid "Connection to daemon failed. Check your configuration and try again."
+msgstr "Kết nối đến chương trình nền thất bại. Hãy kiểm tra cấu hình và thử lại."
+
+#: syncthing_gtk/app.py:665 syncthing_gtk/app.py:1936
+#: syncthing_gtk/editordialog.py:305
+msgid "Error message:"
+msgstr "Thông điệp báo lỗi:"
+
+#: syncthing_gtk/app.py:676
+msgid "More info"
+msgstr "Xem thêm thông tin"
+
+#: syncthing_gtk/app.py:702
+msgid ""
+"The configuration has been saved but not activated.\n"
+"Syncthing must restart to activate the new configuration."
+msgstr "Cấu hình đã được lưu nhưng chưa được kích hoạt.\nSyncthing phải khởi động lại để kích hoạt cấu hình mới."
+
+#: syncthing_gtk/app.py:704
+msgid "_Restart"
+msgstr "_Khởi động lại"
+
+#: syncthing_gtk/app.py:771
+#, python-format
+msgid "%(device)s wants to share folder \"%(folder)s\". Add new folder?"
+msgstr "%(device)s muốn chia sẻ thư mục \"%(folder)s\". Thêm thư mục mới?"
+
+#: syncthing_gtk/app.py:778 syncthing_gtk/app.py:799
+msgid "_Add"
+msgstr "_Thêm"
+
+#: syncthing_gtk/app.py:793
+#, python-format
+msgid ""
+"Device \"<b>%(device)s</b>\" at IP \"<b>%(ip)s</b>\" wants to connect. Add "
+"new device?"
+msgstr "Thiết bị \"<b>%(device)s</b>\" tại IP \"<b>%(ip)s</b>\" muốn kết nối. Thêm thiết bị mới?"
+
+#: syncthing_gtk/app.py:800
+msgid "_Ignore"
+msgstr "_Bỏ qua"
+
+#: syncthing_gtk/app.py:818
+msgid "RAM Utilization"
+msgstr "Mức sử dụng RAM"
+
+#: syncthing_gtk/app.py:819
+msgid "CPU Utilization"
+msgstr "Mức sử dụng CPU"
+
+#: syncthing_gtk/app.py:820 syncthing_gtk/app.py:1311
+msgid "Download Rate"
+msgstr "Tốc độ tải xuống"
+
+#: syncthing_gtk/app.py:821 syncthing_gtk/app.py:1312
+msgid "Upload Rate"
+msgstr "Tốc độ tải lên"
+
+#: syncthing_gtk/app.py:822
+msgid "Announce Server"
+msgstr "Máy chủ thông báo"
+
+#: syncthing_gtk/app.py:823 syncthing_gtk/app.py:1314
+msgid "Version"
+msgstr "Phiên bản"
+
+#: syncthing_gtk/app.py:846 syncthing_gtk/editordialog.py:385
+msgid "disabled"
+msgstr "đã tắt"
+
+#: syncthing_gtk/app.py:848
+msgid "Online"
+msgstr "Trực tuyến"
+
+#: syncthing_gtk/app.py:848
+msgid "offline"
+msgstr "ngoại tuyến"
+
+#: syncthing_gtk/app.py:850
+#, python-format
+msgid "%(online)s/%(total)s online"
+msgstr "%(online)s/%(total)s trực tuyến"
+
+#: syncthing_gtk/app.py:877 syncthing_gtk/app.py:1315
+#: syncthing_gtk/app.py:1340
+msgid "Never"
+msgstr "Không bao giờ"
+
+#: syncthing_gtk/app.py:889
+msgid "Connected"
+msgstr "Đã kết nối"
+
+#: syncthing_gtk/app.py:897 syncthing_gtk/app.py:912
+#: syncthing_gtk/infobox.py:60
+msgid "Disconnected"
+msgstr "Đã ngắt kết nối"
+
+#: syncthing_gtk/app.py:918 syncthing_gtk/app.py:953 syncthing_gtk/app.py:996
+#: syncthing_gtk/app.py:997 syncthing_gtk/app.py:1036
+msgid "Up to Date"
+msgstr "Đã cập nhật"
+
+#: syncthing_gtk/app.py:939 syncthing_gtk/app.py:940 syncthing_gtk/app.py:941
+msgid "Files"
+msgstr "Tập tin"
+
+#: syncthing_gtk/app.py:953 syncthing_gtk/app.py:1034
+msgid "Cluster out of sync"
+msgstr "Cụm mất đồng bộ"
+
+#: syncthing_gtk/app.py:968
+msgid "Stopped"
+msgstr "Đã dừng"
+
+#: syncthing_gtk/app.py:971
+msgid "Error"
+msgstr "Lỗi"
+
+#: syncthing_gtk/app.py:990
+#, python-format
+msgid "Synchronizing '%s'"
+msgstr "Đang đồng bộ '%s'"
+
+#: syncthing_gtk/app.py:992
+#, python-format
+msgid "Synchronizing %s folders"
+msgstr "Đang đồng bộ %s thư mục"
+
+#: syncthing_gtk/app.py:1001 syncthing_gtk/app.py:1002
+msgid "All devices offline"
+msgstr "Tất cả thiết bị đều ngoại tuyến"
+
+#: syncthing_gtk/app.py:1006 syncthing_gtk/app.py:1007
+msgid "Connecting to Syncthing daemon..."
+msgstr "Đang kết nối đến chương trình nền Syncthing..."
+
+#: syncthing_gtk/app.py:1045
+msgid "Unshared"
+msgstr "Chưa chia sẻ"
+
+#: syncthing_gtk/app.py:1048
+msgid "Offline"
+msgstr "Ngoại tuyến"
+
+#: syncthing_gtk/app.py:1142
+msgid "Hide Window"
+msgstr "Ẩn Cửa sổ"
+
+#: syncthing_gtk/app.py:1161 app.glade:628
+msgid "Show Window"
+msgstr "Hiện Cửa sổ"
+
+#: syncthing_gtk/app.py:1210
+msgid "Syncthing daemon doesn't appear to be running."
+msgstr "Có vẻ như chương trình nền Syncthing không hoạt động."
+
+#: syncthing_gtk/app.py:1211
+msgid "Start it now?"
+msgstr "Khởi động nó ngay?"
+
+#: syncthing_gtk/app.py:1214
+msgid "Always start daemon automatically"
+msgstr "Luôn tự khởi động chương trình nền"
+
+#: syncthing_gtk/app.py:1249
+msgid "Folder ID"
+msgstr "ID thư mục"
+
+#: syncthing_gtk/app.py:1250
+msgid "Path"
+msgstr "Đường dẫn"
+
+#: syncthing_gtk/app.py:1251
+msgid "Global State"
+msgstr "Trạng thái Toàn cầu"
+
+#: syncthing_gtk/app.py:1252
+msgid "Local State"
+msgstr "Trạng thái Cục bộ"
+
+#: syncthing_gtk/app.py:1253
+msgid "Out Of Sync"
+msgstr "Mất đồng bộ"
+
+#: syncthing_gtk/app.py:1254
+msgid "Folder Master"
+msgstr "Thư mục chính"
+
+#: syncthing_gtk/app.py:1255
+msgid "Ignore Permissions"
+msgstr "Bỏ qua Các giấy phép"
+
+#: syncthing_gtk/app.py:1256
+msgid "Rescan Interval"
+msgstr "Khoảng thời gian Quét lại"
+
+#: syncthing_gtk/app.py:1257
+msgid "Shared With"
+msgstr "Đã chia sẻ với"
+
+#: syncthing_gtk/app.py:1282 syncthing_gtk/app.py:1283
+#: syncthing_gtk/app.py:1339
+msgid "Yes"
+msgstr "Có"
+
+#: syncthing_gtk/app.py:1282 syncthing_gtk/app.py:1283
+#: syncthing_gtk/app.py:1339
+msgid "No"
+msgstr "Không"
+
+#: syncthing_gtk/app.py:1285
+msgid "(watch)"
+msgstr "(xem)"
+
+#: syncthing_gtk/app.py:1299
+msgid "Unused"
+msgstr "Chưa sử dụng"
+
+#: syncthing_gtk/app.py:1308
+msgid "Address"
+msgstr "Địa chỉ"
+
+#: syncthing_gtk/app.py:1309
+msgid "Synchronization"
+msgstr "Đồng bộ"
+
+#: syncthing_gtk/app.py:1310
+msgid "Compression"
+msgstr "Nén"
+
+#: syncthing_gtk/app.py:1313
+msgid "Introducer"
+msgstr "Thiết bị giới thiệu"
+
+#: syncthing_gtk/app.py:1315
+msgid "Last Seen"
+msgstr "Thấy lần cuối"
+
+#: syncthing_gtk/app.py:1336 device-edit.glade:22
+msgid "All Data"
+msgstr "Tất cả Dữ liệu"
+
+#: syncthing_gtk/app.py:1337 device-edit.glade:26 folder-edit.glade:38
+msgid "Off"
+msgstr "Tắt"
+
+#: syncthing_gtk/app.py:1338 device-edit.glade:30
+msgid "Metadata Only"
+msgstr "Chỉ Siêu dữ liệu"
+
+#: syncthing_gtk/app.py:1480
+msgid "Exiting."
+msgstr "Đang thoát."
+
+#: syncthing_gtk/app.py:1481
+msgid "Shutdown Syncthing daemon as well?"
+msgstr "Tắt cả chương trình nền Syncthing?"
+
+#: syncthing_gtk/app.py:1486
+msgid "Always do same; Don't show this window again"
+msgstr "Luôn làm như vậy; Đừng hiện cửa sổ này nữa"
+
+#: syncthing_gtk/app.py:1717
+#, python-format
+msgid "Do you really want to permanently stop synchronizing directory '%s'?"
+msgstr "Có chắc là bạn muốn vĩnh viễn dừng đồng bộ thư mục '%s'?"
+
+#: syncthing_gtk/app.py:1719
+#, python-format
+msgid "Do you really want remove device '%s' from Syncthing?"
+msgstr "Có chắc là bạn muốn xoá thiết bị '%s' khỏi Syncthing?"
+
+#: syncthing_gtk/app.py:1787
+msgid "Syncthing-Inotify Output"
+msgstr "Đầu ra Syncthing-Inotify"
+
+#: syncthing_gtk/app.py:1793
+msgid "Syncthing-Inotify is unavailable or failed to start"
+msgstr "Không có Syncthing-Inotify hoặc nó chưa khởi động"
+
+#: syncthing_gtk/app.py:1935
+msgid "Failed to start Syncthing daemon."
+msgstr "Khởi động chương trình nền Syncthing thất bại."
+
+#: syncthing_gtk/app.py:1937
+msgid ""
+"Please, check your installation or set new path to Syncthing daemon binary."
+msgstr "Xin kiểm tra lại cài đặt hoặc tạo đường dẫn mới đến tập tin chạy chương trình nền Syncthing."
+
+#: syncthing_gtk/daemonsettings.py:24
+msgid "Syncthing Daemon Settings"
+msgstr "Cài đặt Chương trình nền Syncthing"
+
+#: syncthing_gtk/deviceeditor.py:24
+msgid ""
+"The entered device ID does not look valid. It should be a 52 character "
+"string consisting of letters and numbers, with spaces and dashes being "
+"optional."
+msgstr "ID thiết bị đã nhập không hợp lệ. Nó phải là một chuỗi từ 52 ký tự, bao gồm chữ cái và các con số, với khoảng trắng và gạch ngang là tuỳ chọn."
+
+#: syncthing_gtk/editordialog.py:303
+msgid "Failed to load configuration from daemon."
+msgstr "Thất bại khi tải cấu hình từ chương trình nền."
+
+#: syncthing_gtk/editordialog.py:304
+msgid "Try again."
+msgstr "Thử lại."
+
+#: syncthing_gtk/editordialog.py:378 syncthing_gtk/editordialog.py:387
+#, python-format
+msgid "%ss"
+msgstr "%ss"
+
+#: syncthing_gtk/editordialog.py:394
+msgid "never delete"
+msgstr "không bao giờ xoá"
+
+#: syncthing_gtk/editordialog.py:396
+#, python-format
+msgid "%s day"
+msgstr "%s ngày"
+
+#: syncthing_gtk/editordialog.py:398
+#, python-format
+msgid "%s days"
+msgstr "%s ngày"
+
+#: syncthing_gtk/editordialog.py:431
+msgid "Failed to save configuration."
+msgstr "Lưu cấu hình thất bại."
+
+#: syncthing_gtk/finddaemondialog.py:24 find-daemon.glade:7
+msgid "Can't invoke the daemon"
+msgstr "Không thể gọi chương trình nền"
+
+#: syncthing_gtk/finddaemondialog.py:26
+msgid "Syncthing binary"
+msgstr "Tập tin chạy Syncthing"
+
+#: syncthing_gtk/finddaemondialog.py:28 syncthing_gtk/finddaemondialog.py:37
+msgid "Syncthing daemon binary cannot be found."
+msgstr "Không tìm thấy tập tin chạy chương trình nền Syncthing."
+
+#: syncthing_gtk/finddaemondialog.py:29
+#, python-format
+msgid ""
+"If you have Syncthing installed, please, set path to %s below or click on "
+"<b>Download</b> button to download latest Syncthing package."
+msgstr "Nếu đã cài đặt Syncthing, hãy đưa đường dẫn đến %s bên dưới hoặc nhấp vào nút <b>Tải xuống</b> để tải gói Syncthing mới nhất."
+
+#: syncthing_gtk/finddaemondialog.py:38
+#, python-format
+msgid "If you have Syncthing installed, please, set path to %s below"
+msgstr "Nếu đã cài đặt Syncthing, hãy đưa đường dẫn đến %s bên dưới"
+
+#: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:409
+msgid "Cannot download Syncthing daemon."
+msgstr "Không thể tải chương trình nền Syncthing."
+
+#: syncthing_gtk/finddaemondialog.py:83 syncthing_gtk/wizard.py:410
+#, python-format
+msgid "This platform (%s) is not supported"
+msgstr "Hệ điều hành này (%s) không được hỗ trợ"
+
+#: syncthing_gtk/finddaemondialog.py:100
+msgid "Downloading..."
+msgstr "Đang tải xuống..."
+
+#: syncthing_gtk/finddaemondialog.py:153 syncthing_gtk/stdownloader.py:248
+#: syncthing_gtk/stdownloader.py:276
+msgid "Download failed."
+msgstr "Tải xuống thất bại."
+
+#: syncthing_gtk/finddaemondialog.py:175 syncthing_gtk/wizard.py:456
+msgid "Download finished."
+msgstr "Tải xuống hoàn tất."
+
+#: syncthing_gtk/foldereditor.py:31
+msgid ""
+"The Folder ID must be a short, unique identifier (64 characters or less) "
+"consisting of letters, numbers and the the dot (.), dash (-) and underscode "
+"(_) characters only"
+msgstr "ID thư mục phải là một tên tắt và độc nhất (64 ký tự hoặc ít hơn) chỉ bao gồm chữ cái, các con số và dấu chấm (.), gạch ngang (-) và gạch chân (_)."
+
+#: syncthing_gtk/foldereditor.py:54
+msgid "Select Folder for new Folder"
+msgstr "Chọn Thư mục cho Thư mục mới"
+
+#: syncthing_gtk/foldereditor.py:175 syncthing_gtk/foldereditor.py:176
+msgid "Please, install pyinotify package to use this feature"
+msgstr "Hãy cài đặt gói pyinotify để sử dụng tính năng này"
+
+#: syncthing_gtk/ignoreeditor.py:43
+msgid "File location:"
+msgstr "Vị trí tập tin:"
+
+#: syncthing_gtk/notifications.py:120
+#, python-format
+msgid "Unexpected folder ID sent from device \"%s\"."
+msgstr "ID thư mục lạ được gửi đến từ thiết bị \"%s\"."
+
+#: syncthing_gtk/notifications.py:124
+msgid "Unknown device is trying to connect to syncthing daemon."
+msgstr "Thiết bị lạ đang cố kết nối với chương trình nền Syncthing."
+
+#: syncthing_gtk/notifications.py:153
+#, python-format
+msgid "Synchronization of folder '%s' is completed."
+msgstr "Hoàn tất đồng bộ thư mục '%s'."
+
+#: syncthing_gtk/notifications.py:160
+#, python-format
+msgid "The file '%s' was updated on remote device."
+msgstr "Đã cập nhật tập tin '%s' trên thiết bị từ xa."
+
+#: syncthing_gtk/notifications.py:165
+#, python-format
+msgid "The file '%s' was deleted on remote device."
+msgstr "Đã xoá tập tin '%s' trên thiết bị từ xa."
+
+#: syncthing_gtk/notifications.py:168
+#, python-format
+msgid "%s files were updated on remote device."
+msgstr "Đã cập nhật %s tập tin trên thiết bị từ xa."
+
+#: syncthing_gtk/notifications.py:171
+#, python-format
+msgid "%s files were deleted on remote device."
+msgstr "Đã xoá %s tập tin trên thiết bị từ xa."
+
+#: syncthing_gtk/notifications.py:175
+#, python-format
+msgid ""
+"%(updated)s files were updated and %(deleted)s deleted on remote device."
+msgstr "Đã cập nhật %(updated)s và xoá %(deleted)s tập tin trên thiết bị từ xa."
+
+#: syncthing_gtk/statusicon.py:48
+msgid "Syncthing"
+msgstr "Đang đồng bộ"
+
+#: syncthing_gtk/stdownloader.py:171 syncthing_gtk/stdownloader.py:214
+#: syncthing_gtk/stdownloader.py:310 syncthing_gtk/stdownloader.py:341
+msgid "Failed to determine latest Syncthing version."
+msgstr "Thất bại khi xác định phiên bản Syncthing mới nhất."
+
+#: syncthing_gtk/stdownloader.py:233
+msgid "Failed to create temporaly file."
+msgstr "Tạo tập tin tạm thất bại."
+
+#: syncthing_gtk/stdownloader.py:291
+msgid "Downloaded file is corrupted."
+msgstr "Tập tin đã tải xuống bị lỗi."
+
+#: syncthing_gtk/tools.py:182
+#, python-format
+msgid "~%s hours ago"
+msgstr "~%s giờ trước"
+
+#: syncthing_gtk/tools.py:184
+#, python-format
+msgid "%s minutes ago"
+msgstr "%s phút trước"
+
+#: syncthing_gtk/tools.py:186
+#, python-format
+msgid "%s seconds ago"
+msgstr "%s giây trước"
+
+#: syncthing_gtk/tools.py:187
+msgid "just now"
+msgstr "chỉ mới đây"
+
+#: syncthing_gtk/tools.py:189
+#, python-format
+msgid "%s days ago"
+msgstr "%s ngày trước"
+
+#: syncthing_gtk/tools.py:193
+#, python-format
+msgid "in %s days"
+msgstr "trong %s ngày"
+
+#: syncthing_gtk/tools.py:195
+#, python-format
+msgid "~%s hours from now"
+msgstr "~%s giờ kể từ lúc này"
+
+#: syncthing_gtk/tools.py:197
+#, python-format
+msgid "%s minutes from now"
+msgstr "%s phút kể từ lúc này"
+
+#: syncthing_gtk/tools.py:199
+#, python-format
+msgid "%s seconds from now"
+msgstr "%s giây kể từ lúc này"
+
+#: syncthing_gtk/tools.py:200
+msgid "in a moment"
+msgstr "trong chốc lát"
+
+#: syncthing_gtk/uisettingsdialog.py:54
+msgid "UI Settings"
+msgstr "Cài đặt UI"
+
+#: syncthing_gtk/uisettingsdialog.py:66
+msgid "Unlimited"
+msgstr "Không giới hạn"
+
+#: syncthing_gtk/uisettingsdialog.py:103
+#, python-format
+msgid "Install %(package)s package to enable %(feature)s support"
+msgstr "Cài đặt gói %(package)s để kích hoạt hỗ trợ %(feature)s"
+
+#: syncthing_gtk/uisettingsdialog.py:308
+msgid "Browse for Syncthing binary"
+msgstr "Tìm tập tin chạy Syncthing"
+
+#: syncthing_gtk/wizard.py:53
+msgid "First run wizard"
+msgstr "Hỗ trợ lần chạy ban đầu"
+
+#: syncthing_gtk/wizard.py:137
+#, python-format
+msgid "Please, check error log and fill bug report on %s."
+msgstr "Hãy kiểm tra nhật ký lỗi và điền vào báo cáo trên %s."
+
+#: syncthing_gtk/wizard.py:141
+msgid "Display error log"
+msgstr "Hiển thị nhật ký lỗi"
+
+#: syncthing_gtk/wizard.py:191
+msgid "Intro"
+msgstr "Giới thiệu"
+
+#: syncthing_gtk/wizard.py:198
+msgid "Welcome to Syncthing-GTK first run wizard!"
+msgstr "Chào mừng đến với hỗ trợ lần chạy ban đầu của Syncthing-GTK!"
+
+#: syncthing_gtk/wizard.py:200
+msgid "It looks like you never have used Syncthing."
+msgstr "Có vẻ như bạn chưa từng sử dụng Syncthing."
+
+#: syncthing_gtk/wizard.py:201
+msgid "Initial configuration should be created."
+msgstr "Đã tạo cấu hình ban đầu."
+
+#: syncthing_gtk/wizard.py:202
+msgid ""
+"Please click <b>Next</b> to create a Syncthing configuration file or "
+"<b>Quit</b> to exit"
+msgstr "Hãy chọn <b>Tiếp theo</b> để tạo tập tin cấu hình Syncthing hoặc <b>Thoát ra</b> để thoát"
+
+#: syncthing_gtk/wizard.py:204
+#, python-format
+msgid ""
+"If you already had Syncthing daemon configured, please, exit this wizard and"
+" check your %s folder"
+msgstr "Nếu bạn đã chỉnh cấu hình chương trình nền Syncthing thì hãy thoát mục hỗ trợ này và kiểm tra thư mục %s."
+
+#: syncthing_gtk/wizard.py:215
+msgid "Find Daemon"
+msgstr "Tìm Chương trình nền"
+
+#: syncthing_gtk/wizard.py:220
+msgid "Searching for Syncthing daemon."
+msgstr "Đang tìm chương trình nền Syncthing."
+
+#: syncthing_gtk/wizard.py:222 syncthing_gtk/wizard.py:392
+msgid "Please wait..."
+msgstr "Xin chờ..."
+
+#: syncthing_gtk/wizard.py:268 syncthing_gtk/wizard.py:285
+msgid "Syncthing daemon not found."
+msgstr "Không tìm thấy chương trình nền Syncthing."
+
+#: syncthing_gtk/wizard.py:269
+msgid "Please, use package manager to install the Syncthing package."
+msgstr "Hãy sử dụng trình quản lý gói để cài đặt gói Syncthing. "
+
+#: syncthing_gtk/wizard.py:281
+msgid "download latest binary"
+msgstr "tải tập tin chạy mới nhất"
+
+#: syncthing_gtk/wizard.py:286 syncthing_gtk/wizard.py:300
+#, python-format
+msgid ""
+"Please, use package manager to install the Syncthing package or "
+"%(download_link)s from Syncthing page and save it to your %(target)s "
+"directory."
+msgstr "Hãy sử dụng trình quản lý gói để cài đặt gói Syncthing hoặc %(download_link)s từ trang chủ Syncthing và lưu nó vào thư mục %(target)s."
+
+#: syncthing_gtk/wizard.py:294
+msgid "Syncthing daemon is too old."
+msgstr "Chương trình nền Syncthing quá cũ."
+
+#: syncthing_gtk/wizard.py:295
+#, python-format
+msgid ""
+"Syncthing-GTK needs Syncthing daemon %(min)s or newer, but only %(actual)s "
+"were found."
+msgstr "Syncthing-GTK cần chương trình nền Syncthing %(min)s hoặc mới hơn, nhưng chỉ tìm thấy %(actual)s."
+
+#: syncthing_gtk/wizard.py:307
+msgid "Alternatively, Syncthing-GTK can download Syncthing binary"
+msgstr "Hoặc là Syncthing-GTK có thể tải về chương trình chạy Syncthing"
+
+#: syncthing_gtk/wizard.py:308
+#, python-format
+msgid "to %s and keep it up-to-date, but this option is meant as"
+msgstr "đến %s và cập nhật nó, nhưng tuỳ chọn này chỉ là"
+
+#: syncthing_gtk/wizard.py:310
+msgid "last resort and generally not suggested."
+msgstr "biện pháp bất đắc dĩ và thường không khuyến khích làm vậy."
+
+#: syncthing_gtk/wizard.py:313
+msgid "_Download Syncthing binary"
+msgstr "_Tải chương trình chạy Syncthing"
+
+#: syncthing_gtk/wizard.py:317
+msgid "Auto_update downloaded binary"
+msgstr "Tự động_cập nhật chương trình chạy đã tải xuống"
+
+#: syncthing_gtk/wizard.py:373
+msgid "Syncthing daemon binary found."
+msgstr "Tìm thấy chương trình chạy nền của Syncthing."
+
+#: syncthing_gtk/wizard.py:375 syncthing_gtk/wizard.py:458
+msgid "Binary path:"
+msgstr "Đường dẫn chương trình chạy:"
+
+#: syncthing_gtk/wizard.py:376
+msgid "Version:"
+msgstr "Phiên bản:"
+
+#: syncthing_gtk/wizard.py:387
+msgid "Download Daemon"
+msgstr "Tải Chương trình nền"
+
+#: syncthing_gtk/wizard.py:391
+msgid "Downloading Syncthing daemon."
+msgstr "Đang tải chương trình nền Syncthing."
+
+#: syncthing_gtk/wizard.py:439
+msgid "Failed to download Syncthing daemon package."
+msgstr "Tải gói chương trình nền Syncthing thất bại."
+
+#: syncthing_gtk/wizard.py:465
+msgid "Generate Keys"
+msgstr "Tạo Khoá"
+
+#: syncthing_gtk/wizard.py:469
+msgid "Syncthing is generating RSA key and certificate."
+msgstr "Syncthing đang tạo khoá và chứng nhận RSA."
+
+#: syncthing_gtk/wizard.py:471
+msgid "This may take a while..."
+msgstr "Tiến trình có thể hơi lâu..."
+
+#: syncthing_gtk/wizard.py:512
+msgid "Failed to generate keys"
+msgstr "Tạo khoá thất bại"
+
+#: syncthing_gtk/wizard.py:513
+msgid "Syncthing daemon failed to generate RSA key or certificate."
+msgstr "Chương trình nền Syncthing thất bại khi tạo khoá và chứng nhận RSA."
+
+#: syncthing_gtk/wizard.py:518
+msgid "Setup WebUI"
+msgstr "Thiết lập WebUI"
+
+#: syncthing_gtk/wizard.py:523
+msgid "WebUI setup"
+msgstr "Thiết lập WebUI"
+
+#: syncthing_gtk/wizard.py:525
+msgid ""
+"Syncthing can be managed remotely using WebUI and even if you are going to "
+"use Syncthing-GTK, WebUI needs to be enabled, as Syncthing-GTK uses it to "
+"communicate with the Syncthing daemon."
+msgstr "Syncthing có thể được kiểm soát từ xa bằng WebUI và ngay cả khi bạn sử dụng Syncthing-GTK, WebUI cần được kích hoạt vì Syncthing-GTK sẽ dùng nó để liên lạc với chương trình nền Syncthing."
+
+#: syncthing_gtk/wizard.py:530
+msgid ""
+"If you prefer to be able to manage Syncthing remotely, over the internet or "
+"on your local network, select <b>listen on all interfaces</b> and set "
+"username and password to protect Syncthing from unauthorized access."
+msgstr "Nếu bạn muốn quản lý Syncthing từ xa thông qua mạng toàn cầu hoặc cục bộ, hãy chọn <b>lắng nghe trên tất cả giao diện</b> đồng thời đặt tên người dùng và mật khẩu để bảo vệ Syncthing khỏi bị truy cập trái phép."
+
+#: syncthing_gtk/wizard.py:535
+msgid ""
+"Otherwise, select <b>listen on localhost</b>, so only users and programs on "
+"this computer will be able to interact with Syncthing."
+msgstr "Nếu không, bạn hãy chọn <b>lắng nghe trên máy cục bộ</b> để chỉ có những người dùng và chương trình trên máy này có thể tương tác với Syncthing"
+
+#: syncthing_gtk/wizard.py:541
+msgid "WebUI Listen Addresses"
+msgstr "Các địa chỉ lắng nghe WebUI"
+
+#: syncthing_gtk/wizard.py:542
+msgid "Listen on _localhost"
+msgstr "Lắng nghe trên _máy cục bộ"
+
+#: syncthing_gtk/wizard.py:544
+msgid "Listen on _all interfaces"
+msgstr "Lắng nghe trên _tất cả giao diện"
+
+#: syncthing_gtk/wizard.py:551
+msgid "_Username"
+msgstr "_Tên người dùng"
+
+#: syncthing_gtk/wizard.py:552
+msgid "_Password"
+msgstr "_Mật khẩu"
+
+#: syncthing_gtk/wizard.py:603
+msgid "Save Settings"
+msgstr "Lưu Cài đặt"
+
+#: syncthing_gtk/wizard.py:606
+msgid "Saving settings..."
+msgstr "Đang lưu cài đặt..."
+
+#: syncthing_gtk/wizard.py:607
+msgid "Checking for available port..."
+msgstr "Đang kiểm tra cổng còn trống..."
+
+#: syncthing_gtk/wizard.py:628
+msgid "Failed to find unused port for listening."
+msgstr "Không tìm thấy cổng nào còn trống để lắng nghe."
+
+#: syncthing_gtk/wizard.py:629
+msgid "Please, check your firewall settings and try again."
+msgstr "Hãy kiểm tra cài đặt tường lửa và thử lại."
+
+#: syncthing_gtk/wizard.py:643
+msgid "Saving..."
+msgstr "Đang lưu..."
+
+#: syncthing_gtk/wizard.py:675
+msgid "Failed to load Syncthing configuration"
+msgstr "Không thể tải cấu hình Syncthing"
+
+#: syncthing_gtk/wizard.py:702
+msgid "Failed to modify Syncthing configuration"
+msgstr "Không thể chỉnh sửa cấu hình Syncthing"
+
+#: syncthing_gtk/wizard.py:712
+msgid "Failed to save Syncthing configuration"
+msgstr "Không thể lưu cấu hình Syncthing"
+
+#: syncthing_gtk/wizard.py:722
+msgid "Finish"
+msgstr "Hoàn tất"
+
+#: syncthing_gtk/wizard.py:726
+msgid "Done."
+msgstr "Xong."
+
+#: syncthing_gtk/wizard.py:728
+msgid "Syncthing has been successfully configured."
+msgstr "Đã hoàn tất cấu hình Syncthing."
+
+#: syncthing_gtk/wizard.py:730
+msgid ""
+"You can configure more details later, in <b>UI Settings</b> and <b>Daemon "
+"Settings</b> menus in main window of application."
+msgstr "Sau này bạn có thể cấu hình chi tiết hơn trong các trình đơn <b>Cài đặt UI</b> và <b>Cài đặt chương trình nền</b> trên cửa sổ chính của ứng dụng."
+
+#: about.glade:9
+msgid "Code&UI © 2014 Kozec"
+msgstr "Mã&UI © 2014 Kozec"
+
+#: about.glade:10
+msgid "GTK GUI and notification area icon for Syncthing"
+msgstr "GTK GUI và biểu tượng khu vực thông báo cho Syncthing"
+
+#: about.glade:12
+msgid "GitHub"
+msgstr "GitHub"
+
+#: app.glade:239 app.glade:420 app.glade:779
+msgid "Open _Web Interface"
+msgstr "Mở _Giao diện Web"
+
+#: app.glade:251 app.glade:424
+msgid "Display _Daemon Output"
+msgstr "Hiển thị _Đầu ra chương trình nền"
+
+#: app.glade:263
+msgid "Display Syncthing-Inotify Output"
+msgstr "Hiển thị Đầu ra Syncthing-Inotify"
+
+#: app.glade:280 app.glade:430
+msgid "UI _Settings"
+msgstr "Cài đặt _UI"
+
+#: app.glade:325 app.glade:451
+msgid "Add Shared _Folder"
+msgstr "Thêm Thư mục _đã chia sẻ"
+
+#: app.glade:338 app.glade:455
+msgid "Add _Device"
+msgstr "Thêm _Thiết bị"
+
+#: app.glade:356 app.glade:461
+msgid "Daemon _Settings"
+msgstr "Cài đặt _Chương trình nền"
+
+#: app.glade:371 app.glade:465 app.glade:588 app.glade:765
+msgid "Show _ID"
+msgstr "Hiển thị _ID"
+
+#: app.glade:391 app.glade:471
+msgid "Sh_utdown Daemon"
+msgstr "T_ắt Chương trình nền"
+
+#: app.glade:404 app.glade:475
+msgid "_Restart Daemon"
+msgstr "_Khởi động lại Chương trình nền"
+
+#: app.glade:436
+msgid "_About"
+msgstr "_Thông tin về"
+
+#: app.glade:440
+msgid "_Quit"
+msgstr "_Thoát"
+
+#: app.glade:490
+msgid "Override Remote Changes"
+msgstr "Ghi đè Các thay đổi từ xa"
+
+#: app.glade:519
+msgid "Edit _Ignore Patterns"
+msgstr "Chỉnh sửa _Các quy luật bỏ qua"
+
+#: app.glade:547
+msgid "_Rescan"
+msgstr "_Quét lại"
+
+#: app.glade:559
+msgid "_Browse"
+msgstr "_Tìm kiếm"
+
+#: app.glade:618
+msgid "Connecting to daemon..."
+msgstr "Đang kết nối với chương trình nền..."
+
+#: app.glade:646
+msgid "S_top Syncthing"
+msgstr "D_ừng Syncthing"
+
+#: app.glade:660
+msgid "Resume Sync_thing"
+msgstr "Tiếp tục Sync_thing"
+
+#: app.glade:672
+msgid "_Incoming Rate Limit"
+msgstr "_Giới hạn Tốc độ đầu vào"
+
+#: app.glade:686 app.glade:728
+msgid "_Unlimited"
+msgstr "_Không giới hạn"
+
+#: app.glade:695 app.glade:737
+msgid "_Other"
+msgstr "_Khác"
+
+#: app.glade:714
+msgid "_Ongoing Rate Limit"
+msgstr "_Giới hạn Tốc độ tiếp diễn"
+
+#: daemon-output.glade:7
+msgid "Daemon Output"
+msgstr "Đầu ra chương trình nền"
+
+#: daemon-settings.glade:100
+msgid "Sync Protocol Listen Addresses"
+msgstr "Đồng bộ Các địa chỉ lắng nghe giao thức"
+
+#: daemon-settings.glade:129
+msgid "Enable Local _Discovery"
+msgstr "Bật Dò tìm _cục bộ"
+
+#: daemon-settings.glade:146
+msgid "Enable _UPnP"
+msgstr "Bật _UPnP"
+
+#: daemon-settings.glade:165
+msgid "Local Discovery _Port"
+msgstr "Cổng _Dò tìm cục bộ"
+
+#: daemon-settings.glade:204
+msgid "Outgoing _Rate Limit (KiB/s)"
+msgstr "Giới hạn _Tốc độ đầu ra (KiB/s)"
+
+#: daemon-settings.glade:221
+msgid "Open browser with _WebUI when daemon is starting"
+msgstr "Mở trình duyệt với _WebUI khi chương trình nền khởi động"
+
+#: daemon-settings.glade:238
+msgid "Enable _Anonymous Usage Reporting"
+msgstr "Bật _Báo cáo sử dụng ẩn danh"
+
+#: daemon-settings.glade:254
+msgid "Enable _Global Discovery"
+msgstr "Bật _Dò tìm toàn cầu"
+
+#: daemon-settings.glade:274
+msgid "Global Discovery _Servers"
+msgstr "Dò tìm toàn cầu _Các máy chủ"
+
+#: daemon-settings.glade:327
+msgid "_Incoming Rate Limit (KiB/s)"
+msgstr "_Giới hạn Tốc độ đầu vào (KiB/s)"
+
+#: device-edit.glade:102
+msgid "Device _ID"
+msgstr "ID _Thiết bị"
+
+#: device-edit.glade:134
+msgid "Device _Name"
+msgstr "Tên _Thiết bị"
+
+#: device-edit.glade:166
+msgid "Shown instead of Device ID in the cluster status."
+msgstr "Hiển thị thay cho ID Thiết bị trong trạng thái cụm."
+
+#: device-edit.glade:181
+msgid "_Addresses"
+msgstr "_Các địa chỉ"
+
+#: device-edit.glade:213
+msgid ""
+"Enter comma separated \"ip:port\" addresses or \"dynamic\" to perform "
+"automatic discovery of the address."
+msgstr "Nhập dấu phẩy ngăn cách các địa chỉ \"ip:port\" hoặc \"dynamic\" để tiến hành dò tìm địa chỉ tự động."
+
+#: device-edit.glade:242
+msgid "Share _Folders"
+msgstr "Chia sẻ _Thư mục"
+
+#: device-edit.glade:276
+msgid "Select the folders to share with this device"
+msgstr "Chọn các thư mục để chia sẻ với thiết bị này"
+
+#: device-edit.glade:287
+msgid "_Introducer"
+msgstr "_Thiết bị giới thiệu"
+
+#: device-edit.glade:308
+msgid ""
+"Any devices configured on an introducer device will be added to this device "
+"as well."
+msgstr "Bất kỳ thiết bị nào liên kết với thiết bị giới thiệu cũng sẽ được thêm vào."
+
+#: device-edit.glade:323
+msgid "_Compression"
+msgstr "_Nén"
+
+#: device-id.glade:14
+msgid "Device Identification"
+msgstr "Danh tính Thiết bị"
+
+#: device-id.glade:68
+msgid "XYZ-123-ABC"
+msgstr "XYZ-123-ABC"
+
+#: find-daemon.glade:111 ui-settings.glade:666
+msgid "_Browse..."
+msgstr "_Tìm kiếm..."
+
+#: find-daemon.glade:164
+msgid "_Download..."
+msgstr "_Tải xuống..."
+
+#: folder-edit.glade:42
+msgid "Simple"
+msgstr "Đơn giản"
+
+#: folder-edit.glade:46
+msgid "Staggered"
+msgstr "Theo thời gian"
+
+#: folder-edit.glade:50
+msgid "Trashcan"
+msgstr "Trong thùng rác"
+
+#: folder-edit.glade:54
+msgid "External"
+msgstr "Ngoại vi"
+
+#: folder-edit.glade:126
+msgid "Folder _ID"
+msgstr "ID _Thư mục"
+
+#: folder-edit.glade:159
+msgid "Short identifier for the folder. Must be the same on all devices."
+msgstr "Tên tắt cho thư mục. Phải trùng khớp trên tất cả thiết bị."
+
+#: folder-edit.glade:174
+msgid "_Path"
+msgstr "_Đường dẫn"
+
+#: folder-edit.glade:193
+msgid ""
+"Path to the folder on the local computer. Will be created if it does not "
+"exist."
+msgstr "Đường dẫn đến thư mục trên máy tính cục bộ. Sẽ tạo mới nếu chưa có sẵn."
+
+#: folder-edit.glade:208
+msgid "Rescan _Interval"
+msgstr "Khoảng thời gian _Quét lại"
+
+#: folder-edit.glade:258
+msgid "Folder _Master"
+msgstr "Thư mục _chính"
+
+#: folder-edit.glade:281
+msgid ""
+"Files are protected from changes made on other devices, but changes made on "
+"this device will be sent to the rest of the cluster."
+msgstr "Các tập tin sẽ được bảo vệ khỏi những thay đổi trên các thiết bị khác, nhưng những thay đổi trên thiết bị này sẽ được chuyển tới những máy còn lại trong cụm."
+
+#: folder-edit.glade:302
+msgid "Ignore P_ermissions"
+msgstr "Bỏ qua C-ác giấy phép"
+
+#: folder-edit.glade:325
+msgid ""
+"File permission bits are ignored when looking for changes. Use on FAT "
+"filesystems."
+msgstr "Các phần tử giấy phép tập tin sẽ được bỏ qua khi tìm kiếm thay đổi. Dùng trên hệ thống tập tin FAT."
+
+#: folder-edit.glade:339
+msgid "Share With _Devices"
+msgstr "Chia sẻ với _Các thiết bị"
+
+#: folder-edit.glade:372
+msgid "Select the devices to share this folder with."
+msgstr "Chọn các thiết bị để chia sẻ thư mục này."
+
+#: folder-edit.glade:400
+msgid "File Versioning"
+msgstr "Phiên bản hoá tập tin"
+
+#: folder-edit.glade:455
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when "
+"replaced or deleted by syncthing."
+msgstr "Các tập tin sẽ được chuyển tới các phiên bản được đánh dấu ngày tháng trong thư mục .stversions khi bị thay thế hoặc xoá bởi Syncthing."
+
+#: folder-edit.glade:470
+msgid "_Keep Versions"
+msgstr "_Giữ lại Các phiên bản"
+
+#: folder-edit.glade:507
+msgid "The number of old versions to keep, per file."
+msgstr "Số phiên bản cũ cần giữ lại với mỗi tập tin."
+
+#: folder-edit.glade:536
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing. Versions are automatically deleted if they are older than the maximum age or exceed the number of files allowed in an interval.\n"
+"\n"
+"The following intervals are used: for the first hour a version is kept every 30 seconds, for the first day a version is kept every hour, for the first 30 days a version is kept every day, until the maximum age a version is kept every week."
+msgstr "Các tập tin sẽ được chuyển tới các phiên bản được đánh dấu ngày tháng trong thư mục .stversions khi bị thay thế hoặc xoá bởi Syncthing. Các phiên bản sẽ tự động được xoá nếu chúng cũ hơn thời hạn tối đa hoặc vượt quá số tập tin cho phép trong một khoảng thời gian.\n\nCác khoảng thời gian sau đây được sử dụng: một phiên bản, trong giờ đầu tiên, được giữ lại mỗi 30 giây, trong ngày đầu tiên là mỗi giờ, trong 30 ngày đầu tiên là mỗi ngày, cho đến khi thời hạn tối đa mỗi phiên bản được giữ lại là mỗi tuần."
+
+#: folder-edit.glade:553
+msgid "Ma_ximum Age"
+msgstr "Th_ời hạn tối đa"
+
+#: folder-edit.glade:592
+msgid "Versions _Path"
+msgstr "Đường dẫn _Các phiên bản"
+
+#: folder-edit.glade:624
+msgid ""
+"Path where versions should be stored (leave empty for the default "
+".stversions folder)."
+msgstr "Đường dẫn nơi các phiên bản được lưu trữ (để trống cho thư mục mặc định .stversions)."
+
+#: folder-edit.glade:651
+msgid ""
+"Files are moved to .stversions folder when replaced or deleted by Syncthing"
+msgstr "Các tập tin sẽ được chuyển tới thư mục .stversions khi bị thay thế hoặc xoá bởi Syncthing"
+
+#: folder-edit.glade:666
+msgid "Clean out _after"
+msgstr "Xoá sạch _sau"
+
+#: folder-edit.glade:705
+msgid "The number of days to keep files in the trash can."
+msgstr "Số ngày giữ tập tin trong thùng rác."
+
+#: folder-edit.glade:734
+msgid ""
+"An external command handles the versioning. It has to remove the file from "
+"the synced folder."
+msgstr "Một lệnh ngoại vi xử lý việc phiên bản hoá. Nó phải loại bỏ tập tin này khỏi thư mục đã đồng bộ."
+
+#: folder-edit.glade:749
+msgid "Command"
+msgstr "Lệnh"
+
+#: folder-edit.glade:782
+msgid ""
+"The first command line parameter is the folder path and the second parameter"
+" is the relative path in the folder."
+msgstr "Tham số dòng lệnh đầu tiên là đường dẫn thư mục và tham số thứ hai là đường dẫn tương đối trong thư mục."
+
+#: folder-edit.glade:827
+msgid "Monitor filesystem for _changes"
+msgstr "Kiểm soát các thay đổi của _hệ thống tập tin"
+
+#: folder-edit.glade:850
+msgid ""
+"If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
+"Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
+msgstr "Khi bật, các tập tin bị thay đổi, tạo mới và xoá sẽ được đồng bộ ngay lập tức, miễn là Syncthing-GTK còn đang chạy.\nGhi chú: Dùng chế độ này với Khoảng thời gian quét lại ngắn (<300s) có thể tiêu thụ khá nhiều tài nguyên máy."
+
+#: folder-edit.glade:879
+msgid "Browse..."
+msgstr "Tìm kiếm..."
+
+#: ignore-editor.glade:9
+msgid "Ignore Patterns"
+msgstr "Bỏ qua Các quy luật"
+
+#: ignore-editor.glade:100
+msgid ""
+"See <a href=\"http://docs.syncthing.net/users/ignoring.html\">Syncthing "
+"documentation</a> for list of supported patterns"
+msgstr "Xem <a href=\"http://docs.syncthing.net/users/ignoring.html\">Tài liệu Syncthing</a> để biết danh sách các quy luật được hỗ trợ."
+
+#: ignore-editor.glade:115
+msgid "File location: "
+msgstr "Vị trí tập tin:"
+
+#: ui-settings.glade:27
+msgid "Lowest"
+msgstr "Thấp nhất"
+
+#: ui-settings.glade:31
+msgid "Low"
+msgstr "Thấp"
+
+#: ui-settings.glade:35
+msgid "Normal"
+msgstr "Bình thường"
+
+#: ui-settings.glade:39
+msgid "Above Normal"
+msgstr "Hơn bình thường"
+
+#: ui-settings.glade:45
+msgid "Syncthing-GTK Settings"
+msgstr "Cài đặt Syncthing-GTK"
+
+#: ui-settings.glade:120
+msgid "When starting and Syncthing daemon is not running..."
+msgstr "Khi khởi động và chương trình nền Syncthing không chạy..."
+
+#: ui-settings.glade:131
+msgid "... _wait for daemon"
+msgstr "...  _đợi chương trình nền"
+
+#: ui-settings.glade:149
+msgid "... start daemon in _background"
+msgstr "... khởi động chương trình trong _chế độ nền "
+
+#: ui-settings.glade:167
+msgid "... _ask me what to do"
+msgstr "... _hỏi tôi phải làm gì"
+
+#: ui-settings.glade:189
+msgid "When exiting after daemon was started in background..."
+msgstr "Khi thoát sau khi chương trình được khởi động ở chế độ nền..."
+
+#: ui-settings.glade:200
+msgid "... terminate _daemon"
+msgstr "... đóng _chương trình nền"
+
+#: ui-settings.glade:218
+msgid "... leave daemon _running"
+msgstr "... để chương trình nền _tiếp tục chạy"
+
+#: ui-settings.glade:236
+msgid "... ask me w_hat to do"
+msgstr "... hỏi tôi p-hải làm gì"
+
+#: ui-settings.glade:254
+msgid "Us_e traditional window header"
+msgstr "S_ử dụng đầu đề cửa sổ truyền thống"
+
+#: ui-settings.glade:276
+msgid "Display desktop notifications for..."
+msgstr "Hiển thị thông báo trên bàn làm việc cho..."
+
+#: ui-settings.glade:287
+msgid "... file updates"
+msgstr "... cập nhật tập tin"
+
+#: ui-settings.glade:304
+msgid "... errors"
+msgstr "... lỗi"
+
+#: ui-settings.glade:321
+msgid "... synchronization completion"
+msgstr "... hoàn tất đồng bộ"
+
+#: ui-settings.glade:338
+msgid "Start Syncthing-GTK when I login to my desktop"
+msgstr "Khởi động Syncthing-GTK khi tôi đăng nhập vào bàn làm việc"
+
+#: ui-settings.glade:355
+msgid "Minimize to _tray on start"
+msgstr "Thu nhỏ vào _khay khi khởi động"
+
+#: ui-settings.glade:372
+msgid "Use _icons in menu"
+msgstr "Sử dụng _các biểu tượng trong trình đơn"
+
+#: ui-settings.glade:389
+msgid "Display paths in directories panel"
+msgstr "Hiển thị đường dẫn trong danh sách thư mục"
+
+#: ui-settings.glade:406
+msgid "Force _dark theme"
+msgstr "Bắt dùng _phông nền tối"
+
+#: ui-settings.glade:481
+msgid "_Interface"
+msgstr "_Giao diện"
+
+#: ui-settings.glade:500
+msgid "Integrate Syncthing with filemanagers"
+msgstr "Tích hợp Syncthing với các trình quản lý tập tin "
+
+#: ui-settings.glade:516
+msgid "Nemo (Cinamon Desktop)"
+msgstr "Nemo (Cinamon Desktop)"
+
+#: ui-settings.glade:535
+msgid "Nautilus (Ubuntu/GNOME)"
+msgstr "Nautilus (Ubuntu/GNOME)"
+
+#: ui-settings.glade:553
+msgid "Caja (MATE Desktop)"
+msgstr "Caja (MATE Desktop)"
+
+#: ui-settings.glade:597
+msgid ""
+"<b>Note:</b> You may need to restart your filemanager after toggling "
+"integration."
+msgstr "<b>Ghi chú:</b> Có thể bạn sẽ cần khởi động lại trình quản lý tập tin sau khi tích hợp."
+
+#: ui-settings.glade:617
+msgid "_Integration"
+msgstr "_Tích hợp"
+
+#: ui-settings.glade:637
+msgid "Syncthing binary location"
+msgstr "Vị trí chương trình chạy Syncthing"
+
+#: ui-settings.glade:689
+msgid ""
+"This binary will be started when syncthing daemon is not running and "
+"\"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "Chương trình chạy này sẽ được kích hoạt khi chương trình nền Syncthing không chạy và tuỳ chọn \"<i>khởi động chương trình ở chế độ nền</i>\" được đánh dấu trên trang \"<i>Giao diện</i>\"."
+
+#: ui-settings.glade:714
+msgid "Keep Syncthing binary up-to-date"
+msgstr "Giữ cập nhật chương trình chạy Syncthing"
+
+#: ui-settings.glade:735
+msgid ""
+"If enabled, Syncthing-GTK will automatically check for new daemon releases "
+"and replace binary with latest version."
+msgstr "Nếu bật, Syncthing-GTK sẽ tự động kiểm tra bản phát hành chương trình nền mới và thay thế chương trình chạy với phiên bản mới nhất."
+
+#: ui-settings.glade:751
+msgid "Daemon process priority"
+msgstr "Độ ưu tiên của quy trình chạy nền"
+
+#: ui-settings.glade:789
+msgid ""
+"Priority will be used only if \"<i>start daemon in background</i>\" option "
+"is checked on \"<i>Interface</i>\" page."
+msgstr "Độ ưu tiên sẽ chỉ được dùng nếu như tuỳ chọn \"<i>khởi động chương trình ở chế độ nền</i>\" được đánh dấu trên trang \"<i>Giao diện</i>\"."
+
+#: ui-settings.glade:805
+msgid "Maximum number of CPU cores"
+msgstr "Số nhân CPU tối đa"
+
+#: ui-settings.glade:824
+msgid ""
+"Sets the maximum number of CPU cores for daemon to use. This value will be "
+"used only if \"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "Đặt số nhân CPU tối đa cho chương trình nền sử dụng. Giá trị này sẽ chỉ được dùng nếu như tuỳ chọn \"<i>khởi động chương trình ở chế độ nền</i>\" được đánh dấu trên trang \"<i>Giao diện</i>\"."
+
+#: ui-settings.glade:862
+msgid "_Advanced"
+msgstr "_Nâng cao"
