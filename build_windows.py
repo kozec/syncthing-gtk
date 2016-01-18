@@ -69,8 +69,10 @@ include_files += [ (os.path.join(gnome_dll_path, x), x) for x in gtk_dirs ]
 include_files += [ (os.path.join(gnome_dll_path, x), x) for x in missing_dll ]
 
 # GTK locales
-include_files += [ (os.path.join(gnome_dll_path, "share/locale", x), "share/locale/" + x ) for x in enabled_gtk_locales ]
-enabled_gtk_locales
+include_files += [ (os.path.join(gnome_dll_path, "share/locale", x, "LC_MESSAGES", "glib20.mo"),
+		"share/locale/" + x + "/LC_MESSAGES/glib20.mo" ) for x in enabled_gtk_locales ]
+include_files += [ (os.path.join(gnome_dll_path, "share/locale", x, "LC_MESSAGES", "gtk30.mo"),
+		"share/locale/" + x + "/LC_MESSAGES/gtk30.mo" ) for x in enabled_gtk_locales ]
 
 # Data files
 include_files += [ x for x in os.listdir(".") if x.endswith(".glade") ]
