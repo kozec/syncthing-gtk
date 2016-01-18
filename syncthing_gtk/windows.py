@@ -44,7 +44,8 @@ def enable_localization():
 		loc = locale.getdefaultlocale()[0]
 	except Exception, e:
 		pass
-	os.environ['LANGUAGE'] = loc
+	if not 'LANGUAGE' in os.environ:
+		os.environ['LANGUAGE'] = loc
 
 def is_shutting_down():
 	""" Returns True if Windows initiated shutdown process """
