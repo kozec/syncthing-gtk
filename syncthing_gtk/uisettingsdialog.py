@@ -88,7 +88,6 @@ class UISettingsDialog(EditorDialog):
 			self["rbOnExitAsk"].set_sensitive(False)
 			self["rbOnExitTerminate"].set_active(True)
 			self["vforce_dark_theme"].set_visible(True)
-			self["vforce_dark_theme"].set_visible(True)
 		# Check for filemanager python bindings current state of plugins
 		status = []
 		for widget_id in FM_DATA:
