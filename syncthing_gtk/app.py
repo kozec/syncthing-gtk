@@ -315,7 +315,7 @@ class App(Gtk.Application, TimerManager):
 			if IS_XP:
 				# Wizard can't run on old Windows versions. Instead of
 				# it, 'Give me daemon executable' dialog is shown
-				self.cb_daemon_startup_failed(None, "File not found")
+				self.cb_daemon_startup_failed(None, "Syncthing is not configured or configuration file cannot be found.")
 				return False
 			self.hide()
 			self.show_wizard()
