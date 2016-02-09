@@ -338,7 +338,7 @@ def get_config_dir():
 	"""
 	if is_portable():
 		return os.environ["XDG_CONFIG_HOME"]
-	if IS_WINDOWS:
+	if IS_WINDOWS and not IS_XP:
 		try:
 			import windows
 			return windows.get_unicode_home()
