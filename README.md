@@ -20,6 +20,14 @@ Additional features:
 - Nautilus (a.k.a. Files), Nemo and Caja integration
 - Desktop notifications
 
+Packages:
+- Ubuntu (deb-based distros): in [Web Upd8 PPA](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/) (thanks!) or [DEBs](http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/)
+- Arch Linux: In [[community] repository](https://www.archlinux.org/packages/community/any/syncthing-gtk/)
+- Fedora: [in decathorpe's copr repository](https://copr.fedoraproject.org/coprs/decathorpe/syncthing/)
+- SUSE (and other rpm-based distros): in [OpenSUSE Build Service](http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk).
+- Windows: Get [latest installer from here](https://github.com/kozec/syncthing-gui/releases/latest), or use [the Chocolatey package](https://chocolatey.org/packages/syncthing-gtk).
+- Or, in worst case scenario, download [latest tarball](https://github.com/kozec/syncthing-gui/releases/latest), extract it and run syncthing-gtk.py.
+
 Dependencies:
 - python 2.7, GTK 3.8 or newer and [PyGObject](https://live.gnome.org/PyGObject)
 - [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo) and [gir1.2-rsvg-2.0](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
@@ -33,13 +41,14 @@ Optional Dependencies:
 - libnotify for desktop notifications.
 - nautilus-python, nemo-python or caja-python for filemanager integration
 
-Packages:
-- Ubuntu (deb-based distros): in [Web Upd8 PPA](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/) (thanks!) or [DEBs](http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/)
-- Arch Linux: In [[community] repository](https://www.archlinux.org/packages/community/any/syncthing-gtk/)
-- Fedora: [in decathorpe's copr repository](https://copr.fedoraproject.org/coprs/decathorpe/syncthing/)
-- SUSE (and other rpm-based distros): in [OpenSUSE Build Service](http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk).
-- Windows: Get [latest installer from here](https://github.com/kozec/syncthing-gui/releases/latest), or use [the Chocolatey package](https://chocolatey.org/packages/syncthing-gtk).
-- Or, in worst case scenario, download [latest tarball](https://github.com/kozec/syncthing-gui/releases/latest), extract it and run syncthing-gtk.py.
+Windows Building Dependencies _(you don't need to install these just to **run** Syncthing-GTK)_
+- Python for Windows 2.7
+- [PyGObject for Windows](http://sourceforge.net/projects/pygobjectwin32/) with GTK3 enabled (tested with version 3.14.0)
+- [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
+- [Python for Windows Extensions](http://sourceforge.net/projects/pywin32/)
+- [WMI](http://timgolden.me.uk/python/wmi/index.html)
+- [syncthing-inotify](https://github.com/syncthing/syncthing-inotify) (optional)
+- [NSIS2](http://nsis.sourceforge.net/NSIS_2) with NSISdl, [ZipDLL](http://nsis.sourceforge.net/ZipDLL_plug-in) and [FindProcDLL](http://forums.winamp.com/showpost.php?p=2777729&postcount=8) plugins (optional, for building installer)
 
 Related links:
 - http://syncthing.net
