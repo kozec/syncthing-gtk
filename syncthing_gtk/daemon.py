@@ -901,6 +901,7 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				if self._instance_id != data["startTime"]:
 					log.warning("Daemon instance was replaced unexpedtedly. Disconnecting from daemon.")
+					self._my_id = None
 					if self._connected:
 						self._connected = False
 						self.emit("disconnected", Daemon.UNEXPECTED, "Daemon instance replaced")
