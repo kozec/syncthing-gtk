@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the Syncthing-GTK package.
 # 
 # Translators:
-# Gérald Maruccia <gerald.maruccia@yahoo.fr>, 2015
+# Gérald Maruccia <gerald.maruccia@yahoo.fr>, 2015-2016
 # kozec <kozec2@kozec.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-11-02 23:51+0100\n"
-"PO-Revision-Date: 2016-01-13 19:09+0000\n"
-"Last-Translator: kozec <kozec2@kozec.com>\n"
+"PO-Revision-Date: 2016-01-31 13:48+0000\n"
+"Last-Translator: Gérald Maruccia <gerald.maruccia@yahoo.fr>\n"
 "Language-Team: French (France) (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -560,28 +560,28 @@ msgstr "La synchronisation du dossier '%s' est terminée."
 #: syncthing_gtk/notifications.py:160
 #, python-format
 msgid "The file '%s' was updated on remote device."
-msgstr "Le fichier '%s' a été mis à jour sur l'appareil distant."
+msgstr "Le fichier '%s' a été mis à jour."
 
 #: syncthing_gtk/notifications.py:165
 #, python-format
 msgid "The file '%s' was deleted on remote device."
-msgstr "Le fichier '%s' a été supprimé sur l'appareil distant."
+msgstr "Le fichier '%s' a été supprimé."
 
 #: syncthing_gtk/notifications.py:168
 #, python-format
 msgid "%s files were updated on remote device."
-msgstr "%s fichiers ont été mis à jour sur l'appareil distant."
+msgstr "%s fichiers ont été mis à jour."
 
 #: syncthing_gtk/notifications.py:171
 #, python-format
 msgid "%s files were deleted on remote device."
-msgstr "%s ont été supprimés sur l'appareil distant."
+msgstr "%s fichiers ont été supprimés."
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
 msgid ""
 "%(updated)s files were updated and %(deleted)s deleted on remote device."
-msgstr "%(updated)s ont été mis à jour et %(deleted)s ont été supprimés sur l'appareil distant."
+msgstr "%(updated)s fichiers ont été mis à jour et %(deleted)s ont été supprimés."
 
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
