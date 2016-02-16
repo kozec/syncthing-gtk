@@ -11,7 +11,7 @@ from syncthing_gtk import *
 from syncthing_gtk.tools import *
 from syncthing_gtk.tools import _ # gettext function
 from datetime import datetime
-import os, webbrowser, sys, logging, shutil, re
+import os, webbrowser, sys, time, logging, shutil, re
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
@@ -49,6 +49,9 @@ RESPONSE_UR_FORBID		= 275
 REFRESH_INTERVAL_DEFAULT	= 1
 REFRESH_INTERVAL_TRAY		= 5
 
+# If daemon dies twice in this interval, broken settings are assumed
+RESTART_TOO_FREQUENT_INTERVAL = 5
+
 UPDATE_CHECK_INTERVAL = 12 * 60 * 60
 
 # Speed values in outcoming/incoming speed limit menus
@@ -77,6 +80,7 @@ class App(Gtk.Application, TimerManager):
 		self.process = None
 		self.hide_window = self.config["minimize_on_start"]
 		self.exit_after_wizard = False
+		self.last_restart_time = 0.0
 		# Can be changed by --force-update=vX.Y.Z argument
 		self.force_update_version = None
 		# Determine if header bar should be shown
@@ -1946,7 +1950,12 @@ class App(Gtk.Application, TimerManager):
 		print "cb_daemon_exit", proc, self.process
 		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,
-			# restart it
+			# restart it...
+			if time.time() - self.last_restart_time < RESTART_TOO_FREQUENT_INTERVAL:
+				# ... unless it keeps restarting
+				self.cb_daemon_startup_failed(proc, "Daemon exits too fast")
+				return
+			self.last_restart_time = time.time()
 			if not StDownloader is None and self.config["st_autoupdate"] and os.path.exists(self.config["syncthing_binary"] + ".new"):
 				# New daemon version is downloaded and ready to use.
 				# Switch to this version before restarting
