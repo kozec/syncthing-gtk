@@ -1206,7 +1206,8 @@ class Daemon(GObject.GObject, TimerManager):
 				callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
 			else:
 				callback("", *a)
-		self._rest_request("db/ignores?folder=%s" % (folder_id,), r_filter, error_callback, *calbackdata)
+		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		self._rest_request("db/ignores?folder=%s" % (id_enc,), r_filter, error_callback, *calbackdata)
 	
 	def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
 		"""
@@ -1214,7 +1215,8 @@ class Daemon(GObject.GObject, TimerManager):
 		with on success, error_callback(exception) on failure.
 		"""
 		data = { 'ignore': text.split("\n") }
-		self._rest_post("db/ignores?folder=%s" % (folder_id,), data, callback, error_callback, *calbackdata)
+		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		self._rest_post("db/ignores?folder=%s" % (id_enc,), data, callback, error_callback, *calbackdata)
 	
 	def restart(self):
 		"""
@@ -1296,14 +1298,16 @@ class Daemon(GObject.GObject, TimerManager):
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
 		if path is None:
-			self._rest_post("db/scan?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+			id_enc = urllib.quote(folder_id.encode('utf-8'))
+			self._rest_post("db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 		else:
 			path_enc = urllib.quote(path.encode('utf-8'), ''.encode('utf-8'))
 			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
-		self._rest_post("model/override?folder=%s" % (folder_id,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		self._rest_post("model/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def request_events(self):
 		"""
