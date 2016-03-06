@@ -11,7 +11,7 @@ from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 from dateutil import parser
-import re, os, sys, platform, logging, gettext, __main__
+import re, os, sys, platform, logging, shlex, gettext, __main__
 log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
@@ -156,6 +156,27 @@ def parsetime(m):
 		return parser.parse(m)
 	except ValueError:
 		raise ValueError("Failed to parse '%s' as time" % m)
+
+def parse_config_arguments(lst):
+	"""
+	Parses list of arguments and variables set in configuration
+	Returns tuple of (variables_dict, prefix_arguments, arguments_list)
+	"""
+	vars, preargs, args = {}, [], []
+	split = shlex.split(lst, False, False)
+	args_target = preargs if "!" in split else args
+	for i in split:
+		if "=" in i and not i.startswith("-"):
+			# Environment variable
+			k, v = i.split("=", 1)
+			vars[k] = v
+			continue
+		elif i == "!":
+			args_target = args
+		elif len(i.strip()) > 0:
+			# Argument
+			args_target.append(i.strip())
+	return vars, preargs, args
 
 def delta_to_string(d):
 	"""

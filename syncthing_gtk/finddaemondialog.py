@@ -11,7 +11,7 @@ from gi.repository import Gtk, Gdk, GLib
 from syncthing_gtk import EditorDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, IS_XP
 from syncthing_gtk.tools import _ # gettext function
-from syncthing_gtk.uisettingsdialog import browse_for_binary
+from syncthing_gtk.uisettingsdialog import UISettingsDialog, browse_for_binary
 import os, platform
 
 VALUES = [ "vsyncthing_binary" ]
@@ -109,6 +109,16 @@ class FindDaemonDialog(EditorDialog):
 		""" Handler for 'Quit' button """
 		self["editor"].response(FindDaemonDialog.RESPONSE_QUIT)
 	
+	def cb_bt_ui_settings_clicked(self, *a):
+		""" Handler for 'UI Settings' button """
+		e = UISettingsDialog(self.app)
+		e.connect('close', self.cb_ui_settings_closed)
+		e.load()
+		e.show(self["window"])
+	
+	def cb_ui_settings_closed(self, *a):
+		self.load()
+	
 	### EditorDialog overrides
 	
 	#@Overrides
@@ -175,3 +185,4 @@ class FindDaemonDialog(EditorDialog):
 		self["lblDownloadProgress"].set_markup("<b>" + _("Download finished.") + "</b>")
 		self["pbDownload"].set_visible(False)
 		self["btSave"].set_sensitive(True)
+	
