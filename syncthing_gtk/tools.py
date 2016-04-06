@@ -19,11 +19,13 @@ IS_XP = IS_WINDOWS and platform.release() in ("XP", "2000", "2003")
 IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON, IS_I3 = [False] * 5
 
 if "XDG_CURRENT_DESKTOP" in os.environ:
-	IS_GNOME = (os.environ["XDG_CURRENT_DESKTOP"] == "GNOME")
-	IS_UNITY = (os.environ["XDG_CURRENT_DESKTOP"] == "Unity")
-	IS_KDE   = (os.environ["XDG_CURRENT_DESKTOP"] == "KDE")
-	IS_CINNAMON = (os.environ["XDG_CURRENT_DESKTOP"] == "X-Cinnamon")
-	IS_I3 = (os.environ["XDG_CURRENT_DESKTOP"] == "i3")
+	desktops = os.environ["XDG_CURRENT_DESKTOP"].split(":")
+	IS_UNITY = ("Unity" in desktops)
+	if not IS_UNITY:
+		IS_GNOME = ("GNOME" in desktops) or ("GNOME-Flashback" in desktops) or ("GNOME-Fallback" in desktops)
+	IS_KDE   = ("KDE" in desktops)
+	IS_CINNAMON = ("X-Cinnamon" in desktops)
+	IS_I3 = ("i3" in desktops)
 if "DESKTOP_SESSION" in os.environ:
 	if os.environ["DESKTOP_SESSION"] == "gnome":
 		# Fedora...
