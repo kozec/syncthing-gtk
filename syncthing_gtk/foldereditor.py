@@ -24,14 +24,6 @@ VALUES = [ "vid", "vlabel", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
 
 class FolderEditorDialog(EditorDialog):
-	MESSAGES = {
-		# Displayed when folder id is invalid
-		"vid" : _("The Folder ID must be a short, unique identifier"
-			" (64 characters or less) consisting of letters, numbers "
-			"and the the dot (.), dash (-) and underscode (_) "
-			"characters only"),
-	}
-	
 	def __init__(self, app, is_new, id=None, path=None):
 		EditorDialog.__init__(self, app,
 			"folder-edit.glade",
