@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.19.0 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAdjustment" id="adjKeepVersions">
@@ -122,10 +122,10 @@
               <object class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Folder _ID</property>
+                <property name="label" translatable="yes">Folder _Label</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">vid</property>
+                <property name="xalign">0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -134,7 +134,6 @@
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -145,9 +144,8 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="top_attach">4</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -155,58 +153,23 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">10</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Short identifier for the folder. Must be the same on all devices.</property>
                 <property name="wrap">True</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
+                <property name="top_attach">5</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">_Path</property>
                 <property name="use_underline">True</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">3</property>
-                <property name="width">2</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="lblPathToFolder">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Path to the folder on the local computer. Will be created if it does not exist.</property>
-                <property name="wrap">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">5</property>
-                <property name="width">2</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Rescan _Interval</property>
-                <property name="use_underline">True</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -215,7 +178,38 @@
                 <property name="left_attach">0</property>
                 <property name="top_attach">6</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblPathToFolder">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_bottom">10</property>
+                <property name="label" translatable="yes">Path to the folder on the local computer. Will be created if it does not exist.</property>
+                <property name="wrap">True</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">8</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Rescan _Interval</property>
+                <property name="use_underline">True</property>
+                <property name="xalign">0</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">9</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
@@ -232,9 +226,8 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">7</property>
+                <property name="top_attach">10</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -276,10 +269,10 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_bottom">10</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
                     <property name="label" translatable="yes">Files are protected from changes made on other devices, but changes made on this device will be sent to the rest of the cluster.</property>
                     <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -320,10 +313,10 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_bottom">10</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
                     <property name="label" translatable="yes">File permission bits are ignored when looking for changes. Use on FAT filesystems.</property>
                     <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -335,9 +328,9 @@
                   <object class="GtkLabel" id="label9">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Share With _Devices</property>
                     <property name="use_underline">True</property>
+                    <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -367,10 +360,10 @@
                   <object class="GtkLabel" id="label10">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
                     <property name="label" translatable="yes">Select the devices to share this folder with.</property>
                     <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -381,9 +374,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">10</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">13</property>
               </packing>
             </child>
             <child>
@@ -396,9 +387,9 @@
                   <object class="GtkLabel" id="label11">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">File Versioning</property>
                     <property name="use_underline">True</property>
+                    <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -450,10 +441,10 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_bottom">10</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing.</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -465,11 +456,11 @@
                               <object class="GtkLabel" id="label7">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">_Keep Versions</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">vkeepVersions</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -502,10 +493,10 @@
                               <object class="GtkLabel" id="label8">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">The number of old versions to keep, per file.</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -531,12 +522,12 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_bottom">10</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing. Versions are automatically deleted if they are older than the maximum age or exceed the number of files allowed in an interval.
 
 The following intervals are used: for the first hour a version is kept every 30 seconds, for the first day a version is kept every hour, for the first 30 days a version is kept every day, until the maximum age a version is kept every week.</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -548,11 +539,11 @@ The following intervals are used: for the first hour a version is kept every 30 
                               <object class="GtkLabel" id="label13">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Ma_ximum Age</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">vkeepVersions</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -587,11 +578,11 @@ The following intervals are used: for the first hour a version is kept every 30 
                               <object class="GtkLabel" id="label14">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Versions _Path</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">vkeepVersions</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -619,10 +610,10 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="width_request">200</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Path where versions should be stored (leave empty for the default .stversions folder).</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -647,9 +638,9 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_bottom">10</property>
-                                <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Files are moved to .stversions folder when replaced or deleted by Syncthing</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -661,11 +652,11 @@ The following intervals are used: for the first hour a version is kept every 30 
                               <object class="GtkLabel" id="label20">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Clean out _after</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">vkeepVersions</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -700,10 +691,10 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="width_request">200</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">The number of days to keep files in the trash can.</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -729,10 +720,10 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_bottom">10</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">An external command handles the versioning. It has to remove the file from the synced folder.</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -744,11 +735,11 @@ The following intervals are used: for the first hour a version is kept every 30 
                               <object class="GtkLabel" id="label23">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">Command</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">vkeepVersions</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -777,10 +768,10 @@ The following intervals are used: for the first hour a version is kept every 30 
                                 <property name="width_request">200</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
                                 <property name="label" translatable="yes">The first command line parameter is the folder path and the second parameter is the relative path in the folder.</property>
                                 <property name="wrap">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -807,8 +798,7 @@ The following intervals are used: for the first hour a version is kept every 30 
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">10</property>
-                <property name="width">1</property>
+                <property name="top_attach">13</property>
                 <property name="height">2</property>
               </packing>
             </child>
@@ -836,9 +826,8 @@ The following intervals are used: for the first hour a version is kept every 30 
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">8</property>
+                <property name="top_attach">11</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -846,16 +835,15 @@ The following intervals are used: for the first hour a version is kept every 30 
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">10</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.
 Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot of resources.</property>
                 <property name="wrap">True</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">9</property>
+                <property name="top_attach">12</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -892,9 +880,52 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">4</property>
+                <property name="top_attach">7</property>
                 <property name="width">2</property>
-                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label25">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Folder _ID</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">vid</property>
+                <property name="xalign">0</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="vlabel">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblvid1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_bottom">10</property>
+                <property name="label" translatable="yes">Optional descriptive label for the folder. Can be different on each device.</property>
+                <property name="wrap">True</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
