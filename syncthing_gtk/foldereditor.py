@@ -223,7 +223,7 @@ class FolderEditorDialog(EditorDialog):
 		# see that something happen even before daemon gets restarted
 		if self.is_new:
 			box = self.app.show_folder(
-				self.get_value("id"), self.get_value("path"), self.get_value("path"),
+				self.get_value("id"), self.get_value("label"), self.get_value("path"),
 				self.get_value("readOnly"), self.get_value("ignorePerms"),
 				self.get_value("rescanIntervalS"),
 				sorted(

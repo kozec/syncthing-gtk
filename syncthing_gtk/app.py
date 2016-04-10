@@ -945,7 +945,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
 		box = self.show_folder(
-			rid, r["path"], r["path"],
+			rid, r["label"], r["path"],
 			r["readOnly"], r["ignorePerms"], 
 			r["rescanIntervalS"],
 			sorted(
@@ -1264,13 +1264,17 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
 	
-	def show_folder(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
+	def show_folder(self, id, label, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
 		display_path = path
 		if IS_WINDOWS:
 			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
 				display_path = "~%s" % display_path[len(os.path.expanduser("~")):]
-		title = display_path if self.config["folder_as_path"] else id
+		title = id
+		if self.config["folder_as_path"]:
+			title = display_path
+		if label not in (None, ""):
+			title = label
 		if id in self.folders:
 			# Reuse existing box
 			box = self.folders[id]
@@ -1279,7 +1283,7 @@ class App(Gtk.Application, TimerManager):
 			# Create new box
 			box = InfoBox(self, title, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 			# Add visible lines
-			box.add_value("id",			"version.svg",	_("Folder ID"))
+			box.add_value("id",			"version.svg",	_("Folder ID"),			id)
 			box.add_value("path",		"folder.svg",	_("Path"))
 			box.add_value("global",		"global.svg",	_("Global State"),		"? items, ?B")
 			box.add_value("local",		"home.svg",		_("Local State"),		"? items, ?B")
@@ -1289,7 +1293,6 @@ class App(Gtk.Application, TimerManager):
 			box.add_value("rescan",		"rescan.svg",	_("Rescan Interval"))
 			box.add_value("shared",		"shared.svg",	_("Shared With"))
 			# Add hidden stuff
-			box.add_hidden_value("id", id)
 			box.add_hidden_value("b_master", is_master)
 			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
@@ -1319,7 +1322,7 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)
-		box.set_visible("id",		self.config["folder_as_path"])
+		box.set_visible("id",		self.config["folder_as_path"] or label not in (None, ""))
 		box.set_visible("master",	is_master)
 		box.set_visible("ignore",	ignore_perms)
 		return box
