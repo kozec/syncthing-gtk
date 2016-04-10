@@ -120,8 +120,8 @@ if HAS_DESKTOP_NOTIFY:
 				markup = _('Unexpected folder ID sent from device "%s".') % ("<b>%s</b>" % device,)
 				self.info(markup)
 		
-		def cb_syncthing_device_rejected(self, daemon, nid, address):
-			markup = _('Unknown device is trying to connect to syncthing daemon.')
+		def cb_syncthing_device_rejected(self, daemon, nid, name, address):
+			markup = _('Device "%s" is trying to connect to syncthing daemon.' % (name,))
 			self.info(markup)
 			
 		def cb_syncthing_item_started(self, daemon, folder_id, path, time):

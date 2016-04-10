@@ -17,7 +17,7 @@ log = logging.getLogger("App")
 # Internal version used by updater (if enabled)
 INTERNAL_VERSION		= "v0.8"
 # Minimal Syncthing version supported by App
-MIN_ST_VERSION			= "0.12.0"
+MIN_ST_VERSION			= "0.13.0"
 
 COLOR_DEVICE			= "#707070"					# Dark-gray
 COLOR_DEVICE_SYNCING	= "#2A89C8"					# Blue
@@ -791,7 +791,7 @@ class App(Gtk.Application, TimerManager):
 			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_FOLDER_ID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
-	def cb_syncthing_device_rejected(self, daemon, nid, address):
+	def cb_syncthing_device_rejected(self, daemon, nid, name, address):
 		# Remove port from address, it's random by default anyway
 		if "[" in address:
 			# IPv6 address
@@ -803,7 +803,8 @@ class App(Gtk.Application, TimerManager):
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Device "<b>%(device)s</b>" at IP "<b>%(ip)s</b>" wants to connect. Add new device?') % {
+		markup = _('Device "<b>%(name)s</b>" (%(device)s) at IP "<b>%(ip)s</b>" wants to connect. Add new device?') % {
+			'name' : name,
 			'device' : "<b>%s</b>" % nid,
 			'ip' : "<b>%s</b>" % address
 			}
