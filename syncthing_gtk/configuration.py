@@ -51,7 +51,7 @@ class _Configuration(object):
 	WINDOWS_OVERRIDE = {
 		"syncthing_binary"			: (str, "C:\\Program Files\\Syncthing\\syncthing.exe"),
 		"autokill_daemon"			: (int, 1),
-		"use_old_header"			: (bool, True),
+		"use_old_header"			: (bool, False),
 		"st_autoupdate"				: (bool, True),
 	}
 	
