@@ -1174,11 +1174,6 @@ class App(Gtk.Application, TimerManager):
 		else:
 			self["window"].present()
 		self["menu-si-show"].set_label(_("Hide Window"))
-		if IS_WINDOWS:
-			# Change window size by 1px - this will cause bugged
-			# window border to reappear
-			self["window"].get_children()[0].set_visible(False)
-			GLib.idle_add(self["window"].get_children()[0].set_visible, True)
 	
 	def hide(self):
 		""" Hides main windows and 'Connecting' dialog, if displayed """
@@ -1264,6 +1259,16 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.hide()
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
+			
+			if IS_WINDOWS:
+				# Force windows position on Windows - GTK 3.18 moves
+				# window to corner when connect_dialog disappears for
+				# some unexplainable reason
+				x, y = self["window"].get_position()
+				
+				def move_back():
+					self["window"].move(x, y)
+				GLib.idle_add(move_back)
 	
 	def show_folder(self, id, label, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
