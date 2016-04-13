@@ -16,7 +16,7 @@ log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
 IS_XP = IS_WINDOWS and platform.release() in ("XP", "2000", "2003")
-IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON, IS_I3 = [False] * 5
+IS_GNOME, IS_UNITY, IS_KDE, IS_CINNAMON, IS_XFCE, IS_MATE, IS_I3 = [False] * 7
 
 if "XDG_CURRENT_DESKTOP" in os.environ:
 	desktops = os.environ["XDG_CURRENT_DESKTOP"].split(":")
@@ -25,6 +25,8 @@ if "XDG_CURRENT_DESKTOP" in os.environ:
 		IS_GNOME = ("GNOME" in desktops) or ("GNOME-Flashback" in desktops) or ("GNOME-Fallback" in desktops)
 	IS_KDE   = ("KDE" in desktops)
 	IS_CINNAMON = ("X-Cinnamon" in desktops)
+	IS_MATE = ("MATE" in desktops)
+	IS_XFCE = ("XFCE" in desktops)
 	IS_I3 = ("i3" in desktops)
 if "DESKTOP_SESSION" in os.environ:
 	if os.environ["DESKTOP_SESSION"] == "gnome":

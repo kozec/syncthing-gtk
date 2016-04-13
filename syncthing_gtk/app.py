@@ -1848,11 +1848,12 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_statusicon_notify_active(self, *a):
 		""" Called when the status icon changes its "inaccessible for sure" state """
-		# Show main window if the status icon is sure that no icon will be shown to the user
+		# Show main window if the status icon thinks that no icon is visible to the user
 		if not self.statusicon.get_active():
-			if not (IS_GNOME or IS_I3):
+			if not (IS_GNOME or IS_I3 or IS_MATE or IS_XFCE):
 				# Gnome sometimes lag on this, but always ends displaying icon later
 				# ... and i3 as well
+				# ... oh gods :'(
 				self.show()
 	
 	def cb_infobar_close(self, bar):
