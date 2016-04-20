@@ -294,11 +294,15 @@ class StDownloader(GObject.GObject):
 				self.emit("error", None, _("Downloaded file is corrupted."))
 			# Find binary inside
 			for pathname in archive.getnames():
-				filename = pathname.replace("\\", "/").split("/")[-1]
-				if filename.startswith("syncthing"):
+				# Strip initial 'syncthing-platform-vXYZ' from path
+				path = pathname.replace("\\", "/").split("/")[1:]
+				if len(path) < 1 : continue
+				filename = path[0]
+				if filename in ("syncthing", "syncthing.exe"):
 					# Last sanity check, then just open files
 					# and start extracting
 					tinfo = archive.getmember(pathname)
+					log.debug("Extracting '%s'..." % (pathname,))
 					if tinfo.isfile():
 						compressed = archive.extractfile(pathname)
 						try:
@@ -330,9 +334,8 @@ class StDownloader(GObject.GObject):
 					output.write(buffer)
 				# Change file mode to 0755
 				if hasattr(os, "fchmod"):
-					# ... (on Unix)
-					os.fchmod(output.fileno(), stat.S_IRWXU | stat.S_IRGRP | 
-							stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+					# ... on Unix
+					os.fchmod(output.fileno(), 0755)
 				output.close()
 				archive.close()
 				compressed.close()
