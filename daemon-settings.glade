@@ -9,13 +9,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adjlocalAnnouncePort">
-    <property name="lower">1</property>
-    <property name="upper">65535</property>
-    <property name="value">21025</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkAdjustment" id="adjMaxRecvKbps">
     <property name="upper">99999</property>
     <property name="value">1</property>
@@ -25,6 +18,20 @@
   <object class="GtkAdjustment" id="adjMaxSendKbps">
     <property name="upper">99999</property>
     <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjRescan">
+    <property name="lower">1</property>
+    <property name="upper">9999</property>
+    <property name="value">50</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjlocalAnnouncePort">
+    <property name="lower">1</property>
+    <property name="upper">65535</property>
+    <property name="value">21025</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -96,10 +103,10 @@
               <object class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Sync Protocol Listen Addresses</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">vlistenAddress</property>
+                <property name="xalign">0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -161,10 +168,10 @@
               <object class="GtkLabel" id="lblvlocalAnnouncePort">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Local Discovery _Port</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">vlocalAnnouncePort</property>
+                <property name="xalign">0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -181,6 +188,7 @@
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
                 <property name="adjustment">adjMaxSendKbps</property>
+                <signal name="output" handler="cb_format_value_kibps_or_no_limit" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -201,7 +209,7 @@
                   <object class="GtkLabel" id="label6">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Outgoing _Rate Limit (KiB/s)</property>
+                    <property name="label" translatable="yes">Outgoing _Rate Limit</property>
                     <property name="use_underline">True</property>
                     <property name="mnemonic_widget">vmaxSendKbpsEnabled</property>
                     <attributes>
@@ -270,10 +278,10 @@
               <object class="GtkLabel" id="lblvglobalAnnounceServers">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Global Discovery _Servers</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">vglobalAnnounceServers</property>
+                <property name="xalign">0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -324,7 +332,7 @@
                   <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">_Incoming Rate Limit (KiB/s)</property>
+                    <property name="label" translatable="yes">_Incoming Rate Limit</property>
                     <property name="use_underline">True</property>
                     <property name="mnemonic_widget">vmaxRecvKbpsEnabled</property>
                     <attributes>
@@ -345,6 +353,7 @@
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">10</property>
                 <property name="adjustment">adjMaxRecvKbps</property>
+                <signal name="output" handler="cb_format_value_kibps_or_no_limit" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -362,12 +371,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkAdjustment" id="adjRescan">
-    <property name="lower">1</property>
-    <property name="upper">9999</property>
-    <property name="value">50</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
   </object>
 </interface>

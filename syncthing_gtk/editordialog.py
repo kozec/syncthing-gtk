@@ -396,6 +396,21 @@ class EditorDialog(GObject.GObject):
 			spinner.get_buffer().set_text(_("%ss") % (val,), -1);
 		return True
 	
+	def cb_format_value_percent(self, spinner):
+		""" Formats spinner value """
+		val = int(spinner.get_adjustment().get_value())
+		spinner.get_buffer().set_text(_("%s%%") % (val,), -1);
+		return True
+	
+	def cb_format_value_kibps_or_no_limit(self, spinner):
+		""" Formats spinner value """
+		val = int(spinner.get_adjustment().get_value())
+		if val < 1:
+			spinner.get_buffer().set_text(_("no limit"), -1)
+		else:
+			spinner.get_buffer().set_text(_("%s KiB/s") % (val,), -1);
+		return True
+	
 	def cb_format_value_days(self, spinner):
 		""" Formats spinner value """
 		v = int(spinner.get_adjustment().get_value())
