@@ -31,11 +31,14 @@ class EditorDialog(GObject.GObject):
 	
 	# Should be overrided by subclass
 	MESSAGES = {}
+	SETTING_NEEDS_RESTART = []
+	RESTART_NEEDED_WIDGET = "lblRestartNeeded"
 	
 	def __init__(self, app, gladefile, title):
 		GObject.GObject.__init__(self)
 		self.app = app
 		self.config = None
+		self._loading = False
 		self.values = None
 		self.checks = {}
 		# Stores original label  value while error message is displayed.
@@ -56,7 +59,9 @@ class EditorDialog(GObject.GObject):
 	
 	def load(self):
 		""" Loads configuration data and pre-fills values to fields """
+		self._loading = True
 		self.load_data()
+		self._loading = False
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
@@ -255,6 +260,9 @@ class EditorDialog(GObject.GObject):
 		Handler for widget that controls state of other widgets
 		"""
 		key = self.get_widget_id(w)
+		if not self._loading:
+			if key in self.SETTING_NEEDS_RESTART:
+				self[self.RESTART_NEEDED_WIDGET].set_visible(True)
 		if key != None:
 			if isinstance(w, Gtk.CheckButton):
 				self.set_value(strip_v(key), w.get_active())
