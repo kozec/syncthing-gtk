@@ -19,7 +19,8 @@ COLOR_NEW				= "#A0A0A0"
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
 VALUES = [ "vid", "vlabel", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
-	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand"
+	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand", "vorder",
+	"vminDiskFreePct"
 	]
 VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
 
@@ -80,6 +81,12 @@ class FolderEditorDialog(EditorDialog):
 			return self.id in self.app.config["use_inotify"]
 		else:
 			return EditorDialog.get_value(self, key)
+	
+	def cb_format_value_percent(self, spinner):
+		""" Formats spinner value """
+		val = int(spinner.get_adjustment().get_value())
+		spinner.get_buffer().set_text(_("%s%%") % (val,), -1);
+		return True
 	
 	#@Overrides
 	def set_value(self, key, value):

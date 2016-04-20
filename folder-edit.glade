@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.19.0 -->
+<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAdjustment" id="adjKeepVersions">
@@ -14,6 +14,12 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="adjMinDiskFreePct">
+    <property name="upper">100</property>
+    <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="adjRescanInterval">
     <property name="upper">999999</property>
     <property name="value">5</property>
@@ -24,6 +30,70 @@
     <property name="upper">9999</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
+  </object>
+  <object class="GtkListStore" id="lsOrder">
+    <columns>
+      <!-- column-name key -->
+      <column type="gchararray"/>
+      <!-- column-name text -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">random</col>
+        <col id="1" translatable="yes" context="In File Pull Order combobox">Random</col>
+      </row>
+      <row>
+        <col id="0">alphabetic</col>
+        <col id="1" translatable="yes" context="In File Pull Order combobox">Alphabetic</col>
+      </row>
+      <row>
+        <col id="0">smallestFirst</col>
+        <col id="1" translatable="yes" context="In File Pull Order combobox">Smallest First</col>
+      </row>
+      <row>
+        <col id="0">largestFirst</col>
+        <col id="1" translatable="yes" context="In File Pull Order combobox">Largest First</col>
+      </row>
+      <row>
+        <col id="0">oldestFirst</col>
+        <col id="1" translatable="yes" context="In File Pull Order combobox">Oldest First</col>
+      </row>
+      <row>
+        <col id="0">newestFirst</col>
+        <col id="1" translatable="yes" context="In File Pull Order combobox">Newest First</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="lsVersioning">
+    <columns>
+      <!-- column-name key -->
+      <column type="gchararray"/>
+      <!-- column-name text -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0"> </col>
+        <col id="1" translatable="yes">Off</col>
+      </row>
+      <row>
+        <col id="0">simple</col>
+        <col id="1" translatable="yes">Simple</col>
+      </row>
+      <row>
+        <col id="0">staggered</col>
+        <col id="1" translatable="yes">Staggered</col>
+      </row>
+      <row>
+        <col id="0">trashcan</col>
+        <col id="1" translatable="yes">Trashcan</col>
+      </row>
+      <row>
+        <col id="0">external</col>
+        <col id="1" translatable="yes">External</col>
+      </row>
+    </data>
   </object>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
@@ -92,6 +162,7 @@
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="column_spacing">3</property>
                 <child>
                   <object class="GtkLabel" id="label4">
@@ -99,7 +170,7 @@
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Folder _Label</property>
                     <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">vid</property>
+                    <property name="mnemonic_widget">vlabel</property>
                     <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
@@ -376,50 +447,6 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
                     <property name="width">2</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkCheckButton" id="vignorePerms">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
-                    <property name="draw_indicator">True</property>
-                    <child>
-                      <object class="GtkLabel" id="label17">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Ignore P_ermissions</property>
-                        <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">vignorePerms</property>
-                        <property name="ellipsize">start</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">15</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label8">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_bottom">10</property>
-                    <property name="label" translatable="yes">File permission bits are ignored when looking for changes. Use on FAT filesystems.</property>
-                    <property name="wrap">True</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">16</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
               </object>
             </child>
             <child type="tab">
@@ -434,19 +461,80 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
               </packing>
             </child>
             <child>
+              <object class="GtkBox" id="box5">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="label10">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Select the devices to share this folder with.</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="vdevices">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="label2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Share With _Devices</property>
+                <property name="use_underline">True</property>
+              </object>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkBox" id="box2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="label11">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Versioning Mode</property>
+                    <property name="label" translatable="yes">Versioning _Mode</property>
                     <property name="use_underline">True</property>
+                    <property name="mnemonic_widget">vversioning</property>
                     <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
@@ -463,7 +551,7 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="model">lsVersioningCombo</property>
+                    <property name="model">lsVersioning</property>
                     <signal name="changed" handler="ui_value_changed" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext1"/>
@@ -855,7 +943,7 @@ The following intervals are used: for the first hour a version is kept every 30 
                 </child>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child type="tab">
@@ -866,29 +954,40 @@ The following intervals are used: for the first hour a version is kept every 30 
                 <property name="use_underline">True</property>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
                 <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box5">
+              <object class="GtkBox" id="box3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel" id="label10">
+                  <object class="GtkCheckButton" id="vignorePerms">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Select the devices to share this folder with.</property>
-                    <property name="wrap">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="use_underline">True</property>
                     <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"/>
-                    </attributes>
+                    <property name="draw_indicator">True</property>
+                    <child>
+                      <object class="GtkLabel" id="label17">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Ignore P_ermissions</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">vignorePerms</property>
+                        <property name="ellipsize">start</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -897,13 +996,32 @@ The following intervals are used: for the first hour a version is kept every 30 
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="vdevices">
+                  <object class="GtkLabel" id="label8">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <placeholder/>
-                    </child>
+                    <property name="margin_bottom">10</property>
+                    <property name="label" translatable="yes">File permission bits are ignored when looking for changes. Use on FAT filesystems.</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label30">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Minimum Free Disk Space</property>
+                    <property name="use_underline">True</property>
+                    <property name="mnemonic_widget">vminDiskFreePct</property>
+                    <property name="xalign">0</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -911,20 +1029,82 @@ The following intervals are used: for the first hour a version is kept every 30 
                     <property name="position">2</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkSpinButton" id="vminDiskFreePct">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin_bottom">10</property>
+                    <property name="text" translatable="yes">5</property>
+                    <property name="caps_lock_warning">False</property>
+                    <property name="input_purpose">number</property>
+                    <property name="adjustment">adjMinDiskFreePct</property>
+                    <property name="climb_rate">1</property>
+                    <property name="snap_to_ticks">True</property>
+                    <property name="numeric">True</property>
+                    <property name="value">1</property>
+                    <signal name="output" handler="cb_format_value_percent" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label29">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">File Pull _Order</property>
+                    <property name="use_underline">True</property>
+                    <property name="mnemonic_widget">vorder</property>
+                    <property name="xalign">0</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBox" id="vorder">
+                    <property name="width_request">300</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_bottom">10</property>
+                    <property name="model">lsOrder</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="label2">
+              <object class="GtkLabel" id="label9">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Share With _Devices</property>
+                <property name="label" translatable="yes">_Advanced</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
                 <property name="tab_fill">False</property>
               </packing>
             </child>
@@ -937,35 +1117,5 @@ The following intervals are used: for the first hour a version is kept every 30 
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="lsVersioningCombo">
-    <columns>
-      <!-- column-name key -->
-      <column type="gchararray"/>
-      <!-- column-name text -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0"> </col>
-        <col id="1" translatable="yes">Off</col>
-      </row>
-      <row>
-        <col id="0">simple</col>
-        <col id="1" translatable="yes">Simple</col>
-      </row>
-      <row>
-        <col id="0">staggered</col>
-        <col id="1" translatable="yes">Staggered</col>
-      </row>
-      <row>
-        <col id="0">trashcan</col>
-        <col id="1" translatable="yes">Trashcan</col>
-      </row>
-      <row>
-        <col id="0">external</col>
-        <col id="1" translatable="yes">External</col>
-      </row>
-    </data>
   </object>
 </interface>
