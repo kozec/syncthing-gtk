@@ -190,8 +190,8 @@ class App(Gtk.Application, TimerManager):
 	
 	def do_activate(self, *a):
 		if self.hide_window:
-			print
-			print _("Syncthing-GTK started and running in notification area")
+			log.info("")
+			log.info(_("Syncthing-GTK started and running in notification area"))
 			if not self.daemon is None:
 				self.daemon.set_refresh_interval(REFRESH_INTERVAL_TRAY)
 		else:
