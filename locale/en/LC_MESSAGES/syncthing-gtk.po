@@ -973,10 +973,6 @@ msgstr ""
 msgid "_Browse"
 msgstr ""
 
-#: app.glade:600
-msgid "gtk-media-pause"
-msgstr ""
-
 #: app.glade:611
 msgid "Resume"
 msgstr ""
@@ -1177,10 +1173,6 @@ msgstr ""
 msgid "Rescan _Interval"
 msgstr ""
 
-#: folder-edit.glade:266 folder-edit.glade:1037
-msgid "5"
-msgstr ""
-
 #: folder-edit.glade:293
 msgid "Monitor filesystem for _changes"
 msgstr ""
@@ -1363,7 +1355,7 @@ msgid "Syncthing-GTK Settings"
 msgstr ""
 
 #: ui-settings.glade:69
-msgid "Please, restart syncthing-GTK to apply all changed settings"
+msgid "Please, restart Syncthing-GTK to apply all changed settings"
 msgstr ""
 
 #: ui-settings.glade:136
