@@ -1,0 +1,1526 @@
+# Syncthing-GTK
+# Copyright (C) 2014-2015 Kozec and contributors
+# This file is distributed under the same license as the Syncthing-GTK package.
+# 
+# Translators:
+# Dz Chen <wsxy162@gmail.com>, 2016
+# Dz Chen <wsxy162@gmail.com>, 2016
+msgid ""
+msgstr ""
+"Project-Id-Version: syncthing-gtk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-04-20 11:27+0200\n"
+"PO-Revision-Date: 2016-04-26 11:45+0000\n"
+"Last-Translator: Dz Chen <wsxy162@gmail.com>\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/zh_CN/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: syncthing_gtk/app.py:194
+msgid "Syncthing-GTK started and running in notification area"
+msgstr "Syncthing-GTK 已启动且正在通知区域中运行"
+
+#: syncthing_gtk/app.py:288
+#, python-format
+msgid "%s kB/s"
+msgstr "%s kB/s"
+
+#: syncthing_gtk/app.py:302 syncthing_gtk/notifications.py:77
+#: syncthing_gtk/wizard.py:53
+msgid "Syncthing-GTK"
+msgstr "Syncthing-GTK"
+
+#: syncthing_gtk/app.py:363 syncthing_gtk/app.py:364 syncthing_gtk/app.py:942
+msgid "Syncing"
+msgstr "正在同步"
+
+#: syncthing_gtk/app.py:366 syncthing_gtk/app.py:367
+msgid "Scanning"
+msgstr "正在扫描"
+
+#: syncthing_gtk/app.py:390 syncthing_gtk/app.py:652
+msgid "Starting Syncthing daemon"
+msgstr "正在启动 Syncthing 守护程序"
+
+#: syncthing_gtk/app.py:424
+msgid "Allow Anonymous Usage Reporting?"
+msgstr "允许发送匿名使用情况报告？"
+
+#: syncthing_gtk/app.py:426
+msgid "The encrypted usage report is sent daily."
+msgstr "加密过的使用情况报告会每天发送。"
+
+#: syncthing_gtk/app.py:427
+msgid "It is used to track common platforms, folder sizes and app versions."
+msgstr "它用于追踪您使用的通用平台、文件夹大小和应用版本。"
+
+#: syncthing_gtk/app.py:428
+msgid ""
+"If the reported data set is changed you will be prompted with this dialog "
+"again."
+msgstr "如果要报告的数据集有更改，您将再次收到此对话框提示。"
+
+#: syncthing_gtk/app.py:430
+msgid "The aggregated statistics are publicly available at"
+msgstr "该汇总统计数据会公布于"
+
+#: syncthing_gtk/app.py:486
+msgid "Extracting update..."
+msgstr "正在提取更新..."
+
+#: syncthing_gtk/app.py:491
+msgid "Restarting daemon..."
+msgstr "正在重启守护程序"
+
+#: syncthing_gtk/app.py:507
+#, python-format
+msgid "Failed to download upgrade: %s"
+msgstr "下载更新失败：%s"
+
+#: syncthing_gtk/app.py:525
+#, python-format
+msgid "Downloading Syncthing %s"
+msgstr "正在下载 Syncthing %s"
+
+#: syncthing_gtk/app.py:604
+msgid "Connected to Syncthing daemon"
+msgstr "已连接到 Syncthing 守护程序"
+
+#: syncthing_gtk/app.py:614
+msgid "Connection to Syncthing daemon lost."
+msgstr "到 Syncthing 守护程序的连接已丢失。"
+
+#: syncthing_gtk/app.py:615
+msgid "Syncthing is probably restarting or has been shut down."
+msgstr "Syncthing 可能正在重启或者已被关闭。"
+
+#: syncthing_gtk/app.py:617
+msgid "Syncthing has been shut down."
+msgstr "Syncthing 已被关闭。"
+
+#: syncthing_gtk/app.py:621 syncthing_gtk/app.py:1499
+msgid "Syncthing is restarting."
+msgstr "Syncthing 正在重启。"
+
+#: syncthing_gtk/app.py:621 syncthing_gtk/app.py:1499
+msgid "Please wait"
+msgstr "请稍候"
+
+#: syncthing_gtk/app.py:644
+#, python-format
+msgid "Connecting to Syncthing daemon at %s..."
+msgstr "正在连接到 Syncthing 守护程序于 %s..."
+
+#: syncthing_gtk/app.py:649
+#, python-format
+msgid "Waiting for Syncthing daemon at %s..."
+msgstr "正在等待 Syncthing 守护程序于 %s..."
+
+#: syncthing_gtk/app.py:664
+msgid "Your syncthing daemon is too old."
+msgstr "您的 Syncthing 守护程序太旧了。"
+
+#: syncthing_gtk/app.py:664
+msgid "Attempting to download recent, please wait..."
+msgstr "正在尝试下载最近的，请稍候..."
+
+#: syncthing_gtk/app.py:670
+msgid ""
+"Cannot authorize with daemon. Please, use WebUI to generate API key or "
+"disable password authentication."
+msgstr "无法授权于守护程序。请使用 WebUI 来生成 API 密钥或禁用密码身份验证。"
+
+#: syncthing_gtk/app.py:672
+#, python-format
+msgid ""
+"Your syncthing daemon is too old.\n"
+"Please, upgrade syncthing package at least to version %s and try again."
+msgstr "您的 syncthing 守护程序太老了。\n请更新 syncthing 包至少到版本 %s 后重试。"
+
+#: syncthing_gtk/app.py:674
+msgid ""
+"Sorry, connecting to HTTPS is not supported on this platform.\n"
+"Please, use WebUI to disable HTTPS try again."
+msgstr "抱歉，此平台上不支持连接到 HTTPS。\n请使用 WebUI 禁用 HTTPS 后重试。"
+
+#: syncthing_gtk/app.py:677
+msgid "Connection to daemon failed. Check your configuration and try again."
+msgstr "连接到守护程序失败。请检查您的配置后重试。"
+
+#: syncthing_gtk/app.py:678 syncthing_gtk/app.py:1992
+#: syncthing_gtk/editordialog.py:314
+msgid "Error message:"
+msgstr "错误信息："
+
+#: syncthing_gtk/app.py:689
+msgid "More info"
+msgstr "更多信息"
+
+#: syncthing_gtk/app.py:715
+msgid ""
+"The configuration has been saved but not activated.\n"
+"Syncthing must restart to activate the new configuration."
+msgstr "配置已保存但未激活。\nSyncthing 必须重启以激活新的配置。"
+
+#: syncthing_gtk/app.py:717
+msgid "_Restart"
+msgstr "重启(_R)"
+
+#: syncthing_gtk/app.py:784
+#, python-format
+msgid "%(device)s wants to share folder \"%(folder)s\". Add new folder?"
+msgstr "%(device)s 想要分享文件夹“%(folder)s”。添加新文件夹？"
+
+#: syncthing_gtk/app.py:791 syncthing_gtk/app.py:813
+msgid "_Add"
+msgstr "添加(_A)"
+
+#: syncthing_gtk/app.py:806
+#, python-format
+msgid ""
+"Device \"<b>%(name)s</b>\" (%(device)s) at IP \"<b>%(ip)s</b>\" wants to "
+"connect. Add new device?"
+msgstr "位于IP \"<b>%(ip)s</b>\" 的设备 \"<b>%(name)s</b>\" (%(device)s) 想要连接。添加新设备？"
+
+#: syncthing_gtk/app.py:814
+msgid "_Ignore"
+msgstr "忽略(_I)"
+
+#: syncthing_gtk/app.py:832
+msgid "RAM Utilization"
+msgstr "RAM 使用量"
+
+#: syncthing_gtk/app.py:833
+msgid "CPU Utilization"
+msgstr "CPU 使用率"
+
+#: syncthing_gtk/app.py:834 syncthing_gtk/app.py:1353
+msgid "Download Rate"
+msgstr "下载速度"
+
+#: syncthing_gtk/app.py:835 syncthing_gtk/app.py:1354
+msgid "Upload Rate"
+msgstr "上传速度"
+
+#: syncthing_gtk/app.py:836
+msgid "Announce Server"
+msgstr "公告服务器"
+
+#: syncthing_gtk/app.py:837 syncthing_gtk/app.py:1356
+msgid "Version"
+msgstr "版本"
+
+#: syncthing_gtk/app.py:860 syncthing_gtk/editordialog.py:394
+msgid "disabled"
+msgstr "已禁用"
+
+#: syncthing_gtk/app.py:862
+msgid "Online"
+msgstr "在线"
+
+#: syncthing_gtk/app.py:862
+msgid "offline"
+msgstr "离线"
+
+#: syncthing_gtk/app.py:864
+#, python-format
+msgid "%(online)s/%(total)s online"
+msgstr "%(online)s/%(total)s 在线"
+
+#: syncthing_gtk/app.py:891 syncthing_gtk/app.py:1357
+#: syncthing_gtk/app.py:1382
+msgid "Never"
+msgstr "从不"
+
+#: syncthing_gtk/app.py:899 syncthing_gtk/app.py:1691
+#: syncthing_gtk/app.py:1692
+msgid "Paused"
+msgstr "已暂停"
+
+#: syncthing_gtk/app.py:899 syncthing_gtk/app.py:924 syncthing_gtk/app.py:939
+#: syncthing_gtk/infobox.py:60
+msgid "Disconnected"
+msgstr "已断开"
+
+#: syncthing_gtk/app.py:916
+msgid "Connected"
+msgstr "已连接"
+
+#: syncthing_gtk/app.py:945 syncthing_gtk/app.py:980 syncthing_gtk/app.py:1030
+#: syncthing_gtk/app.py:1031 syncthing_gtk/app.py:1070
+msgid "Up to Date"
+msgstr "已是最新 "
+
+#: syncthing_gtk/app.py:966 syncthing_gtk/app.py:967 syncthing_gtk/app.py:968
+msgid "Files"
+msgstr "文件"
+
+#: syncthing_gtk/app.py:980 syncthing_gtk/app.py:1068
+msgid "Cluster out of sync"
+msgstr "群集未同步"
+
+#: syncthing_gtk/app.py:995
+msgid "Stopped"
+msgstr "已停止"
+
+#: syncthing_gtk/app.py:998 syncthing_gtk/app.py:1005
+msgid "Error"
+msgstr "错误"
+
+#: syncthing_gtk/app.py:1024
+#, python-format
+msgid "Synchronizing '%s'"
+msgstr "正在同步“%s”"
+
+#: syncthing_gtk/app.py:1026
+#, python-format
+msgid "Synchronizing %s folders"
+msgstr "正在同步 %s 个文件夹"
+
+#: syncthing_gtk/app.py:1035 syncthing_gtk/app.py:1036
+msgid "All devices offline"
+msgstr "所有设备已离线"
+
+#: syncthing_gtk/app.py:1040 syncthing_gtk/app.py:1041
+msgid "Connecting to Syncthing daemon..."
+msgstr "正在连接到 Syncthing 守护程序..."
+
+#: syncthing_gtk/app.py:1079
+msgid "Unshared"
+msgstr "未共享"
+
+#: syncthing_gtk/app.py:1082
+msgid "Offline"
+msgstr "离线"
+
+#: syncthing_gtk/app.py:1176
+msgid "Hide Window"
+msgstr "隐藏窗口"
+
+#: syncthing_gtk/app.py:1190 app.glade:651
+msgid "Show Window"
+msgstr "显示窗口"
+
+#: syncthing_gtk/app.py:1239
+msgid "Syncthing daemon doesn't appear to be running."
+msgstr "Syncthing 似乎没有在运行。"
+
+#: syncthing_gtk/app.py:1240
+msgid "Start it now?"
+msgstr "现在启动吗？"
+
+#: syncthing_gtk/app.py:1243
+msgid "Always start daemon automatically"
+msgstr "始终自动启动守护程序"
+
+#: syncthing_gtk/app.py:1292
+msgid "Folder ID"
+msgstr "文件夹 ID"
+
+#: syncthing_gtk/app.py:1293
+msgid "Path"
+msgstr "路径"
+
+#: syncthing_gtk/app.py:1294
+msgid "Global State"
+msgstr "全球状态"
+
+#: syncthing_gtk/app.py:1295
+msgid "Local State"
+msgstr "本地状态"
+
+#: syncthing_gtk/app.py:1296
+msgid "Out Of Sync"
+msgstr "未同步"
+
+#: syncthing_gtk/app.py:1297
+msgid "Folder Master"
+msgstr "主文件夹"
+
+#: syncthing_gtk/app.py:1298
+msgid "Ignore Permissions"
+msgstr "忽略权限"
+
+#: syncthing_gtk/app.py:1299
+msgid "Rescan Interval"
+msgstr "扫描间隔"
+
+#: syncthing_gtk/app.py:1300
+msgid "Shared With"
+msgstr "共享给"
+
+#: syncthing_gtk/app.py:1324 syncthing_gtk/app.py:1325
+#: syncthing_gtk/app.py:1381
+msgid "Yes"
+msgstr "是"
+
+#: syncthing_gtk/app.py:1324 syncthing_gtk/app.py:1325
+#: syncthing_gtk/app.py:1381
+msgid "No"
+msgstr "否"
+
+#: syncthing_gtk/app.py:1327
+msgid "(watch)"
+msgstr "（监视）"
+
+#: syncthing_gtk/app.py:1341
+msgid "Unused"
+msgstr "未使用"
+
+#: syncthing_gtk/app.py:1350
+msgid "Address"
+msgstr "地址"
+
+#: syncthing_gtk/app.py:1351
+msgid "Synchronization"
+msgstr "同步"
+
+#: syncthing_gtk/app.py:1352
+msgid "Compression"
+msgstr "压缩"
+
+#: syncthing_gtk/app.py:1355
+msgid "Introducer"
+msgstr "介绍人"
+
+#: syncthing_gtk/app.py:1357
+msgid "Last Seen"
+msgstr "最后出现"
+
+#: syncthing_gtk/app.py:1378 device-edit.glade:22
+msgid "All Data"
+msgstr "所有数据"
+
+#: syncthing_gtk/app.py:1379 device-edit.glade:26 folder-edit.glade:78
+msgid "Off"
+msgstr "关闭"
+
+#: syncthing_gtk/app.py:1380 device-edit.glade:30
+msgid "Metadata Only"
+msgstr "仅元数据"
+
+#: syncthing_gtk/app.py:1522
+msgid "Exiting."
+msgstr "正在退出。"
+
+#: syncthing_gtk/app.py:1523
+msgid "Shutdown Syncthing daemon as well?"
+msgstr "同时也关闭 Syncthing 守护程序？"
+
+#: syncthing_gtk/app.py:1528
+msgid "Always do same; Don't show this window again"
+msgstr "始终采取相同操作；不要再显示此窗口"
+
+#: syncthing_gtk/app.py:1768
+#, python-format
+msgid "Do you really want to permanently stop synchronizing directory '%s'?"
+msgstr "您真的要永久停止同步目录“%s”吗？"
+
+#: syncthing_gtk/app.py:1770
+#, python-format
+msgid "Do you really want remove device '%s' from Syncthing?"
+msgstr "您真的要从 Syncthing 移除设备“%s”吗？"
+
+#: syncthing_gtk/app.py:1838
+msgid "Syncthing-Inotify Output"
+msgstr "Syncthing-Inotify 输出"
+
+#: syncthing_gtk/app.py:1844
+msgid "Syncthing-Inotify is unavailable or failed to start"
+msgstr "Syncthing-Inotify 无法使用或启动失败"
+
+#: syncthing_gtk/app.py:1991
+msgid "Failed to start Syncthing daemon."
+msgstr "启动 Syncthing 守护程序失败。"
+
+#: syncthing_gtk/app.py:1993
+msgid ""
+"Please, check your installation or set new path to Syncthing daemon binary."
+msgstr "请检查您的安装或设置到 Syncthing 守护程序二进制文件的新路径。"
+
+#: syncthing_gtk/daemonsettings.py:24
+msgid "Syncthing Daemon Settings"
+msgstr "Syncthing 守护程序设置"
+
+#: syncthing_gtk/deviceeditor.py:24
+msgid ""
+"The entered device ID does not look valid. It should be a 52 character "
+"string consisting of letters and numbers, with spaces and dashes being "
+"optional."
+msgstr "输入的设备 ID 似乎无效。设备 ID 必须为包含字母和数字的长度为 52 的字符串，可包含空格和短划线。"
+
+#: syncthing_gtk/editordialog.py:312
+msgid "Failed to load configuration from daemon."
+msgstr "从守护程序加载配置失败。"
+
+#: syncthing_gtk/editordialog.py:313
+msgid "Try again."
+msgstr "重试。"
+
+#: syncthing_gtk/editordialog.py:387 syncthing_gtk/editordialog.py:396
+#, python-format
+msgid "%ss"
+msgstr "%ss"
+
+#: syncthing_gtk/editordialog.py:402
+#, python-format
+msgid "%s%%"
+msgstr "%s%%"
+
+#: syncthing_gtk/editordialog.py:409
+msgid "no limit"
+msgstr "无限制"
+
+#: syncthing_gtk/editordialog.py:411
+#, python-format
+msgid "%s KiB/s"
+msgstr "%s KiB/s"
+
+#: syncthing_gtk/editordialog.py:418
+msgid "never delete"
+msgstr "从不删除"
+
+#: syncthing_gtk/editordialog.py:420
+#, python-format
+msgid "%s day"
+msgstr "%s 天"
+
+#: syncthing_gtk/editordialog.py:422
+#, python-format
+msgid "%s days"
+msgstr "%s 天"
+
+#: syncthing_gtk/editordialog.py:455
+msgid "Failed to save configuration."
+msgstr "保存配置失败。"
+
+#: syncthing_gtk/finddaemondialog.py:24 find-daemon.glade:7
+msgid "Can't invoke the daemon"
+msgstr "无法调用守护程序"
+
+#: syncthing_gtk/finddaemondialog.py:26
+msgid "Syncthing binary"
+msgstr "Syncthing 二进制文件"
+
+#: syncthing_gtk/finddaemondialog.py:28 syncthing_gtk/finddaemondialog.py:37
+msgid "Syncthing daemon binary cannot be found."
+msgstr "Syncthing 守护程序二进制文件无法找到。"
+
+#: syncthing_gtk/finddaemondialog.py:29
+#, python-format
+msgid ""
+"If you have Syncthing installed, please, set path to %s below or click on "
+"<b>Download</b> button to download latest Syncthing package."
+msgstr "如果您已安装了 Syncthing，在 %s 下面设置路径或者点击 <b>下载</b> 按钮以下载最新的 Syncthing 软件包。"
+
+#: syncthing_gtk/finddaemondialog.py:38
+#, python-format
+msgid "If you have Syncthing installed, please, set path to %s below"
+msgstr "如果您已安装了 Syncthing，在 %s 下面设置路径"
+
+#: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:411
+msgid "Cannot download Syncthing daemon."
+msgstr "无法下载 Syncthing 守护程序。"
+
+#: syncthing_gtk/finddaemondialog.py:83 syncthing_gtk/wizard.py:412
+#, python-format
+msgid "This platform (%s) is not supported"
+msgstr "不支持此平台（%s）"
+
+#: syncthing_gtk/finddaemondialog.py:100
+msgid "Downloading..."
+msgstr "正在下载..."
+
+#: syncthing_gtk/finddaemondialog.py:163 syncthing_gtk/stdownloader.py:251
+#: syncthing_gtk/stdownloader.py:279
+msgid "Download failed."
+msgstr "下载失败。"
+
+#: syncthing_gtk/finddaemondialog.py:185 syncthing_gtk/wizard.py:458
+msgid "Download finished."
+msgstr "下载已完成。"
+
+#: syncthing_gtk/foldereditor.py:45
+msgid "Select Folder for new Folder"
+msgstr "选择新文件夹"
+
+#: syncthing_gtk/foldereditor.py:166 syncthing_gtk/foldereditor.py:167
+msgid "Please, install pyinotify package to use this feature"
+msgstr "请安装 pyinotify 包以使用该功能"
+
+#: syncthing_gtk/ignoreeditor.py:44
+msgid "File location:"
+msgstr "文件未知："
+
+#: syncthing_gtk/notifications.py:120
+#, python-format
+msgid "Unexpected folder ID sent from device \"%s\"."
+msgstr "从设备“%s”发来了意外的文件夹 ID。"
+
+#: syncthing_gtk/notifications.py:124
+#, python-format
+msgid "Device \"%s\" is trying to connect to syncthing daemon."
+msgstr "设备“%s”正尝试连接到 syncthing 守护程序。"
+
+#: syncthing_gtk/notifications.py:153
+#, python-format
+msgid "Synchronization of folder '%s' is completed."
+msgstr "文件夹“%s”的同步已完成。"
+
+#: syncthing_gtk/notifications.py:160
+#, python-format
+msgid "The file '%s' was updated on remote device."
+msgstr "文件“%s”已在远程设备上更新。"
+
+#: syncthing_gtk/notifications.py:165
+#, python-format
+msgid "The file '%s' was deleted on remote device."
+msgstr "文件“%s”已在远程设备上删除。"
+
+#: syncthing_gtk/notifications.py:168
+#, python-format
+msgid "%s files were updated on remote device."
+msgstr "%s 个文件已在远程设备上更新。"
+
+#: syncthing_gtk/notifications.py:171
+#, python-format
+msgid "%s files were deleted on remote device."
+msgstr "%s 个文件已在远程设备上删除。"
+
+#: syncthing_gtk/notifications.py:175
+#, python-format
+msgid ""
+"%(updated)s files were updated and %(deleted)s deleted on remote device."
+msgstr "在远程设备上有 %(updated)s 个文件已更新和 %(deleted)s 个文件已删除。"
+
+#: syncthing_gtk/statusicon.py:48
+msgid "Syncthing"
+msgstr "Syncthing"
+
+#: syncthing_gtk/stdownloader.py:174 syncthing_gtk/stdownloader.py:217
+#: syncthing_gtk/stdownloader.py:313 syncthing_gtk/stdownloader.py:344
+msgid "Failed to determine latest Syncthing version."
+msgstr "确定最新的 Syncthing  版本失败。"
+
+#: syncthing_gtk/stdownloader.py:236
+msgid "Failed to create temporaly file."
+msgstr "创建临时文件失败。"
+
+#: syncthing_gtk/stdownloader.py:294
+msgid "Downloaded file is corrupted."
+msgstr "下载的文件已损坏。"
+
+#: syncthing_gtk/tools.py:192
+#, python-format
+msgid "~%s hours ago"
+msgstr "~%s 小时之前"
+
+#: syncthing_gtk/tools.py:194
+#, python-format
+msgid "%s minutes ago"
+msgstr "%s 分钟之前"
+
+#: syncthing_gtk/tools.py:196
+#, python-format
+msgid "%s seconds ago"
+msgstr "%s 秒之前"
+
+#: syncthing_gtk/tools.py:197
+msgid "just now"
+msgstr "刚刚"
+
+#: syncthing_gtk/tools.py:199
+#, python-format
+msgid "%s days ago"
+msgstr "%s 天之前"
+
+#: syncthing_gtk/tools.py:203
+#, python-format
+msgid "in %s days"
+msgstr "在 %s 天内"
+
+#: syncthing_gtk/tools.py:205
+#, python-format
+msgid "~%s hours from now"
+msgstr "从现在起的 ~%s 小时"
+
+#: syncthing_gtk/tools.py:207
+#, python-format
+msgid "%s minutes from now"
+msgstr "从现在起的 ~%s 分钟"
+
+#: syncthing_gtk/tools.py:209
+#, python-format
+msgid "%s seconds from now"
+msgstr "从现在起的 ~%s 秒"
+
+#: syncthing_gtk/tools.py:210
+msgid "in a moment"
+msgstr "一会儿"
+
+#: syncthing_gtk/uisettingsdialog.py:58
+msgid "UI Settings"
+msgstr "UI 设置"
+
+#: syncthing_gtk/uisettingsdialog.py:70
+msgid "Unlimited"
+msgstr "无限制"
+
+#: syncthing_gtk/uisettingsdialog.py:107
+#, python-format
+msgid "Install %(package)s package to enable %(feature)s support"
+msgstr "安装 %(package)s 包以启用 %(feature)s 支持"
+
+#: syncthing_gtk/uisettingsdialog.py:312
+msgid "Browse for Syncthing binary"
+msgstr "浏览查找 Syncthing 二进制文件"
+
+#: syncthing_gtk/wizard.py:53
+msgid "First run wizard"
+msgstr "首次运行向导"
+
+#: syncthing_gtk/wizard.py:137
+#, python-format
+msgid "Please, check error log and fill bug report on %s."
+msgstr "请检查错误日志并在 %s 上填写 bug 报告。"
+
+#: syncthing_gtk/wizard.py:141
+msgid "Display error log"
+msgstr "显示错误日志"
+
+#: syncthing_gtk/wizard.py:198
+msgid "Welcome to Syncthing-GTK first run wizard!"
+msgstr "欢迎来到 Syncthing-GTK  首次运行向导！"
+
+#: syncthing_gtk/wizard.py:200
+msgid "It looks like you never have used Syncthing."
+msgstr "看起来您从未用过 Syncthing。"
+
+#: syncthing_gtk/wizard.py:201
+msgid "Initial configuration should be created."
+msgstr "应当创建初始配置。"
+
+#: syncthing_gtk/wizard.py:202
+msgid ""
+"Please click <b>Next</b> to create a Syncthing configuration file or "
+"<b>Quit</b> to exit"
+msgstr "请点击 <b>下一步</b> 以创建 Syncthing 配置文件或 <b>退出</b> 以退出程序"
+
+#: syncthing_gtk/wizard.py:204
+#, python-format
+msgid ""
+"If you already had Syncthing daemon configured, please, exit this wizard and"
+" check your %s folder"
+msgstr "如果您已配置过 Syncthing 守护程序，请退出该向导并检查您的 %s 文件夹"
+
+#: syncthing_gtk/wizard.py:220
+msgid "Searching for Syncthing daemon."
+msgstr "正在搜索 Syncthing 守护程序。"
+
+#: syncthing_gtk/wizard.py:222 syncthing_gtk/wizard.py:394
+msgid "Please wait..."
+msgstr "请稍候..."
+
+#: syncthing_gtk/wizard.py:270 syncthing_gtk/wizard.py:287
+msgid "Syncthing daemon not found."
+msgstr "未找到 Syncthing 守护程序。"
+
+#: syncthing_gtk/wizard.py:271
+msgid "Please, use package manager to install the Syncthing package."
+msgstr "请使用包管理器来安装 Syncthing 软件包。"
+
+#: syncthing_gtk/wizard.py:283
+msgid "download latest binary"
+msgstr "下载最新的二进制文件"
+
+#: syncthing_gtk/wizard.py:288 syncthing_gtk/wizard.py:302
+#, python-format
+msgid ""
+"Please, use package manager to install the Syncthing package or "
+"%(download_link)s from Syncthing page and save it to your %(target)s "
+"directory."
+msgstr "请使用包管理器来安装 Syncthing 软件包或者从 Syncthing 页面 %(download_link)s 下载并保存到您的 %(target)s 目录。"
+
+#: syncthing_gtk/wizard.py:296
+msgid "Syncthing daemon is too old."
+msgstr "Syncthing 守护程序太旧了。"
+
+#: syncthing_gtk/wizard.py:297
+#, python-format
+msgid ""
+"Syncthing-GTK needs Syncthing daemon %(min)s or newer, but only %(actual)s "
+"were found."
+msgstr "Syncthing-GTK 需要 Syncthing 守护程序 %(min)s 或更新，但只找到了 %(actual)s。"
+
+#: syncthing_gtk/wizard.py:309
+msgid "Alternatively, Syncthing-GTK can download Syncthing binary"
+msgstr "另外，Syncthing-GTK 可以下载 Syncthing 二进制文件"
+
+#: syncthing_gtk/wizard.py:310
+#, python-format
+msgid "to %s and keep it up-to-date, but this option is meant as"
+msgstr "到 %s 并保持为最新，但此选项旨在作为"
+
+#: syncthing_gtk/wizard.py:312
+msgid "last resort and generally not suggested."
+msgstr "最后的方法且一般不建议使用。"
+
+#: syncthing_gtk/wizard.py:315
+msgid "_Download Syncthing binary"
+msgstr "下载 Syncthing 二进制文件(_D)"
+
+#: syncthing_gtk/wizard.py:319
+msgid "Auto_update downloaded binary"
+msgstr "自动更新下载的二进制文件(_U)"
+
+#: syncthing_gtk/wizard.py:375
+msgid "Syncthing daemon binary found."
+msgstr "已找到 Syncthing 守护程序二进制文件。"
+
+#: syncthing_gtk/wizard.py:377 syncthing_gtk/wizard.py:460
+msgid "Binary path:"
+msgstr "二进制文件路径："
+
+#: syncthing_gtk/wizard.py:378
+msgid "Version:"
+msgstr "版本："
+
+#: syncthing_gtk/wizard.py:393
+msgid "Downloading Syncthing daemon."
+msgstr "正在下载 Syncthing 守护程序。"
+
+#: syncthing_gtk/wizard.py:441
+msgid "Failed to download Syncthing daemon package."
+msgstr "下载 Syncthing 守护程序软件包失败。"
+
+#: syncthing_gtk/wizard.py:472
+msgid "Syncthing is generating RSA key and certificate."
+msgstr "Syncthing 正在生成 RSA 密钥和证书。"
+
+#: syncthing_gtk/wizard.py:473
+msgid "This may take a while..."
+msgstr "这可能要花一点时间..."
+
+#: syncthing_gtk/wizard.py:515
+msgid "Failed to generate keys"
+msgstr "生成密钥失败"
+
+#: syncthing_gtk/wizard.py:516
+msgid "Syncthing daemon failed to generate RSA key or certificate."
+msgstr "Syncthing 守护程序生成 RSA 密钥或证书失败。"
+
+#: syncthing_gtk/wizard.py:526
+msgid "WebUI setup"
+msgstr "WebUI 设置"
+
+#: syncthing_gtk/wizard.py:528
+msgid ""
+"Syncthing can be managed remotely using WebUI and even if you are going to "
+"use Syncthing-GTK, WebUI needs to be enabled, as Syncthing-GTK uses it to "
+"communicate with the Syncthing daemon."
+msgstr "Syncthing 能使用 WebUI 远程管理而且即使您要使用 Syncthing-GTK，需要启用 WebUI，因为 Syncthing-GTK 使用它来与 Syncthing 守护程序通信。"
+
+#: syncthing_gtk/wizard.py:533
+msgid ""
+"If you prefer to be able to manage Syncthing remotely, over the internet or "
+"on your local network, select <b>listen on all interfaces</b> and set "
+"username and password to protect Syncthing from unauthorized access."
+msgstr "如果您更喜欢通过互联网或本地网络上远程管理 Syncthing，选择 <b>监听所有接口</b> 并设置用户名和密码以防止 Syncthing 未经授权的访问。"
+
+#: syncthing_gtk/wizard.py:538
+msgid ""
+"Otherwise, select <b>listen on localhost</b>, so only users and programs on "
+"this computer will be able to interact with Syncthing."
+msgstr "否则，选择 <b>监听本地主机</b>，如此只有位于本机的用户和程序能与 Syncthing 交互。"
+
+#: syncthing_gtk/wizard.py:544
+msgid "WebUI Listen Addresses"
+msgstr "WebUI 监听地址"
+
+#: syncthing_gtk/wizard.py:545
+msgid "Listen on _localhost"
+msgstr "监听本地主机(_L)"
+
+#: syncthing_gtk/wizard.py:547
+msgid "Listen on _all interfaces"
+msgstr "监听所有接口(_A)"
+
+#: syncthing_gtk/wizard.py:554
+msgid "_Username"
+msgstr "用户名(_U)"
+
+#: syncthing_gtk/wizard.py:555
+msgid "_Password"
+msgstr "密码(_P)"
+
+#: syncthing_gtk/wizard.py:609
+msgid "Saving settings..."
+msgstr "正在保存设置..."
+
+#: syncthing_gtk/wizard.py:610
+msgid "Checking for available port..."
+msgstr "正在检查可用端口..."
+
+#: syncthing_gtk/wizard.py:631
+msgid "Failed to find unused port for listening."
+msgstr "查找用于监听的未用端口失败。"
+
+#: syncthing_gtk/wizard.py:632
+msgid "Please, check your firewall settings and try again."
+msgstr "请检查您的防火墙设置后重试。"
+
+#: syncthing_gtk/wizard.py:646
+msgid "Saving..."
+msgstr "正在保存..."
+
+#: syncthing_gtk/wizard.py:678
+msgid "Failed to load Syncthing configuration"
+msgstr "加载 Syncthing 配置失败"
+
+#: syncthing_gtk/wizard.py:705
+msgid "Failed to modify Syncthing configuration"
+msgstr "修改 Syncthing 配置失败"
+
+#: syncthing_gtk/wizard.py:715
+msgid "Failed to save Syncthing configuration"
+msgstr "保存 Syncthing 配置失败"
+
+#: syncthing_gtk/wizard.py:729
+msgid "Done."
+msgstr "完成。"
+
+#: syncthing_gtk/wizard.py:731
+msgid "Syncthing has been successfully configured."
+msgstr "Syncthing 已成功配置。"
+
+#: syncthing_gtk/wizard.py:733
+msgid ""
+"You can configure more details later, in <b>UI Settings</b> and <b>Daemon "
+"Settings</b> menus in main window of application."
+msgstr "您可以在之后配置更多详细设置，使用位于应用程序的主窗口的 <b>UI 设置</b> 和 <b>守护程序设置</b> 菜单。"
+
+#: about.glade:9
+msgid "Code&UI © 2014 Kozec"
+msgstr "Code&UI © 2014 Kozec"
+
+#: about.glade:10
+msgid "GTK GUI and notification area icon for Syncthing"
+msgstr "Syncthing 的 GTK GUI 和通知区域图标"
+
+#: about.glade:12
+msgid "GitHub"
+msgstr "GitHub"
+
+#: app.glade:239 app.glade:420 app.glade:802
+msgid "Open _Web Interface"
+msgstr "打开 _Web 界面"
+
+#: app.glade:251 app.glade:424 app.glade:814
+msgid "Display _Daemon Output"
+msgstr "显示守护程序输出(_D)"
+
+#: app.glade:263
+msgid "Display Syncthing-Inotify Output"
+msgstr "显示 Syncthing-Inotify 输出"
+
+#: app.glade:280 app.glade:430
+msgid "UI _Settings"
+msgstr "UI 设置(_S)"
+
+#: app.glade:325 app.glade:451
+msgid "Add Shared _Folder"
+msgstr "添加共享文件夹(_F)"
+
+#: app.glade:338 app.glade:455
+msgid "Add _Device"
+msgstr "添加设备(_D)"
+
+#: app.glade:356 app.glade:461
+msgid "Daemon _Settings"
+msgstr "守护程序设置(_S)"
+
+#: app.glade:371 app.glade:465 app.glade:588 app.glade:788
+msgid "Show _ID"
+msgstr "显示 _ID"
+
+#: app.glade:391 app.glade:471
+msgid "Sh_utdown Daemon"
+msgstr "关闭守护程序(_U)"
+
+#: app.glade:404 app.glade:475
+msgid "_Restart Daemon"
+msgstr "重启守护程序(_R)"
+
+#: app.glade:436
+msgid "_About"
+msgstr "关于(_A)"
+
+#: app.glade:440
+msgid "_Quit"
+msgstr "退出(_Q)"
+
+#: app.glade:490
+msgid "Override Remote Changes"
+msgstr "替代远程更改"
+
+#: app.glade:519
+msgid "Edit _Ignore Patterns"
+msgstr "编辑忽略模式(_I)"
+
+#: app.glade:547
+msgid "_Rescan"
+msgstr "重新扫描(_R)"
+
+#: app.glade:559
+msgid "_Browse"
+msgstr "浏览(_B)"
+
+#: app.glade:611
+msgid "Resume"
+msgstr "继续"
+
+#: app.glade:641
+msgid "Connecting to daemon..."
+msgstr "正在连接到守护程序..."
+
+#: app.glade:669
+msgid "S_top Syncthing"
+msgstr "停止 Syncthing(_T)"
+
+#: app.glade:683
+msgid "Resume Sync_thing"
+msgstr "恢复 Sync_thing"
+
+#: app.glade:695 daemon-settings.glade:335
+msgid "_Incoming Rate Limit"
+msgstr "下载速度限制(_I)"
+
+#: app.glade:709 app.glade:751
+msgid "_Unlimited"
+msgstr "无限制(_U)"
+
+#: app.glade:718 app.glade:760
+msgid "_Other"
+msgstr "其它(_O)"
+
+#: app.glade:737
+msgid "_Ongoing Rate Limit"
+msgstr "上传速度限制(_O)"
+
+#: daemon-output.glade:7
+msgid "Daemon Output"
+msgstr "守护程序输出"
+
+#: daemon-settings.glade:106
+msgid "Sync Protocol Listen Addresses"
+msgstr "同步协议监听地址"
+
+#: daemon-settings.glade:136
+msgid "Enable Local _Discovery"
+msgstr "启用本地发现(_D)"
+
+#: daemon-settings.glade:153
+msgid "Enable _UPnP"
+msgstr "启用 _UPnP"
+
+#: daemon-settings.glade:171
+msgid "Local Discovery _Port"
+msgstr "本地发现端口(_P)"
+
+#: daemon-settings.glade:212
+msgid "Outgoing _Rate Limit"
+msgstr "上传速度限制"
+
+#: daemon-settings.glade:229
+msgid "Open browser with _WebUI when daemon is starting"
+msgstr "守护程序启动时打开 _WebUI 浏览页"
+
+#: daemon-settings.glade:246
+msgid "Enable _Anonymous Usage Reporting"
+msgstr "启用匿名使用报告(_A)"
+
+#: daemon-settings.glade:262
+msgid "Enable _Global Discovery"
+msgstr "启用全球发现(_G)"
+
+#: daemon-settings.glade:281
+msgid "Global Discovery _Servers"
+msgstr "全球发现服务器(_S)"
+
+#: device-edit.glade:102
+msgid "Device _ID"
+msgstr "设备 _ID"
+
+#: device-edit.glade:134
+msgid "Device _Name"
+msgstr "设备名称(_N)"
+
+#: device-edit.glade:166
+msgid "Shown instead of Device ID in the cluster status."
+msgstr "显示以替代群集状态里的设备 ID。"
+
+#: device-edit.glade:181
+msgid "_Addresses"
+msgstr "地址(_A)"
+
+#: device-edit.glade:213
+msgid ""
+"Enter comma separated \"ip:port\" addresses or \"dynamic\" to perform "
+"automatic discovery of the address."
+msgstr "输入逗号分隔的 \"ip:port\" 设置地址列表或者 \"dynamic\" 来执行地址的自动发现。"
+
+#: device-edit.glade:242
+msgid "Share _Folders"
+msgstr "共享文件夹(_F)"
+
+#: device-edit.glade:276
+msgid "Select the folders to share with this device"
+msgstr "选择共享给此设备的文件夹"
+
+#: device-edit.glade:287
+msgid "_Introducer"
+msgstr "介绍人(_I)"
+
+#: device-edit.glade:308
+msgid ""
+"Any devices configured on an introducer device will be added to this device "
+"as well."
+msgstr "在介绍人设备上配置的任何设备都也将会添加到此设备。"
+
+#: device-edit.glade:323
+msgid "_Compression"
+msgstr "压缩(_C)"
+
+#: device-id.glade:14
+msgid "Device Identification"
+msgstr "设备标识"
+
+#: device-id.glade:68
+msgid "XYZ-123-ABC"
+msgstr "XYZ-123-ABC"
+
+#: find-daemon.glade:126 ui-settings.glade:821
+msgid "_Browse..."
+msgstr "浏览(_B)..."
+
+#: find-daemon.glade:179
+msgid "_Download..."
+msgstr "下载(_D)..."
+
+#: folder-edit.glade:44
+msgctxt "In File Pull Order combobox"
+msgid "Random"
+msgstr "随机"
+
+#: folder-edit.glade:48
+msgctxt "In File Pull Order combobox"
+msgid "Alphabetic"
+msgstr "字母顺序"
+
+#: folder-edit.glade:52
+msgctxt "In File Pull Order combobox"
+msgid "Smallest First"
+msgstr "小文件优先"
+
+#: folder-edit.glade:56
+msgctxt "In File Pull Order combobox"
+msgid "Largest First"
+msgstr "大文件优先"
+
+#: folder-edit.glade:60
+msgctxt "In File Pull Order combobox"
+msgid "Oldest First"
+msgstr "旧文件优先"
+
+#: folder-edit.glade:64
+msgctxt "In File Pull Order combobox"
+msgid "Newest First"
+msgstr "新文件优先"
+
+#: folder-edit.glade:82
+msgid "Simple"
+msgstr "简单"
+
+#: folder-edit.glade:86
+msgid "Staggered"
+msgstr "阶段"
+
+#: folder-edit.glade:90
+msgid "Trashcan"
+msgstr "垃圾桶"
+
+#: folder-edit.glade:94
+msgid "External"
+msgstr "外部"
+
+#: folder-edit.glade:171
+msgid "Folder _Label"
+msgstr "文件夹标签(_L)"
+
+#: folder-edit.glade:202
+msgid "Short identifier for the folder. Must be the same on all devices."
+msgstr "文件夹的短标识符。必须在全部设备上都相同。"
+
+#: folder-edit.glade:216
+msgid "_Path"
+msgstr "路径(_P)"
+
+#: folder-edit.glade:234
+msgid ""
+"Path to the folder on the local computer. Will be created if it does not "
+"exist."
+msgstr "本地计算机上的文件夹路径。文件夹将被创建如果它不存在。"
+
+#: folder-edit.glade:248
+msgid "Rescan _Interval"
+msgstr "扫描间隔(_I)"
+
+#: folder-edit.glade:293
+msgid "Monitor filesystem for _changes"
+msgstr "监控文件系统的更改(_C)"
+
+#: folder-edit.glade:314
+msgid ""
+"If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
+"Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
+msgstr "如果启用，只要 Syncthing-GTk 在运行中，更改的、创建的和删除的文件都将立即同步。\n注意：使用此选项连同较短的扫描间隔 (<300s) 可能占用很多资源。"
+
+#: folder-edit.glade:343
+msgid "Browse..."
+msgstr "浏览..."
+
+#: folder-edit.glade:366
+msgid "Folder _ID"
+msgstr "文件夹 _ID"
+
+#: folder-edit.glade:396
+msgid ""
+"Optional descriptive label for the folder. Can be different on each device."
+msgstr "可选的文件夹说明性标签。在不同设备上可以不一致。"
+
+#: folder-edit.glade:418
+msgid "Folder _Master"
+msgstr "主文件夹(_M)"
+
+#: folder-edit.glade:439
+msgid ""
+"Files are protected from changes made on other devices, but changes made on "
+"this device will be sent to the rest of the cluster."
+msgstr "文件已防止其它设备上所做的更改，但此设备上所做的更改将被发送到群集里的其余设备。"
+
+#: folder-edit.glade:456
+msgid "_Folder Settings"
+msgstr "文件夹设置(_F)"
+
+#: folder-edit.glade:476
+msgid "Select the devices to share this folder with."
+msgstr "选择此文件夹要共享给的设备。"
+
+#: folder-edit.glade:514
+msgid "Share With _Devices"
+msgstr "共享给设备(_D)"
+
+#: folder-edit.glade:535
+msgid "Versioning _Mode"
+msgstr "版本控制模式(_M)"
+
+#: folder-edit.glade:590
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when "
+"replaced or deleted by syncthing."
+msgstr "当文件通过 syncthing 被替代或删除时移动到 .stversions 文件夹并加上日期戳作为版本号。"
+
+#: folder-edit.glade:605
+msgid "_Keep Versions"
+msgstr "保留版本(_K)"
+
+#: folder-edit.glade:642
+msgid "The number of old versions to keep, per file."
+msgstr "每个文件要保留的旧版本数量。"
+
+#: folder-edit.glade:671
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing. Versions are automatically deleted if they are older than the maximum age or exceed the number of files allowed in an interval.\n"
+"\n"
+"The following intervals are used: for the first hour a version is kept every 30 seconds, for the first day a version is kept every hour, for the first 30 days a version is kept every day, until the maximum age a version is kept every week."
+msgstr "当文件通过 syncthing 被替代或删除时移动到 .stversions 文件夹并加上日期戳作为版本号。旧版本会自动删除如果它们老于最长存在时间或者超过在间隔中允许的文件数量。\n\n使用间隔如下：对于最近一小时的版本，每 30 秒保存一个；对于最近一天的版本，每一小时保存一个；对于最近 30 天的版本，每天保存一个；对于超过 30 天又小于最大寿命的版本，每 周保存一个。"
+
+#: folder-edit.glade:688
+msgid "Ma_ximum Age"
+msgstr "最长存在时间(_X)"
+
+#: folder-edit.glade:727
+msgid "Versions _Path"
+msgstr "版本路径(_P)"
+
+#: folder-edit.glade:759
+msgid ""
+"Path where versions should be stored (leave empty for the default "
+".stversions folder)."
+msgstr "保留版本应该保存的路径（留空表示默认的 .stversions 文件夹）。"
+
+#: folder-edit.glade:787
+msgid ""
+"Files are moved to .stversions folder when replaced or deleted by Syncthing"
+msgstr "当通过 Syncthing 替代或删除文件时文件被移动到 .stversions 文件夹"
+
+#: folder-edit.glade:801
+msgid "Clean out _after"
+msgstr "该时间后清除："
+
+#: folder-edit.glade:840
+msgid "The number of days to keep files in the trash can."
+msgstr "在垃圾站中文件的保留天数"
+
+#: folder-edit.glade:869
+msgid ""
+"An external command handles the versioning. It has to remove the file from "
+"the synced folder."
+msgstr "处理文件版本控制的外部命令。它将从同步文件夹中移除文件。"
+
+#: folder-edit.glade:884
+msgid "Command"
+msgstr "命令"
+
+#: folder-edit.glade:917
+msgid ""
+"The first command line parameter is the folder path and the second parameter"
+" is the relative path in the folder."
+msgstr "第一个命令行参数是文件夹路径，第二个参数是文件夹里的相关路径。"
+
+#: folder-edit.glade:953
+msgid "File _Versioning"
+msgstr "文件版本控制(_V)"
+
+#: folder-edit.glade:982
+msgid "Ignore P_ermissions"
+msgstr "忽略权限(_E)"
+
+#: folder-edit.glade:1003
+msgid ""
+"File permission bits are ignored when looking for changes. Use on FAT "
+"filesystems."
+msgstr "当寻找更改时忽略文件的权限位。用在 FAT 文件系统上。"
+
+#: folder-edit.glade:1018
+msgid "Minimum Free Disk Space"
+msgstr "最低可用磁盘空间"
+
+#: folder-edit.glade:1057
+msgid "File Pull _Order"
+msgstr "文件拉取顺序(_O)"
+
+#: folder-edit.glade:1103 ui-settings.glade:954
+msgid "_Advanced"
+msgstr "高级(_A)"
+
+#: ignore-editor.glade:8
+msgid "Ignore Patterns"
+msgstr "忽略模式"
+
+#: ignore-editor.glade:99
+msgid ""
+"See <a href=\"http://docs.syncthing.net/users/ignoring.html\">Syncthing "
+"documentation</a> for list of supported patterns"
+msgstr "查看 <a href=\"http://docs.syncthing.net/users/ignoring.html\">Syncthing 文档</a> 获取支持模式的列表"
+
+#: ignore-editor.glade:114
+msgid "File location: "
+msgstr "文件位置："
+
+#: ui-settings.glade:27
+msgid "Lowest"
+msgstr "最低"
+
+#: ui-settings.glade:31
+msgid "Low"
+msgstr "低"
+
+#: ui-settings.glade:35
+msgid "Normal"
+msgstr "正常"
+
+#: ui-settings.glade:39
+msgid "Above Normal"
+msgstr "高于正常"
+
+#: ui-settings.glade:46
+msgid "Syncthing-GTK Settings"
+msgstr "Syncthing-GTK 设置"
+
+#: ui-settings.glade:69
+msgid "Please, restart Syncthing-GTK to apply all changed settings"
+msgstr "请重启 Syncthing-GTK 来应用所有已更改的设置"
+
+#: ui-settings.glade:136
+msgid "When starting and Syncthing daemon is not running..."
+msgstr "当启动中且 Syncthing 守护程序未在运行时..."
+
+#: ui-settings.glade:147
+msgid "... _wait for daemon"
+msgstr "... 等待守护程序(_W)"
+
+#: ui-settings.glade:164
+msgid "... start daemon in _background"
+msgstr "... 在后台启动守护程序(_B)"
+
+#: ui-settings.glade:180
+msgid "... _ask me what to do"
+msgstr "... 询问我做什么(_A)"
+
+#: ui-settings.glade:199
+msgid "When exiting after daemon was started in background..."
+msgstr "当守护程序已在后台启动后退出时..."
+
+#: ui-settings.glade:210
+msgid "... terminate _daemon"
+msgstr "... 终止守护程序(_D)"
+
+#: ui-settings.glade:226
+msgid "... leave daemon _running"
+msgstr "... 离开并让守护程序运行(_R)"
+
+#: ui-settings.glade:242
+msgid "... ask me w_hat to do"
+msgstr "... 询问我做什么(_H)"
+
+#: ui-settings.glade:258
+msgid "Us_e traditional window header"
+msgstr "使用传统标题栏(_E)"
+
+#: ui-settings.glade:278
+msgid "Display desktop notifications for..."
+msgstr "显示桌面通知用于..."
+
+#: ui-settings.glade:289
+msgid "... file updates"
+msgstr "... 文件更新"
+
+#: ui-settings.glade:304
+msgid "... errors"
+msgstr "... 错误"
+
+#: ui-settings.glade:319
+msgid "... synchronization completion"
+msgstr "... 同步完成"
+
+#: ui-settings.glade:334
+msgid "Start Syncthing-GTK when I login to my desktop"
+msgstr "当我登录到桌面时启动 Syncthing-GTK"
+
+#: ui-settings.glade:350
+msgid "Minimize to _tray on start"
+msgstr "启动时最小化到托盘(_T)"
+
+#: ui-settings.glade:366
+msgid "Use _icons in menu"
+msgstr "在菜单中使用图标(_I)"
+
+#: ui-settings.glade:383
+msgid "Display paths in directories panel"
+msgstr "在目录面板中显示路径"
+
+#: ui-settings.glade:399
+msgid "Force _dark theme"
+msgstr "强制黑色主题(_D)"
+
+#: ui-settings.glade:474
+msgid "_Interface"
+msgstr "界面(_I)"
+
+#: ui-settings.glade:492
+msgid "Integrate Syncthing with filemanagers"
+msgstr "集成 Syncthing  到文件管理器"
+
+#: ui-settings.glade:507
+msgid "Nemo (Cinamon Desktop)"
+msgstr "Nemo（Cinamon 桌面）"
+
+#: ui-settings.glade:524
+msgid "Nautilus (Ubuntu/GNOME)"
+msgstr "Nautilus (Ubuntu/GNOME)"
+
+#: ui-settings.glade:540
+msgid "Caja (MATE Desktop)"
+msgstr "Caja（MATE 桌面）"
+
+#: ui-settings.glade:579
+msgid ""
+"<b>Note:</b> You may need to restart your filemanager after toggling "
+"integration."
+msgstr "<b>提示：</b> 您可能需要在切换集成后重启您的文件管理器。"
+
+#: ui-settings.glade:598
+msgid "_Integration"
+msgstr "集成(_I)"
+
+#: ui-settings.glade:627
+msgid "Keep Syncthing binary up-to-date"
+msgstr "保持 Syncthing 二进制文件为最新"
+
+#: ui-settings.glade:647
+msgid ""
+"If enabled, Syncthing-GTK will automatically check for new daemon releases "
+"and replace binary with latest version."
+msgstr "如果启用，Syncthing-GTK 将自动检查新的守护程序发布并替换二进制文件为最新的版本。"
+
+#: ui-settings.glade:662
+msgid "Daemon process priority"
+msgstr "守护程序进程优先级"
+
+#: ui-settings.glade:698
+msgid ""
+"Priority will be used only if \"<i>start daemon in background</i>\" option "
+"is checked on \"<i>Interface</i>\" page."
+msgstr "优先级只在“<i>在后台启动守护程序</i>”选项在“<i>界面</i>”页面上已选中时使用。"
+
+#: ui-settings.glade:713
+msgid "Maximum number of CPU cores"
+msgstr "最大 CPU 核心数量"
+
+#: ui-settings.glade:731
+msgid ""
+"Sets the maximum number of CPU cores for daemon to use. This value will be "
+"used only if \"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "设置用于守护程序使用的 CPU 核心最大数量。此数值只在“<i>在后台启动守护程序</i>”选项在“<i>界面</i>”页面上已选中时使用。"
+
+#: ui-settings.glade:786
+msgid "Daemon"
+msgstr "守护程序"
+
+#: ui-settings.glade:808
+msgid ""
+"This binary will be started when syncthing daemon is not running and "
+"\"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "此二进制文件将被启动当 syncthing 守护程序未在运行且“<i>在后台启动守护程序</i>”选项在“<i>界面</i>”页面中已选中。"
+
+#: ui-settings.glade:838
+msgid "Syncthing binary location"
+msgstr "Syncthing 二进制文件位置"
+
+#: ui-settings.glade:867
+msgid "Daemon arguments and variables"
+msgstr "守护程序参数和变量"
+
+#: ui-settings.glade:897
+msgid ""
+"Space-separated list of arguments and environment variables passed when starting above binary\n"
+"\n"
+"Use <i>VARIABLE=\"value\"</i> to set variable and <i>-argument=\"value\"</i>  (with dash) for argument.\n"
+"\n"
+"If you need to pass commandline to different command (such as logger or ionice), separate prefixed arguments with exclamation mark \"!\"\n"
+"\n"
+"Example:\n"
+"  <i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
+msgstr "当使用上面的二进制文件时，以空格分隔的参数列表和环境变量将会被传递\n\n使用 <i>VARIABLE=\"value\"</i> 来设置变量和 <i>-argument=\"value\"</i>（带短划线）来设置参数。\n\n如果您需要传递不同的命令到命令行（比如 logger 或 ionice），请单独前插带半角感叹号标识“!”的参数。\n\n示例：\n<i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
+
+#: ui-settings.glade:921
+msgid ""
+"<b>Warning:</b> Changing settings on this page may prevent you from using "
+"Syncthing-GTK"
+msgstr "<b>警告：</b> 此页面上的设置更改可能会禁止您使用 Syncthing-GTK"
