@@ -75,6 +75,8 @@ class FolderEditorDialog(EditorDialog):
 			return self.get_burried_value("versioning/params/command", self.values, "")
 		elif key == "versionsPath":
 			return self.get_burried_value("versioning/params/versionsPath", self.values, "")
+		elif key == "readOnly":
+			return self.get_burried_value("type", self.values, "") == "readonly"
 		elif key == "versioning":
 			return self.get_burried_value("versioning/type", self.values, "")
 		elif key == "inotify":
@@ -108,6 +110,8 @@ class FolderEditorDialog(EditorDialog):
 			# Create structure if needed
 			self.create_dicts(self.values, ("versioning", "params", "versionsPath"))
 			self.values["versioning"]["params"]["versionsPath"] = value
+		elif key == "readOnly":
+			self.values["type"] = "readonly" if value else "readwrite"
 		elif key == "inotify":
 			id = self.id
 			if id is None:
