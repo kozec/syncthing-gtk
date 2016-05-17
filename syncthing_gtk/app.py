@@ -15,9 +15,9 @@ import os, webbrowser, sys, time, logging, shutil, re
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.8"
+INTERNAL_VERSION		= "v0.8.3.2"
 # Minimal Syncthing version supported by App
-MIN_ST_VERSION			= "0.12.0"
+MIN_ST_VERSION			= "0.13.0"
 
 COLOR_DEVICE			= "#707070"					# Dark-gray
 COLOR_DEVICE_SYNCING	= "#2A89C8"					# Blue
@@ -791,7 +791,7 @@ class App(Gtk.Application, TimerManager):
 			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_FOLDER_ID)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
 	
-	def cb_syncthing_device_rejected(self, daemon, nid, address):
+	def cb_syncthing_device_rejected(self, daemon, nid, name, address):
 		# Remove port from address, it's random by default anyway
 		if "[" in address:
 			# IPv6 address
@@ -803,7 +803,8 @@ class App(Gtk.Application, TimerManager):
 			# Store as error message and don't display twice
 			return
 		self.error_messages.add((nid, address))
-		markup = _('Device "<b>%(device)s</b>" at IP "<b>%(ip)s</b>" wants to connect. Add new device?') % {
+		markup = _('Device "<b>%(name)s</b>" (%(device)s) at IP "<b>%(ip)s</b>" wants to connect. Add new device?') % {
+			'name' : name,
 			'device' : "<b>%s</b>" % nid,
 			'ip' : "<b>%s</b>" % address
 			}
@@ -945,7 +946,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
 		box = self.show_folder(
-			rid, r["path"], r["path"],
+			rid, r["label"], r["path"],
 			r["readOnly"], r["ignorePerms"], 
 			r["rescanIntervalS"],
 			sorted(
@@ -1173,11 +1174,6 @@ class App(Gtk.Application, TimerManager):
 		else:
 			self["window"].present()
 		self["menu-si-show"].set_label(_("Hide Window"))
-		if IS_WINDOWS:
-			# Change window size by 1px - this will cause bugged
-			# window border to reappear
-			self["window"].get_children()[0].set_visible(False)
-			GLib.idle_add(self["window"].get_children()[0].set_visible, True)
 	
 	def hide(self):
 		""" Hides main windows and 'Connecting' dialog, if displayed """
@@ -1263,14 +1259,28 @@ class App(Gtk.Application, TimerManager):
 			self.connect_dialog.hide()
 			self.connect_dialog.destroy()
 			self.connect_dialog = None
+			
+			if IS_WINDOWS:
+				# Force windows position on Windows - GTK 3.18 moves
+				# window to corner when connect_dialog disappears for
+				# some unexplainable reason
+				x, y = self["window"].get_position()
+				
+				def move_back():
+					self["window"].move(x, y)
+				GLib.idle_add(move_back)
 	
-	def show_folder(self, id, name, path, is_master, ignore_perms, rescan_interval, shared):
+	def show_folder(self, id, label, path, is_master, ignore_perms, rescan_interval, shared):
 		""" Shared is expected to be list """
 		display_path = path
 		if IS_WINDOWS:
 			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
 				display_path = "~%s" % display_path[len(os.path.expanduser("~")):]
-		title = display_path if self.config["folder_as_path"] else id
+		title = id
+		if self.config["folder_as_path"]:
+			title = display_path
+		if label not in (None, ""):
+			title = label
 		if id in self.folders:
 			# Reuse existing box
 			box = self.folders[id]
@@ -1279,7 +1289,7 @@ class App(Gtk.Application, TimerManager):
 			# Create new box
 			box = InfoBox(self, title, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 			# Add visible lines
-			box.add_value("id",			"version.svg",	_("Folder ID"))
+			box.add_value("id",			"version.svg",	_("Folder ID"),			id)
 			box.add_value("path",		"folder.svg",	_("Path"))
 			box.add_value("global",		"global.svg",	_("Global State"),		"? items, ?B")
 			box.add_value("local",		"home.svg",		_("Local State"),		"? items, ?B")
@@ -1289,7 +1299,6 @@ class App(Gtk.Application, TimerManager):
 			box.add_value("rescan",		"rescan.svg",	_("Rescan Interval"))
 			box.add_value("shared",		"shared.svg",	_("Shared With"))
 			# Add hidden stuff
-			box.add_hidden_value("id", id)
 			box.add_hidden_value("b_master", is_master)
 			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
@@ -1319,7 +1328,7 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)
-		box.set_visible("id",		self.config["folder_as_path"])
+		box.set_visible("id",		self.config["folder_as_path"] or label not in (None, ""))
 		box.set_visible("master",	is_master)
 		box.set_visible("ignore",	ignore_perms)
 		return box

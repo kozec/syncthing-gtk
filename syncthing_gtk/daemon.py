@@ -20,7 +20,7 @@ import json, os, sys, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
-MIN_VERSION = "0.12"
+MIN_VERSION = "0.13"
 
 # Random constant used as key when adding headers to returned data in
 # REST requests; Anything goes, as long as it isn't string
@@ -88,10 +88,11 @@ class Daemon(GObject.GObject, TimerManager):
 				device_id:	id of device that send unexpected folder id
 				folder_id:	id of unexpected folder
 		
-		device-rejected(device_id, address)
+		device-rejected(device_id, device_name, address)
 			Emited when daemon detects connection from unknown device
-				device_id:	device id
-				address:	address which connection come from
+				device_id:		device id
+				device_name:	device name
+				address:		address which connection come from
 		
 		device-added (id, name, used, data)
 			Emited when new device is loaded from configuration
@@ -238,7 +239,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
-			b"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, bool, object)),
 			b"device-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -1086,8 +1087,9 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("folder-rejected", nid, rid)
 		elif eType == "DeviceRejected":
 			nid = e["data"]["device"]
+			name = e["data"]["name"]
 			address = e["data"]["address"]
-			self.emit("device-rejected", nid, address)
+			self.emit("device-rejected", nid, name, address)
 		elif eType == "FolderScanProgress":
 			rid = e["data"]["folder"]
 			total = float(e["data"]["total"])

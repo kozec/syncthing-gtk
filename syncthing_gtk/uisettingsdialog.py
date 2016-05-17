@@ -20,7 +20,7 @@ VALUES = [ "vautostart_daemon", "vautokill_daemon", "vminimize_on_start",
 		"vforce_dark_theme", "vdaemon_priority", "vfolder_as_path",
 		"vnotification_for_update", "vnotification_for_folder",
 		"vnotification_for_error", "vst_autoupdate", "vsyncthing_binary",
-		"vsyncthing_arguments", "vmax_cpus",
+		"vsyncthing_arguments", "vmax_cpus"
 	]
 
 # Values for filemanager integration. Key is ID of checkbox widget
@@ -49,6 +49,10 @@ FM_DATA = {
 }
 
 class UISettingsDialog(EditorDialog):
+	SETTING_NEEDS_RESTART = [
+		"vuse_old_header", "vforce_dark_theme", "vicons_in_menu"
+	]
+	
 	def __init__(self, app):
 		EditorDialog.__init__(self, app, "ui-settings.glade",
 			_("UI Settings"))

@@ -27,10 +27,10 @@ missing_dll = [	'libgtk-3-0.dll',
 				'libpangocairo-1.0-0.dll',
 				'libpangoft2-1.0-0.dll',
 				'libpangowin32-1.0-0.dll',
-
 				'libffi-6.dll',
 				'libgio-2.0-0.dll',
 				'libharfbuzz-gobject-0.dll',
+				'libharfbuzz-0.dll',
 				'libpng16-16.dll',
 				'libxmlxpat.dll',
 				'libgio-2.0-0.dll',
@@ -39,10 +39,12 @@ missing_dll = [	'libgtk-3-0.dll',
 				'libzzz.dll',
 				'libffi-6.dll',
 				'libjpeg-8.dll',
+				'libtiff-5.dll',
 				'libwebp-5.dll',
 				'libfreetype-6.dll',
-				'libopenraw-7.dll',
 				'libwinpthread-1.dll',
+				'libepoxy-0.dll',
+				'libjasper-1.dll',
 				
 				'gspawn-win32-helper.exe',
 				'gspawn-win32-helper-console.exe',
@@ -59,7 +61,7 @@ wrong_sized_dll = [	'libcairo-gobject-2.dll',
 ]
 
 # List of languages that are copied from GTK and included in installation
-enabled_gtk_locales = [ "sk", "cs", "de", "fr", "vi" ]
+enabled_gtk_locales = [ "sk", "cs", "de", "fr", "vi", "ru", "zh_CN", "lt" ]
 
 include_files = []
 

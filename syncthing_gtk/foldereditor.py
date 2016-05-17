@@ -17,21 +17,14 @@ log = logging.getLogger("FolderEditor")
 COLOR_NEW				= "#A0A0A0"
 # Regexp to generate folder id from filename
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
-VALUES = [ "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
+VALUES = [ "vid", "vlabel", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
-	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand"
+	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand", "vorder",
+	"vminDiskFreePct"
 	]
 VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
 
 class FolderEditorDialog(EditorDialog):
-	MESSAGES = {
-		# Displayed when folder id is invalid
-		"vid" : _("The Folder ID must be a short, unique identifier"
-			" (64 characters or less) consisting of letters, numbers "
-			"and the the dot (.), dash (-) and underscode (_) "
-			"characters only"),
-	}
-	
 	def __init__(self, app, is_new, id=None, path=None):
 		EditorDialog.__init__(self, app,
 			"folder-edit.glade",
@@ -231,7 +224,7 @@ class FolderEditorDialog(EditorDialog):
 		# see that something happen even before daemon gets restarted
 		if self.is_new:
 			box = self.app.show_folder(
-				self.get_value("id"), self.get_value("path"), self.get_value("path"),
+				self.get_value("id"), self.get_value("label"), self.get_value("path"),
 				self.get_value("readOnly"), self.get_value("ignorePerms"),
 				self.get_value("rescanIntervalS"),
 				sorted(

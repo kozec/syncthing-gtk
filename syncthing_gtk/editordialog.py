@@ -31,11 +31,14 @@ class EditorDialog(GObject.GObject):
 	
 	# Should be overrided by subclass
 	MESSAGES = {}
+	SETTING_NEEDS_RESTART = []
+	RESTART_NEEDED_WIDGET = "lblRestartNeeded"
 	
 	def __init__(self, app, gladefile, title):
 		GObject.GObject.__init__(self)
 		self.app = app
 		self.config = None
+		self._loading = False
 		self.values = None
 		self.checks = {}
 		# Stores original label  value while error message is displayed.
@@ -56,7 +59,9 @@ class EditorDialog(GObject.GObject):
 	
 	def load(self):
 		""" Loads configuration data and pre-fills values to fields """
+		self._loading = True
 		self.load_data()
+		self._loading = False
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
@@ -255,6 +260,9 @@ class EditorDialog(GObject.GObject):
 		Handler for widget that controls state of other widgets
 		"""
 		key = self.get_widget_id(w)
+		if not self._loading:
+			if key in self.SETTING_NEEDS_RESTART:
+				self[self.RESTART_NEEDED_WIDGET].set_visible(True)
 		if key != None:
 			if isinstance(w, Gtk.CheckButton):
 				self.set_value(strip_v(key), w.get_active())
@@ -386,6 +394,21 @@ class EditorDialog(GObject.GObject):
 			spinner.get_buffer().set_text(_("disabled"), -1)
 		else:
 			spinner.get_buffer().set_text(_("%ss") % (val,), -1);
+		return True
+	
+	def cb_format_value_percent(self, spinner):
+		""" Formats spinner value """
+		val = int(spinner.get_adjustment().get_value())
+		spinner.get_buffer().set_text(_("%s%%") % (val,), -1);
+		return True
+	
+	def cb_format_value_kibps_or_no_limit(self, spinner):
+		""" Formats spinner value """
+		val = int(spinner.get_adjustment().get_value())
+		if val < 1:
+			spinner.get_buffer().set_text(_("no limit"), -1)
+		else:
+			spinner.get_buffer().set_text(_("%s KiB/s") % (val,), -1);
 		return True
 	
 	def cb_format_value_days(self, spinner):
