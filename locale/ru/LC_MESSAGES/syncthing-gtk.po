@@ -218,11 +218,11 @@ msgstr "Отключить"
 
 #: syncthing_gtk/app.py:862
 msgid "Online"
-msgstr "Онлайн"
+msgstr "Соединён"
 
 #: syncthing_gtk/app.py:862
 msgid "offline"
-msgstr "Оффлайн"
+msgstr "Нет соединения"
 
 #: syncthing_gtk/app.py:864
 #, python-format
@@ -251,7 +251,7 @@ msgstr "Подключен"
 #: syncthing_gtk/app.py:945 syncthing_gtk/app.py:980 syncthing_gtk/app.py:1030
 #: syncthing_gtk/app.py:1031 syncthing_gtk/app.py:1070
 msgid "Up to Date"
-msgstr "Обновить"
+msgstr "Обновлено"
 
 #: syncthing_gtk/app.py:966 syncthing_gtk/app.py:967 syncthing_gtk/app.py:968
 msgid "Files"
@@ -363,7 +363,7 @@ msgstr "Нет"
 
 #: syncthing_gtk/app.py:1327
 msgid "(watch)"
-msgstr "(смотреть)"
+msgstr "(следить)"
 
 #: syncthing_gtk/app.py:1341
 msgid "Unused"
@@ -1095,7 +1095,7 @@ msgstr "_Сжатие"
 
 #: device-id.glade:14
 msgid "Device Identification"
-msgstr "Идентификация устройства"
+msgstr "Идентификатор устройства"
 
 #: device-id.glade:68
 msgid "XYZ-123-ABC"
@@ -1412,7 +1412,7 @@ msgstr "Автоматический запуск Syncthing-GTK при вход�
 
 #: ui-settings.glade:350
 msgid "Minimize to _tray on start"
-msgstr "Минимизировать в трэй при запуске"
+msgstr "Минимизировать в трей при запуске"
 
 #: ui-settings.glade:366
 msgid "Use _icons in menu"
@@ -1474,7 +1474,7 @@ msgstr "Приоритет процесса демона"
 msgid ""
 "Priority will be used only if \"<i>start daemon in background</i>\" option "
 "is checked on \"<i>Interface</i>\" page."
-msgstr "Приоритет будет отдаваться только тогда, когда отмечена опция \"<i>прекратить работу демона<i/>\"  на странице \"<i>Интерфейс</i>\"."
+msgstr "Приоритет будет отдаваться только тогда, когда отмечена опция \"<i>прекратить работу демона</i>\"  на странице \"<i>Интерфейс</i>\"."
 
 #: ui-settings.glade:713
 msgid "Maximum number of CPU cores"
