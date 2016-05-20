@@ -218,11 +218,11 @@ msgstr "Отключить"
 
 #: syncthing_gtk/app.py:862
 msgid "Online"
-msgstr "Онлайн"
+msgstr "Соединён"
 
 #: syncthing_gtk/app.py:862
 msgid "offline"
-msgstr "Оффлайн"
+msgstr "Нет соединения"
 
 #: syncthing_gtk/app.py:864
 #, python-format
