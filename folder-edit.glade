@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAdjustment" id="adjKeepVersions">
@@ -459,6 +459,7 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
               </object>
               <packing>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -519,6 +520,7 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
               <packing>
                 <property name="position">1</property>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -959,6 +961,7 @@ The following intervals are used: for the first hour a version is kept every 30 
               <packing>
                 <property name="position">2</property>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -1110,11 +1113,12 @@ The following intervals are used: for the first hour a version is kept every 30 
               <packing>
                 <property name="position">3</property>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>

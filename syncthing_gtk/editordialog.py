@@ -51,10 +51,21 @@ class EditorDialog(GObject.GObject):
 		if Gdk.Screen.get_default().height() < 900:
 			if not self["editor-content"] is None:
 				parent = self["editor-content"].get_parent()
-				parent.remove(self["editor-content"])
-				sw = Gtk.ScrolledWindow()
-				sw.add_with_viewport(self["editor-content"])
-				parent.pack_start(sw, True, True, 0)
+				if isinstance(parent, Gtk.Notebook):
+					order, labels = [], {}
+					for c in [] + parent.get_children():
+						labels[c] = parent.get_tab_label(c)
+						order.append(c)
+						parent.remove(c)
+					for c in order:
+						sw = Gtk.ScrolledWindow()
+						sw.add_with_viewport(c)
+						parent.append_page(sw, labels[c])
+				else:
+					sw = Gtk.ScrolledWindow()
+					parent.remove(self["editor-content"])
+					sw.add_with_viewport(self["editor-content"])
+					parent.pack_start(sw, True, True, 0)
 				self["editor"].resize(self["editor"].get_size()[0], Gdk.Screen.get_default().height() * 2 / 3)
 	
 	def load(self):
