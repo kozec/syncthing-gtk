@@ -10,7 +10,7 @@ from gi.repository import Gtk, Gdk
 from syncthing_gtk.editordialog import EditorDialog, strip_v
 from syncthing_gtk.tools import _ # gettext function
 
-VALUES = [ "vlistenAddress", "vlocalAnnounceEnabled", "vupnpEnabled",
+VALUES = [ "vlistenAddresses", "vlocalAnnounceEnabled", "vupnpEnabled",
 		"vstartBrowser", "vmaxSendKbpsEnabled", "vmaxSendKbps",
 		"vmaxRecvKbpsEnabled", "vmaxRecvKbps", "vurAccepted",
 		"vlocalAnnouncePort", "vglobalAnnounceEnabled",
@@ -25,7 +25,7 @@ class DaemonSettingsDialog(EditorDialog):
 	
 	#@Overrides
 	def get_value(self, key):
-		if key == "listenAddress":
+		if key == "listenAddresses":
 			return ", ".join([ strip_v(x) for x in self.values[key]])
 		elif key == "globalAnnounceServers":
 			return ", ".join([ strip_v(x) for x in self.values["globalAnnounceServers"]])
@@ -40,7 +40,7 @@ class DaemonSettingsDialog(EditorDialog):
 	
 	#@Overrides
 	def set_value(self, key, value):
-		if key == "listenAddress":
+		if key == "listenAddresses":
 			self.values[key] = [ x.strip(" \t") for x in value.split(",") ]
 		elif key == "globalAnnounceServers":
 			self.values[key] = [ x.strip(" \t") for x in value.split(",") ]
