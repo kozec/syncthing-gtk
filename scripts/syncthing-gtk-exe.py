@@ -4,6 +4,10 @@ import sys, os, gi, cairo, _winreg
 
 if __name__ == "__main__":
 	portable = False
+	
+	gi.require_version('Gtk', '3.0')
+	gi.require_version('Rsvg', '2.0')
+	
 	if "--portable" in sys.argv:
 		sys.argv.remove("--portable")
 		portable = True

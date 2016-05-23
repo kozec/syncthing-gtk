@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-import os, sys, signal
+import os, sys, signal, gi
 
 def sigint(*a):
 	print("\n*break*")
@@ -8,12 +8,16 @@ def sigint(*a):
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigint)
 	
+	gi.require_version('Gtk', '3.0')
+	gi.require_version('Rsvg', '2.0')
+	
 	from syncthing_gtk.tools import init_logging, init_locale, IS_WINDOWS
 	if IS_WINDOWS:
 		from syncthing_gtk import windows
 		windows.enable_localization()
 	init_logging()
 	init_locale("locale/")
+	
 	if IS_WINDOWS:
 		from syncthing_gtk import windows, Configuration
 		config = Configuration()
