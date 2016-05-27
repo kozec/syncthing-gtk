@@ -419,13 +419,28 @@ class Daemon(GObject.GObject, TimerManager):
 			# Too late, throw it away
 			con.close(None)
 			log.verbose("Discarded old connection for %s", command)
-		# Build GET request
-		get_str = "\r\n".join([
-			"GET /rest/%s HTTP/1.0" % command,
-			(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
-			"Connection: close",
-			"", ""
-			]).encode("utf-8")
+		if self._CSRFtoken is None and self._api_key is None:
+			# Request CSRF token first
+			log.verbose("Requesting cookie")
+			get_str = "\r\n".join([
+				"GET / HTTP/1.0",
+				"Host: %s" % self._address,
+				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
+				"Connection: close",
+				"",
+				"",
+				]).encode("utf-8")
+		else:
+			# Build GET request
+			get_str = "\r\n".join([
+				"GET /rest/%s HTTP/1.0" % command,
+				"Cookie: %s" % self._CSRFtoken,
+				"X-%s" % self._CSRFtoken.replace("=", ": "),
+				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
+				
+				"Connection: close",
+				"", ""
+				]).encode("utf-8")
 		# Send it out and wait for response
 		try:
 			con.get_output_stream().write_all(get_str, None)
@@ -456,6 +471,20 @@ class Daemon(GObject.GObject, TimerManager):
 			return
 		con.close(None)
 		response = "".join(buffer)
+		if self._CSRFtoken is None and self._api_key is None:
+			# I wanna cookie!
+			self._parse_csrf(response.split("\n"))
+			if self._CSRFtoken == None:
+				# This is pretty fatal and likely to fail again,
+				# so request is not repeated automaticaly
+				if error_callback == None:
+					log.error("Request '%s' failed: Error: failed to get CSRF cookie from daemon", command)
+				else:
+					self._rest_error(Exception("Failed to get CSRF cookie"), epoch, command, callback, error_callback, callback_data)
+				return
+			# Repeat request with acqiured cookie
+			self._rest_request(command, callback, error_callback, *callback_data)
+			return
 		# Split headers from response
 		try:
 			headers, response = response.split("\r\n\r\n", 1)
@@ -557,8 +586,8 @@ class Daemon(GObject.GObject, TimerManager):
 			post_str = "\r\n".join([
 				"POST /rest/%s HTTP/1.0" % command,
 				"Connection: close",
-				"Cookie: CSRF-Token=%s" % self._CSRFtoken,
-				"X-CSRF-Token: %s" % self._CSRFtoken,
+				"Cookie: %s" % self._CSRFtoken,
+				"X-%s" % self._CSRFtoken.replace("=", ": "),
 				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
 				"Content-Length: %s" % len(json_str),
 				"Content-Type: application/json",
@@ -598,16 +627,7 @@ class Daemon(GObject.GObject, TimerManager):
 		# Parse response
 		if self._CSRFtoken is None and self._api_key is None:
 			# I wanna cookie!
-			response = response.split("\n")
-			for d in response:
-				if d.startswith("Set-Cookie:"):
-					for c in d.split(":", 1)[1].split(";"):
-						if c.strip().startswith("CSRF-Token="):
-							self._CSRFtoken = c.split("=", 1)[1].strip(" \r\n")
-							log.verbose("Got new cookie: %s", self._CSRFtoken)
-							break
-					if self._CSRFtoken != None:
-						break
+			self._parse_csrf(response.split("\n"))
 			if self._CSRFtoken == None:
 				# This is pretty fatal and likely to fail again,
 				# so request is not repeated automaticaly
@@ -671,6 +691,17 @@ class Daemon(GObject.GObject, TimerManager):
 				# Windows...
 				log.error("Post '%s' failed; Repeating...", command)
 			self.timer(None, 1, self._rest_post, command, data, callback, error_callback, callback_data)
+	
+	def _parse_csrf(self, response):
+		for d in response:
+			if d.startswith("Set-Cookie:"):
+				for c in d.split(":", 1)[1].split(";"):
+					if c.strip().startswith("CSRF-Token-"):
+						self._CSRFtoken = c.strip(" \r\n")
+						log.verbose("Got new cookie: %s", self._CSRFtoken)
+						break
+				if self._CSRFtoken != None:
+					break
 	
 	def _request_config(self, *a):
 		""" Request settings from syncthing daemon """
