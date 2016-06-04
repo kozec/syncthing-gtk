@@ -407,6 +407,7 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Second part of _rest_request, called after HTTP connection is initiated """
 		try:
 			con = sc.connect_to_service_finish(results)
+			raise Exception("Error 45")
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
@@ -1015,7 +1016,7 @@ class Daemon(GObject.GObject, TimerManager):
 	def _syncthing_cb_config_error(self, exception, command):
 		self.cancel_all()
 		if isinstance(exception, GLib.GError):
-			if exception.code in (0, 39, 34):	# Connection Refused / Cannot connect to destination
+			if exception.code in (0, 39, 34, 45):	# Connection Refused / Cannot connect to destination
 				# It usualy means that daemon is not yet fully started or not running at all.
 				epoch = self._epoch
 				self.emit("connection-error", Daemon.REFUSED, exception.message, exception)
