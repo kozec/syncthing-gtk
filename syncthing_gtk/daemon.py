@@ -407,7 +407,6 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Second part of _rest_request, called after HTTP connection is initiated """
 		try:
 			con = sc.connect_to_service_finish(results)
-			raise Exception("Error 45")
 			if con == None:
 				raise Exception("Unknown error")
 		except Exception, e:
