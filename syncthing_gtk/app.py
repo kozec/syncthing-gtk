@@ -258,7 +258,8 @@ class App(Gtk.Application, TimerManager):
 		add_simple_action('show_id', self.cb_menu_show_id)
 		add_simple_action('daemon_shutdown', self.cb_menu_shutdown)
 		add_simple_action('daemon_restart', self.cb_menu_restart)
-
+	
+	
 	def setup_widgets(self):
 		self.builder = UIBuilder()
 		# Set conditions for UIBuilder
@@ -1169,6 +1170,11 @@ class App(Gtk.Application, TimerManager):
 		if not self["window"].is_visible():
 			self["window"].show()
 			if IS_WINDOWS and not self.config["window_position"] is None:
+				scr = Gdk.Screen.get_default()
+				self.config["window_position"] = (
+					min(self.config["window_position"][0], scr.width() - 300),
+					min(self.config["window_position"][1], scr.height() - 100)
+				)
 				self["window"].move(*self.config["window_position"] )
 			if self.connect_dialog != None:
 				self.connect_dialog.show()
