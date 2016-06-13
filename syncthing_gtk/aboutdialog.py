@@ -58,7 +58,7 @@ class AboutDialog(object):
 			# App is None or daemon version is not yet known
 			pass
 		# Display versions in UI
-		self.dialog.set_version(app_ver)
+		self.builder.get_object("lblVersion").set_label(app_ver)
 	
 	def on_dialog_response(self, *a):
 		self.close()

@@ -5,14 +5,14 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing][syncthing
 
 [![screenshot1](http://i.imgur.com/N36wmBM.png)](http://i.imgur.com/eX250tQ.png) [![screenshot2](http://i.imgur.com/43mmnC7.png)](http://i.imgur.com/RTRgRdC.png) [![screenshot3](http://i.imgur.com/KDBYekd.png)](http://i.imgur.com/OZ4xEeH.jpg)
 
-Supported Syncthing features:
+##### Supported Syncthing features
 - Everything what WebUI can display
 - Adding / editing / deleting nodes
 - Adding / editing / deleting repositories
 - Restart / shutdown server
 - Editing daemon settings
 
-Additional features:
+##### Additional features
 - First run wizard for initial configuration
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
@@ -20,7 +20,11 @@ Additional features:
 - Nautilus (a.k.a. Files), Nemo and Caja integration
 - Desktop notifications
 
-Packages:
+##### Like what I'm doing?
+<a href="https://www.patreon.com/kozec">Help me become filthy rich on <img src="http://kozec.com/patreon-logo.png"></a>
+
+
+##### Packages
 - Ubuntu (deb-based distros): in [Web Upd8 PPA](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8/) (thanks!) or [DEBs](http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu/pool/main/s/syncthing-gtk/)
 - Arch Linux: In [[community] repository](https://www.archlinux.org/packages/community/any/syncthing-gtk/)
 - Fedora: [in decathorpe's copr repository](https://copr.fedoraproject.org/coprs/decathorpe/syncthing/)
@@ -28,7 +32,7 @@ Packages:
 - Windows: Get [latest installer from here](https://github.com/kozec/syncthing-gui/releases/latest), or use [the Chocolatey package](https://chocolatey.org/packages/syncthing-gtk).
 - Or, in worst case scenario, download [latest tarball](https://github.com/kozec/syncthing-gui/releases/latest), extract it and run syncthing-gtk.py.
 
-Dependencies:
+##### Dependencies
 - python 2.7, GTK 3.8 or newer and [PyGObject](https://live.gnome.org/PyGObject)
 - [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo) and [gir1.2-rsvg-2.0](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
@@ -36,12 +40,12 @@ Dependencies:
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
 - [Syncthing][syncthing] v0.12 or newer
 
-Optional Dependencies:
+##### Optional Dependencies
 - [pyinotify](https://github.com/seb-m/pyinotify/wiki) for instant synchronization.
 - libnotify for desktop notifications.
 - nautilus-python, nemo-python or caja-python for filemanager integration
 
-Windows Building Dependencies _(you don't need to install these just to **run** Syncthing-GTK)_
+##### Windows Building Dependencies _(you don't need to install these just to **run** Syncthing-GTK)_
 - Python for Windows 2.7
 - [PyGObject for Windows](http://sourceforge.net/projects/pygobjectwin32/) with GTK3 enabled (tested with version 3.14.0)
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
@@ -50,9 +54,7 @@ Windows Building Dependencies _(you don't need to install these just to **run** 
 - [syncthing-inotify](https://github.com/syncthing/syncthing-inotify) (optional)
 - [NSIS2](http://nsis.sourceforge.net/NSIS_2) with NSISdl, [ZipDLL](http://nsis.sourceforge.net/ZipDLL_plug-in) and [FindProcDLL](http://forums.winamp.com/showpost.php?p=2777729&postcount=8) plugins (optional, for building installer)
 
-Related links:
-- http://syncthing.net
+##### Related links
+- https://syncthing.net
 - https://forum.syncthing.net/t/syncthing-gtk-gui-for-syncthing-now-with-inotify-support/709
 - https://forum.syncthing.net/t/lxle-a-respin-of-lubuntu-now-has-syncthing-included-by-default/1392
-
-[syncthing]: https://syncthing.net
