@@ -435,8 +435,8 @@ class Daemon(GObject.GObject, TimerManager):
 			get_str = "\r\n".join([
 				"GET /rest/%s HTTP/1.0" % command,
 				"Cookie: %s" % self._CSRFtoken,
-				"X-%s" % self._CSRFtoken.replace("=", ": "),
-				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
+				(("X-%s" % self._CSRFtoken.replace("=", ": ")) if self._CSRFtoken else "X-nothing: x"),
+				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing2: x"),
 				
 				"Connection: close",
 				"", ""
@@ -587,8 +587,8 @@ class Daemon(GObject.GObject, TimerManager):
 				"POST /rest/%s HTTP/1.0" % command,
 				"Connection: close",
 				"Cookie: %s" % self._CSRFtoken,
-				"X-%s" % self._CSRFtoken.replace("=", ": "),
-				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
+				(("X-%s" % self._CSRFtoken.replace("=", ": ")) if self._CSRFtoken else "X-nothing: x"),
+				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing2: x"),
 				"Content-Length: %s" % len(json_str),
 				"Content-Type: application/json",
 				"",
