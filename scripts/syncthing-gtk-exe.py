@@ -31,6 +31,8 @@ if __name__ == "__main__":
 			from syncthing_gtk.tools import get_install_path
 			path = get_install_path()
 			os.chdir(path)
+		os.environ["PATH"] = path
+		sys.path = [ path ]
 	
 	from syncthing_gtk.tools import init_logging, init_locale
 	from syncthing_gtk import windows
