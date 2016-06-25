@@ -1149,7 +1149,7 @@ class Daemon(GObject.GObject, TimerManager):
 				filename = e["data"]["item"]
 				t = parsetime(e["time"])
 				self.emit("item-updated", rid, filename, t)
-		elif eType in ("ItemFinished", "DownloadProgress", "RelayStateChanged", "LocalIndexUpdated"):
+		elif eType in ("ItemFinished", "DownloadProgress", "RelayStateChanged", "LocalIndexUpdated", "ListenAddressesChanged"):
 			# Not handled
 			pass
 		else:
