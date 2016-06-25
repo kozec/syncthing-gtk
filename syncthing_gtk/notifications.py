@@ -13,6 +13,8 @@ HAS_DESKTOP_NOTIFY = False
 Notifications = None
 
 try:
+	import gi
+	gi.require_version('Notify', '0.7')
 	from gi.repository import Notify
 	HAS_DESKTOP_NOTIFY = True
 except ImportError:
@@ -130,7 +132,17 @@ if HAS_DESKTOP_NOTIFY:
 				self.updating.add(f_path)
 		
 		def cb_syncthing_item_updated(self, daemon, folder_id, path, *a):
+			print "cb_syncthing_item_updated", folder_id, path
 			f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)
+			if ".sync-conflict" in path:
+				if os.path.exists(f_path):
+					# Updated or new conflict
+					dpath = f_path
+					if dpath.startswith(os.path.expanduser("~")):
+						dpath = "~" + dpath[len(os.path.expanduser("~")):]
+					markup = _('Conflicting file detected:\n%s' % (dpath,))
+					self.info(markup)
+					return
 			if f_path in self.updating:
 				# Check what kind of 'update' was done
 				if os.path.exists(f_path):
