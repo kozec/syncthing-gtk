@@ -23,12 +23,13 @@ COLOR_DEVICE			= "#707070"					# Dark-gray
 COLOR_DEVICE_SYNCING	= "#2A89C8"					# Blue
 COLOR_DEVICE_CONNECTED	= "#2AAB61"					# Green
 COLOR_DEVICE_OFFLINE	= COLOR_DEVICE				# Dark-gray
+COLOR_DEVICE_ERROR		= "#87000B"					# Red
 COLOR_OWN_DEVICE		= "#C0C0C0"					# Light-gray
 COLOR_FOLDER			= "#9246B1"					# Dark-purbple
 COLOR_FOLDER_SYNCING	= COLOR_DEVICE_SYNCING		# Blue
 COLOR_FOLDER_SCANNING	= COLOR_DEVICE_SYNCING		# Blue
 COLOR_FOLDER_IDLE		= COLOR_DEVICE_CONNECTED	# Green
-COLOR_FOLDER_STOPPED	= "#87000B"					# Red
+COLOR_FOLDER_STOPPED	= COLOR_DEVICE_ERROR		# Red
 COLOR_FOLDER_OFFLINE	= COLOR_DEVICE_OFFLINE		# Dark-gray
 COLOR_NEW				= COLOR_OWN_DEVICE			# Light-gray
 SI_FRAMES				= 12 # Number of animation frames for status icon
@@ -112,6 +113,7 @@ class App(Gtk.Application, TimerManager):
 		self.devices_never_loaded = True
 		self.folders_never_loaded = True
 		self.sync_animation = 0
+	
 	
 	def do_startup(self, *a):
 		Gtk.Application.do_startup(self, *a)
@@ -751,6 +753,26 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_syncthing_error(self, daemon, message):
 		""" Daemon argument is not used """
+		if "remote device speaks an older version of the protocol" in message:
+			# This one needs special treatement because remote port changes
+			# every time when this is reported.
+			id = re.search("to ([-0-9A-Za-z]+)", message)
+			version = re.search("protocol \(([^\)]+)\)", message)
+			if not id or not version:
+				# Invalid format
+				return
+			id = display_id = id.group(1)
+			version = version.group(1)
+			if id in self.devices:
+				device = self.devices[id]
+				display_id = device.get_title()
+				device.set_color_hex(COLOR_DEVICE_ERROR)
+				device.set_status(_("Incompatible"), 0)
+				device.show_value("version")
+				device["version"] = version
+			
+			message = _("Connecting to <b>%s</b> failed; the remote device speaks an older version of the protocol (%s) not compatible with this version") % (
+					display_id, version)
 		if message in self.error_messages:
 			# Same error is already displayed
 			log.info("(repeated) %s", message)
@@ -835,7 +857,7 @@ class App(Gtk.Application, TimerManager):
 			device.add_value("inbps",	"dl_rate.svg",	_("Download Rate"),		"0 B/s (0 B)")
 			device.add_value("outbps",	"up_rate.svg",	_("Upload Rate"),		"0 B/s (0 B)")
 			device.add_value("announce",	"announce.svg",	_("Announce Server"),	"")
-			device.add_value("version",	"version.svg",	_("Version"),			"?")
+			device.add_value("version",	"version.svg",	_("Version"),			None)
 			device.show_all()
 			# Expand my own device box right after startup
 			if self.devices_never_loaded:
@@ -880,7 +902,8 @@ class App(Gtk.Application, TimerManager):
 			device = self.devices[nid]
 			# Update strings
 			device["address"] = address
-			device["version"] = client_version
+			if client_version not in ("?", None):
+				device["version"] = client_version
 			# Update rates
 			device['inbps'] = "%s/s (%s)" % (sizeof_fmt(inbps), sizeof_fmt(inbytes))
 			device['outbps'] = "%s/s (%s)" % (sizeof_fmt(outbps), sizeof_fmt(outbytes))
@@ -1354,13 +1377,13 @@ class App(Gtk.Application, TimerManager):
 			# Create new box
 			box = InfoBox(self, name, IdentIcon(id))
 			# Add visible lines
-			box.add_value("address",	"address.svg",	_("Address"),			"?")
+			box.add_value("address",	"address.svg",	_("Address"),			None)
 			box.add_value("sync",		"sync.svg",		_("Synchronization"),	"0%", visible=False)
 			box.add_value("compress",	"compress.svg",	_("Compression"))
 			box.add_value("inbps",		"dl_rate.svg",	_("Download Rate"),		"0 B/s (0 B)", visible=False)
 			box.add_value("outbps",		"up_rate.svg",	_("Upload Rate"),		"0 B/s (0 B)", visible=False)
 			box.add_value("introducer",	"thumb_up.svg",	_("Introducer"))
-			box.add_value("version",	"version.svg",	_("Version"),			"?", visible=False)
+			box.add_value("version",	"version.svg",	_("Version"),			None, visible=False)
 			box.add_value('last-seen',	"clock.svg",	_("Last Seen"),			_("Never"))
 			# Add hidden stuff
 			box.add_hidden_value("id", id)
