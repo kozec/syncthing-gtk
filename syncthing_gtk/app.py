@@ -48,7 +48,7 @@ RESPONSE_UR_FORBID		= 275
 
 # RI's
 REFRESH_INTERVAL_DEFAULT	= 1
-REFRESH_INTERVAL_TRAY		= 5
+REFRESH_INTERVAL_TRAY		= 30
 
 # If daemon dies twice in this interval, broken settings are assumed
 RESTART_TOO_FREQUENT_INTERVAL = 5
