@@ -7,16 +7,18 @@ Listens to syncing events on daemon and displays desktop notifications.
 """
 
 from __future__ import unicode_literals
+from syncthing_gtk.tools import IS_WINDOWS
 DELAY = 5	# Display notification only after no file is downloaded for <DELAY> seconds
 
 HAS_DESKTOP_NOTIFY = False
 Notifications = None
 
 try:
-	import gi
-	gi.require_version('Notify', '0.7')
-	from gi.repository import Notify
-	HAS_DESKTOP_NOTIFY = True
+	if not IS_WINDOWS:
+		import gi
+		gi.require_version('Notify', '0.7')
+		from gi.repository import Notify
+		HAS_DESKTOP_NOTIFY = True
 except ImportError:
 	pass
 
