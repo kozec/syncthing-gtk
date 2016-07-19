@@ -458,14 +458,26 @@ class EditorDialog(GObject.GObject):
 			# Should be ok, this restart is triggered
 			# by App handler for 'config-saved' event.
 			return self.syncthing_cb_post_config()
+		message = "%s\n%s" % (
+			_("Failed to save configuration."),
+			str(exception)
+		)
+		
+		if hasattr(exception, "full_response"):
+			try:
+				fr = unicode(exception.full_response)[0:1024]
+			except UnicodeError:
+				# ... localized error strings on windows are usually
+				# in anything but unicode :(
+				fr = str(repr(exception.full_response))[0:1024]
+			message += "\n\n" + fr
+		
 		d = Gtk.MessageDialog(
 			self["editor"],
 			Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
 			Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE,
-			"%s\n%s" % (
-				_("Failed to save configuration."),
-				str(exception)
-			))
+			message
+			)
 		d.run()
 		d.hide()
 		d.destroy()
