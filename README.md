@@ -34,7 +34,8 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing][syncthing
 
 ##### Dependencies
 - python 2.7, GTK 3.8 or newer and [PyGObject](https://live.gnome.org/PyGObject)
-- [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo) and [gir1.2-rsvg-2.0](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
+- [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo),
+[gir1.2-notify](https://packages.debian.org/sid/gir1.2-notify-0.7) and [gir1.2-rsvg](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
 - [setuptools](https://pypi.python.org/pypi/setuptools)
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
