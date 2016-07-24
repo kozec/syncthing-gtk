@@ -752,7 +752,9 @@ class App(Gtk.Application, TimerManager):
 			self.watcher.start()
 	
 	def cb_syncthing_error(self, daemon, message):
-		""" Daemon argument is not used """
+		""" Handles errors reported by syncthing daemon """
+		# Daemon argument is not used
+		RE_IP_PORT = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+):([0-9]+)")
 		if "remote device speaks an older version of the protocol" in message:
 			# This one needs special treatement because remote port changes
 			# every time when this is reported.
@@ -773,6 +775,11 @@ class App(Gtk.Application, TimerManager):
 			
 			message = _("Connecting to <b>%s</b> failed; the remote device speaks an older version of the protocol (%s) not compatible with this version") % (
 					display_id, version)
+		while RE_IP_PORT.search(message):
+			# Strip any IP:port pairs in message to only IP. Port usually
+			# changes with each error message
+			ip, port = RE_IP_PORT.search(message).groups()
+			message = message.replace("%s:%s" % (ip, port), ip)
 		if message in self.error_messages:
 			# Same error is already displayed
 			log.info("(repeated) %s", message)
