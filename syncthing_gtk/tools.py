@@ -11,7 +11,7 @@ from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 from dateutil import parser
-import re, os, sys, platform, logging, shlex, gettext, __main__
+import re, os, sys, random, string, platform, logging, shlex, gettext, __main__
 log = logging.getLogger("tools.py")
 
 IS_WINDOWS	= sys.platform in ('win32', 'win64')
@@ -544,3 +544,13 @@ def can_upgrade_binary(binary_path):
 		if not os.access(path, os.W_OK):
 			return False
 		return True
+
+
+def generate_folder_id():
+	"""
+	Returns new, randomly generated folder ID in a1bc2-x9y7z format
+	"""
+	return "-".join((
+		("".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(5)))
+		for _ in range(2)
+	))

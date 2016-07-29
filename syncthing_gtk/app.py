@@ -609,7 +609,8 @@ class App(Gtk.Application, TimerManager):
 				)
 			self.show_info_box(r)
 			self.cb_infobar_close(r)
-			
+		
+		self.cb_syncthing_error(None, "This Syncthing-GTK version is not compatibilie with latest Syncthing daemon; Please, consider upgrading.")
 	
 	def cb_syncthing_disconnected(self, daemon, reason, message):
 		# if reason == Daemon.UNEXPECTED
@@ -1584,6 +1585,7 @@ class App(Gtk.Application, TimerManager):
 				self.daemon.handler_disconnect(handler_id)
 			self.show()
 			e = FolderEditorDialog(self, True, None, path)
+			e.call_after_loaded(e.fill_folder_id, generate_folder_id(), False)
 			e.load()
 			e.show(self["window"])
 		

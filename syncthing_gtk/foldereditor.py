@@ -7,7 +7,6 @@ Universal dialog handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
-from syncthing_gtk.tools import check_device_id
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.editordialog import EditorDialog, strip_v
 from syncthing_gtk import EditorDialog, Watcher
@@ -33,6 +32,7 @@ class FolderEditorDialog(EditorDialog):
 		self.id = id
 		self.path = path
 		self.is_new = is_new
+	
 	
 	def on_btBrowse_clicked(self, *a):
 		"""
@@ -259,11 +259,12 @@ class FolderEditorDialog(EditorDialog):
 		# Any non-empty command is OK
 		return self.get_value("versioning") != "external" or len(value.strip()) > 0
 	
-	def fill_folder_id(self, rid):
+	def fill_folder_id(self, rid, readonly=True):
 		""" Pre-fills folder Id for new-folder dialog """
 		self["vid"].set_text(rid)
 		self.id = rid
 		self.update_special_widgets()
+		self["vid"].set_sensitive(not readonly)
 	
 	def mark_device(self, nid):
 		""" Marks (checks) checkbox for specified device """
