@@ -17,7 +17,7 @@ log = logging.getLogger("FolderEditor")
 COLOR_NEW				= "#A0A0A0"
 # Regexp to generate folder id from filename
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
-VALUES = [ "vid", "vlabel", "vpath", "vreadOnly", "vignorePerms", "vdevices",
+VALUES = [ "vlabel", "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
 	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand", "vorder",
 	"vminDiskFreePct"
@@ -33,7 +33,6 @@ class FolderEditorDialog(EditorDialog):
 		self.id = id
 		self.path = path
 		self.is_new = is_new
-	
 	
 	def on_btBrowse_clicked(self, *a):
 		"""
@@ -63,7 +62,6 @@ class FolderEditorDialog(EditorDialog):
 					# Can't regexp anything
 					pass
 		d.destroy()
-	
 	
 	def on_vid_icon_press(self, *a):
 		if self["vid"].get_sensitive():
