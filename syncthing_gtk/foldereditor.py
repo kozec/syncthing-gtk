@@ -8,6 +8,7 @@ Universal dialog handler for all Syncthing settings and editing
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk
 from syncthing_gtk.tools import _ # gettext function
+from syncthing_gtk.tools import generate_folder_id
 from syncthing_gtk.editordialog import EditorDialog, strip_v
 from syncthing_gtk import EditorDialog, Watcher
 import os, sys, re, logging
@@ -62,6 +63,11 @@ class FolderEditorDialog(EditorDialog):
 					# Can't regexp anything
 					pass
 		d.destroy()
+	
+	
+	def on_vid_icon_press(self, *a):
+		if self["vid"].get_sensitive():
+			self["vid"].set_text(generate_folder_id())
 	
 	#@Overrides
 	def get_value(self, key):
