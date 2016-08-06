@@ -681,6 +681,12 @@ class App(Gtk.Application, TimerManager):
 						_("Connection to daemon failed. Check your configuration and try again."),
 						_("Error message:"), str(message)
 						)
+				if "Not found" in str(message):
+					# Special case that has usual explanation
+					message = "%s\n%s" % (
+						message,
+						_("Possible cause: Is there another web server running on Syncthing port?")
+					)
 			d = Gtk.MessageDialog(
 					self["window"],
 					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -705,6 +711,7 @@ class App(Gtk.Application, TimerManager):
 				swin = Gtk.ScrolledWindow()
 				swin.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 				swin.add_with_viewport(tview)
+				swin.set_size_request(300, 400)
 				ex.add(swin)
 				d.get_message_area().pack_end(ex, True, True, 1)
 				ex.show_all()
