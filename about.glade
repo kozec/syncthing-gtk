@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.10"/>
   <object class="GtkDialog" id="dialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">About SC-Controller</property>
-    <property name="icon">../images/sc-controller-small.svg</property>
+    <property name="icon">icons/st-gtk-logo.png</property>
     <property name="type_hint">dialog</property>
     <signal name="response" handler="on_dialog_response" swapped="no"/>
     <child internal-child="vbox">
@@ -109,9 +109,16 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_bottom">50</property>
-                <property name="label" translatable="yes">Code&amp;amp;UI © 2016 Kozec
-Source code available on &lt;b&gt;&lt;a href="http://github.com/kozec/syncthing-gtk"&gt;GitHub&lt;/a&gt;&lt;/b&gt;
-Saying thanks in monetary way available on &lt;b&gt;&lt;a href="https://www.patreon.com/kozec"&gt;Patreon&lt;/a&gt;&lt;/b&gt;</property>
+                <property name="label" translatable="yes">&lt;b&gt;Code&amp;amp;UI © 2016 Kozec&lt;/b&gt;
+
+Source code available on &lt;a href="http://github.com/kozec/syncthing-gtk"&gt;GitHub&lt;/a&gt;
+
+I'd like to express my biggest thanks
+for all my &lt;b&gt;&lt;a href="https://www.patreon.com/kozec"&gt;Patreon&lt;/a&gt;&lt;/b&gt; supporters, with special mention of
+
+&lt;b&gt;Deryn L.&lt;/b&gt;
+and
+&lt;b&gt;Enric Morales&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
                 <property name="justify">center</property>
                 <property name="yalign">0</property>
