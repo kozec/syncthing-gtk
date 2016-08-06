@@ -881,21 +881,16 @@ class App(Gtk.Application, TimerManager):
 			# Check for new version, if enabled
 			self.check_for_upgrade()
 	
-	def cb_syncthing_system_data(self, daemon, mem, cpu, announce):
+	def cb_syncthing_system_data(self, daemon, mem, cpu, d_failed, d_total):
 		if self.daemon.get_my_id() in self.devices:
 			# Update my device display
 			device = self.devices[self.daemon.get_my_id()]
 			device["ram"] = sizeof_fmt(mem)
 			device["cpu"] = "%3.2f%%" % (cpu)
-			if announce is None or len(announce) == 0:
+			if d_total == 0:
 				device["announce"] = _("disabled")
-			elif len(announce) == 1:
-				device["announce"] = _("Online") if announce.values()[0] else _("offline")
-			else:
-				device["announce"] = _("%(online)s/%(total)s online") % {
-						'online' : len([ x for x in announce.values() if x ]),
-						'total'  : len(announce)
-					}
+			else:			
+				device["announce"] = "%s/%s" % (d_total - d_failed, d_total)
 	
 	def cb_syncthing_device_added(self, daemon, nid, name, used, data):
 		self.show_device(nid, name,

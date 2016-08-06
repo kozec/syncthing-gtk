@@ -219,14 +219,14 @@ class Daemon(GObject.GObject, TimerManager):
 		startup-complete():
 			Emited when daemon initialization is complete.
 		
-		system-data-updated (ram_ussage, cpu_ussage, announce)
+		system-data-updated (ram_ussage, cpu_ussage, d_failed, d_total)
 			Emited every time when system informations are recieved
 			from daemon.
 				ram_ussage:	memory ussage in bytes
 				cpu_ussage:	CPU ussage in percent (0.0 to 100.0)
-				announce:	Dict with list of { announce_server : value }
-							or None if announce is disabled
-							Value is True if daemon is connected to server
+				d_failed:	Number of discovery servers that daemon failed to
+							connect to
+				d_total:	Total number of discovery servers
 	"""
 	
 	
@@ -266,7 +266,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"item-started"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"startup-complete"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, object)),
+			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int, int)),
 		}
 	
 	# Constants for 'reason' parameter of disconnected event
@@ -923,9 +923,11 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				self._rest_request("system/version", self._syncthing_cb_version)
 		
+		d_failed, d_total = 0, 0
 		announce = None
-		if "extAnnounceOK" in data:
-			announce = data["extAnnounceOK"]
+		if "discoveryEnabled" in data and data["discoveryEnabled"]:
+			d_total = data["discoveryMethods"]
+			d_failed = len(data["discoveryErrors"])
 		
 		if "startTime" in data:
 			if self._instance_id is None:
@@ -940,9 +942,8 @@ class Daemon(GObject.GObject, TimerManager):
 					self.cancel_all()
 					return
 		
-		self.emit('system-data-updated',
-			data["sys"], float(data["cpuPercent"]),
-			announce)
+		self.emit('system-data-updated', data["sys"],
+			float(data["cpuPercent"]), d_failed, d_total)
 		
 		self.timer("system", self._refresh_interval * 5, self._rest_request, "system/status", self._syncthing_cb_system)
 	
