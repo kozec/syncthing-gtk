@@ -1765,8 +1765,9 @@ class App(Gtk.Application, TimerManager):
 		path = os.path.expanduser(box["path"])
 		if IS_WINDOWS:
 			# Don't attempt anything, use Windows Explorer on Windows
+			windows = os.environ("SystemRoot")
 			path = path.replace("/", "\\")
-			os.system('explorer "%s"' % (path,))
+			os.system('%s\\explorer.exe "%s"' % (windows, path))
 		else:
 			# Try to use any of following, known commands to
 			# display directory contents
