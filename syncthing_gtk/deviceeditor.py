@@ -116,10 +116,15 @@ class DeviceEditorDialog(EditorDialog):
 	#@Overrides
 	def store_value(self, key, w):
 		if key == "vaddresses":
-			addresses = [
-				x.strip() if "://" in x else "tcp://%s" % (x.strip(),)
-				for x in w.get_text().split(",") ]
-			self.set_value("addresses", ",".join(addresses))
+			addresses = w.get_text().strip()
+			if addresses == "dynamic":
+				# Special case
+				self.set_value("addresses", "dynamic")
+			else:
+				addresses = [
+					x.strip() if "://" in x else "tcp://%s" % (x.strip(),)
+					for x in addresses.split(",") ]
+				self.set_value("addresses", ",".join(addresses))
 		elif key == "vfolders":
 			# Generate dict of { folder_id : bool } where bool is True if
 			# folder should be shared with this device
