@@ -848,7 +848,7 @@ class App(Gtk.Application, TimerManager):
 		r.get_label().set_markup(markup)
 		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
 		r.add_button(RIBar.build_button(_("_Ignore")), RESPONSE_FIX_IGNORE)
-		self.show_error_box(r, {"nid" : nid, "address" : address} )
+		self.show_error_box(r, {"nid" : nid, "name" : name, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
 		if device_id in self.devices:
@@ -1941,6 +1941,8 @@ class App(Gtk.Application, TimerManager):
 					e.show(self["window"])
 		elif response_id == RESPONSE_FIX_NEW_DEVICE:
 			e = DeviceEditorDialog(self, True, additional_data["nid"])
+			if additional_data["name"]:
+				e.call_after_loaded(e["vname"].set_text, additional_data["name"])
 			e.load()
 			e.show(self["window"])
 		elif response_id == RESPONSE_FIX_IGNORE:
