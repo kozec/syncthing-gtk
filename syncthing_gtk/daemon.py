@@ -82,11 +82,12 @@ class Daemon(GObject.GObject, TimerManager):
 			WebUI (/rest/errors call)
 				message:	Error message sent by daemon
 		
-		folder-rejected(device_id, folder_id)
+		folder-rejected(device_id, folder_id, label)
 			Emited when daemon detects unexpected folder from known
 			device.
 				device_id:	id of device that send unexpected folder id
 				folder_id:	id of unexpected folder
+				label:		label of unexpected folder or None
 		
 		device-rejected(device_id, device_name, address)
 			Emited when daemon detects connection from unknown device
@@ -238,7 +239,7 @@ class Daemon(GObject.GObject, TimerManager):
 			b"config-loaded"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"connection-error"		: (GObject.SIGNAL_RUN_FIRST, None, (int, object, object)),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, bool, object)),
@@ -1114,9 +1115,11 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("device-resumed", nid)
 			self._request_last_seen()
 		elif eType == "FolderRejected":
+			print e["data"]
 			nid = e["data"]["device"]
 			rid = e["data"]["folder"]
-			self.emit("folder-rejected", nid, rid)
+			label = e["data"]["folderLabel"] if "folderLabel" in e["data"] else None
+			self.emit("folder-rejected", nid, rid, label)
 		elif eType == "DeviceRejected":
 			nid = e["data"]["device"]
 			name = e["data"]["name"]

@@ -808,7 +808,7 @@ class App(Gtk.Application, TimerManager):
 		if message in self.error_messages:
 			self.error_messages.remove(message)
 	
-	def cb_syncthing_folder_rejected(self, daemon, nid, rid):
+	def cb_syncthing_folder_rejected(self, daemon, nid, rid, label):
 		if (nid, rid) in self.error_messages:
 			# Store as error message and don't display twice
 			return
@@ -819,13 +819,13 @@ class App(Gtk.Application, TimerManager):
 			can_fix = True
 		markup = _('%(device)s wants to share folder "%(folder)s". Add new folder?') % {
 			'device' : "<b>%s</b>" % device,
-			'folder' : "<b>%s</b>" % rid
+			'folder' : "<b>%s</b>" % (label or rid)
 			}
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
 			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_FOLDER_ID)
-		self.show_error_box(r, {"nid" : nid, "rid" : rid} )
+		self.show_error_box(r, {"nid" : nid, "rid" : rid, "label" : label } )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, name, address):
 		# Remove port from address, it's random by default anyway
@@ -1935,6 +1935,8 @@ class App(Gtk.Application, TimerManager):
 					e = FolderEditorDialog(self, True, additional_data["rid"])
 					e.call_after_loaded(e.mark_device, additional_data["nid"])
 					e.call_after_loaded(e.fill_folder_id, additional_data["rid"])
+					if additional_data["label"]:
+						e.call_after_loaded(e["vlabel"].set_text, additional_data["label"])
 					e.load()
 					e.show(self["window"])
 		elif response_id == RESPONSE_FIX_NEW_DEVICE:
