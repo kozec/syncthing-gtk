@@ -1079,7 +1079,7 @@ class App(Gtk.Application, TimerManager):
 		if self.timer_active("icon"):
 			# Already animating
 			return
-		self.statusicon.set("si-syncing-%s" % (self.sync_animation,))
+		self.statusicon.set("si-syncthing-%s" % (self.sync_animation,))
 		self.sync_animation += 1
 		if self.sync_animation >= SI_FRAMES:
 			self.sync_animation = 0
