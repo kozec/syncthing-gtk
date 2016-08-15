@@ -1060,17 +1060,17 @@ class App(Gtk.Application, TimerManager):
 				self.animate_status()
 			elif self.any_device_online():
 				# Daemon is online and idle
-				self.statusicon.set("si-idle", _("Up to Date"))
+				self.statusicon.set("si-syncthing-idle", _("Up to Date"))
 				self["menu-si-status"].set_label(_("Up to Date"))
 				self.cancel_timer("icon")
 			else:
 				# Daemon is online, but there is no remote device connected
-				self.statusicon.set("si-unknown", _("All devices offline"))
+				self.statusicon.set("si-syncthing-unknown", _("All devices offline"))
 				self["menu-si-status"].set_label(_("All devices offline"))
 				self.cancel_timer("icon")
 		else:
 			# Still connecting to syncthing daemon
-			self.statusicon.set("si-unknown", _("Connecting to Syncthing daemon..."))
+			self.statusicon.set("si-syncthing-unknown", _("Connecting to Syncthing daemon..."))
 			self["menu-si-status"].set_label(_("Connecting to Syncthing daemon..."))
 			self.cancel_timer("icon")
 	
