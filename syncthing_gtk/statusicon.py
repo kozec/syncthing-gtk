@@ -234,6 +234,7 @@ class StatusIconGTK3(StatusIcon):
 	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)
 		
+		print "StatusIconGTK3.set", icon, self._get_icon(icon)
 		self._tray.set_from_icon_name(self._get_icon(icon))
 		self._tray.set_tooltip_text(self._get_text(text))
 	

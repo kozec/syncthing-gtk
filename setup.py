@@ -4,7 +4,8 @@ from distutils.core import setup
 from distutils.command.build_py import build_py
 from subprocess import Popen, PIPE
 import glob, os
-ICON_SIZES = (16, 24, 32, 64, 128, 256)
+APP_ICON_SIZES = (16, 24, 32, 64, 128, 256)
+SI_ICON_SIZES = (16, 24, 32)
 
 def get_version():
 	"""
@@ -88,7 +89,12 @@ if __name__ == "__main__" :
 		(
 			'share/icons/hicolor/%sx%s/apps' % (size,size),
 			glob.glob("icons/%sx%s/apps/*" % (size,size))
-		) for size in ICON_SIZES 
+		) for size in APP_ICON_SIZES 
+	] + [
+		(
+			'share/icons/hicolor/%sx%s/status' % (size,size),
+			glob.glob("icons/%sx%s/status/*" % (size,size))
+		) for size in SI_ICON_SIZES
 	] + [
 		("share/" + os.path.split(x)[0], (x,)) for x in find_mos("locale/")
 	]

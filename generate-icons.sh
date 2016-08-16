@@ -26,7 +26,7 @@ for size in 16 24 32 ; do
 			/tmp/si-syncthing-back-${size}.png \
 			/tmp/si-syncthing-${size}-${i}.png \
 			-gravity center -compose over -composite \
-			${ICODIR}/${size}x${size}/apps/si-syncthing-${i}.png
+			${ICODIR}/${size}x${size}/status/si-syncthing-${i}.png
 		
 	done
 	
@@ -36,14 +36,14 @@ for size in 16 24 32 ; do
 			/tmp/si-syncthing-back-${size}.png \
 			/tmp/si-syncthing-${size}-0.png \
 			-gravity center -compose over -composite \
-			${ICODIR}/${size}x${size}/apps/si-syncthing-idle.png	
+			${ICODIR}/${size}x${size}/status/si-syncthing-idle.png	
 	echo si-syncthing-unknown.png
 	convert \
 			/tmp/si-syncthing-back-${size}.png \
 			/tmp/si-syncthing-${size}-0.png \
 			-gravity center -compose over -composite \
 			-colorspace Gray \
-			${ICODIR}/${size}x${size}/apps/si-syncthing-unknown.png
+			${ICODIR}/${size}x${size}/status/si-syncthing-unknown.png
 
 	# Generate black & white icons
 	for cols in "background-black rot black" "background-white rotblack white" ; do
@@ -67,7 +67,7 @@ for size in 16 24 32 ; do
 				/tmp/si-syncthing-back-${size}.png \
 				/tmp/si-syncthing-${size}-${i}.png \
 				-gravity center -compose over -composite \
-				${ICODIR}/${size}x${size}/apps/si-syncthing-${cols[2]}-${i}.png
+				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-${i}.png
 		done
 		
 		# Generate icon for idle state and grayscale icon for unknown/offline state
@@ -76,7 +76,7 @@ for size in 16 24 32 ; do
 				/tmp/si-syncthing-back-${size}.png \
 				/tmp/si-syncthing-${size}-0.png \
 				-gravity center -compose over -composite \
-				${ICODIR}/${size}x${size}/apps/si-syncthing-${cols[2]}-idle.png
+				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-idle.png
 		
 		echo si-syncthing-${cols[2]}-unknown.png
 		inkscape ${ICODIR}/si-syncthing.svg --export-id-only \
@@ -90,6 +90,6 @@ for size in 16 24 32 ; do
 				/tmp/si-syncthing-${size}-unknown.png \
 				-gravity center -compose over -composite \
 				-colorspace Gray \
-				${ICODIR}/${size}x${size}/apps/si-syncthing-${cols[2]}-unknown.png
+				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-unknown.png
 	done
 done
