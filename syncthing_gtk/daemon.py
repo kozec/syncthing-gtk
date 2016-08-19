@@ -1344,7 +1344,7 @@ class Daemon(GObject.GObject, TimerManager):
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
 		id_enc = urllib.quote(folder_id.encode('utf-8'))
-		self._rest_post("model/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+		self._rest_post("db/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def request_events(self):
 		"""
