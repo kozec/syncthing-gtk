@@ -7,11 +7,12 @@ Do './build_windows.py build' to build exe, then call
 import os, site, sys, shutil, re
 from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
-from win32verstamp import stamp
+#from win32verstamp import stamp
 from setup import get_version as _get_version, find_mos
-from syncthing_gtk.windows import ST_INOTIFY_EXE
+# from syncthing_gtk.windows import ST_INOTIFY_EXE
 
 gnome_dll_path = "/Python27/Lib/site-packages/gnome"
+gnome_dll_path = "/home/tom/tmp/gnome"
 build_dir = "./build/exe.win32-2.7/"
 
 # List of dlls that cx_freeze can't detect automaticaly
@@ -87,7 +88,7 @@ pprint.pprint(include_files)
 
 
 # syncthing-inotify
-include_files += [ ST_INOTIFY_EXE ]
+# include_files += [ ST_INOTIFY_EXE ]
 
 executables = [
 	Executable(
@@ -111,6 +112,7 @@ get_version = lambda : "%s-win32" % (_get_version(),)
 
 # Monkey-patch _AddVersionResource in cx_Freeze so win32verstamp will
 # not bitch about non-numeric version
+"""
 RE_NUMBER = re.compile(r'v?([0-9]+).*')
 extract_number = lambda x : RE_NUMBER.match(x).group(1) if \
 		RE_NUMBER.match(x) else "0"
@@ -123,6 +125,7 @@ Freezer._AddVersionResource = lambda self, filename : \
 			company = self.metadata.author,
 			product = self.metadata.name
 	))
+"""
 
 setup(
 	name = "Syncthing GTK",

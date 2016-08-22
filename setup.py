@@ -82,6 +82,7 @@ if __name__ == "__main__" :
 				"icons/%s.png" % x for x in (
 					'restart', 'settings', 'shutdown', "st-gtk-logo"
 			)]),
+		('share/man/man1', glob.glob("doc/*") ),
 		('share/icons/hicolor/64x64/emblems', glob.glob("icons/emblem-*.png") ),
 		('share/pixmaps', ["icons/syncthing-gtk.png"]),
 		('share/applications', ['syncthing-gtk.desktop'] ),
