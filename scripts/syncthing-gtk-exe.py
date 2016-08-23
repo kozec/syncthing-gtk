@@ -42,7 +42,7 @@ if __name__ == "__main__":
 	# Force dark theme if reqested
 	if config["force_dark_theme"]:
 		os.environ["GTK_THEME"] = "Adwaita:dark"
-	if config["language"]:
+	if config["language"] not in ("", "None", None):
 		os.environ["LANGUAGE"] = config["language"]
 	
 	

@@ -14,7 +14,7 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkListStore" id="lstIcon_theme">
+  <object class="GtkListStore" id="lst_vicon_theme">
     <columns>
       <!-- column-name key -->
       <column type="gchararray"/>
@@ -33,6 +33,60 @@
       <row>
         <col id="0">syncthing-white	</col>
         <col id="1" translatable="yes">White</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="lst_vlanguage">
+    <columns>
+      <!-- column-name key -->
+      <column type="gchararray"/>
+      <!-- column-name text -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0"/>
+        <col id="1" translatable="yes">Default</col>
+      </row>
+      <row>
+        <col id="0">cs</col>
+        <col id="1">Česky</col>
+      </row>
+      <row>
+        <col id="0">de</col>
+        <col id="1">Deutsch</col>
+      </row>
+      <row>
+        <col id="0">en</col>
+        <col id="1">English</col>
+      </row>
+      <row>
+        <col id="0">es</col>
+        <col id="1">Español</col>
+      </row>
+      <row>
+        <col id="0">fr</col>
+        <col id="1">Français</col>
+      </row>
+      <row>
+        <col id="0">lt</col>
+        <col id="1">Latviešu</col>
+      </row>
+      <row>
+        <col id="0">ru</col>
+        <col id="1">Русский</col>
+      </row>
+      <row>
+        <col id="0">sk</col>
+        <col id="1">Slovenský</col>
+      </row>
+      <row>
+        <col id="0">vi</col>
+        <col id="1">tiếng việt</col>
+      </row>
+      <row>
+        <col id="0">zh</col>
+        <col id="1">中文</col>
       </row>
     </data>
   </object>
@@ -460,7 +514,7 @@
                     <property name="margin_left">20</property>
                     <property name="margin_top">10</property>
                     <property name="hexpand">True</property>
-                    <property name="model">lstIcon_theme</property>
+                    <property name="model">lst_vicon_theme</property>
                     <child>
                       <object class="GtkCellRendererText" id="crIconTheme"/>
                       <attributes>
@@ -478,7 +532,6 @@
                   <object class="GtkLabel" id="label19">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
                     <property name="margin_top">10</property>
                     <property name="label" translatable="yes">Tray icon style</property>
                     <property name="xalign">0</property>
@@ -489,10 +542,38 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkLabel" id="lbl_vlanguage">
+                    <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
+                    <property name="margin_top">5</property>
+                    <property name="label" translatable="yes">Language</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">19</property>
+                  </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkComboBox" id="vlanguage">
+                    <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
+                    <property name="margin_left">20</property>
+                    <property name="margin_top">5</property>
+                    <property name="hexpand">True</property>
+                    <property name="model">lst_vlanguage</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="crIconTheme1"/>
+                      <attributes>
+                        <attribute name="single-paragraph-mode">0</attribute>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">19</property>
+                  </packing>
                 </child>
               </object>
               <packing>
