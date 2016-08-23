@@ -68,7 +68,7 @@ class StatusIcon(GObject.GObject):
 		self.__active    = True
 		self.__visible   = False
 		self.__hidden    = False
-		self.__icon      = "si-unknown"
+		self.__icon      = "si-syncthing-unknown"
 		self.__text      = ""
 		self.__force     = force
 	
@@ -92,15 +92,15 @@ class StatusIcon(GObject.GObject):
 		If either of these are `None` their previous value will be used.
 		
 		@param {String} icon
-		       The name of the icon to show (i.e. `si-idle`)
+		       The name of the icon to show (i.e. `si-syncthing-idle`)
 		@param {String} text
 		       Some text that indicates what the application is currently doing (generally this be used for the tooltip)
 		"""
-		if IS_KDE and isinstance(self, StatusIconDBus) and not icon.startswith("si-syncing"):
+		if IS_KDE and isinstance(self, StatusIconDBus) and not icon.startswith("si-syncthing"):
 			# KDE seems to be the only platform that has proper support for icon states
 			# (all other implementations just hide the icon completely when its passive)
 			self.__visible = False
-		elif icon != "si-syncing-0":
+		elif not icon.endswith("-0"): # si-syncthing-0
 			# Ignore first syncing icon state to prevent the icon from flickering
 			# into the main notification bar during initialization
 			self.__visible = True
@@ -480,7 +480,7 @@ class StatusIconProxy(StatusIcon):
 		self._arguments  = (args, kwargs)
 		self._status_fb  = None
 		self._status_gtk = None
-		self.set("si-unknown", "")
+		self.set("si-syncthing-unknown", "")
 		
 		# Do not ever force-show indicators when they do not think they'll work
 		if "force" in self._arguments[1]:

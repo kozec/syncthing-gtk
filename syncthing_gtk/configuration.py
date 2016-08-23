@@ -44,6 +44,7 @@ class _Configuration(object):
 		"last_updatecheck"			: (datetime, LONG_AGO),
 		"window_position"			: (tuple, None),
 		"infobox_style"				: (str, 'font_weight="bold" font_size="large"'),
+		"icon_theme"				: (str, 'syncthing'),
 		"force_dark_theme"			: (bool, False),	# Windows-only
 	}
 	

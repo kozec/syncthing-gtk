@@ -1060,17 +1060,17 @@ class App(Gtk.Application, TimerManager):
 				self.animate_status()
 			elif self.any_device_online():
 				# Daemon is online and idle
-				self.statusicon.set("si-idle", _("Up to Date"))
+				self.statusicon.set("si-%s-idle" % (self.config['icon_theme'],), _("Up to Date"))
 				self["menu-si-status"].set_label(_("Up to Date"))
 				self.cancel_timer("icon")
 			else:
 				# Daemon is online, but there is no remote device connected
-				self.statusicon.set("si-unknown", _("All devices offline"))
+				self.statusicon.set("si-%s-unknown" % (self.config['icon_theme'],), _("All devices offline"))
 				self["menu-si-status"].set_label(_("All devices offline"))
 				self.cancel_timer("icon")
 		else:
 			# Still connecting to syncthing daemon
-			self.statusicon.set("si-unknown", _("Connecting to Syncthing daemon..."))
+			self.statusicon.set("si-%s-unknown" % (self.config['icon_theme'],), _("Connecting to Syncthing daemon..."))
 			self["menu-si-status"].set_label(_("Connecting to Syncthing daemon..."))
 			self.cancel_timer("icon")
 	
@@ -1079,7 +1079,7 @@ class App(Gtk.Application, TimerManager):
 		if self.timer_active("icon"):
 			# Already animating
 			return
-		self.statusicon.set("si-syncing-%s" % (self.sync_animation,))
+		self.statusicon.set("si-%s-%s" % (self.config['icon_theme'], self.sync_animation,))
 		self.sync_animation += 1
 		if self.sync_animation >= SI_FRAMES:
 			self.sync_animation = 0
