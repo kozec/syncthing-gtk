@@ -12,17 +12,23 @@ if __name__ == "__main__":
 	gi.require_version('Rsvg', '2.0')
 	
 	from syncthing_gtk.tools import init_logging, init_locale, IS_WINDOWS
-	if IS_WINDOWS:
-		from syncthing_gtk import windows
-		windows.enable_localization()
 	init_logging()
-	init_locale("locale/")
 	
 	if IS_WINDOWS:
 		from syncthing_gtk import windows, Configuration
 		config = Configuration()
 		if config["force_dark_theme"]:
 			os.environ["GTK_THEME"] = "Adwaita:dark"
+		if config["language"]:
+			os.environ["LANGUAGE"] = config["language"]
+	
+	if IS_WINDOWS:
+		from syncthing_gtk import windows
+		windows.enable_localization()
+	
+	init_locale("locale/")
+	
+	if IS_WINDOWS:
 		windows.fix_localized_system_error_messages()
 		windows.override_menu_borders()
 		from gi.repository import Gtk

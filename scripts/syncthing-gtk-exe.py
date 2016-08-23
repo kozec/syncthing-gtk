@@ -35,7 +35,17 @@ if __name__ == "__main__":
 		os.environ["PATH"] = path
 	
 	from syncthing_gtk.tools import init_logging, init_locale
-	from syncthing_gtk import windows
+	from syncthing_gtk import windows, Configuration
+	
+	config = Configuration()
+	
+	# Force dark theme if reqested
+	if config["force_dark_theme"]:
+		os.environ["GTK_THEME"] = "Adwaita:dark"
+	if config["language"]:
+		os.environ["LANGUAGE"] = config["language"]
+	
+	
 	windows.enable_localization()
 	init_logging()
 	init_locale(os.path.join(path, "locale"))
@@ -49,19 +59,10 @@ if __name__ == "__main__":
 		make_portable()
 	
 	# Initialize stuff
-	from syncthing_gtk.tools import init_logging
-	init_logging()
 	if portable:
 		# Override syncthing_binary value in _Configuration class
 		from syncthing_gtk.configuration import _Configuration
 		_Configuration.WINDOWS_OVERRIDE["syncthing_binary"] = (str, ".\\data\\syncthing.exe")
-	
-	from syncthing_gtk import windows, Configuration
-	config = Configuration()
-	
-	# Force dark theme if reqested
-	if config["force_dark_theme"]:
-		os.environ["GTK_THEME"] = "Adwaita:dark"
 	
 	# Fix various windows-only problems
 	windows.fix_localized_system_error_messages()

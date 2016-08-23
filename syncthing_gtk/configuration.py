@@ -46,6 +46,7 @@ class _Configuration(object):
 		"infobox_style"				: (str, 'font_weight="bold" font_size="large"'),
 		"icon_theme"				: (str, 'syncthing'),
 		"force_dark_theme"			: (bool, False),	# Windows-only
+		"language"					: (str, ""),		# Windows-only
 	}
 	
 	# Overrides some default values on Windows
