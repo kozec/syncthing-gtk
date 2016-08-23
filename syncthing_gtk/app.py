@@ -103,6 +103,7 @@ class App(Gtk.Application, TimerManager):
 		self.send_limit = -1			# -//-
 		self.ur_question_shown = False	# Used to prevent showing 'Do you wan't usage reporting'
 										# question more than once until ST-GTK is restarted.
+		self.home_dir_override = None	# If set by '--home'
 		self.wizard = None
 		self.widgets = {}
 		self.error_boxes = []
@@ -120,9 +121,6 @@ class App(Gtk.Application, TimerManager):
 		self.setup_widgets()
 		self.setup_actions()
 		self.setup_statusicon()
-		if self.wizard == None:
-			if self.setup_connection():
-				self.daemon.reconnect()
 	
 	def do_local_options(self, trash, lo):
 		self.parse_local_options(lo.contains)
@@ -149,6 +147,8 @@ class App(Gtk.Application, TimerManager):
 			if cl.get_options_dict().contains("quit"):
 				self.cb_exit()
 				return 0
+			if cl.get_options_dict().contains("home"):
+				self.home_dir_override = cl.get_options_dict().lookup_value("home").get_string()
 			if not StDownloader is None:
 				if cl.get_options_dict().contains("force-update"):
 					self.force_update_version = \
@@ -187,6 +187,11 @@ class App(Gtk.Application, TimerManager):
 							return True
 				return False
 			self.parse_local_options(is_option)
+		
+		if self.daemon == None:
+			if self.wizard == None:
+				if self.setup_connection():
+					self.daemon.reconnect()
 		self.activate()
 		return 0
 	
@@ -232,6 +237,8 @@ class App(Gtk.Application, TimerManager):
 		aso("debug",	b"d", "Be more verbose (debug mode)")
 		aso("wizard",	b"1", "Run 'first start wizard' and exit")
 		aso("about",	b"a", "Display about dialog and exit")
+		aso("home", 0, "Overrides default syncthing configuration directory",
+				GLib.OptionArg.STRING)
 		aso("add-repo", 0,    "Opens 'add repository' dialog with specified path prefilled",
 				GLib.OptionArg.STRING)
 		aso("remove-repo", 0, "If there is repository assigned with specified path, opens 'remove repository' dialog",
@@ -315,7 +322,10 @@ class App(Gtk.Application, TimerManager):
 	def setup_connection(self):
 		# Create Daemon instance (loads and parses config)
 		try:
-			self.daemon = Daemon()
+			if self.home_dir_override:
+				self.daemon = Daemon(os.path.join(self.home_dir_override, "config.xml"))
+			else:
+				self.daemon = Daemon(self.home_dir_override)
 		except InvalidConfigurationException, e:
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
@@ -413,6 +423,8 @@ class App(Gtk.Application, TimerManager):
 		cmdline = [self.config["syncthing_binary"], "-no-browser"]
 		vars, preargs, args = parse_config_arguments(self.config["syncthing_arguments"])
 		cmdline = preargs + cmdline + args
+		if self.home_dir_override:
+			cmdline += [ "-home" , self.home_dir_override ]
 		
 		self.process = DaemonProcess(cmdline, self.config["daemon_priority"], self.config["max_cpus"], env=vars)
 		self.process.connect('failed', self.cb_daemon_startup_failed)

@@ -282,7 +282,7 @@ class Daemon(GObject.GObject, TimerManager):
 	TLS_UNSUPPORTED	= 4
 	UNKNOWN			= 255
 	
-	def __init__(self):
+	def __init__(self, syncthing_configxml=None):
 		GObject.GObject.__init__(self)
 		TimerManager.__init__(self)
 		self._CSRFtoken = None
@@ -290,6 +290,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._api_key = None
 		self._connected = False
 		self._refresh_interval = 1 # seconds
+		self._configxml = syncthing_configxml
 		# syncing_folders holds set of folders that are being synchronized
 		self._syncing_folders = set()
 		# stopped_folders holds set of folders in 'stopped' state
@@ -323,9 +324,11 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _read_config(self):
 		# Read syncthing config to get connection url
-		configxml = os.path.join(get_config_dir(), "syncthing", "config.xml")
+		if not self._configxml:
+			self._configxml = os.path.join(get_config_dir(), "syncthing", "config.xml")
 		try:
-			config = file(configxml, "r").read()
+			log.debug("Reasing syncthing config %s", self._configxml)
+			config = file(self._configxml, "r").read()
 		except Exception, e:
 			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
 		try:
