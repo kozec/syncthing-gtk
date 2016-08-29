@@ -31,12 +31,12 @@ if __name__ == "__main__":
 			from syncthing_gtk.tools import get_install_path
 			path = get_install_path()
 			os.chdir(path)
-		print os.environ["PATH"]
 		os.environ["PATH"] = path
 	
 	from syncthing_gtk.tools import init_logging, init_locale
 	from syncthing_gtk import windows, Configuration
 	
+	init_logging()	
 	config = Configuration()
 	
 	# Force dark theme if reqested
@@ -47,7 +47,6 @@ if __name__ == "__main__":
 	
 	
 	windows.enable_localization()
-	init_logging()
 	init_locale(os.path.join(path, "locale"))
 	
 	# Tell cx_Freeze that I really need this library
