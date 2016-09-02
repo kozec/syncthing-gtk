@@ -121,7 +121,10 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_syncthing_folder_rejected(self, daemon, nid, rid, label):
 			if nid in self.app.devices:
 				device = self.app.devices[nid].get_title()
-				markup = _('Unexpected folder ID sent from device "%s".') % ("<b>%s</b>" % device,)
+				markup = _('Unexpected folder "%(folder)s" sent from device "%(device)s".') % {
+                                        'device' : "<b>%s</b>" % device,
+                                        'folder' : "<b>%s</b>" % (label or rid)
+                                }
 				self.info(markup)
 		
 		def cb_syncthing_device_rejected(self, daemon, nid, name, address):
