@@ -1353,6 +1353,7 @@ class App(Gtk.Application, TimerManager):
 			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
+			box.add_hidden_value("label", label)
 			# Setup display & signal
 			box.set_status("Unknown")
 			if not self.dark_color is None:

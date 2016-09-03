@@ -121,7 +121,10 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_syncthing_folder_rejected(self, daemon, nid, rid, label):
 			if nid in self.app.devices:
 				device = self.app.devices[nid].get_title()
-				markup = _('Unexpected folder ID sent from device "%s".') % ("<b>%s</b>" % device,)
+				markup = _('Unexpected folder "%(folder)s" sent from device "%(device)s".') % {
+                                        'device' : "<b>%s</b>" % device,
+                                        'folder' : "<b>%s</b>" % (label or rid)
+                                }
 				self.info(markup)
 		
 		def cb_syncthing_device_rejected(self, daemon, nid, name, address):
@@ -164,7 +167,11 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_syncthing_folder_finished(self, daemon, folder_id):
 			if folder_id in self.syncing:
 				self.syncing.remove(folder_id)
-				self.info(_("Synchronization of folder '%s' is completed.") % (folder_id,))
+                                folder_label = self.app.folders[folder_id]["label"]
+                                markup = _("Synchronization of folder '%s' is completed.") % {
+                                        (folder_label or folder_id)
+                                        }
+                                self.info(markup)
 		
 		def display(self):
 			if len(self.updated) == 1 and len(self.deleted) == 0:
