@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2016-09-04 13:24+0000\n"
+"PO-Revision-Date: 2016-09-04 20:39+0000\n"
 "Last-Translator: Robson Sobral\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
@@ -975,7 +975,7 @@ msgstr "Ve_rificar agora"
 
 #: app.glade:559
 msgid "_Browse"
-msgstr "_Explorar"
+msgstr "E_xplorar"
 
 #: app.glade:611
 msgid "Resume"
@@ -1103,7 +1103,7 @@ msgstr "XYZ-123-ABC"
 
 #: find-daemon.glade:126 ui-settings.glade:821
 msgid "_Browse..."
-msgstr "_Explorar"
+msgstr "E_xplorar"
 
 #: find-daemon.glade:179
 msgid "_Download..."
