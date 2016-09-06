@@ -438,6 +438,7 @@ class Daemon(GObject.GObject, TimerManager):
 			# Build GET request
 			get_str = "\r\n".join([
 				"GET /rest/%s HTTP/1.0" % command,
+				"Host: %s" % self._address,
 				"Cookie: %s" % self._CSRFtoken,
 				(("X-%s" % self._CSRFtoken.replace("=", ": ")) if self._CSRFtoken else "X-nothing: x"),
 				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing2: x"),
@@ -589,6 +590,7 @@ class Daemon(GObject.GObject, TimerManager):
 			json_str = json.dumps(data)
 			post_str = "\r\n".join([
 				"POST /rest/%s HTTP/1.0" % command,
+				"Host: %s" % self._address,
 				"Connection: close",
 				"Cookie: %s" % self._CSRFtoken,
 				(("X-%s" % self._CSRFtoken.replace("=", ": ")) if self._CSRFtoken else "X-nothing: x"),
