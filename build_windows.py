@@ -8,6 +8,8 @@ import os, site, sys, shutil, re
 from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
 from win32verstamp import stamp
+from tempfile import mkdtemp
+from subprocess import Popen, PIPE
 from setup import get_version as _get_version, find_mos
 from syncthing_gtk.windows import ST_INOTIFY_EXE
 
@@ -72,6 +74,26 @@ include_files = [ ST_INOTIFY_EXE ]
 gtk_dirs = ('etc', 'lib')
 include_files += [ (os.path.join(gnome_dll_path, x), x) for x in gtk_dirs ]
 include_files += [ (os.path.join(gnome_dll_path, x), x) for x in missing_dll ]
+
+# Fix for https://github.com/syncthing/syncthing-gtk/issues/313
+# Needs http://win-builds.org/1.5.0/packages/windows_32/FILENAME in in work directory
+FILENAME = "glib-networking-2.36.2-1-i686-w64-mingw32.txz"
+tmpdir = mkdtemp()
+srcdir = os.path.join(tmpdir, "windows_32/lib/gio/modules")
+cwd = os.getcwd()
+archive = open(FILENAME, "rb")
+os.chdir(tmpdir)
+tarxz = Popen(['tar', 'Jx'], stdin=PIPE)
+tarxz.communicate(archive.read())
+archive.close()
+os.chdir(cwd)
+if tarxz.returncode != 0:
+	print >>sys.stderr, "Failed to unpack", FILENAME
+	sys.exit(1)
+include_files += [
+	(os.path.join(srcdir, x), os.path.join('lib/gio/modules', x))
+	for x in os.listdir(srcdir)
+]
 
 # GTK locales
 include_files += [ (os.path.join(gnome_dll_path, "share/locale", x, "LC_MESSAGES", "glib20.mo"),
