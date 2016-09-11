@@ -13,7 +13,7 @@ Requirements:
 
 from __future__ import unicode_literals, print_function
 
-import re, os, json
+import re, os, json, hashlib
 try:
        from urllib import request # Py3
 except ImportError:
@@ -25,7 +25,11 @@ print("Retrieving last version...")
 releasesString = request.urlopen("https://api.github.com/repos/syncthing/syncthing-gtk/releases").read().decode('utf-8')
 releases = json.loads(releasesString)
 
-lastRelease = releases[0] # Improve if needed
+usedRelease = 0
+while releases[usedRelease]['prerelease']:
+	usedRelease += 1
+lastRelease = releases[usedRelease]
+
 version = ''
 url = ''
 releaseNotes = ''
@@ -34,13 +38,26 @@ version = lastRelease['name'].replace('v', '', )
 releaseNotes = lastRelease['body'].replace('\r', '').replace(':\n-', ':\n\n-')
 
 for asset in lastRelease['assets']:
-	if re.match(r'.+win32-installer.exe', asset['name']):
+	# print(asset['name'])
+	if re.match(r'.+win32-(full)?-installer.exe', asset['name']):
 		# url = "https://cdn.rawgit.com/syncthing/syncthing-gtk/releases/download/"+lastRelease['name']+"/"+asset['name']
 		url = asset['browser_download_url']
 assert(url != ''), "ERR No fitting script found"
 
-
 print("Found version", version)
+
+print("Calculating hash...")
+
+hash_sha256 = hashlib.sha256()
+installerFile = request.urlopen(url)
+
+while True:
+    buffer = installerFile.read(4096)
+    if not buffer:
+        break
+    hash_sha256.update(buffer)
+
+checksum = hash_sha256.hexdigest().upper()
 
 print("Updating files...")
 
@@ -60,6 +77,7 @@ chocolateyInstallString = chocolateyInstallFile.read()
 chocolateyInstallFile.close()
 
 chocolateyInstallString = re.sub(r'\$url ?= ?\'.*\'\n', '$url = \''+url+'\'\n', chocolateyInstallString)
+chocolateyInstallString = re.sub(r'\$checksum ?= ?\'.*\'\n', '$checksum = \''+checksum+'\'\n', chocolateyInstallString)
 
 chocolateyInstallFile = open("tools/chocolateyInstall.ps1", "w", encoding="utf8")
 print(chocolateyInstallString, file=chocolateyInstallFile, end="")
