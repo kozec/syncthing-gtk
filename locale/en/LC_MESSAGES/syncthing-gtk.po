@@ -897,9 +897,6 @@ msgid ""
 "Settings</b> menus in main window of application."
 msgstr ""
 
-#: about.glade:9
-msgid "Code&UI © 2014 Kozec"
-
 #: about.glade:7
 msgid "About Syncthing-GTK"
 msgstr ""
