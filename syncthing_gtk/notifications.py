@@ -168,9 +168,8 @@ if HAS_DESKTOP_NOTIFY:
 			if folder_id in self.syncing:
 				self.syncing.remove(folder_id)
 				folder_label = self.app.folders[folder_id]["label"]
-				markup = _("Synchronization of folder '%s' is completed.") % {
-							(folder_label or folder_id)
-				}
+				markup = _("Synchronization of folder '%s' is completed.") % (
+							(folder_label or folder_id),)
 				self.info(markup)
 		
 		def display(self):
