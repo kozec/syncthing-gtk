@@ -260,6 +260,8 @@ class EditorDialog(GObject.GObject):
 				if str(val) == str(m[i][0]).strip():
 					w.set_active(i)
 					break
+			else:
+				w.set_active(0)
 		elif isinstance(w, Gtk.CheckButton):
 			w.set_active(self.get_value(strip_v(key)))
 		else:

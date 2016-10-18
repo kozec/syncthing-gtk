@@ -73,6 +73,10 @@
         <col id="1">Latviešu</col>
       </row>
       <row>
+        <col id="0">pt</col>
+        <col id="1">Português</col>
+      </row>
+      <row>
         <col id="0">ru</col>
         <col id="1">Русский</col>
       </row>
