@@ -1,7 +1,7 @@
 Syncthing-GTK
 =============
 
-GTK3 &amp; Python based GUI and notification area icon for [Syncthing](syncthing)
+GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://github.com/syncthing/syncthing)
 
 [![screenshot1](http://i.imgur.com/N36wmBM.png)](http://i.imgur.com/eX250tQ.png) [![screenshot2](http://i.imgur.com/43mmnC7.png)](http://i.imgur.com/RTRgRdC.png) [![screenshot3](http://i.imgur.com/KDBYekd.png)](http://i.imgur.com/OZ4xEeH.jpg)
 
