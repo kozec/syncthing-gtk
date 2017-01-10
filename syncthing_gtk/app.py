@@ -1344,7 +1344,7 @@ class App(Gtk.Application, TimerManager):
 			box.add_value("global",		"global.svg",	_("Global State"),		"? items, ?B")
 			box.add_value("local",		"home.svg",		_("Local State"),		"? items, ?B")
 			box.add_value("oos",		"dl_rate.svg",	_("Out Of Sync"),		"? items, ?B")
-			box.add_value("master",		"lock.svg",		_("Folder Master"))
+			box.add_value("master",		"lock.svg",		_("Folder Type"))
 			box.add_value("ignore",		"ignore.svg",	_("Ignore Permissions"))
 			box.add_value("rescan",		"rescan.svg",	_("Rescan Interval"))
 			box.add_value("shared",		"shared.svg",	_("Shared With"))
@@ -1372,7 +1372,7 @@ class App(Gtk.Application, TimerManager):
 		# Set values
 		box.set_value("id",		id)
 		box.set_value("path",	display_path)
-		box.set_value("master",	_("Yes") if is_master else _("No"))
+		box.set_value("master",	_("Send Only") if is_master else _("Send & Recieve"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s%s" % (
 			rescan_interval, " " + _("(watch)") if id in self.config["use_inotify"] else "" ))

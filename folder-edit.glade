@@ -418,7 +418,7 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
                       <object class="GtkLabel" id="label18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Folder _Master</property>
+                        <property name="label" translatable="yes">_Send Only Folder</property>
                         <property name="use_underline">True</property>
                         <property name="mnemonic_widget">vreadOnly</property>
                         <attributes>
