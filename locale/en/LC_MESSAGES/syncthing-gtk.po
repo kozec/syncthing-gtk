@@ -332,7 +332,7 @@ msgid "Out Of Sync"
 msgstr ""
 
 #: syncthing_gtk/app.py:1297
-msgid "Folder Master"
+msgid "Folder Type"
 msgstr ""
 
 #: syncthing_gtk/app.py:1298
@@ -391,6 +391,14 @@ msgstr ""
 
 #: syncthing_gtk/app.py:1379 device-edit.glade:26 folder-edit.glade:78
 msgid "Off"
+msgstr ""
+
+#: syncthing_gtk/app.py:1375
+msgid "Send Only"
+msgstr ""
+
+#: syncthing_gtk/app.py:1375
+msgid "Send & Recieve"
 msgstr ""
 
 #: syncthing_gtk/app.py:1380 device-edit.glade:30
@@ -1002,7 +1010,7 @@ msgid "_Other"
 msgstr ""
 
 #: app.glade:737
-msgid "_Ongoing Rate Limit"
+msgid "_Outgoing Rate Limit"
 msgstr ""
 
 #: daemon-output.glade:7
@@ -1199,7 +1207,7 @@ msgid ""
 msgstr ""
 
 #: folder-edit.glade:418
-msgid "Folder _Master"
+msgid "_Send Only Folder"
 msgstr ""
 
 #: folder-edit.glade:439
