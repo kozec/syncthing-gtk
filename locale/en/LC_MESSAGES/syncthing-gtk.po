@@ -398,7 +398,7 @@ msgid "Send Only"
 msgstr ""
 
 #: syncthing_gtk/app.py:1375
-msgid "Send & Recieve"
+msgid "Send & Receive"
 msgstr ""
 
 #: syncthing_gtk/app.py:1380 device-edit.glade:30

@@ -1372,7 +1372,7 @@ class App(Gtk.Application, TimerManager):
 		# Set values
 		box.set_value("id",		id)
 		box.set_value("path",	display_path)
-		box.set_value("master",	_("Send Only") if is_master else _("Send & Recieve"))
+		box.set_value("master",	_("Send Only") if is_master else _("Send & Receive"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s%s" % (
 			rescan_interval, " " + _("(watch)") if id in self.config["use_inotify"] else "" ))
