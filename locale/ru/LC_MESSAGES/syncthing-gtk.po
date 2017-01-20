@@ -1185,7 +1185,7 @@ msgstr "Мониторинг изменений файловой системы"
 msgid ""
 "If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
 "Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
-msgstr "Если этот параметр включен, изменённые, созданные и удалённые файлы синхронизируются немедленно, до тех пор, пока Syncthing-GTK работает.\nПримечание: Используйте это вместе с коротким интервалом сканирования (<300 с), может потреблять много ресурсов."
+msgstr "Если этот параметр включен, изменённые, созданные и удалённые файлы синхронизируются немедленно, до тех пор, пока Syncthing-GTK работает.\nПримечание: Использование этого вместе с коротким интервалом сканирования (<300 с) может потреблять много ресурсов."
 
 #: folder-edit.glade:343
 msgid "Browse..."
