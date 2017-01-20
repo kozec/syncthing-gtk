@@ -1369,7 +1369,7 @@ msgstr "... Daemon _im Hintergrund starten"
 
 #: ui-settings.glade:180
 msgid "... _ask me what to do"
-msgstr "... _frag micht, was zu tun ist"
+msgstr "... _frag mich, was zu tun ist"
 
 #: ui-settings.glade:199
 msgid "When exiting after daemon was started in background..."
