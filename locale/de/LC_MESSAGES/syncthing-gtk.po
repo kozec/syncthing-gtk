@@ -5,13 +5,16 @@
 # Translators:
 # Daniel Kessel <d.kessel@mailbox.org>, 2015
 # kozec <kozec2@kozec.com>, 2016
+# Manuel Schneider, 2017
+# pitfd <pitfd@openmailbox.org>, 2016
+# Vincent Bermel <palob@users.noreply.github.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2016-04-25 21:03+0000\n"
-"Last-Translator: kozec <kozec2@kozec.com>\n"
+"PO-Revision-Date: 2017-01-20 23:50+0000\n"
+"Last-Translator: Manuel Schneider\n"
 "Language-Team: German (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -183,7 +186,7 @@ msgstr "_Hinzufügen"
 msgid ""
 "Device \"<b>%(name)s</b>\" (%(device)s) at IP \"<b>%(ip)s</b>\" wants to "
 "connect. Add new device?"
-msgstr ""
+msgstr "Gerät \"<b>%(name)s </b>\" (%(device)s) mit IP \"<b>%(ip)s</b>\" möchte eine Verbindung aufbauen. Neues Gerät hinzufügen?"
 
 #: syncthing_gtk/app.py:814
 msgid "_Ignore"
@@ -238,7 +241,7 @@ msgstr "Nie"
 #: syncthing_gtk/app.py:899 syncthing_gtk/app.py:1691
 #: syncthing_gtk/app.py:1692
 msgid "Paused"
-msgstr ""
+msgstr "Pausiert"
 
 #: syncthing_gtk/app.py:899 syncthing_gtk/app.py:924 syncthing_gtk/app.py:939
 #: syncthing_gtk/infobox.py:60
@@ -337,8 +340,8 @@ msgid "Out Of Sync"
 msgstr "Nicht synchron"
 
 #: syncthing_gtk/app.py:1297
-msgid "Folder Master"
-msgstr "Ordner-Hauptkopie"
+msgid "Folder Type"
+msgstr "Ordnertyp"
 
 #: syncthing_gtk/app.py:1298
 msgid "Ignore Permissions"
@@ -397,6 +400,14 @@ msgstr "Alle Daten"
 #: syncthing_gtk/app.py:1379 device-edit.glade:26 folder-edit.glade:78
 msgid "Off"
 msgstr "Aus"
+
+#: syncthing_gtk/app.py:1375
+msgid "Send Only"
+msgstr "Nur senden"
+
+#: syncthing_gtk/app.py:1375
+msgid "Send & Receive"
+msgstr "Senden und Empfangen"
 
 #: syncthing_gtk/app.py:1380 device-edit.glade:30
 msgid "Metadata Only"
@@ -468,16 +479,16 @@ msgstr "%ss"
 #: syncthing_gtk/editordialog.py:402
 #, python-format
 msgid "%s%%"
-msgstr ""
+msgstr "%s%%"
 
 #: syncthing_gtk/editordialog.py:409
 msgid "no limit"
-msgstr ""
+msgstr "Keine Begrenzung"
 
 #: syncthing_gtk/editordialog.py:411
 #, python-format
 msgid "%s KiB/s"
-msgstr ""
+msgstr "%s KiB/s"
 
 #: syncthing_gtk/editordialog.py:418
 msgid "never delete"
@@ -558,12 +569,12 @@ msgstr "Ort der Datei:"
 #: syncthing_gtk/notifications.py:120
 #, python-format
 msgid "Unexpected folder ID sent from device \"%s\"."
-msgstr "Unerwartete Ordner-ID wurde von Gerät \"%s\" gesendet."
+msgstr "Unerwartete Ordner ID von Gerät \"%s\""
 
 #: syncthing_gtk/notifications.py:124
 #, python-format
 msgid "Device \"%s\" is trying to connect to syncthing daemon."
-msgstr ""
+msgstr "Gerät \"%s\" versucht eine Verbindung mit dem syncthing-Daemon aufzubauen."
 
 #: syncthing_gtk/notifications.py:153
 #, python-format
@@ -902,13 +913,13 @@ msgid ""
 "Settings</b> menus in main window of application."
 msgstr "Sie können später mehr Details konfigurieren, in den Menüs <b>GUI-Einstellungen</b> und <b>Dienst-Einstellungen</b> im Hauptmenü der Anwendung."
 
-#: about.glade:9
-msgid "Code&UI © 2014 Kozec"
-msgstr "Code&UI © 2014 Kozec"
+#: about.glade:7
+msgid "About Syncthing-GTK"
+msgstr "Über Syncthing-GTK"
 
 #: about.glade:10
 msgid "GTK GUI and notification area icon for Syncthing"
-msgstr "GTK GUI und Benachrichtigungssymbol für Syncthing"
+msgstr "Anwendungs- und Tray Icon für Syncthing"
 
 #: about.glade:12
 msgid "GitHub"
@@ -980,7 +991,7 @@ msgstr "_Durchsuchen"
 
 #: app.glade:611
 msgid "Resume"
-msgstr ""
+msgstr "Fortsetzen"
 
 #: app.glade:641
 msgid "Connecting to daemon..."
@@ -996,7 +1007,7 @@ msgstr "Syncthing _fortsetzen"
 
 #: app.glade:695 daemon-settings.glade:335
 msgid "_Incoming Rate Limit"
-msgstr "_Eingehende Datenrate"
+msgstr "Maximale Empfangsrate"
 
 #: app.glade:709 app.glade:751
 msgid "_Unlimited"
@@ -1007,8 +1018,8 @@ msgid "_Other"
 msgstr "_Andere"
 
 #: app.glade:737
-msgid "_Ongoing Rate Limit"
-msgstr "A_usgehende Datenrate"
+msgid "_Outgoing Rate Limit"
+msgstr "_Maximale Senderate"
 
 #: daemon-output.glade:7
 msgid "Daemon Output"
@@ -1032,7 +1043,7 @@ msgstr "_Port für lokale Entdeckung"
 
 #: daemon-settings.glade:212
 msgid "Outgoing _Rate Limit"
-msgstr ""
+msgstr "Limit für _ausgehende Datenrate"
 
 #: daemon-settings.glade:229
 msgid "Open browser with _WebUI when daemon is starting"
@@ -1113,32 +1124,32 @@ msgstr "_Herunterladen"
 #: folder-edit.glade:44
 msgctxt "In File Pull Order combobox"
 msgid "Random"
-msgstr ""
+msgstr "Zufällig"
 
 #: folder-edit.glade:48
 msgctxt "In File Pull Order combobox"
 msgid "Alphabetic"
-msgstr ""
+msgstr "Alphabetisch"
 
 #: folder-edit.glade:52
 msgctxt "In File Pull Order combobox"
 msgid "Smallest First"
-msgstr ""
+msgstr "Kleinste zuerst"
 
 #: folder-edit.glade:56
 msgctxt "In File Pull Order combobox"
 msgid "Largest First"
-msgstr ""
+msgstr "Größste zuerst"
 
 #: folder-edit.glade:60
 msgctxt "In File Pull Order combobox"
 msgid "Oldest First"
-msgstr ""
+msgstr "Älteste zuerst"
 
 #: folder-edit.glade:64
 msgctxt "In File Pull Order combobox"
 msgid "Newest First"
-msgstr ""
+msgstr "Neueste zuerst"
 
 #: folder-edit.glade:82
 msgid "Simple"
@@ -1158,7 +1169,7 @@ msgstr "Extern"
 
 #: folder-edit.glade:171
 msgid "Folder _Label"
-msgstr ""
+msgstr "Ordner-Bezeich_nung"
 
 #: folder-edit.glade:202
 msgid "Short identifier for the folder. Must be the same on all devices."
@@ -1199,11 +1210,11 @@ msgstr "Ordner-_ID"
 #: folder-edit.glade:396
 msgid ""
 "Optional descriptive label for the folder. Can be different on each device."
-msgstr ""
+msgstr "Optionale Ordner-Bezeichnung. Diese kann van Gerät zu Gerät variieren."
 
 #: folder-edit.glade:418
-msgid "Folder _Master"
-msgstr "Ordner _Hauptkopie"
+msgid "_Send Only Folder"
+msgstr "\"Nur senden\" Ordner"
 
 #: folder-edit.glade:439
 msgid ""
@@ -1213,7 +1224,7 @@ msgstr "Dateien werden vor Änderungen, die auf anderen Geräten vorgenommen wer
 
 #: folder-edit.glade:456
 msgid "_Folder Settings"
-msgstr ""
+msgstr "Ordnereinstellungen"
 
 #: folder-edit.glade:476
 msgid "Select the devices to share this folder with."
@@ -1225,7 +1236,7 @@ msgstr "Mit _Geräten teilen"
 
 #: folder-edit.glade:535
 msgid "Versioning _Mode"
-msgstr ""
+msgstr "Versionierungs_modus"
 
 #: folder-edit.glade:590
 msgid ""
@@ -1293,7 +1304,7 @@ msgstr "Der erste Befehlszeilenparameter ist der Ordnerpfad und der zweite Param
 
 #: folder-edit.glade:953
 msgid "File _Versioning"
-msgstr ""
+msgstr "Datei_versionierung"
 
 #: folder-edit.glade:982
 msgid "Ignore P_ermissions"
@@ -1307,11 +1318,11 @@ msgstr "Bei der Suche nach Änderungen werden Dateiberechtigungen ignoriert. Ver
 
 #: folder-edit.glade:1018
 msgid "Minimum Free Disk Space"
-msgstr ""
+msgstr "Minimal freier Speicherplatz"
 
 #: folder-edit.glade:1057
 msgid "File Pull _Order"
-msgstr ""
+msgstr "Übertragungsreihenfolge von Dateien"
 
 #: folder-edit.glade:1103 ui-settings.glade:954
 msgid "_Advanced"
@@ -1353,7 +1364,7 @@ msgstr "Syncthing-GTK Einstellungen"
 
 #: ui-settings.glade:69
 msgid "Please, restart Syncthing-GTK to apply all changed settings"
-msgstr ""
+msgstr "Die Änderung werden erst nach Neustart von Syncthing-GTK wirksam."
 
 #: ui-settings.glade:136
 msgid "When starting and Syncthing daemon is not running..."
@@ -1369,7 +1380,7 @@ msgstr "... Daemon _im Hintergrund starten"
 
 #: ui-settings.glade:180
 msgid "... _ask me what to do"
-msgstr "... _frag micht, was zu tun ist"
+msgstr "... _frag mich, was zu tun ist"
 
 #: ui-settings.glade:199
 msgid "When exiting after daemon was started in background..."
@@ -1490,7 +1501,7 @@ msgstr "Legt die maximale Anzahl der CPU-Kerne für den Daemon fest. This value 
 
 #: ui-settings.glade:786
 msgid "Daemon"
-msgstr ""
+msgstr "Daemon"
 
 #: ui-settings.glade:808
 msgid ""
@@ -1505,7 +1516,7 @@ msgstr "Ort der Syncthing Programmdatei"
 
 #: ui-settings.glade:867
 msgid "Daemon arguments and variables"
-msgstr ""
+msgstr "Argumente und Variablen für Daemon"
 
 #: ui-settings.glade:897
 msgid ""
@@ -1517,10 +1528,10 @@ msgid ""
 "\n"
 "Example:\n"
 "  <i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
-msgstr ""
+msgstr "Durch Leerzeichen getrennte Liste von Argumenten und Umgebungsvariablen werden übergeben, wenn die obige Programmdatei gestartet wird.\n\nBenutzen Sie <i>VARIABLE=\"value\"</i>, um die Variable zu setzen und <i>-argument=\"value\"</i> (mit Strich) für das Argument.\n\nWenn Sie die Befehlszeile an ein anderes Kommando (wie bspw. Logger oder Ionice) weitergeben müssen, trennen Sie die voreingestellten Argumente mit dem Ausrufezeichen \"!\".\n\nBeispiel:\n<i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
 
 #: ui-settings.glade:921
 msgid ""
 "<b>Warning:</b> Changing settings on this page may prevent you from using "
 "Syncthing-GTK"
-msgstr ""
+msgstr "<b>Achtung:</b> Änderungen auf dieser Seite können die Unbenutzbarkeit von Syncthing-GTK zur Folge haben."
