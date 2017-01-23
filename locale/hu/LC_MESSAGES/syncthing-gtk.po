@@ -1,0 +1,1533 @@
+# Syncthing-GTK
+# Copyright (C) 2014-2015 Kozec and contributors
+# This file is distributed under the same license as the Syncthing-GTK package.
+# 
+# Translators:
+# Gyuris Gellért <gellert.gyuris@gmail.com>, 2017
+msgid ""
+msgstr ""
+"Project-Id-Version: syncthing-gtk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-04-20 11:27+0200\n"
+"PO-Revision-Date: 2017-01-21 19:33+0000\n"
+"Last-Translator: Gyuris Gellért <gellert.gyuris@gmail.com>\n"
+"Language-Team: Hungarian (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/hu/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: hu\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: syncthing_gtk/app.py:194
+msgid "Syncthing-GTK started and running in notification area"
+msgstr "A Syncthing-GTK elindult és az értesítési területen fut"
+
+#: syncthing_gtk/app.py:288
+#, python-format
+msgid "%s kB/s"
+msgstr "%s kB/s"
+
+#: syncthing_gtk/app.py:302 syncthing_gtk/notifications.py:77
+#: syncthing_gtk/wizard.py:53
+msgid "Syncthing-GTK"
+msgstr "Syncthing-GTK"
+
+#: syncthing_gtk/app.py:363 syncthing_gtk/app.py:364 syncthing_gtk/app.py:942
+msgid "Syncing"
+msgstr "Szinkronizálás"
+
+#: syncthing_gtk/app.py:366 syncthing_gtk/app.py:367
+msgid "Scanning"
+msgstr "Átnézés"
+
+#: syncthing_gtk/app.py:390 syncthing_gtk/app.py:652
+msgid "Starting Syncthing daemon"
+msgstr "Syncthing rendszerfolyamat indítása"
+
+#: syncthing_gtk/app.py:424
+msgid "Allow Anonymous Usage Reporting?"
+msgstr "Elküldhetően a névtelen felhasználási adatok?"
+
+#: syncthing_gtk/app.py:426
+msgid "The encrypted usage report is sent daily."
+msgstr "A titkosított felhasználási adatok naponta kerülnek elküldésre."
+
+#: syncthing_gtk/app.py:427
+msgid "It is used to track common platforms, folder sizes and app versions."
+msgstr "Ez a platformok, a mappák méretei és az alkalmazás verzió követésére használatos."
+
+#: syncthing_gtk/app.py:428
+msgid ""
+"If the reported data set is changed you will be prompted with this dialog "
+"again."
+msgstr "Az elküldött adatcsomag változása esetén ismételt engedélyezési kérés fog megjelenni."
+
+#: syncthing_gtk/app.py:430
+msgid "The aggregated statistics are publicly available at"
+msgstr "A felhalmozott statisztika publikusan elérthető: "
+
+#: syncthing_gtk/app.py:486
+msgid "Extracting update..."
+msgstr "Frissítés kicsomagolása…"
+
+#: syncthing_gtk/app.py:491
+msgid "Restarting daemon..."
+msgstr "Rendszerfolyamat újraindítása…"
+
+#: syncthing_gtk/app.py:507
+#, python-format
+msgid "Failed to download upgrade: %s"
+msgstr "Hiba a frissítés letöltésekor: %s"
+
+#: syncthing_gtk/app.py:525
+#, python-format
+msgid "Downloading Syncthing %s"
+msgstr "Syncthing %s letöltése"
+
+#: syncthing_gtk/app.py:604
+msgid "Connected to Syncthing daemon"
+msgstr "Kapcsolódva a Syncthing rendszerfolyamathoz"
+
+#: syncthing_gtk/app.py:614
+msgid "Connection to Syncthing daemon lost."
+msgstr "A kapcsolat elveszett a Syncthing rendszerfolyamattal."
+
+#: syncthing_gtk/app.py:615
+msgid "Syncthing is probably restarting or has been shut down."
+msgstr "A Syncthing valószínűleg épp újraindul vagy le lett állítva."
+
+#: syncthing_gtk/app.py:617
+msgid "Syncthing has been shut down."
+msgstr "A Syncthing le lett állítva."
+
+#: syncthing_gtk/app.py:621 syncthing_gtk/app.py:1499
+msgid "Syncthing is restarting."
+msgstr "A Syncthing újraindul."
+
+#: syncthing_gtk/app.py:621 syncthing_gtk/app.py:1499
+msgid "Please wait"
+msgstr "Türelem"
+
+#: syncthing_gtk/app.py:644
+#, python-format
+msgid "Connecting to Syncthing daemon at %s..."
+msgstr "Kapcsolódás a Syncthing rendszerfolyamathoz: %s…"
+
+#: syncthing_gtk/app.py:649
+#, python-format
+msgid "Waiting for Syncthing daemon at %s..."
+msgstr "Várakozás a Syncthing rendszerfolyamatra: %s…"
+
+#: syncthing_gtk/app.py:664
+msgid "Your syncthing daemon is too old."
+msgstr "A syncthing rendszerfolyamat túl régi."
+
+#: syncthing_gtk/app.py:664
+msgid "Attempting to download recent, please wait..."
+msgstr "Kísérlet a legfrissebb letöltésére, türelem…"
+
+#: syncthing_gtk/app.py:670
+msgid ""
+"Cannot authorize with daemon. Please, use WebUI to generate API key or "
+"disable password authentication."
+msgstr "Nem sikerült a hitelesítés a rendszerfolyamattal. A webes felületen lehet API kulcsot generálni vagy kikapcsolni a jelszavas védelmet."
+
+#: syncthing_gtk/app.py:672
+#, python-format
+msgid ""
+"Your syncthing daemon is too old.\n"
+"Please, upgrade syncthing package at least to version %s and try again."
+msgstr "A syncthing rendszerfolyamat túl régi.\nFrissíteni kell a syncthing csomagot legalább erre a verzióra: %s, majd újra lehet próbálkozni."
+
+#: syncthing_gtk/app.py:674
+msgid ""
+"Sorry, connecting to HTTPS is not supported on this platform.\n"
+"Please, use WebUI to disable HTTPS try again."
+msgstr "Sajnos a HTTPS kapcsolódás nem támogatott ezen a platformon.\nA webes felületen lehet kikapcsolni a HTTPS-t."
+
+#: syncthing_gtk/app.py:677
+msgid "Connection to daemon failed. Check your configuration and try again."
+msgstr "Nem sikerült a kapcsolódás a rendszerfolyamathoz. Javasolt ellenőrizni a konfigurációt, majd újra próbálkozni."
+
+#: syncthing_gtk/app.py:678 syncthing_gtk/app.py:1992
+#: syncthing_gtk/editordialog.py:314
+msgid "Error message:"
+msgstr "Hibaüzenet:"
+
+#: syncthing_gtk/app.py:689
+msgid "More info"
+msgstr "További információ"
+
+#: syncthing_gtk/app.py:715
+msgid ""
+"The configuration has been saved but not activated.\n"
+"Syncthing must restart to activate the new configuration."
+msgstr "A konfiguráció el lett mentve, de nem lett aktiválva.\nA Syncthinget újra kell indítani az konfiguráció életbelépéséhez."
+
+#: syncthing_gtk/app.py:717
+msgid "_Restart"
+msgstr "Új_raindítás"
+
+#: syncthing_gtk/app.py:784
+#, python-format
+msgid "%(device)s wants to share folder \"%(folder)s\". Add new folder?"
+msgstr "%(device)s szeretne megosztani e mappát: „%(folder)s”. Hozzáadható a mappa?"
+
+#: syncthing_gtk/app.py:791 syncthing_gtk/app.py:813
+msgid "_Add"
+msgstr "_Hozzáadás"
+
+#: syncthing_gtk/app.py:806
+#, python-format
+msgid ""
+"Device \"<b>%(name)s</b>\" (%(device)s) at IP \"<b>%(ip)s</b>\" wants to "
+"connect. Add new device?"
+msgstr "A(z) „<b>%(name)s</b>” nevű eszköz (%(device)s) a(z) „<b>%(ip)s</b>” IP címről csatlakozni szeretne. Hozzáadható az eszköz?"
+
+#: syncthing_gtk/app.py:814
+msgid "_Ignore"
+msgstr "_Mellőz"
+
+#: syncthing_gtk/app.py:832
+msgid "RAM Utilization"
+msgstr "Memóriahasználat"
+
+#: syncthing_gtk/app.py:833
+msgid "CPU Utilization"
+msgstr "Processzorhasználat"
+
+#: syncthing_gtk/app.py:834 syncthing_gtk/app.py:1353
+msgid "Download Rate"
+msgstr "Letöltési sebesség"
+
+#: syncthing_gtk/app.py:835 syncthing_gtk/app.py:1354
+msgid "Upload Rate"
+msgstr "Feltöltési sebesség"
+
+#: syncthing_gtk/app.py:836
+msgid "Announce Server"
+msgstr "Bejelentő szerver"
+
+#: syncthing_gtk/app.py:837 syncthing_gtk/app.py:1356
+msgid "Version"
+msgstr "Verzió"
+
+#: syncthing_gtk/app.py:860 syncthing_gtk/editordialog.py:394
+msgid "disabled"
+msgstr "letiltott"
+
+#: syncthing_gtk/app.py:862
+msgid "Online"
+msgstr "Elérhető"
+
+#: syncthing_gtk/app.py:862
+msgid "offline"
+msgstr "elérhetetlen"
+
+#: syncthing_gtk/app.py:864
+#, python-format
+msgid "%(online)s/%(total)s online"
+msgstr "%(online)s/%(total)s elérhető"
+
+#: syncthing_gtk/app.py:891 syncthing_gtk/app.py:1357
+#: syncthing_gtk/app.py:1382
+msgid "Never"
+msgstr "Soha"
+
+#: syncthing_gtk/app.py:899 syncthing_gtk/app.py:1691
+#: syncthing_gtk/app.py:1692
+msgid "Paused"
+msgstr "Szünetel"
+
+#: syncthing_gtk/app.py:899 syncthing_gtk/app.py:924 syncthing_gtk/app.py:939
+#: syncthing_gtk/infobox.py:60
+msgid "Disconnected"
+msgstr "Kapcsolat bontva"
+
+#: syncthing_gtk/app.py:916
+msgid "Connected"
+msgstr "Kapcsolódva"
+
+#: syncthing_gtk/app.py:945 syncthing_gtk/app.py:980 syncthing_gtk/app.py:1030
+#: syncthing_gtk/app.py:1031 syncthing_gtk/app.py:1070
+msgid "Up to Date"
+msgstr "Friss"
+
+#: syncthing_gtk/app.py:966 syncthing_gtk/app.py:967 syncthing_gtk/app.py:968
+msgid "Files"
+msgstr "Fájlok"
+
+#: syncthing_gtk/app.py:980 syncthing_gtk/app.py:1068
+msgid "Cluster out of sync"
+msgstr "Klaszter nincs szinkronban"
+
+#: syncthing_gtk/app.py:995
+msgid "Stopped"
+msgstr "Leállítva"
+
+#: syncthing_gtk/app.py:998 syncthing_gtk/app.py:1005
+msgid "Error"
+msgstr "Hiba"
+
+#: syncthing_gtk/app.py:1024
+#, python-format
+msgid "Synchronizing '%s'"
+msgstr "'%s' szinkronizálása"
+
+#: syncthing_gtk/app.py:1026
+#, python-format
+msgid "Synchronizing %s folders"
+msgstr "%s mappa szinkronizálása"
+
+#: syncthing_gtk/app.py:1035 syncthing_gtk/app.py:1036
+msgid "All devices offline"
+msgstr "Minden eszköz elérhetetlen"
+
+#: syncthing_gtk/app.py:1040 syncthing_gtk/app.py:1041
+msgid "Connecting to Syncthing daemon..."
+msgstr "Kapcsolódás a Syncthing rendszerfolyamathoz"
+
+#: syncthing_gtk/app.py:1079
+msgid "Unshared"
+msgstr "Nincs megosztva"
+
+#: syncthing_gtk/app.py:1082
+msgid "Offline"
+msgstr "Elérhetetlen"
+
+#: syncthing_gtk/app.py:1176
+msgid "Hide Window"
+msgstr "Ablak elrejtése"
+
+#: syncthing_gtk/app.py:1190 app.glade:651
+msgid "Show Window"
+msgstr "Ablak megjelenítése"
+
+#: syncthing_gtk/app.py:1239
+msgid "Syncthing daemon doesn't appear to be running."
+msgstr "Nem úgy tűnik, hogy a Syncthing rendszerfolyamat futna."
+
+#: syncthing_gtk/app.py:1240
+msgid "Start it now?"
+msgstr "Indítható?"
+
+#: syncthing_gtk/app.py:1243
+msgid "Always start daemon automatically"
+msgstr "A rendszerfolyamat indítása mindig automatikusan"
+
+#: syncthing_gtk/app.py:1292
+msgid "Folder ID"
+msgstr "Mappaazonosító"
+
+#: syncthing_gtk/app.py:1293
+msgid "Path"
+msgstr "Útvonal"
+
+#: syncthing_gtk/app.py:1294
+msgid "Global State"
+msgstr "Globális állapot"
+
+#: syncthing_gtk/app.py:1295
+msgid "Local State"
+msgstr "Helyi állapot"
+
+#: syncthing_gtk/app.py:1296
+msgid "Out Of Sync"
+msgstr "Nincs szinkronban"
+
+#: syncthing_gtk/app.py:1297
+msgid "Folder Type"
+msgstr "Mappatípus"
+
+#: syncthing_gtk/app.py:1298
+msgid "Ignore Permissions"
+msgstr "Jogosultságok figyelmen kívül hagyása"
+
+#: syncthing_gtk/app.py:1299
+msgid "Rescan Interval"
+msgstr "Átnézési intervallum"
+
+#: syncthing_gtk/app.py:1300
+msgid "Shared With"
+msgstr "Megosztva ezekkel:"
+
+#: syncthing_gtk/app.py:1324 syncthing_gtk/app.py:1325
+#: syncthing_gtk/app.py:1381
+msgid "Yes"
+msgstr "Igen"
+
+#: syncthing_gtk/app.py:1324 syncthing_gtk/app.py:1325
+#: syncthing_gtk/app.py:1381
+msgid "No"
+msgstr "Nem"
+
+#: syncthing_gtk/app.py:1327
+msgid "(watch)"
+msgstr "(watch)"
+
+#: syncthing_gtk/app.py:1341
+msgid "Unused"
+msgstr "Nincs használatban"
+
+#: syncthing_gtk/app.py:1350
+msgid "Address"
+msgstr "Cím"
+
+#: syncthing_gtk/app.py:1351
+msgid "Synchronization"
+msgstr "Szinkronizálás"
+
+#: syncthing_gtk/app.py:1352
+msgid "Compression"
+msgstr "Tömörítés"
+
+#: syncthing_gtk/app.py:1355
+msgid "Introducer"
+msgstr "Bevezető"
+
+#: syncthing_gtk/app.py:1357
+msgid "Last Seen"
+msgstr "Utoljára látva"
+
+#: syncthing_gtk/app.py:1378 device-edit.glade:22
+msgid "All Data"
+msgstr "Minden adat"
+
+#: syncthing_gtk/app.py:1379 device-edit.glade:26 folder-edit.glade:78
+msgid "Off"
+msgstr "Kikapcsolva"
+
+#: syncthing_gtk/app.py:1375
+msgid "Send Only"
+msgstr "Csak küldés"
+
+#: syncthing_gtk/app.py:1375
+msgid "Send & Receive"
+msgstr "Küldés és fogadás"
+
+#: syncthing_gtk/app.py:1380 device-edit.glade:30
+msgid "Metadata Only"
+msgstr "Csak metaadatok"
+
+#: syncthing_gtk/app.py:1522
+msgid "Exiting."
+msgstr "Kilépés."
+
+#: syncthing_gtk/app.py:1523
+msgid "Shutdown Syncthing daemon as well?"
+msgstr "A Syncthing rendszerfolyamat szintén leállítható?"
+
+#: syncthing_gtk/app.py:1528
+msgid "Always do same; Don't show this window again"
+msgstr "Mindig így történjen. Ne jelenjen meg újra ez az ablak."
+
+#: syncthing_gtk/app.py:1768
+#, python-format
+msgid "Do you really want to permanently stop synchronizing directory '%s'?"
+msgstr "Valóban véglegesen leállítandó e mappa szinkronizálása: %s?"
+
+#: syncthing_gtk/app.py:1770
+#, python-format
+msgid "Do you really want remove device '%s' from Syncthing?"
+msgstr "Valóban eltávolítandó ezen távoli eszköz a Syncthingből: %s?"
+
+#: syncthing_gtk/app.py:1838
+msgid "Syncthing-Inotify Output"
+msgstr "Syncthing-Inotify kimenet"
+
+#: syncthing_gtk/app.py:1844
+msgid "Syncthing-Inotify is unavailable or failed to start"
+msgstr "A Syncthing-Inotify nincs jelen vagy nem sikerült elindítani"
+
+#: syncthing_gtk/app.py:1991
+msgid "Failed to start Syncthing daemon."
+msgstr "Nem sikerült elindítani a Syncthing rendszerfolyamatot."
+
+#: syncthing_gtk/app.py:1993
+msgid ""
+"Please, check your installation or set new path to Syncthing daemon binary."
+msgstr "Ellenőrizni kell a telepítést vagy be kell állítani a Syncthing rendszefolyamat binárisának útvonalát."
+
+#: syncthing_gtk/daemonsettings.py:24
+msgid "Syncthing Daemon Settings"
+msgstr "Syncthing rendszerfolyamat beállításai"
+
+#: syncthing_gtk/deviceeditor.py:24
+msgid ""
+"The entered device ID does not look valid. It should be a 52 character "
+"string consisting of letters and numbers, with spaces and dashes being "
+"optional."
+msgstr "A megadott eszközazonosító nem tűnik érvényesnek. 52 karakterből kell álljon, betűket és számokat tartalmazhat. A szóközök és a kötőjelek opcionálisak."
+
+#: syncthing_gtk/editordialog.py:312
+msgid "Failed to load configuration from daemon."
+msgstr "Nem sikerült betölteni a rendszerfolyamat beállításait."
+
+#: syncthing_gtk/editordialog.py:313
+msgid "Try again."
+msgstr "Újrapróbálkozás"
+
+#: syncthing_gtk/editordialog.py:387 syncthing_gtk/editordialog.py:396
+#, python-format
+msgid "%ss"
+msgstr "%ss"
+
+#: syncthing_gtk/editordialog.py:402
+#, python-format
+msgid "%s%%"
+msgstr "%s%%"
+
+#: syncthing_gtk/editordialog.py:409
+msgid "no limit"
+msgstr "nincs limitálva"
+
+#: syncthing_gtk/editordialog.py:411
+#, python-format
+msgid "%s KiB/s"
+msgstr "%s KiB/s"
+
+#: syncthing_gtk/editordialog.py:418
+msgid "never delete"
+msgstr "soha ne legyen törölve"
+
+#: syncthing_gtk/editordialog.py:420
+#, python-format
+msgid "%s day"
+msgstr "%s nap"
+
+#: syncthing_gtk/editordialog.py:422
+#, python-format
+msgid "%s days"
+msgstr "%s nap"
+
+#: syncthing_gtk/editordialog.py:455
+msgid "Failed to save configuration."
+msgstr "Nem sikerült elmenteni a beállításokat."
+
+#: syncthing_gtk/finddaemondialog.py:24 find-daemon.glade:7
+msgid "Can't invoke the daemon"
+msgstr "Nem sikerült hivatkozni a rendszerfolyamatra"
+
+#: syncthing_gtk/finddaemondialog.py:26
+msgid "Syncthing binary"
+msgstr "Syncthing bináris"
+
+#: syncthing_gtk/finddaemondialog.py:28 syncthing_gtk/finddaemondialog.py:37
+msgid "Syncthing daemon binary cannot be found."
+msgstr "A Syncthing rendszerfolyamat binárisát nem sikerült megtalálni."
+
+#: syncthing_gtk/finddaemondialog.py:29
+#, python-format
+msgid ""
+"If you have Syncthing installed, please, set path to %s below or click on "
+"<b>Download</b> button to download latest Syncthing package."
+msgstr "Ha telepítve van már a Syncthing, alább kell megadni: %s, vagy a <b>Letöltés</b> gombbal indítható a lefrissebb Syncthing letöltése."
+
+#: syncthing_gtk/finddaemondialog.py:38
+#, python-format
+msgid "If you have Syncthing installed, please, set path to %s below"
+msgstr "Ha telepítve van már a Syncthing, alább kell megadni: %s"
+
+#: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:411
+msgid "Cannot download Syncthing daemon."
+msgstr "Nem lehet letölteni a Syncthing rendszerfolyamatot."
+
+#: syncthing_gtk/finddaemondialog.py:83 syncthing_gtk/wizard.py:412
+#, python-format
+msgid "This platform (%s) is not supported"
+msgstr "Ez a platform (%s) nem támogatott."
+
+#: syncthing_gtk/finddaemondialog.py:100
+msgid "Downloading..."
+msgstr "Letöltés…"
+
+#: syncthing_gtk/finddaemondialog.py:163 syncthing_gtk/stdownloader.py:251
+#: syncthing_gtk/stdownloader.py:279
+msgid "Download failed."
+msgstr "Letöltés nem sikerült."
+
+#: syncthing_gtk/finddaemondialog.py:185 syncthing_gtk/wizard.py:458
+msgid "Download finished."
+msgstr "A letöltés befejeződött."
+
+#: syncthing_gtk/foldereditor.py:45
+msgid "Select Folder for new Folder"
+msgstr "Mappa választása az új mappához."
+
+#: syncthing_gtk/foldereditor.py:166 syncthing_gtk/foldereditor.py:167
+msgid "Please, install pyinotify package to use this feature"
+msgstr "A pyinotify csomag telepítése szükséges ezen funkcióhoz."
+
+#: syncthing_gtk/ignoreeditor.py:44
+msgid "File location:"
+msgstr "Fájl helye:"
+
+#: syncthing_gtk/notifications.py:120
+#, python-format
+msgid "Unexpected folder ID sent from device \"%s\"."
+msgstr "Váratlan mappazonosítót küldött az eszköz: „%s” ."
+
+#: syncthing_gtk/notifications.py:124
+#, python-format
+msgid "Device \"%s\" is trying to connect to syncthing daemon."
+msgstr "Kapcsolódni próbál ez az eszköz a syncthing rendszerfolyamathoz: „%s”."
+
+#: syncthing_gtk/notifications.py:153
+#, python-format
+msgid "Synchronization of folder '%s' is completed."
+msgstr "A mappa szinkronizálása befejeződött: „%s”."
+
+#: syncthing_gtk/notifications.py:160
+#, python-format
+msgid "The file '%s' was updated on remote device."
+msgstr "A fájl frissítve lett a távoli eszközön: „%s”."
+
+#: syncthing_gtk/notifications.py:165
+#, python-format
+msgid "The file '%s' was deleted on remote device."
+msgstr "A fájl törölve lett a távoli eszközön: „%s”."
+
+#: syncthing_gtk/notifications.py:168
+#, python-format
+msgid "%s files were updated on remote device."
+msgstr "A fájlok frissítve lettek a távoli eszközön: %s."
+
+#: syncthing_gtk/notifications.py:171
+#, python-format
+msgid "%s files were deleted on remote device."
+msgstr "A fájlok törölve lettek a távoli eszközön: %s."
+
+#: syncthing_gtk/notifications.py:175
+#, python-format
+msgid ""
+"%(updated)s files were updated and %(deleted)s deleted on remote device."
+msgstr "A távoli eszközön a fájlok frissítve lettek: %(updated)s, ezen fájlok pedig törlésre kerültek: %(deleted)s."
+
+#: syncthing_gtk/statusicon.py:48
+msgid "Syncthing"
+msgstr "Syncthing"
+
+#: syncthing_gtk/stdownloader.py:174 syncthing_gtk/stdownloader.py:217
+#: syncthing_gtk/stdownloader.py:313 syncthing_gtk/stdownloader.py:344
+msgid "Failed to determine latest Syncthing version."
+msgstr "Nem sikerült meghatározni a legfrissebb Syncthing verziót."
+
+#: syncthing_gtk/stdownloader.py:236
+msgid "Failed to create temporaly file."
+msgstr "Nem sikerült létrehozni az ideiglenes fájlt."
+
+#: syncthing_gtk/stdownloader.py:294
+msgid "Downloaded file is corrupted."
+msgstr "A letöltött fájl sérült."
+
+#: syncthing_gtk/tools.py:192
+#, python-format
+msgid "~%s hours ago"
+msgstr "~%s órával ezelőtt"
+
+#: syncthing_gtk/tools.py:194
+#, python-format
+msgid "%s minutes ago"
+msgstr "%s perccel ezelőtt"
+
+#: syncthing_gtk/tools.py:196
+#, python-format
+msgid "%s seconds ago"
+msgstr "%s másodperccel ezelőtt"
+
+#: syncthing_gtk/tools.py:197
+msgid "just now"
+msgstr "épp most"
+
+#: syncthing_gtk/tools.py:199
+#, python-format
+msgid "%s days ago"
+msgstr "%s napja"
+
+#: syncthing_gtk/tools.py:203
+#, python-format
+msgid "in %s days"
+msgstr "%s nap múlva"
+
+#: syncthing_gtk/tools.py:205
+#, python-format
+msgid "~%s hours from now"
+msgstr "~%s óra múlva"
+
+#: syncthing_gtk/tools.py:207
+#, python-format
+msgid "%s minutes from now"
+msgstr "%s perc múlva"
+
+#: syncthing_gtk/tools.py:209
+#, python-format
+msgid "%s seconds from now"
+msgstr "%s másodperc múlva"
+
+#: syncthing_gtk/tools.py:210
+msgid "in a moment"
+msgstr "néhány pillanat múlva"
+
+#: syncthing_gtk/uisettingsdialog.py:58
+msgid "UI Settings"
+msgstr "Felület beállításai"
+
+#: syncthing_gtk/uisettingsdialog.py:70
+msgid "Unlimited"
+msgstr "Korlátozás nélkül"
+
+#: syncthing_gtk/uisettingsdialog.py:107
+#, python-format
+msgid "Install %(package)s package to enable %(feature)s support"
+msgstr "Ezen csomagokat kell telepíteni a(z) %(feature)s szolgáltatásokhoz: %(package)s"
+
+#: syncthing_gtk/uisettingsdialog.py:312
+msgid "Browse for Syncthing binary"
+msgstr "Syncthing bináris tallózása"
+
+#: syncthing_gtk/wizard.py:53
+msgid "First run wizard"
+msgstr "Első indítás tündér"
+
+#: syncthing_gtk/wizard.py:137
+#, python-format
+msgid "Please, check error log and fill bug report on %s."
+msgstr "A hibajegyzék tanulmányozása után érdemes bejelenteni a hibát: %s."
+
+#: syncthing_gtk/wizard.py:141
+msgid "Display error log"
+msgstr "Hibajegyzék megjelenítése"
+
+#: syncthing_gtk/wizard.py:198
+msgid "Welcome to Syncthing-GTK first run wizard!"
+msgstr "Üdvözlet a Syncthing-GTK első indítás tündérjében!"
+
+#: syncthing_gtk/wizard.py:200
+msgid "It looks like you never have used Syncthing."
+msgstr "Úgy tűnik, hogy még soha nem lett lett elindítva a Syncthing."
+
+#: syncthing_gtk/wizard.py:201
+msgid "Initial configuration should be created."
+msgstr "Szükséges a kezdő beállítások létrehozása."
+
+#: syncthing_gtk/wizard.py:202
+msgid ""
+"Please click <b>Next</b> to create a Syncthing configuration file or "
+"<b>Quit</b> to exit"
+msgstr "A <b>Tovább</b> gombbal létrehozható a Syncthing konfigurációs fájl, a <b>Kilépés</b> gombbal pedig megszakítható"
+
+#: syncthing_gtk/wizard.py:204
+#, python-format
+msgid ""
+"If you already had Syncthing daemon configured, please, exit this wizard and"
+" check your %s folder"
+msgstr "Ha már konfigurálva van a Syncthing rendszerfolyamat, javasolt kilépni ebből a tündérből és ellenőrizni a mappát: %s"
+
+#: syncthing_gtk/wizard.py:220
+msgid "Searching for Syncthing daemon."
+msgstr "Syncthing rendszerfolyamat keresése"
+
+#: syncthing_gtk/wizard.py:222 syncthing_gtk/wizard.py:394
+msgid "Please wait..."
+msgstr "Türelem…"
+
+#: syncthing_gtk/wizard.py:270 syncthing_gtk/wizard.py:287
+msgid "Syncthing daemon not found."
+msgstr "Syncthing rendszerfolyamat nem található."
+
+#: syncthing_gtk/wizard.py:271
+msgid "Please, use package manager to install the Syncthing package."
+msgstr "Csomagkezelővel lehet telepíteni a Syncthing csomagot."
+
+#: syncthing_gtk/wizard.py:283
+msgid "download latest binary"
+msgstr "friss bináris letöltése"
+
+#: syncthing_gtk/wizard.py:288 syncthing_gtk/wizard.py:302
+#, python-format
+msgid ""
+"Please, use package manager to install the Syncthing package or "
+"%(download_link)s from Syncthing page and save it to your %(target)s "
+"directory."
+msgstr "Csomagkezelővel kell telepíteni a Syncthing csomagot vagy le lehet tölteni erről a címről: %(download_link)s és elhelyezni a mappában: %(target)s"
+
+#: syncthing_gtk/wizard.py:296
+msgid "Syncthing daemon is too old."
+msgstr "A Syncthing rendszerfolyamat túl régi."
+
+#: syncthing_gtk/wizard.py:297
+#, python-format
+msgid ""
+"Syncthing-GTK needs Syncthing daemon %(min)s or newer, but only %(actual)s "
+"were found."
+msgstr "A Syncthing-GTK minimum %(min)s vagy újabb verziót igényel a Syncthing rendszerfolyamatból, de a legfrissebb megtalált verziószám csak a(z) %(actual)s. "
+
+#: syncthing_gtk/wizard.py:309
+msgid "Alternatively, Syncthing-GTK can download Syncthing binary"
+msgstr "Egyébként a Syncthing-GTK le tudja tölteni a Syncthing binárist"
+
+#: syncthing_gtk/wizard.py:310
+#, python-format
+msgid "to %s and keep it up-to-date, but this option is meant as"
+msgstr "a %s helyre és képes is frissen tartani azt, de ez az végső megoldást és"
+
+#: syncthing_gtk/wizard.py:312
+msgid "last resort and generally not suggested."
+msgstr "általánosságban nem javasolt."
+
+#: syncthing_gtk/wizard.py:315
+msgid "_Download Syncthing binary"
+msgstr "Syncthing bináris _letöltése"
+
+#: syncthing_gtk/wizard.py:319
+msgid "Auto_update downloaded binary"
+msgstr "Letöltött bináris automatikus _frissítése"
+
+#: syncthing_gtk/wizard.py:375
+msgid "Syncthing daemon binary found."
+msgstr "Syncthing rendszerfolyamat binárisa nem található."
+
+#: syncthing_gtk/wizard.py:377 syncthing_gtk/wizard.py:460
+msgid "Binary path:"
+msgstr "Bináris útvonala:"
+
+#: syncthing_gtk/wizard.py:378
+msgid "Version:"
+msgstr "Verzió:"
+
+#: syncthing_gtk/wizard.py:393
+msgid "Downloading Syncthing daemon."
+msgstr "Syncthing rendszerfolyamat letöltése."
+
+#: syncthing_gtk/wizard.py:441
+msgid "Failed to download Syncthing daemon package."
+msgstr "Nem sikerült letölteni a Syncthing rendszerfolyamat csomagját."
+
+#: syncthing_gtk/wizard.py:472
+msgid "Syncthing is generating RSA key and certificate."
+msgstr "A Syncthing RSA kulcsot és tanúsítványt generál."
+
+#: syncthing_gtk/wizard.py:473
+msgid "This may take a while..."
+msgstr "Ez eltarthat egy ideig…"
+
+#: syncthing_gtk/wizard.py:515
+msgid "Failed to generate keys"
+msgstr "Nem sikerült a kulcsok generálása"
+
+#: syncthing_gtk/wizard.py:516
+msgid "Syncthing daemon failed to generate RSA key or certificate."
+msgstr "A Syncthing rendszerfolyamatnak nem sikerült legenerálnia az RSA kulcsot vagy a tanúsítványt."
+
+#: syncthing_gtk/wizard.py:526
+msgid "WebUI setup"
+msgstr "Webfelület beállítás"
+
+#: syncthing_gtk/wizard.py:528
+msgid ""
+"Syncthing can be managed remotely using WebUI and even if you are going to "
+"use Syncthing-GTK, WebUI needs to be enabled, as Syncthing-GTK uses it to "
+"communicate with the Syncthing daemon."
+msgstr "A Syncthing távolról a webes felülettel kezelhető és akkor is szükség van rá, ha a Syncthing-GTK-t használjuk, mivel a Syncthing-GTK azt használja a Syncthing rendszerfolyamattal való kommunikációra."
+
+#: syncthing_gtk/wizard.py:533
+msgid ""
+"If you prefer to be able to manage Syncthing remotely, over the internet or "
+"on your local network, select <b>listen on all interfaces</b> and set "
+"username and password to protect Syncthing from unauthorized access."
+msgstr "Ha a Syncthinget távolról, az internetről vagy a helyi hálózatról is szeretnénk kezelni, válasszuk a <b>figyelés minden interfészen</b> opciót és adjunk meg egy felhasználói nevet és jelszót a Syncthinghez való idegen hozzáférések megakadályozására."
+
+#: syncthing_gtk/wizard.py:538
+msgid ""
+"Otherwise, select <b>listen on localhost</b>, so only users and programs on "
+"this computer will be able to interact with Syncthing."
+msgstr "Egyébként válasszuk a <b>figyelés localhoston</b> opciót, ha azt szeretnénk, hogy csak az ezen számítógépen lévő felhasználók és programok érjek el a Syncthing-et."
+
+#: syncthing_gtk/wizard.py:544
+msgid "WebUI Listen Addresses"
+msgstr "Webfelület címe"
+
+#: syncthing_gtk/wizard.py:545
+msgid "Listen on _localhost"
+msgstr "Figyelés _localhoston"
+
+#: syncthing_gtk/wizard.py:547
+msgid "Listen on _all interfaces"
+msgstr "Figyelés minden interfészen"
+
+#: syncthing_gtk/wizard.py:554
+msgid "_Username"
+msgstr "_Felhasználói név"
+
+#: syncthing_gtk/wizard.py:555
+msgid "_Password"
+msgstr "_Jelszó"
+
+#: syncthing_gtk/wizard.py:609
+msgid "Saving settings..."
+msgstr "Beállítások mentése…"
+
+#: syncthing_gtk/wizard.py:610
+msgid "Checking for available port..."
+msgstr "Elérhető portok ellenőrzése…"
+
+#: syncthing_gtk/wizard.py:631
+msgid "Failed to find unused port for listening."
+msgstr "Nem sikerült használaton kívüli portokat találni a figyeléshez."
+
+#: syncthing_gtk/wizard.py:632
+msgid "Please, check your firewall settings and try again."
+msgstr "Ellenőrizni kell a tűzfalbeállításokat és újra próbálkozni."
+
+#: syncthing_gtk/wizard.py:646
+msgid "Saving..."
+msgstr "Mentés…"
+
+#: syncthing_gtk/wizard.py:678
+msgid "Failed to load Syncthing configuration"
+msgstr "Nem sikerült betölteni a Syncthing konfigurációt"
+
+#: syncthing_gtk/wizard.py:705
+msgid "Failed to modify Syncthing configuration"
+msgstr "Nem sikerült módosítani a Syncthing konfigurációt"
+
+#: syncthing_gtk/wizard.py:715
+msgid "Failed to save Syncthing configuration"
+msgstr "Nem sikerült menteni a Syncthing konfigurációt"
+
+#: syncthing_gtk/wizard.py:729
+msgid "Done."
+msgstr "Kész."
+
+#: syncthing_gtk/wizard.py:731
+msgid "Syncthing has been successfully configured."
+msgstr "A Syncthing beállítása sikeres."
+
+#: syncthing_gtk/wizard.py:733
+msgid ""
+"You can configure more details later, in <b>UI Settings</b> and <b>Daemon "
+"Settings</b> menus in main window of application."
+msgstr "A további részleteket később a program <b>Felület beállításai</b> és a  <b>Rendszerfolyamat beállításai</b> menüiben lehet beállítani."
+
+#: about.glade:7
+msgid "About Syncthing-GTK"
+msgstr "Syncthing-GTK névjegye"
+
+#: about.glade:10
+msgid "GTK GUI and notification area icon for Syncthing"
+msgstr "GTK grafikus felület és értesítési felület a Syncthinghez"
+
+#: about.glade:12
+msgid "GitHub"
+msgstr "GitHub"
+
+#: app.glade:239 app.glade:420 app.glade:802
+msgid "Open _Web Interface"
+msgstr "_Webfelület megnyitása"
+
+#: app.glade:251 app.glade:424 app.glade:814
+msgid "Display _Daemon Output"
+msgstr "Rendszerfolyamat kimenete"
+
+#: app.glade:263
+msgid "Display Syncthing-Inotify Output"
+msgstr "Syncthing-Inotify kimenete"
+
+#: app.glade:280 app.glade:430
+msgid "UI _Settings"
+msgstr "Felület beállításai"
+
+#: app.glade:325 app.glade:451
+msgid "Add Shared _Folder"
+msgstr "Megosztott _mappa hozzáadása"
+
+#: app.glade:338 app.glade:455
+msgid "Add _Device"
+msgstr "_Eszköz hozzáadása"
+
+#: app.glade:356 app.glade:461
+msgid "Daemon _Settings"
+msgstr "Rendszerfolyamat _beállításai"
+
+#: app.glade:371 app.glade:465 app.glade:588 app.glade:788
+msgid "Show _ID"
+msgstr "_Azonosító megjelenítése"
+
+#: app.glade:391 app.glade:471
+msgid "Sh_utdown Daemon"
+msgstr "Rendszerfolyamat _leállítása"
+
+#: app.glade:404 app.glade:475
+msgid "_Restart Daemon"
+msgstr "Rendszerfolyamat _újraindítása"
+
+#: app.glade:436
+msgid "_About"
+msgstr "_Névjegy"
+
+#: app.glade:440
+msgid "_Quit"
+msgstr "_Kilépés"
+
+#: app.glade:490
+msgid "Override Remote Changes"
+msgstr "Távoli módosítások felülírása"
+
+#: app.glade:519
+msgid "Edit _Ignore Patterns"
+msgstr "Kihagyási _minták szerkesztése"
+
+#: app.glade:547
+msgid "_Rescan"
+msgstr "Át_nézés"
+
+#: app.glade:559
+msgid "_Browse"
+msgstr "_Tallózás"
+
+#: app.glade:611
+msgid "Resume"
+msgstr "Folytatás"
+
+#: app.glade:641
+msgid "Connecting to daemon..."
+msgstr "Csatlakozás a rendszerfolyamathoz…"
+
+#: app.glade:669
+msgid "S_top Syncthing"
+msgstr "Syncthing _leállítása"
+
+#: app.glade:683
+msgid "Resume Sync_thing"
+msgstr "Syncthing _folytatása"
+
+#: app.glade:695 daemon-settings.glade:335
+msgid "_Incoming Rate Limit"
+msgstr "_Bejövő sebességkorlát"
+
+#: app.glade:709 app.glade:751
+msgid "_Unlimited"
+msgstr "_Korlátozás nélkül"
+
+#: app.glade:718 app.glade:760
+msgid "_Other"
+msgstr "_Egyéb"
+
+#: app.glade:737
+msgid "_Outgoing Rate Limit"
+msgstr "_Kimenő sebességkorlát"
+
+#: daemon-output.glade:7
+msgid "Daemon Output"
+msgstr "Rendszerfolyamat kimenete"
+
+#: daemon-settings.glade:106
+msgid "Sync Protocol Listen Addresses"
+msgstr "Szinkronizációs protokoll címe"
+
+#: daemon-settings.glade:136
+msgid "Enable Local _Discovery"
+msgstr "Helyi felfedezés engedélyezése"
+
+#: daemon-settings.glade:153
+msgid "Enable _UPnP"
+msgstr "_UPnP engedélyezése"
+
+#: daemon-settings.glade:171
+msgid "Local Discovery _Port"
+msgstr "Helyi felfedezés _portja:"
+
+#: daemon-settings.glade:212
+msgid "Outgoing _Rate Limit"
+msgstr "Kimenő sebességkorlát"
+
+#: daemon-settings.glade:229
+msgid "Open browser with _WebUI when daemon is starting"
+msgstr "A webfelület megnyitása böngészőben a rendszerfolyamat indításakor"
+
+#: daemon-settings.glade:246
+msgid "Enable _Anonymous Usage Reporting"
+msgstr "Névtelen felhasználási adatok küldésének engedélyezése"
+
+#: daemon-settings.glade:262
+msgid "Enable _Global Discovery"
+msgstr "_Globális felfedezés engedélyezése"
+
+#: daemon-settings.glade:281
+msgid "Global Discovery _Servers"
+msgstr "Globális felfedezési szerverek"
+
+#: device-edit.glade:102
+msgid "Device _ID"
+msgstr "Eszköz_azonosító"
+
+#: device-edit.glade:134
+msgid "Device _Name"
+msgstr "Eszköz_név"
+
+#: device-edit.glade:166
+msgid "Shown instead of Device ID in the cluster status."
+msgstr "Megjelenítés az eszközazonosító helyett a klaszterállapotban."
+
+#: device-edit.glade:181
+msgid "_Addresses"
+msgstr "_Címek"
+
+#: device-edit.glade:213
+msgid ""
+"Enter comma separated \"ip:port\" addresses or \"dynamic\" to perform "
+"automatic discovery of the address."
+msgstr "Vesszővel elválasztott listában lehet megadni az \"ip:port\" címeket, ill. a \"dynamic\" kulcsszót az automatikus felfedezés végrehajtásához."
+
+#: device-edit.glade:242
+msgid "Share _Folders"
+msgstr "Mappák _megosztása"
+
+#: device-edit.glade:276
+msgid "Select the folders to share with this device"
+msgstr "Mappák kiválasztása ezen eszközzel való megosztáshoz"
+
+#: device-edit.glade:287
+msgid "_Introducer"
+msgstr "_Bevezető"
+
+#: device-edit.glade:308
+msgid ""
+"Any devices configured on an introducer device will be added to this device "
+"as well."
+msgstr "Minden, a bevezető eszközön beállított eszköz hozzá lesz adva ehhez az eszközhöz is."
+
+#: device-edit.glade:323
+msgid "_Compression"
+msgstr "_Tömörítés"
+
+#: device-id.glade:14
+msgid "Device Identification"
+msgstr "Eszközazonosító"
+
+#: device-id.glade:68
+msgid "XYZ-123-ABC"
+msgstr "XYZ-123-ABC"
+
+#: find-daemon.glade:126 ui-settings.glade:821
+msgid "_Browse..."
+msgstr "_Tallózás…"
+
+#: find-daemon.glade:179
+msgid "_Download..."
+msgstr "_Letöltés…"
+
+#: folder-edit.glade:44
+msgctxt "In File Pull Order combobox"
+msgid "Random"
+msgstr "Véletlenszerű"
+
+#: folder-edit.glade:48
+msgctxt "In File Pull Order combobox"
+msgid "Alphabetic"
+msgstr "ABC sorrendben"
+
+#: folder-edit.glade:52
+msgctxt "In File Pull Order combobox"
+msgid "Smallest First"
+msgstr "Kisebb először"
+
+#: folder-edit.glade:56
+msgctxt "In File Pull Order combobox"
+msgid "Largest First"
+msgstr "Nagyobb először"
+
+#: folder-edit.glade:60
+msgctxt "In File Pull Order combobox"
+msgid "Oldest First"
+msgstr "Régebbi először"
+
+#: folder-edit.glade:64
+msgctxt "In File Pull Order combobox"
+msgid "Newest First"
+msgstr "Újabb először"
+
+#: folder-edit.glade:82
+msgid "Simple"
+msgstr "Egyszerű"
+
+#: folder-edit.glade:86
+msgid "Staggered"
+msgstr "Többszintű"
+
+#: folder-edit.glade:90
+msgid "Trashcan"
+msgstr "Szemetes"
+
+#: folder-edit.glade:94
+msgid "External"
+msgstr "Külső"
+
+#: folder-edit.glade:171
+msgid "Folder _Label"
+msgstr "Mappacímke"
+
+#: folder-edit.glade:202
+msgid "Short identifier for the folder. Must be the same on all devices."
+msgstr "A mappa rövid azonosítója. Minden eszközön azonosnak kell lennie."
+
+#: folder-edit.glade:216
+msgid "_Path"
+msgstr "Út_vonal"
+
+#: folder-edit.glade:234
+msgid ""
+"Path to the folder on the local computer. Will be created if it does not "
+"exist."
+msgstr "A mappa elérési útja az eszközön. Amennyiben nem létezik, a program automatikusan létrehozza."
+
+#: folder-edit.glade:248
+msgid "Rescan _Interval"
+msgstr "Átnézési _intervallum"
+
+#: folder-edit.glade:293
+msgid "Monitor filesystem for _changes"
+msgstr "Fájlrendszer megfigyelése a _változásokért"
+
+#: folder-edit.glade:314
+msgid ""
+"If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
+"Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
+msgstr "Bekapcsolva a módosult, létrehozott vagy törölt fájlok azonnal szinkronizálódnak ha a Syncthing-GTK fut.\nMegjegyzés: Rövid átnézési intervallum (<300s) érték mellett ez sok erőforrást felemészthet."
+
+#: folder-edit.glade:343
+msgid "Browse..."
+msgstr "Tallózás…"
+
+#: folder-edit.glade:366
+msgid "Folder _ID"
+msgstr "Mapp_aazonosító"
+
+#: folder-edit.glade:396
+msgid ""
+"Optional descriptive label for the folder. Can be different on each device."
+msgstr "A mappa kiegészítő leírása. Minden eszközön különböző lehet."
+
+#: folder-edit.glade:418
+msgid "_Send Only Folder"
+msgstr "Csak _mappa küldése"
+
+#: folder-edit.glade:439
+msgid ""
+"Files are protected from changes made on other devices, but changes made on "
+"this device will be sent to the rest of the cluster."
+msgstr "A fájlok védve vannak a más eszközökön történt változásokkal szemben, de az ezen az eszközön történt változások érvényesek lesznek a többire."
+
+#: folder-edit.glade:456
+msgid "_Folder Settings"
+msgstr "_Mappabeállítások"
+
+#: folder-edit.glade:476
+msgid "Select the devices to share this folder with."
+msgstr "Eszközök, amelyekkel meg szeretnénk osztani a mappát"
+
+#: folder-edit.glade:514
+msgid "Share With _Devices"
+msgstr "Megosztás más eszközzel"
+
+#: folder-edit.glade:535
+msgid "Versioning _Mode"
+msgstr "Verziószámozási _módszer"
+
+#: folder-edit.glade:590
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when "
+"replaced or deleted by syncthing."
+msgstr "Ha a Syncthing felülírja vagy törli a fájlokat, akkor azok a .stversions mappába lesznek áthelyezve, időbélyegzővel ellátva."
+
+#: folder-edit.glade:605
+msgid "_Keep Versions"
+msgstr "_Verziók megtartása"
+
+#: folder-edit.glade:642
+msgid "The number of old versions to keep, per file."
+msgstr "A megtartott régi verziók száma, fájlonként."
+
+#: folder-edit.glade:671
+msgid ""
+"Files are moved to date stamped versions in a .stversions folder when replaced or deleted by syncthing. Versions are automatically deleted if they are older than the maximum age or exceed the number of files allowed in an interval.\n"
+"\n"
+"The following intervals are used: for the first hour a version is kept every 30 seconds, for the first day a version is kept every hour, for the first 30 days a version is kept every day, until the maximum age a version is kept every week."
+msgstr "Ha a Syncthing felülírja vagy törli a fájlokat, akkor azok a .stversions mappába lesznek áthelyezve, időbélyegzővel ellátva. A régi verziók automatikusan törlődnek, amennyiben öregebbek mint a maximum kor, vagy már több van belőlük mint az adott időszakban megtartható maximum.\n\nA következő intervallumok használatosak: egy régi verziót őrzünk meg az első órában minden 30 másodpercben, az első nap minden órában, az első 30 napban minden nap, egészen addig amíg el nem érjük a maximálisan megtartható verziók számát minden héten."
+
+#: folder-edit.glade:688
+msgid "Ma_ximum Age"
+msgstr "Ma_ximális kor"
+
+#: folder-edit.glade:727
+msgid "Versions _Path"
+msgstr "Verziók útvonala"
+
+#: folder-edit.glade:759
+msgid ""
+"Path where versions should be stored (leave empty for the default "
+".stversions folder)."
+msgstr "A verziók tárolására szolgáló elérési út (üresen hagyva az alapértelmezett .stversions mappa)."
+
+#: folder-edit.glade:787
+msgid ""
+"Files are moved to .stversions folder when replaced or deleted by Syncthing"
+msgstr "Ha a Syncthing áthelyezi vagy törli a fájlokat, akkor azok a .stversions mappába lesznek áthelyezve."
+
+#: folder-edit.glade:801
+msgid "Clean out _after"
+msgstr "Takarítás"
+
+#: folder-edit.glade:840
+msgid "The number of days to keep files in the trash can."
+msgstr "A napok száma ameddig a fájlok meg lesznek tartva a szemetesben."
+
+#: folder-edit.glade:869
+msgid ""
+"An external command handles the versioning. It has to remove the file from "
+"the synced folder."
+msgstr "Külső program kezeli a fájl verziókövetést. Az távolítja el a fájlt a szinkronizált mappából."
+
+#: folder-edit.glade:884
+msgid "Command"
+msgstr "Parancs"
+
+#: folder-edit.glade:917
+msgid ""
+"The first command line parameter is the folder path and the second parameter"
+" is the relative path in the folder."
+msgstr "Az első parancssori paraméter a mappa elérési útja, a második a relatív elérési út a mappában."
+
+#: folder-edit.glade:953
+msgid "File _Versioning"
+msgstr "Fájlok verziókövetése"
+
+#: folder-edit.glade:982
+msgid "Ignore P_ermissions"
+msgstr "Jogosultságok figyelmen kívül hagyása"
+
+#: folder-edit.glade:1003
+msgid ""
+"File permission bits are ignored when looking for changes. Use on FAT "
+"filesystems."
+msgstr "Fájl jogosultságok figyelmen kívül hagyása változások keresésekor. FAT fájlrendszerek használatakor hasznos."
+
+#: folder-edit.glade:1018
+msgid "Minimum Free Disk Space"
+msgstr "Minimális szabad lemezterület"
+
+#: folder-edit.glade:1057
+msgid "File Pull _Order"
+msgstr "Fájlküldési sorrend"
+
+#: folder-edit.glade:1103 ui-settings.glade:954
+msgid "_Advanced"
+msgstr "_Haladó"
+
+#: ignore-editor.glade:8
+msgid "Ignore Patterns"
+msgstr "Kihagyási minták"
+
+#: ignore-editor.glade:99
+msgid ""
+"See <a href=\"http://docs.syncthing.net/users/ignoring.html\">Syncthing "
+"documentation</a> for list of supported patterns"
+msgstr "A <a href=\"http://docs.syncthing.net/users/ignoring.html\">Syncthing dokumentációban</a> található a támogatott minták listája"
+
+#: ignore-editor.glade:114
+msgid "File location: "
+msgstr "Fájl helye:"
+
+#: ui-settings.glade:27
+msgid "Lowest"
+msgstr "Legalacsonyabb"
+
+#: ui-settings.glade:31
+msgid "Low"
+msgstr "Alacsony"
+
+#: ui-settings.glade:35
+msgid "Normal"
+msgstr "Normál"
+
+#: ui-settings.glade:39
+msgid "Above Normal"
+msgstr "Normáltól magasabb"
+
+#: ui-settings.glade:46
+msgid "Syncthing-GTK Settings"
+msgstr "Syncthing-GTK beállítások"
+
+#: ui-settings.glade:69
+msgid "Please, restart Syncthing-GTK to apply all changed settings"
+msgstr "A Syncthing-GTK újraindítása után fognak érvényre lépni a megváltoztatott beállítások"
+
+#: ui-settings.glade:136
+msgid "When starting and Syncthing daemon is not running..."
+msgstr "Indításkor ha a Syncthing rendszerfolyamat nem fut…"
+
+#: ui-settings.glade:147
+msgid "... _wait for daemon"
+msgstr "… _várakozzon a rendszerfolyamatra"
+
+#: ui-settings.glade:164
+msgid "... start daemon in _background"
+msgstr "… indítsa el a rendszerfolyamatot a _háttérben"
+
+#: ui-settings.glade:180
+msgid "... _ask me what to do"
+msgstr "… _kérdezze meg, mi a teendő"
+
+#: ui-settings.glade:199
+msgid "When exiting after daemon was started in background..."
+msgstr "Kilépéskor, ha a rendszerfolyamat a háttérben volt elindítva…"
+
+#: ui-settings.glade:210
+msgid "... terminate _daemon"
+msgstr "… állítsa le a _rendszerfolyamatot"
+
+#: ui-settings.glade:226
+msgid "... leave daemon _running"
+msgstr "… hagyja a rendszerfolyamatot _futni"
+
+#: ui-settings.glade:242
+msgid "... ask me w_hat to do"
+msgstr "… kérdezze meg, mi a _teendő"
+
+#: ui-settings.glade:258
+msgid "Us_e traditional window header"
+msgstr "Hagyományos _ablakfejléc használata"
+
+#: ui-settings.glade:278
+msgid "Display desktop notifications for..."
+msgstr "Asztali értesítések alkalmazása…"
+
+#: ui-settings.glade:289
+msgid "... file updates"
+msgstr "… fájlfrissülés esetén"
+
+#: ui-settings.glade:304
+msgid "... errors"
+msgstr "… hibák esetén"
+
+#: ui-settings.glade:319
+msgid "... synchronization completion"
+msgstr "… szinkronizálás befejezésekor"
+
+#: ui-settings.glade:334
+msgid "Start Syncthing-GTK when I login to my desktop"
+msgstr "Syncthing-GTK indítása az asztali környezetbe való bejelentkezéskor"
+
+#: ui-settings.glade:350
+msgid "Minimize to _tray on start"
+msgstr "Indítás a _tálcán"
+
+#: ui-settings.glade:366
+msgid "Use _icons in menu"
+msgstr "_Ikonok alkalmazása a menüben"
+
+#: ui-settings.glade:383
+msgid "Display paths in directories panel"
+msgstr "Útvonalak megjelenítése a mappák panelen"
+
+#: ui-settings.glade:399
+msgid "Force _dark theme"
+msgstr "_Sötét téma kényszerítése"
+
+#: ui-settings.glade:474
+msgid "_Interface"
+msgstr "_Felület"
+
+#: ui-settings.glade:492
+msgid "Integrate Syncthing with filemanagers"
+msgstr "Syncthing integrálása a fájlkezelőkbe"
+
+#: ui-settings.glade:507
+msgid "Nemo (Cinamon Desktop)"
+msgstr "Nemo (Cinamon asztali környezet)"
+
+#: ui-settings.glade:524
+msgid "Nautilus (Ubuntu/GNOME)"
+msgstr "Nautilus (Ubuntu/GNOME)"
+
+#: ui-settings.glade:540
+msgid "Caja (MATE Desktop)"
+msgstr "Caja (MATE asztali környezet)"
+
+#: ui-settings.glade:579
+msgid ""
+"<b>Note:</b> You may need to restart your filemanager after toggling "
+"integration."
+msgstr "<b>Figyelem:</b> Az integráció bekapcsolásához valószínűleg újra kell indítani a fájlkezelőket."
+
+#: ui-settings.glade:598
+msgid "_Integration"
+msgstr "_Integráció"
+
+#: ui-settings.glade:627
+msgid "Keep Syncthing binary up-to-date"
+msgstr "Syncthing bináris frissen tartása"
+
+#: ui-settings.glade:647
+msgid ""
+"If enabled, Syncthing-GTK will automatically check for new daemon releases "
+"and replace binary with latest version."
+msgstr "Bekapcsolva a Syncthing-GTK automatikusan ellenőrzi a friss kiadásokat és lecserél a binárist a legfrissebb verzióval."
+
+#: ui-settings.glade:662
+msgid "Daemon process priority"
+msgstr "Rendszerfolyamat prioritása"
+
+#: ui-settings.glade:698
+msgid ""
+"Priority will be used only if \"<i>start daemon in background</i>\" option "
+"is checked on \"<i>Interface</i>\" page."
+msgstr "A prioritás akkor lesz használva, ha a <i>rendszerfolyamat háttérben való indítása</i> opció be lett kapcsolva az <i>interfésze</i> oldalon."
+
+#: ui-settings.glade:713
+msgid "Maximum number of CPU cores"
+msgstr "CPU magok maximális száma"
+
+#: ui-settings.glade:731
+msgid ""
+"Sets the maximum number of CPU cores for daemon to use. This value will be "
+"used only if \"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "Beállítja, hogy a rendszerfolyamat legfeljebb mennyi CPU magot használhatnak. Ez az érték akkor lesz használva, ha a <i>rendszerfolyamat háttérben való indítása</i> opció be lett kapcsolva az <i>interfésze</i> oldalon."
+
+#: ui-settings.glade:786
+msgid "Daemon"
+msgstr "Rendszerfolyamat"
+
+#: ui-settings.glade:808
+msgid ""
+"This binary will be started when syncthing daemon is not running and "
+"\"<i>start daemon in background</i>\" option is checked on "
+"\"<i>Interface</i>\" page."
+msgstr "Ez a bináris kerül indításra ha a Syncthing rendszerfolyamat nem fut és, ha a <i>rendszerfolyamat háttérben való indítása</i> opció be lett kapcsolva az <i>interfésze</i> oldalon."
+
+#: ui-settings.glade:838
+msgid "Syncthing binary location"
+msgstr "Syncthing bináris helye"
+
+#: ui-settings.glade:867
+msgid "Daemon arguments and variables"
+msgstr "Rendszerfolyamat argumentumai és változói"
+
+#: ui-settings.glade:897
+msgid ""
+"Space-separated list of arguments and environment variables passed when starting above binary\n"
+"\n"
+"Use <i>VARIABLE=\"value\"</i> to set variable and <i>-argument=\"value\"</i>  (with dash) for argument.\n"
+"\n"
+"If you need to pass commandline to different command (such as logger or ionice), separate prefixed arguments with exclamation mark \"!\"\n"
+"\n"
+"Example:\n"
+"  <i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
+msgstr "Szóközzel elválasztott lista az argumentumokról és a rendszerváltozókról, melyek átadásra kerülnek a fenti binárisnak\n\nVáltozót a <i>VÁLTOZÓ=\"érték\"</i> szintakszissal lehet átadni, argumentumot pedig a <i>-argumentum=\"érték\"</i> (kötőjellel) módon.\n\nHa a parancssort különféle parancsoknak kell átadni (mint pl. a logger vagy az ionice), akkor az előtagos argumentumokat felkiáltó jellel (!) kell elválasztani.\n\nPélda:\n<i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
+
+#: ui-settings.glade:921
+msgid ""
+"<b>Warning:</b> Changing settings on this page may prevent you from using "
+"Syncthing-GTK"
+msgstr "<b>Figyelem:</b> Az ezen az oldalon lévő beállítások módosítása megakadályozhatja a Syncthing-GTK használatát."
