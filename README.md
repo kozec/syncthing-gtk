@@ -38,7 +38,7 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
 - [setuptools](https://pypi.python.org/pypi/setuptools)
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
-- [Syncthing][syncthing] v0.12 or newer
+- [Syncthing](https://github.com/syncthing/syncthing) v0.13 or newer
 
 ##### Optional Dependencies
 - [pyinotify](https://github.com/seb-m/pyinotify/wiki) for instant synchronization.
