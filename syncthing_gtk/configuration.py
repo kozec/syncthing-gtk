@@ -47,6 +47,7 @@ class _Configuration(object):
 		"icon_theme"				: (str, 'syncthing'),
 		"force_dark_theme"			: (bool, False),	# Windows-only
 		"language"					: (str, ""),		# Windows-only
+		"file_browser"				: (str, "explore"),	# Windows-only
 	}
 	
 	# Overrides some default values on Windows

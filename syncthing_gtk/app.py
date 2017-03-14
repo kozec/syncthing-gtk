@@ -1782,9 +1782,10 @@ class App(Gtk.Application, TimerManager):
 		""" Handler for 'browse' action """
 		path = os.path.expanduser(box["path"])
 		if IS_WINDOWS:
-			# Don't attempt anything, use Windows Explorer on Windows
+			# Don't attempt anything, use registry settigns on Windows
+			# (defaults to Windows Explorer)
 			path = path.replace("/", "\\")
-			os.startfile(path, 'explore')
+			os.startfile(path, self.config["file_browser"])
 		else:
 			# Try to use any of following, known commands to
 			# display directory contents
