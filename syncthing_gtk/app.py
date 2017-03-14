@@ -86,12 +86,15 @@ class App(Gtk.Application, TimerManager):
 		self.force_update_version = None
 		# Determine if header bar should be shown
 		# User setting is not visible under Unity/Gnome
-		self.use_headerbar = \
-			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME) \
-			and (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 10)
+		self.use_headerbar = (
+			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME)
+			and (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 10) )
 		
 		self.watcher = None
 		self.daemon = None	# Created by setup_connection method
+		# If enabled (by -o argument), daemon output is captured and printed
+		# to stdout
+		self.dump_daemon_output = None
 		self.notifications = None
 		# connect_dialog may be displayed durring initial communication
 		# or if daemon shuts down.
@@ -132,6 +135,7 @@ class App(Gtk.Application, TimerManager):
 		if is_option("header"): self.use_headerbar = False
 		if is_option("window"): self.hide_window = False
 		if is_option("minimized"): self.hide_window = True
+		if is_option("dump"): self.dump_daemon_output = True
 		if is_option("wizard"):
 			self.exit_after_wizard = True
 			self.show_wizard()
@@ -237,6 +241,7 @@ class App(Gtk.Application, TimerManager):
 		aso("debug",	b"d", "Be more verbose (debug mode)")
 		aso("wizard",	b"1", "Run 'first start wizard' and exit")
 		aso("about",	b"a", "Display about dialog and exit")
+		aso("dump",		b"o", "Redirect captured daemon output to stdout")
 		aso("home", 0, "Overrides default syncthing configuration directory",
 				GLib.OptionArg.STRING)
 		aso("add-repo", 0,    "Opens 'add repository' dialog with specified path prefilled",
@@ -429,6 +434,8 @@ class App(Gtk.Application, TimerManager):
 		self.process = DaemonProcess(cmdline, self.config["daemon_priority"], self.config["max_cpus"], env=vars)
 		self.process.connect('failed', self.cb_daemon_startup_failed)
 		self.process.connect('exit', self.cb_daemon_exit)
+		if self.dump_daemon_output:
+			self.process.connect('line', self.cb_daemon_line_captured)
 		self.process.start()
 	
 	def ask_for_ur(self, *a):
@@ -2011,6 +2018,11 @@ class App(Gtk.Application, TimerManager):
 				self.daemon.reconnect()
 		else:
 			self.quit()
+	
+	
+	def cb_daemon_line_captured(self, daemon, line):
+		print line
+	
 	
 	def cb_daemon_exit(self, proc, error_code):
 		if proc == self.process:
