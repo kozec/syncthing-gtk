@@ -137,7 +137,6 @@ if HAS_DESKTOP_NOTIFY:
 				self.updating.add(f_path)
 		
 		def cb_syncthing_item_updated(self, daemon, folder_id, path, *a):
-			print "cb_syncthing_item_updated", folder_id, path
 			f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)
 			if ".sync-conflict" in path:
 				if os.path.exists(f_path):
@@ -177,7 +176,7 @@ if HAS_DESKTOP_NOTIFY:
 				# One updated file
 				f_path = list(self.updated)[0]
 				filename = os.path.split(f_path)[-1]
-				self.info(_("The file '%s' was updated on remote device.") % (filename,))
+				self.info(_("Updated file '%s' was downloaded from remote device.") % (filename,))
 			elif len(self.updated) == 0 and len(self.deleted) == 1:
 				# One deleted file
 				f_path = list(self.deleted)[0]
@@ -185,14 +184,14 @@ if HAS_DESKTOP_NOTIFY:
 				self.info(_("The file '%s' was deleted on remote device.") % (filename,))
 			elif len(self.deleted) == 0 and len(self.updated) > 0:
 				# Multiple updated, nothing deleted
-				self.info(_("%s files were updated on remote device.") % (len(self.updated),))
+				self.info(_("%s updated files were downloaded from remote device.") % (len(self.updated),))
 			elif len(self.updated) == 0 and len(self.deleted) > 0:
 				# Multiple deleted, no updated
 				self.info(_("%s files were deleted on remote device.") % (len(self.deleted),))
 			elif len(self.deleted) > 0 and len(self.updated) > 0:
 				 # Multiple deleted, multiple updated
 				self.info(
-					_("%(updated)s files were updated and %(deleted)s deleted on remote device.") % {
+					_("%(updated)s files were downloaded and %(deleted)s deleted to reflect changes on remote device(s).") % {
 						'updated' : len(self.updated),
 						'deleted' : len(self.deleted)
 						}
