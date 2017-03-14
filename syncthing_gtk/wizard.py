@@ -57,7 +57,7 @@ class Wizard(Gtk.Assistant):
 		self.quit_button.set_visible(True)
 		self.quit_button.connect("clicked", lambda *a : self.emit("cancel"))
 		# Pages
-		self.add_page(IntroPage())
+		self.add_page(IntroPage(self))
 		self.add_page(FindDaemonPage())
 		self.add_page(GenerateKeysPage())
 		self.add_page(HttpSettingsPage())
@@ -176,11 +176,12 @@ class WrappedLabel(Gtk.Label):
 class Page(Gtk.Grid):
 	# TYPE = <needs to be defined in derived class>
 	# TITLE = <needs to be defined in derived class>
-	def __init__(self):
+	def __init__(self, dialog=None):
 		Gtk.Grid.__init__(self)
+		self.dialog = dialog
+		self.parent = None
 		self.init_page()
 		self.show_all()
-		self.parent = None
 	
 	def prepare(self):
 		""" Sets page as complete by default """
@@ -194,13 +195,21 @@ class IntroPage(Page):
 		config_folder = "~/.config/syncthing"
 		config_folder_link = '<a href="file://%s">%s</a>' % (
 				os.path.expanduser(config_folder), config_folder)
+		next_label = _("Next")
+		try:
+			# Hacky way to determine label on 'Next' button
+			all_buttons = [ b for b in self.dialog.quit_button.get_parent().get_children()
+				if isinstance(b, Gtk.Button) and b is not self.dialog.quit_button ]
+			# order is 'apply, next, back, finish, cancel'
+			next_label = all_buttons[1].get_label().decode("utf-8").replace("_", "")
+		except: pass
 		self.attach(WrappedLabel(
 			"<b>" + _("Welcome to Syncthing-GTK first run wizard!") + "</b>" +
 			"\n\n" +
 			_("It looks like you never have used Syncthing.") + " " +
 			_("Initial configuration should be created.") +  " " +
-			_("Please click <b>Next</b> to create a Syncthing configuration file or <b>Quit</b> to exit") +
-			"\n\n" +
+			(_("Please click <b>%s</b> to create a Syncthing configuration file or <b>Quit</b> to exit")
+				% (next_label,) ) + "\n\n" +
 			(_("If you already had Syncthing daemon configured, please, "
 			  "exit this wizard and check your %s folder") % config_folder_link )
 		), 0, 0, 1, 1)
