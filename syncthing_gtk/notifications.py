@@ -176,26 +176,31 @@ if HAS_DESKTOP_NOTIFY:
 				# One updated file
 				f_path = list(self.updated)[0]
 				filename = os.path.split(f_path)[-1]
-				self.info(_("Updated file '%s' was downloaded from remote device.") % (filename,))
+				ld = self.app.get_local_device()
+				self.info(_("%s: Downloaded '%s' to reflect remote changes") % (
+					self.app.get_local_name(), filename,))
 			elif len(self.updated) == 0 and len(self.deleted) == 1:
 				# One deleted file
 				f_path = list(self.deleted)[0]
 				filename = os.path.split(f_path)[-1]
-				self.info(_("The file '%s' was deleted on remote device.") % (filename,))
+				self.info(_("%s: Deleted '%s' to reflect remote changes") % (
+					self.app.get_local_name(), filename,))
 			elif len(self.deleted) == 0 and len(self.updated) > 0:
 				# Multiple updated, nothing deleted
-				self.info(_("%s updated files were downloaded from remote device.") % (len(self.updated),))
+				self.info(_("%s: Downloaded %s files to reflect remote changes") % (
+					self.app.get_local_name(), len(self.updated),))
 			elif len(self.updated) == 0 and len(self.deleted) > 0:
 				# Multiple deleted, no updated
-				self.info(_("%s files were deleted on remote device.") % (len(self.deleted),))
+				self.info(_("%s: Deleted %s files to reflect remote changes") % (
+					self.app.get_local_name(), len(self.deleted),))
 			elif len(self.deleted) > 0 and len(self.updated) > 0:
 				 # Multiple deleted, multiple updated
 				self.info(
-					_("%(updated)s files were downloaded and %(deleted)s deleted to reflect changes on remote device(s).") % {
+					_("%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes") % {
+						'hostname' : self.app.get_local_name(),
 						'updated' : len(self.updated),
 						'deleted' : len(self.deleted)
-						}
-					)
+					})
 			self.updated = set([])
 			self.deleted = set([])
 		

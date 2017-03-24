@@ -1639,6 +1639,30 @@ class App(Gtk.Application, TimerManager):
 		else:
 			handler_id = self.daemon.connect("config-loaded", have_config)
 	
+	def get_local_device(self):
+		"""
+		Returns box with local device data.
+		May return None if connection to daemon is yet to be made or local
+		device info is not yet known.
+		"""
+		if self.daemon.get_my_id() in self.devices:
+			return self.devices[self.daemon.get_my_id()]
+		return None
+	
+	def get_local_name(self):
+		"""
+		Returns name of local device.
+		If connection to daemon is yet to be made or local device info is not
+		yet known, returns local hostname.
+		"""
+		ld = self.get_local_device()
+		if ld:
+			return ld.get_title()
+		if "HOSTNAME" in os.environ:
+			return os.environ["HOSTNAME"]
+		# Fallbacks to "local" when 
+		return "local"
+	
 	# --- Callbacks ---
 	def cb_exit(self, *a):
 		self.statusicon.hide()
