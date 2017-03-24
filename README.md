@@ -36,6 +36,7 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - [python-gi-cairo](https://packages.debian.org/sid/python-gi-cairo),
 [gir1.2-notify](https://packages.debian.org/sid/gir1.2-notify-0.7) and [gir1.2-rsvg](https://packages.debian.org/sid/gir1.2-rsvg-2.0) on debian based distros (included in PyGObject elsewhere)
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
+- [python-bcrypt](https://pypi.python.org/pypi/bcrypt/2.0.0)
 - [setuptools](https://pypi.python.org/pypi/setuptools)
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
 - [Syncthing](https://github.com/syncthing/syncthing) v0.13 or newer

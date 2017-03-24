@@ -13,7 +13,7 @@ from syncthing_gtk import DaemonOutputDialog, StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, is_portable
 from syncthing_gtk.tools import can_upgrade_binary, compare_version
 from syncthing_gtk.tools import _ # gettext function
-import os, sys, socket, random, string
+import os, sys, socket, random, string, bcrypt
 import logging, traceback, platform
 from xml.dom import minidom
 
@@ -703,7 +703,10 @@ class SaveSettingsPage(Page):
 							self.parent.syncthing_options["port"],
 					))
 			self.ct_textnode(xml, gui, "user", self.parent.syncthing_options["user"])
-			self.ct_textnode(xml, gui, "password", self.parent.syncthing_options["password"])
+			self.ct_textnode(xml, gui, "password", bcrypt.hashpw(
+				str(self.parent.syncthing_options["password"]).encode("utf-8"),
+				bcrypt.gensalt()
+			))
 			self.ct_textnode(xml, gui, "apikey", self.apikey)
 			gui.setAttribute("enabled", "true")
 			gui.setAttribute("tls", "false")
