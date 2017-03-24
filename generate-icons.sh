@@ -14,7 +14,8 @@ for size in 16 24 32 ; do
 		--export-width=${size} --export-height=${size}
 	
 	# Generate default icon for each rotation
-	for i in $(seq 0 $((SI_FRAMES-1))) ; do
+	# for i in $(seq 0 $((SI_FRAMES-1))) ; do
+	for i in 0 ; do
 		echo si-syncthing-${i}.png
 		inkscape ${ICODIR}/si-syncthing.svg --export-id-only \
 			--export-area-page \
@@ -30,13 +31,14 @@ for size in 16 24 32 ; do
 		
 	done
 	
-	# Generate icon for idle state and grayscale icon for unknown/offline state
+	# Generate icon for idle state, unknown/offline state and warning state
 	echo si-syncthing-idle.png
 	convert \
 			/tmp/si-syncthing-back-${size}.png \
 			/tmp/si-syncthing-${size}-0.png \
 			-gravity center -compose over -composite \
 			${ICODIR}/${size}x${size}/status/si-syncthing-idle.png	
+	
 	echo si-syncthing-unknown.png
 	convert \
 			/tmp/si-syncthing-back-${size}.png \
@@ -44,6 +46,20 @@ for size in 16 24 32 ; do
 			-gravity center -compose over -composite \
 			-colorspace Gray \
 			${ICODIR}/${size}x${size}/status/si-syncthing-unknown.png
+	
+	echo si-syncthing-warning.png
+	inkscape ${ICODIR}/si-syncthing.svg --export-id-only \
+		--export-area-page \
+		--export-id=warning \
+		--export-png=/tmp/si-syncthing-warning-${size}.png \
+		--export-width=${size} --export-height=${size}
+	convert \
+			${ICODIR}/${size}x${size}/status/si-syncthing-idle.png \
+			/tmp/si-syncthing-warning-${size}.png \
+			-gravity center -compose over -composite \
+			${ICODIR}/${size}x${size}/status/si-syncthing-warning.png	
+
+
 
 	# Generate black & white icons
 	for cols in "background-black rot black" "background-white rotblack white" ; do
@@ -70,7 +86,7 @@ for size in 16 24 32 ; do
 				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-${i}.png
 		done
 		
-		# Generate icon for idle state and grayscale icon for unknown/offline state
+		# Generate icon for idle state, unknown/offline state and warning state
 		echo si-syncthing-${cols[2]}-idle.png
 		convert \
 				/tmp/si-syncthing-back-${size}.png \
@@ -91,5 +107,12 @@ for size in 16 24 32 ; do
 				-gravity center -compose over -composite \
 				-colorspace Gray \
 				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-unknown.png
+		
+		echo si-syncthing-${cols[2]}-warning.png
+		convert \
+				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-idle.png \
+				/tmp/si-syncthing-warning-${size}.png \
+				-gravity center -compose over -composite \
+				${ICODIR}/${size}x${size}/status/si-syncthing-${cols[2]}-warning.png
 	done
 done
