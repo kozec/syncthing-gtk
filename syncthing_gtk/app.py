@@ -1099,10 +1099,11 @@ class App(Gtk.Application, TimerManager):
 			# Already animating
 			return
 		self.statusicon.set("si-%s-%s" % (self.config['icon_theme'], self.sync_animation,))
-		self.sync_animation += 1
-		if self.sync_animation >= SI_FRAMES:
-			self.sync_animation = 0
-		self.timer("icon", 0.1, self.animate_status)
+		if self.config["animate_icon"]:
+			self.sync_animation += 1
+			if self.sync_animation >= SI_FRAMES:
+				self.sync_animation = 0
+			self.timer("icon", 0.1, self.animate_status)
 	
 	def update_folders(self):
 		"""
