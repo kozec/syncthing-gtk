@@ -80,6 +80,7 @@ class App(Gtk.Application, TimerManager):
 		self.config = Configuration()
 		self.process = None
 		self.hide_window = self.config["minimize_on_start"]
+		self.show_status_icon = True
 		self.exit_after_wizard = False
 		self.last_restart_time = 0.0
 		# Can be changed by --force-update=vX.Y.Z argument
@@ -136,6 +137,7 @@ class App(Gtk.Application, TimerManager):
 		if is_option("window"): self.hide_window = False
 		if is_option("minimized"): self.hide_window = True
 		if is_option("dump"): self.dump_daemon_output = True
+		if is_option("no-status-icon"): self.show_status_icon = False
 		if is_option("wizard"):
 			self.exit_after_wizard = True
 			self.show_wizard()
@@ -248,6 +250,7 @@ class App(Gtk.Application, TimerManager):
 				GLib.OptionArg.STRING)
 		aso("remove-repo", 0, "If there is repository assigned with specified path, opens 'remove repository' dialog",
 				GLib.OptionArg.STRING)
+		aso("no-status-icon", 0, "Don't show a tray status icon")
 		if not StDownloader is None:
 			aso("force-update", 0,
 					"Force updater to download specific daemon version",
@@ -319,7 +322,11 @@ class App(Gtk.Application, TimerManager):
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):
-		self.statusicon = get_status_icon(self.iconpath, self["si-menu"])
+		if self.show_status_icon:
+			self.statusicon = get_status_icon(self.iconpath, self["si-menu"])
+		else:
+			self.statusicon = statusicon.StatusIconDummy(self.iconpath, self["si-menu"])
+		
 		self.statusicon.connect("clicked",        self.cb_statusicon_click)
 		self.statusicon.connect("notify::active", self.cb_statusicon_notify_active)
 		self.cb_statusicon_notify_active()
