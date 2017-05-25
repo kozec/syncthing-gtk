@@ -45,6 +45,8 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - [pyinotify](https://github.com/seb-m/pyinotify/wiki) for instant synchronization.
 - libnotify for desktop notifications.
 - nautilus-python, nemo-python or caja-python for filemanager integration
+- [this Gnome Shell extension](https://extensions.gnome.org/extension/615/appindicator-support/), if running Gnome Shell
+- [gir1.2-appindicator3](https://packages.debian.org/sid/gir1.2-appindicator3-0.1) (part of [libappindicator](https://launchpad.net/libappindicator)), if running Gnome Shell or Unity
 
 ##### Windows Building Dependencies _(you don't need to install these just to **run** Syncthing-GTK)_
 - Python for Windows 2.7
