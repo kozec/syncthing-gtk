@@ -575,28 +575,27 @@ msgstr ""
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
-msgid "The file '%s' was updated on remote device."
+msgid "%(hostname)s: Downloaded '%(filename)s' to reflect remote changes."
 msgstr ""
 
 #: syncthing_gtk/notifications.py:165
 #, python-format
-msgid "The file '%s' was deleted on remote device."
+msgid "%(hostname)s: Deleted '%(filename)s' to reflect remote changes."
 msgstr ""
 
 #: syncthing_gtk/notifications.py:168
 #, python-format
-msgid "%s files were updated on remote device."
+msgid "%(hostname)s: Downloaded %(updated)s files to reflect remote changes."
 msgstr ""
 
 #: syncthing_gtk/notifications.py:171
 #, python-format
-msgid "%s files were deleted on remote device."
+msgid "%(hostname)s: Deleted %(deleted)s files to reflect remote changes."
 msgstr ""
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
-msgid ""
-"%(updated)s files were updated and %(deleted)s deleted on remote device."
+msgid "%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes."
 msgstr ""
 
 #: syncthing_gtk/statusicon.py:48
