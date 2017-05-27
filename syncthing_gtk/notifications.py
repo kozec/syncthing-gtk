@@ -177,7 +177,7 @@ if HAS_DESKTOP_NOTIFY:
 				f_path = list(self.updated)[0]
 				filename = os.path.split(f_path)[-1]
 				ld = self.app.get_local_device()
-				self.info(_("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % (
+				self.info(_("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % {
 						'hostname' : self.app.get_local_name(),
 						'filename' : filename
 					})
