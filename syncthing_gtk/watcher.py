@@ -44,7 +44,7 @@ if HAS_INOTIFY:
 			if self.notifier is None:
 				self.wm = pyinotify.WatchManager()
 				self.notifier = pyinotify.Notifier(self.wm, timeout=10, default_proc_fun=self._process)
-				self.glibsrc = GLib.idle_add(self._process_events)
+				self.glibsrc = GLib.timeout_add_seconds(5, self._process_events)
 			
 			added = self.wm.add_watch(path.encode("utf-8"),
 				pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM |
