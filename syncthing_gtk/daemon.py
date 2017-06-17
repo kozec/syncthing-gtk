@@ -1343,8 +1343,11 @@ class Daemon(GObject.GObject, TimerManager):
 			id_enc = urllib.quote(folder_id.encode('utf-8'))
 			self._rest_post("db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 		else:
-			path_enc = urllib.quote(path.encode('utf-8'), ''.encode('utf-8'))
-			self._rest_post("db/scan?folder=%s&sub=%s" % (folder_id, path_enc), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+			url = "db/scan?folder=%s&sub=%s" % (
+				urllib.quote(folder_id.encode('utf-8')),
+				urllib.quote(path.encode('utf-8'))
+			)
+			self._rest_post(url, {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
