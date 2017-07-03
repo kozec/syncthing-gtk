@@ -25,15 +25,12 @@ missing_dll = [	'libgtk-3-0.dll',
 				#'libgirepository-1.0-1.dll',
 				#'libgmodule-2.0-0.dll',
 				#'libgladeui-2-6.dll',
-				'libpango-1.0-0.dll',
-				'libp11-kit-0.dll',
-				'libproxy.dll',
+                                'libpango-1.0-0.dll',
 				'libpangocairo-1.0-0.dll',
 				'libpangoft2-1.0-0.dll',
 				'libpangowin32-1.0-0.dll',
 				'libffi-6.dll',
 				#'libgio-2.0-0.dll',
-				'libgnutls-28.dll',
 				'libharfbuzz-gobject-0.dll',
 				'libharfbuzz-0.dll',
 				#'libpng16-16.dll',
@@ -48,7 +45,6 @@ missing_dll = [	'libgtk-3-0.dll',
 				'libepoxy-0.dll',
 				'libjasper-1.dll',
 				'libjpeg-8.dll',
-				'libstdc++.dll',
 				
 				'gspawn-win32-helper.exe',
 				'gspawn-win32-helper-console.exe',
@@ -97,14 +93,12 @@ include_files += [ ST_INOTIFY_EXE ]
 executables = [
 	Executable(
 		"scripts/syncthing-gtk-exe.py",
-		compress = True,
 		targetName = "syncthing-gtk.exe",
 		base = "Win32GUI",
 		icon = "icons/st-logo-128.ico",
 	),
 	Executable(
 		"scripts/syncthing-gtk-exe.py",
-		compress = True,
 		targetName = "syncthing-gtk-console.exe",
 		base = "console",
 		icon = "icons/st-logo-128.ico",
@@ -115,18 +109,20 @@ executables = [
 get_version = lambda : "%s-win32" % (_get_version(),)
 
 # Monkey-patch _AddVersionResource in cx_Freeze so win32verstamp will
-# not bitch about non-numeric version	
+# not bitch about non-numeric version
 RE_NUMBER = re.compile(r'v?([0-9]+).*')
 extract_number = lambda x : RE_NUMBER.match(x).group(1) if \
 		RE_NUMBER.match(x) else "0"
 win32version = lambda x : ".".join([ extract_number(i) for i in x.split(".")[0:4] ])
-Freezer._AddVersionResource = lambda self, filename : \
-	stamp(filename, VersionInfo(
-			win32version(self.metadata.version),
-			comments = self.metadata.long_description,
-			description = self.metadata.description,
-			company = self.metadata.author,
-			product = self.metadata.name
+Freezer._AddVersionResource = lambda self, exe : \
+	stamp(exe.targetName, VersionInfo(
+		win32version(self.metadata.version),
+		comments = self.metadata.long_description,
+		description = self.metadata.description,
+		company = self.metadata.author,
+		product = self.metadata.name,
+                copyright = exe.copyright,
+                trademarks = exe.trademarks
 	))
 
 setup(
@@ -136,9 +132,8 @@ setup(
 	description = "Windows port of Syncthing GTK",
 	options = dict(
 		build_exe = dict(
-			compressed = False,
-			includes = ["gi"],
-			packages = ["gi"],
+			includes = [ "gi" ],
+			packages = [ "gi", "bcrypt", "cffi" ],
 			include_files = include_files
 		),
 	),
