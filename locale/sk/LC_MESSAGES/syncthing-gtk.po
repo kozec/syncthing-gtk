@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-01-12 08:40+0000\n"
+"PO-Revision-Date: 2017-05-27 16:25+0000\n"
 "Last-Translator: kozec <kozec2@kozec.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/sk/)\n"
 "MIME-Version: 1.0\n"
@@ -579,29 +579,30 @@ msgstr "Synchronizácia adresára '%s' je dokončená."
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
-msgid "The file '%s' was updated on remote device."
-msgstr "Súbor '%s' bol zmenený na inom zariadení."
+msgid "%(hostname)s: Downloaded '%(filename)s' to reflect remote changes."
+msgstr "%(hostname)s: Súbor '%(filename)s' bol zmenený na inom zariadení."
 
 #: syncthing_gtk/notifications.py:165
 #, python-format
-msgid "The file '%s' was deleted on remote device."
-msgstr "Súbor '%s' bol zmazaný na inom zariadení."
+msgid "%(hostname)s: Deleted '%(filename)s' to reflect remote changes."
+msgstr "%(hostname)s: Súbor '%(filename)s' bol zmazaný na inom zariadení."
 
 #: syncthing_gtk/notifications.py:168
 #, python-format
-msgid "%s files were updated on remote device."
-msgstr "%s súborov bolo zmenených na inom zariadení."
+msgid "%(hostname)s: Downloaded %(updated)s files to reflect remote changes."
+msgstr "%(hostname)s: %(updated)s súborov bolo zmenených na inom zariadení."
 
 #: syncthing_gtk/notifications.py:171
 #, python-format
-msgid "%s files were deleted on remote device."
-msgstr "%s súborov bolo zmazaných na inom zariadení."
+msgid "%(hostname)s: Deleted %(deleted)s files to reflect remote changes."
+msgstr "%(hostname)s: %(deleted)s súborov bolo zmazaných na inom zariadení."
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
 msgid ""
-"%(updated)s files were updated and %(deleted)s deleted on remote device."
-msgstr "%(updated)s súborov bolo zmenených a %(deleted)s zmazaných na inom zariadení."
+"%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to "
+"reflect remote changes."
+msgstr "%(hostname)s: %(updated)s súborov bolo zmenených a %(deleted)s zmazaných na inom zariadení."
 
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
@@ -712,9 +713,9 @@ msgstr "Je preto potrebné prejsť úvodnú konfiguráciu."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>Next</b> to create a Syncthing configuration file or "
+"Please click <b>%s</b> to create a Syncthing configuration file or "
 "<b>Quit</b> to exit"
-msgstr "Prosím, pokračujte kliknutím na tlačítko <b>Ďalej</b> alebo ukončite program kliknutím na <b>Koniec</b>"
+msgstr "Prosím, pokračujte kliknutím na tlačítko <b>%s</b> alebo ukončite program kliknutím na <b>Koniec</b>"
 
 #: syncthing_gtk/wizard.py:204
 #, python-format

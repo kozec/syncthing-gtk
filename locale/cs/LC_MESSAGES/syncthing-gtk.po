@@ -5,15 +5,15 @@
 # Translators:
 # chucic, 2016-2017
 # Jaroslav Lichtblau <dragonlord@seznam.cz>, 2016
-# kozec <kozec2@kozec.com>, 2016
+# kozec <kozec2@kozec.com>, 2016-2017
 # chucic, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-01-14 09:56+0000\n"
-"Last-Translator: chucic\n"
+"PO-Revision-Date: 2017-07-03 19:04+0000\n"
+"Last-Translator: kozec <kozec2@kozec.com>\n"
 "Language-Team: Czech (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -582,29 +582,30 @@ msgstr "Synchronizace adresáře '%s' je dokončena."
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
-msgid "The file '%s' was updated on remote device."
-msgstr "Soubor '%s' na vzdáleném přístroji byl aktualizován."
+msgid "%(hostname)s: Downloaded '%(filename)s' to reflect remote changes."
+msgstr "%(hostname)s: Soubor '%(filename)s' byl směněn na jiném zařízení."
 
 #: syncthing_gtk/notifications.py:165
 #, python-format
-msgid "The file '%s' was deleted on remote device."
-msgstr "Soubor '%s' na vzdáleném přístroji byl smazán."
+msgid "%(hostname)s: Deleted '%(filename)s' to reflect remote changes."
+msgstr "%(hostname)s: Soubor '%(filename)s' byl smazán na jiném zařízení."
 
 #: syncthing_gtk/notifications.py:168
 #, python-format
-msgid "%s files were updated on remote device."
-msgstr "%s souborů na vzdáleném přístroji bylo aktualizováno."
+msgid "%(hostname)s: Downloaded %(updated)s files to reflect remote changes."
+msgstr "%(hostname)s: %(updated)s souborů bylo směněno na jiném zařízení."
 
 #: syncthing_gtk/notifications.py:171
 #, python-format
-msgid "%s files were deleted on remote device."
-msgstr "%s souborů na vzdáleném přístroji bylo smazáno."
+msgid "%(hostname)s: Deleted %(deleted)s files to reflect remote changes."
+msgstr "%(hostname)s: %(deleted)s souborů bylo smazáno na jiném zařízení."
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
 msgid ""
-"%(updated)s files were updated and %(deleted)s deleted on remote device."
-msgstr "%(updated)s souborů na vzdáleném přístroji bylo aktualizováno a %(deleted)s bylo smazáno."
+"%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to "
+"reflect remote changes."
+msgstr "%(hostname)s: %(updated)s souborů bylo směněno a %(deleted)s smazáno na jiném zařízení."
 
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
@@ -715,9 +716,9 @@ msgstr "Mělo by být vytvořeno prvotní nastavení."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>Next</b> to create a Syncthing configuration file or "
+"Please click <b>%s</b> to create a Syncthing configuration file or "
 "<b>Quit</b> to exit"
-msgstr "Prosím klikněte na <b>Další</b> pro vytvoření konfiguračního souboru Syncthing nebo na <b>Ukončit</b> pro ukončení."
+msgstr "Prosím, klikněte na <b>%s</b> pro vytvoření konfiguračního souboru Syncthing nebo na <b>Ukončit</b> pro ukončení."
 
 #: syncthing_gtk/wizard.py:204
 #, python-format

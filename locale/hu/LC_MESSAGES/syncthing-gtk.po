@@ -3,14 +3,16 @@
 # This file is distributed under the same license as the Syncthing-GTK package.
 # 
 # Translators:
+# Balázs Meskó <meskobalazs@gmail.com>, 2017
+# Falu <info@falu.me>, 2017
 # Gyuris Gellért <gellert.gyuris@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-01-21 19:33+0000\n"
-"Last-Translator: Gyuris Gellért <gellert.gyuris@gmail.com>\n"
+"PO-Revision-Date: 2017-06-02 13:41+0000\n"
+"Last-Translator: Balázs Meskó <meskobalazs@gmail.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -42,7 +44,7 @@ msgstr "Átnézés"
 
 #: syncthing_gtk/app.py:390 syncthing_gtk/app.py:652
 msgid "Starting Syncthing daemon"
-msgstr "Syncthing rendszerfolyamat indítása"
+msgstr "Syncthing démon indítása"
 
 #: syncthing_gtk/app.py:424
 msgid "Allow Anonymous Usage Reporting?"
@@ -54,7 +56,7 @@ msgstr "A titkosított felhasználási adatok naponta kerülnek elküldésre."
 
 #: syncthing_gtk/app.py:427
 msgid "It is used to track common platforms, folder sizes and app versions."
-msgstr "Ez a platformok, a mappák méretei és az alkalmazás verzió követésére használatos."
+msgstr "Arra használjuk őket, hogy kövessük a különböző platformokat, mappaméreteket és programverziókat."
 
 #: syncthing_gtk/app.py:428
 msgid ""
@@ -68,11 +70,11 @@ msgstr "A felhalmozott statisztika publikusan elérthető: "
 
 #: syncthing_gtk/app.py:486
 msgid "Extracting update..."
-msgstr "Frissítés kicsomagolása…"
+msgstr "Frissítés kibontása…"
 
 #: syncthing_gtk/app.py:491
 msgid "Restarting daemon..."
-msgstr "Rendszerfolyamat újraindítása…"
+msgstr "Démon újraindítása…"
 
 #: syncthing_gtk/app.py:507
 #, python-format
@@ -86,11 +88,11 @@ msgstr "Syncthing %s letöltése"
 
 #: syncthing_gtk/app.py:604
 msgid "Connected to Syncthing daemon"
-msgstr "Kapcsolódva a Syncthing rendszerfolyamathoz"
+msgstr "Kapcsolódva a Syncthing démonhoz"
 
 #: syncthing_gtk/app.py:614
 msgid "Connection to Syncthing daemon lost."
-msgstr "A kapcsolat elveszett a Syncthing rendszerfolyamattal."
+msgstr "A kapcsolat elveszett a Syncthing démonnal."
 
 #: syncthing_gtk/app.py:615
 msgid "Syncthing is probably restarting or has been shut down."
@@ -111,16 +113,16 @@ msgstr "Türelem"
 #: syncthing_gtk/app.py:644
 #, python-format
 msgid "Connecting to Syncthing daemon at %s..."
-msgstr "Kapcsolódás a Syncthing rendszerfolyamathoz: %s…"
+msgstr "Kapcsolódás a Syncthing démonhoz: %s…"
 
 #: syncthing_gtk/app.py:649
 #, python-format
 msgid "Waiting for Syncthing daemon at %s..."
-msgstr "Várakozás a Syncthing rendszerfolyamatra: %s…"
+msgstr "Várakozás a Syncthing démonra: %s…"
 
 #: syncthing_gtk/app.py:664
 msgid "Your syncthing daemon is too old."
-msgstr "A syncthing rendszerfolyamat túl régi."
+msgstr "A Syncthing démon túl régi."
 
 #: syncthing_gtk/app.py:664
 msgid "Attempting to download recent, please wait..."
@@ -130,14 +132,14 @@ msgstr "Kísérlet a legfrissebb letöltésére, türelem…"
 msgid ""
 "Cannot authorize with daemon. Please, use WebUI to generate API key or "
 "disable password authentication."
-msgstr "Nem sikerült a hitelesítés a rendszerfolyamattal. A webes felületen lehet API kulcsot generálni vagy kikapcsolni a jelszavas védelmet."
+msgstr "Nem sikerült a hitelesítés a démonnal. A webes felületen lehet API kulcsot generálni vagy kikapcsolni a jelszavas védelmet."
 
 #: syncthing_gtk/app.py:672
 #, python-format
 msgid ""
 "Your syncthing daemon is too old.\n"
 "Please, upgrade syncthing package at least to version %s and try again."
-msgstr "A syncthing rendszerfolyamat túl régi.\nFrissíteni kell a syncthing csomagot legalább erre a verzióra: %s, majd újra lehet próbálkozni."
+msgstr "A syncthing démon túl régi.\nFrissíteni kell a Syncthing csomagot legalább erre a verzióra: %s, majd újra lehet próbálkozni."
 
 #: syncthing_gtk/app.py:674
 msgid ""
@@ -147,7 +149,7 @@ msgstr "Sajnos a HTTPS kapcsolódás nem támogatott ezen a platformon.\nA webes
 
 #: syncthing_gtk/app.py:677
 msgid "Connection to daemon failed. Check your configuration and try again."
-msgstr "Nem sikerült a kapcsolódás a rendszerfolyamathoz. Javasolt ellenőrizni a konfigurációt, majd újra próbálkozni."
+msgstr "Nem sikerült a kapcsolódás a démonhoz. Javasolt ellenőrizni a konfigurációt, majd újra próbálkozni."
 
 #: syncthing_gtk/app.py:678 syncthing_gtk/app.py:1992
 #: syncthing_gtk/editordialog.py:314
@@ -182,7 +184,7 @@ msgstr "_Hozzáadás"
 msgid ""
 "Device \"<b>%(name)s</b>\" (%(device)s) at IP \"<b>%(ip)s</b>\" wants to "
 "connect. Add new device?"
-msgstr "A(z) „<b>%(name)s</b>” nevű eszköz (%(device)s) a(z) „<b>%(ip)s</b>” IP címről csatlakozni szeretne. Hozzáadható az eszköz?"
+msgstr "„<b>%(name)s</b>” eszköz (%(device)s) csatlakozni szeretne a következő IP címről: „<b>%(ip)s</b>”. Hozzáadható az eszköz?"
 
 #: syncthing_gtk/app.py:814
 msgid "_Ignore"
@@ -206,7 +208,7 @@ msgstr "Feltöltési sebesség"
 
 #: syncthing_gtk/app.py:836
 msgid "Announce Server"
-msgstr "Bejelentő szerver"
+msgstr "Bejelentő kiszolgáló"
 
 #: syncthing_gtk/app.py:837 syncthing_gtk/app.py:1356
 msgid "Version"
@@ -255,7 +257,7 @@ msgstr "Friss"
 
 #: syncthing_gtk/app.py:966 syncthing_gtk/app.py:967 syncthing_gtk/app.py:968
 msgid "Files"
-msgstr "Fájlok"
+msgstr "fájl"
 
 #: syncthing_gtk/app.py:980 syncthing_gtk/app.py:1068
 msgid "Cluster out of sync"
@@ -285,7 +287,7 @@ msgstr "Minden eszköz elérhetetlen"
 
 #: syncthing_gtk/app.py:1040 syncthing_gtk/app.py:1041
 msgid "Connecting to Syncthing daemon..."
-msgstr "Kapcsolódás a Syncthing rendszerfolyamathoz"
+msgstr "Kapcsolódás a Syncthing démonhoz"
 
 #: syncthing_gtk/app.py:1079
 msgid "Unshared"
@@ -305,7 +307,7 @@ msgstr "Ablak megjelenítése"
 
 #: syncthing_gtk/app.py:1239
 msgid "Syncthing daemon doesn't appear to be running."
-msgstr "Nem úgy tűnik, hogy a Syncthing rendszerfolyamat futna."
+msgstr "Nem úgy tűnik, hogy a Syncthing démon futna."
 
 #: syncthing_gtk/app.py:1240
 msgid "Start it now?"
@@ -313,7 +315,7 @@ msgstr "Indítható?"
 
 #: syncthing_gtk/app.py:1243
 msgid "Always start daemon automatically"
-msgstr "A rendszerfolyamat indítása mindig automatikusan"
+msgstr "A démon automatikus indítása mindig "
 
 #: syncthing_gtk/app.py:1292
 msgid "Folder ID"
@@ -415,7 +417,7 @@ msgstr "Kilépés."
 
 #: syncthing_gtk/app.py:1523
 msgid "Shutdown Syncthing daemon as well?"
-msgstr "A Syncthing rendszerfolyamat szintén leállítható?"
+msgstr "A Syncthing démon szintén leállítható?"
 
 #: syncthing_gtk/app.py:1528
 msgid "Always do same; Don't show this window again"
@@ -441,27 +443,27 @@ msgstr "A Syncthing-Inotify nincs jelen vagy nem sikerült elindítani"
 
 #: syncthing_gtk/app.py:1991
 msgid "Failed to start Syncthing daemon."
-msgstr "Nem sikerült elindítani a Syncthing rendszerfolyamatot."
+msgstr "Nem sikerült elindítani a Syncthing démont."
 
 #: syncthing_gtk/app.py:1993
 msgid ""
 "Please, check your installation or set new path to Syncthing daemon binary."
-msgstr "Ellenőrizni kell a telepítést vagy be kell állítani a Syncthing rendszefolyamat binárisának útvonalát."
+msgstr "Ellenőrizni kell a telepítést vagy be kell állítani a Syncthing démon binárisának útvonalát."
 
 #: syncthing_gtk/daemonsettings.py:24
 msgid "Syncthing Daemon Settings"
-msgstr "Syncthing rendszerfolyamat beállításai"
+msgstr "Syncthing démon beállításai"
 
 #: syncthing_gtk/deviceeditor.py:24
 msgid ""
 "The entered device ID does not look valid. It should be a 52 character "
 "string consisting of letters and numbers, with spaces and dashes being "
 "optional."
-msgstr "A megadott eszközazonosító nem tűnik érvényesnek. 52 karakterből kell álljon, betűket és számokat tartalmazhat. A szóközök és a kötőjelek opcionálisak."
+msgstr "A megadott eszközazonosító nem tűnik érvényesnek. Az azonosító 52 karakterből kell álljon, betűket és számokat tartalmazhat., opcionálisan szóközöket és kötőjeleket."
 
 #: syncthing_gtk/editordialog.py:312
 msgid "Failed to load configuration from daemon."
-msgstr "Nem sikerült betölteni a rendszerfolyamat beállításait."
+msgstr "Nem sikerült betölteni a démon beállításait."
 
 #: syncthing_gtk/editordialog.py:313
 msgid "Try again."
@@ -506,7 +508,7 @@ msgstr "Nem sikerült elmenteni a beállításokat."
 
 #: syncthing_gtk/finddaemondialog.py:24 find-daemon.glade:7
 msgid "Can't invoke the daemon"
-msgstr "Nem sikerült hivatkozni a rendszerfolyamatra"
+msgstr "Nem sikerült hivatkozni a démonra"
 
 #: syncthing_gtk/finddaemondialog.py:26
 msgid "Syncthing binary"
@@ -514,7 +516,7 @@ msgstr "Syncthing bináris"
 
 #: syncthing_gtk/finddaemondialog.py:28 syncthing_gtk/finddaemondialog.py:37
 msgid "Syncthing daemon binary cannot be found."
-msgstr "A Syncthing rendszerfolyamat binárisát nem sikerült megtalálni."
+msgstr "A Syncthing démon binárisát nem sikerült megtalálni."
 
 #: syncthing_gtk/finddaemondialog.py:29
 #, python-format
@@ -530,7 +532,7 @@ msgstr "Ha telepítve van már a Syncthing, alább kell megadni: %s"
 
 #: syncthing_gtk/finddaemondialog.py:82 syncthing_gtk/wizard.py:411
 msgid "Cannot download Syncthing daemon."
-msgstr "Nem lehet letölteni a Syncthing rendszerfolyamatot."
+msgstr "Nem lehet letölteni a Syncthing démont."
 
 #: syncthing_gtk/finddaemondialog.py:83 syncthing_gtk/wizard.py:412
 #, python-format
@@ -570,7 +572,7 @@ msgstr "Váratlan mappazonosítót küldött az eszköz: „%s” ."
 #: syncthing_gtk/notifications.py:124
 #, python-format
 msgid "Device \"%s\" is trying to connect to syncthing daemon."
-msgstr "Kapcsolódni próbál ez az eszköz a syncthing rendszerfolyamathoz: „%s”."
+msgstr "Kapcsolódni próbál ez az eszköz a Syncthing démonhoz: „%s”."
 
 #: syncthing_gtk/notifications.py:153
 #, python-format
@@ -579,29 +581,30 @@ msgstr "A mappa szinkronizálása befejeződött: „%s”."
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
-msgid "The file '%s' was updated on remote device."
-msgstr "A fájl frissítve lett a távoli eszközön: „%s”."
+msgid "%(hostname)s: Downloaded '%(filename)s' to reflect remote changes."
+msgstr "%(hostname)s: A(z) „%(filename)s” fájl letöltve, a távoli változásokat követve."
 
 #: syncthing_gtk/notifications.py:165
 #, python-format
-msgid "The file '%s' was deleted on remote device."
-msgstr "A fájl törölve lett a távoli eszközön: „%s”."
+msgid "%(hostname)s: Deleted '%(filename)s' to reflect remote changes."
+msgstr "%(hostname)s: A(z) „%(filename)s” fájl törölve, a távoli változásokat követve."
 
 #: syncthing_gtk/notifications.py:168
 #, python-format
-msgid "%s files were updated on remote device."
-msgstr "A fájlok frissítve lettek a távoli eszközön: %s."
+msgid "%(hostname)s: Downloaded %(updated)s files to reflect remote changes."
+msgstr "%(hostname)s: %(updated)s fájl letöltve, a távoli változásokat követve."
 
 #: syncthing_gtk/notifications.py:171
 #, python-format
-msgid "%s files were deleted on remote device."
-msgstr "A fájlok törölve lettek a távoli eszközön: %s."
+msgid "%(hostname)s: Deleted %(deleted)s files to reflect remote changes."
+msgstr "%(hostname)s: %(deleted)s fájl törölve, a távoli változásokat követve."
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
 msgid ""
-"%(updated)s files were updated and %(deleted)s deleted on remote device."
-msgstr "A távoli eszközön a fájlok frissítve lettek: %(updated)s, ezen fájlok pedig törlésre kerültek: %(deleted)s."
+"%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to "
+"reflect remote changes."
+msgstr "%(hostname)s: %(updated)s fájl letöltve, és %(deleted)s fájl törölve, a távoli változásokat követve."
 
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
@@ -679,7 +682,7 @@ msgstr "Korlátozás nélkül"
 #: syncthing_gtk/uisettingsdialog.py:107
 #, python-format
 msgid "Install %(package)s package to enable %(feature)s support"
-msgstr "Ezen csomagokat kell telepíteni a(z) %(feature)s szolgáltatásokhoz: %(package)s"
+msgstr "%(feature)s szolgáltatásokhoz ezeket a csomagokat kell telepíteni: %(package)s"
 
 #: syncthing_gtk/uisettingsdialog.py:312
 msgid "Browse for Syncthing binary"
@@ -687,7 +690,7 @@ msgstr "Syncthing bináris tallózása"
 
 #: syncthing_gtk/wizard.py:53
 msgid "First run wizard"
-msgstr "Első indítás tündér"
+msgstr "Elsőindítás-varázsló"
 
 #: syncthing_gtk/wizard.py:137
 #, python-format
@@ -700,7 +703,7 @@ msgstr "Hibajegyzék megjelenítése"
 
 #: syncthing_gtk/wizard.py:198
 msgid "Welcome to Syncthing-GTK first run wizard!"
-msgstr "Üdvözlet a Syncthing-GTK első indítás tündérjében!"
+msgstr "Üdvözlet a Syncthing-GTK elsőindítás-varázslójában!"
 
 #: syncthing_gtk/wizard.py:200
 msgid "It looks like you never have used Syncthing."
@@ -712,20 +715,20 @@ msgstr "Szükséges a kezdő beállítások létrehozása."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>Next</b> to create a Syncthing configuration file or "
+"Please click <b>%s</b> to create a Syncthing configuration file or "
 "<b>Quit</b> to exit"
-msgstr "A <b>Tovább</b> gombbal létrehozható a Syncthing konfigurációs fájl, a <b>Kilépés</b> gombbal pedig megszakítható"
+msgstr "Kattintson a <b>%s</b> gombra a Syncthing konfigurációs fájl létrehozásához, vagy a <b>Kilépés</b> gombra a megszakításhoz"
 
 #: syncthing_gtk/wizard.py:204
 #, python-format
 msgid ""
 "If you already had Syncthing daemon configured, please, exit this wizard and"
 " check your %s folder"
-msgstr "Ha már konfigurálva van a Syncthing rendszerfolyamat, javasolt kilépni ebből a tündérből és ellenőrizni a mappát: %s"
+msgstr "Ha már konfigurálva van a Syncthing démon, javasolt kilépni ebből a varázslóból és ellenőrizni a mappát: %s"
 
 #: syncthing_gtk/wizard.py:220
 msgid "Searching for Syncthing daemon."
-msgstr "Syncthing rendszerfolyamat keresése"
+msgstr "Syncthing démon keresése"
 
 #: syncthing_gtk/wizard.py:222 syncthing_gtk/wizard.py:394
 msgid "Please wait..."
@@ -733,7 +736,7 @@ msgstr "Türelem…"
 
 #: syncthing_gtk/wizard.py:270 syncthing_gtk/wizard.py:287
 msgid "Syncthing daemon not found."
-msgstr "Syncthing rendszerfolyamat nem található."
+msgstr "Syncthing démon nem található."
 
 #: syncthing_gtk/wizard.py:271
 msgid "Please, use package manager to install the Syncthing package."
@@ -753,14 +756,14 @@ msgstr "Csomagkezelővel kell telepíteni a Syncthing csomagot vagy le lehet tö
 
 #: syncthing_gtk/wizard.py:296
 msgid "Syncthing daemon is too old."
-msgstr "A Syncthing rendszerfolyamat túl régi."
+msgstr "A Syncthing démon túl régi."
 
 #: syncthing_gtk/wizard.py:297
 #, python-format
 msgid ""
 "Syncthing-GTK needs Syncthing daemon %(min)s or newer, but only %(actual)s "
 "were found."
-msgstr "A Syncthing-GTK minimum %(min)s vagy újabb verziót igényel a Syncthing rendszerfolyamatból, de a legfrissebb megtalált verziószám csak a(z) %(actual)s. "
+msgstr "A Syncthing-GTK minimum %(min)s vagy újabb verziót igényel a Syncthing démonből, de a legfrissebb megtalált verziószám csak %(actual)s. "
 
 #: syncthing_gtk/wizard.py:309
 msgid "Alternatively, Syncthing-GTK can download Syncthing binary"
@@ -785,7 +788,7 @@ msgstr "Letöltött bináris automatikus _frissítése"
 
 #: syncthing_gtk/wizard.py:375
 msgid "Syncthing daemon binary found."
-msgstr "Syncthing rendszerfolyamat binárisa nem található."
+msgstr "A Syncthing démon binárisa nem található."
 
 #: syncthing_gtk/wizard.py:377 syncthing_gtk/wizard.py:460
 msgid "Binary path:"
@@ -797,11 +800,11 @@ msgstr "Verzió:"
 
 #: syncthing_gtk/wizard.py:393
 msgid "Downloading Syncthing daemon."
-msgstr "Syncthing rendszerfolyamat letöltése."
+msgstr "Syncthing démon letöltése."
 
 #: syncthing_gtk/wizard.py:441
 msgid "Failed to download Syncthing daemon package."
-msgstr "Nem sikerült letölteni a Syncthing rendszerfolyamat csomagját."
+msgstr "Nem sikerült letölteni a Syncthing démon csomagját."
 
 #: syncthing_gtk/wizard.py:472
 msgid "Syncthing is generating RSA key and certificate."
@@ -817,7 +820,7 @@ msgstr "Nem sikerült a kulcsok generálása"
 
 #: syncthing_gtk/wizard.py:516
 msgid "Syncthing daemon failed to generate RSA key or certificate."
-msgstr "A Syncthing rendszerfolyamatnak nem sikerült legenerálnia az RSA kulcsot vagy a tanúsítványt."
+msgstr "A Syncthing démonnak nem sikerült RSA kulcsot vagy tanúsítványt generálni."
 
 #: syncthing_gtk/wizard.py:526
 msgid "WebUI setup"
@@ -828,7 +831,7 @@ msgid ""
 "Syncthing can be managed remotely using WebUI and even if you are going to "
 "use Syncthing-GTK, WebUI needs to be enabled, as Syncthing-GTK uses it to "
 "communicate with the Syncthing daemon."
-msgstr "A Syncthing távolról a webes felülettel kezelhető és akkor is szükség van rá, ha a Syncthing-GTK-t használjuk, mivel a Syncthing-GTK azt használja a Syncthing rendszerfolyamattal való kommunikációra."
+msgstr "A Syncthing távolról a webes felülettel kezelhető és akkor is szükség van rá, ha a Syncthing-GTK-t használjuk, mivel a Syncthing-GTK azt használja a Syncthing démonnal való kommunikációra."
 
 #: syncthing_gtk/wizard.py:533
 msgid ""
@@ -907,7 +910,7 @@ msgstr "A Syncthing beállítása sikeres."
 msgid ""
 "You can configure more details later, in <b>UI Settings</b> and <b>Daemon "
 "Settings</b> menus in main window of application."
-msgstr "A további részleteket később a program <b>Felület beállításai</b> és a  <b>Rendszerfolyamat beállításai</b> menüiben lehet beállítani."
+msgstr "A további részleteket később a program <b>Felület beállításai</b> és a  <b>Démon beállításai</b> menüiben lehet beállítani."
 
 #: about.glade:7
 msgid "About Syncthing-GTK"
@@ -927,7 +930,7 @@ msgstr "_Webfelület megnyitása"
 
 #: app.glade:251 app.glade:424 app.glade:814
 msgid "Display _Daemon Output"
-msgstr "Rendszerfolyamat kimenete"
+msgstr "_Démon kimenete"
 
 #: app.glade:263
 msgid "Display Syncthing-Inotify Output"
@@ -947,7 +950,7 @@ msgstr "_Eszköz hozzáadása"
 
 #: app.glade:356 app.glade:461
 msgid "Daemon _Settings"
-msgstr "Rendszerfolyamat _beállításai"
+msgstr "Démon _beállításai"
 
 #: app.glade:371 app.glade:465 app.glade:588 app.glade:788
 msgid "Show _ID"
@@ -955,11 +958,11 @@ msgstr "_Azonosító megjelenítése"
 
 #: app.glade:391 app.glade:471
 msgid "Sh_utdown Daemon"
-msgstr "Rendszerfolyamat _leállítása"
+msgstr "Démon _leállítása"
 
 #: app.glade:404 app.glade:475
 msgid "_Restart Daemon"
-msgstr "Rendszerfolyamat _újraindítása"
+msgstr "Démon _újraindítása"
 
 #: app.glade:436
 msgid "_About"
@@ -991,7 +994,7 @@ msgstr "Folytatás"
 
 #: app.glade:641
 msgid "Connecting to daemon..."
-msgstr "Csatlakozás a rendszerfolyamathoz…"
+msgstr "Csatlakozás a démonhoz…"
 
 #: app.glade:669
 msgid "S_top Syncthing"
@@ -1019,7 +1022,7 @@ msgstr "_Kimenő sebességkorlát"
 
 #: daemon-output.glade:7
 msgid "Daemon Output"
-msgstr "Rendszerfolyamat kimenete"
+msgstr "Démon kimenete"
 
 #: daemon-settings.glade:106
 msgid "Sync Protocol Listen Addresses"
@@ -1043,7 +1046,7 @@ msgstr "Kimenő sebességkorlát"
 
 #: daemon-settings.glade:229
 msgid "Open browser with _WebUI when daemon is starting"
-msgstr "A webfelület megnyitása böngészőben a rendszerfolyamat indításakor"
+msgstr "A webfelület megnyitása böngészőben a démon indításakor"
 
 #: daemon-settings.glade:246
 msgid "Enable _Anonymous Usage Reporting"
@@ -1055,7 +1058,7 @@ msgstr "_Globális felfedezés engedélyezése"
 
 #: daemon-settings.glade:281
 msgid "Global Discovery _Servers"
-msgstr "Globális felfedezési szerverek"
+msgstr "Globális felfedezési kiszolgálók"
 
 #: device-edit.glade:102
 msgid "Device _ID"
@@ -1286,7 +1289,7 @@ msgstr "A napok száma ameddig a fájlok meg lesznek tartva a szemetesben."
 msgid ""
 "An external command handles the versioning. It has to remove the file from "
 "the synced folder."
-msgstr "Külső program kezeli a fájl verziókövetést. Az távolítja el a fájlt a szinkronizált mappából."
+msgstr "Külső program kezeli a fájlverzió-követést. Az távolítja el a fájlt a szinkronizált mappából."
 
 #: folder-edit.glade:884
 msgid "Command"
@@ -1310,7 +1313,7 @@ msgstr "Jogosultságok figyelmen kívül hagyása"
 msgid ""
 "File permission bits are ignored when looking for changes. Use on FAT "
 "filesystems."
-msgstr "Fájl jogosultságok figyelmen kívül hagyása változások keresésekor. FAT fájlrendszerek használatakor hasznos."
+msgstr "Fájljogosultságok figyelmen kívül hagyása változások keresésekor. FAT fájlrendszerek használatakor hasznos."
 
 #: folder-edit.glade:1018
 msgid "Minimum Free Disk Space"
@@ -1364,15 +1367,15 @@ msgstr "A Syncthing-GTK újraindítása után fognak érvényre lépni a megvál
 
 #: ui-settings.glade:136
 msgid "When starting and Syncthing daemon is not running..."
-msgstr "Indításkor ha a Syncthing rendszerfolyamat nem fut…"
+msgstr "Indításkor ha a Syncthing démon nem fut…"
 
 #: ui-settings.glade:147
 msgid "... _wait for daemon"
-msgstr "… _várakozzon a rendszerfolyamatra"
+msgstr "… _várakozzon a démonra"
 
 #: ui-settings.glade:164
 msgid "... start daemon in _background"
-msgstr "… indítsa el a rendszerfolyamatot a _háttérben"
+msgstr "… indítsa el a démont a _háttérben"
 
 #: ui-settings.glade:180
 msgid "... _ask me what to do"
@@ -1380,15 +1383,15 @@ msgstr "… _kérdezze meg, mi a teendő"
 
 #: ui-settings.glade:199
 msgid "When exiting after daemon was started in background..."
-msgstr "Kilépéskor, ha a rendszerfolyamat a háttérben volt elindítva…"
+msgstr "Kilépéskor, ha a démon a háttérben volt elindítva…"
 
 #: ui-settings.glade:210
 msgid "... terminate _daemon"
-msgstr "… állítsa le a _rendszerfolyamatot"
+msgstr "… állítsa le a _démont"
 
 #: ui-settings.glade:226
 msgid "... leave daemon _running"
-msgstr "… hagyja a rendszerfolyamatot _futni"
+msgstr "… hagyja a démont _futni"
 
 #: ui-settings.glade:242
 msgid "... ask me w_hat to do"
@@ -1476,13 +1479,13 @@ msgstr "Bekapcsolva a Syncthing-GTK automatikusan ellenőrzi a friss kiadásokat
 
 #: ui-settings.glade:662
 msgid "Daemon process priority"
-msgstr "Rendszerfolyamat prioritása"
+msgstr "Démon prioritása"
 
 #: ui-settings.glade:698
 msgid ""
 "Priority will be used only if \"<i>start daemon in background</i>\" option "
 "is checked on \"<i>Interface</i>\" page."
-msgstr "A prioritás akkor lesz használva, ha a <i>rendszerfolyamat háttérben való indítása</i> opció be lett kapcsolva az <i>interfésze</i> oldalon."
+msgstr "A prioritás akkor lesz használva, ha a <i>démon háttérben való indítása</i> opció be lett kapcsolva az <i>interfész</i> oldalon."
 
 #: ui-settings.glade:713
 msgid "Maximum number of CPU cores"
@@ -1493,18 +1496,18 @@ msgid ""
 "Sets the maximum number of CPU cores for daemon to use. This value will be "
 "used only if \"<i>start daemon in background</i>\" option is checked on "
 "\"<i>Interface</i>\" page."
-msgstr "Beállítja, hogy a rendszerfolyamat legfeljebb mennyi CPU magot használhatnak. Ez az érték akkor lesz használva, ha a <i>rendszerfolyamat háttérben való indítása</i> opció be lett kapcsolva az <i>interfésze</i> oldalon."
+msgstr "Beállítja, hogy a démon legfeljebb mennyi CPU magot használhat. Ez az érték akkor lesz használva, ha a <i>démon háttérben való indítása</i> opció be lett kapcsolva az <i>interfész</i> oldalon."
 
 #: ui-settings.glade:786
 msgid "Daemon"
-msgstr "Rendszerfolyamat"
+msgstr "Démon"
 
 #: ui-settings.glade:808
 msgid ""
 "This binary will be started when syncthing daemon is not running and "
 "\"<i>start daemon in background</i>\" option is checked on "
 "\"<i>Interface</i>\" page."
-msgstr "Ez a bináris kerül indításra ha a Syncthing rendszerfolyamat nem fut és, ha a <i>rendszerfolyamat háttérben való indítása</i> opció be lett kapcsolva az <i>interfésze</i> oldalon."
+msgstr "Ez a bináris kerül indításra ha a Syncthing démon nem fut és, ha a <i>démon háttérben való indítása</i> opció be lett kapcsolva az <i>interfész</i> oldalon."
 
 #: ui-settings.glade:838
 msgid "Syncthing binary location"
@@ -1512,7 +1515,7 @@ msgstr "Syncthing bináris helye"
 
 #: ui-settings.glade:867
 msgid "Daemon arguments and variables"
-msgstr "Rendszerfolyamat argumentumai és változói"
+msgstr "Démon argumentumai és változói"
 
 #: ui-settings.glade:897
 msgid ""
@@ -1524,7 +1527,7 @@ msgid ""
 "\n"
 "Example:\n"
 "  <i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
-msgstr "Szóközzel elválasztott lista az argumentumokról és a rendszerváltozókról, melyek átadásra kerülnek a fenti binárisnak\n\nVáltozót a <i>VÁLTOZÓ=\"érték\"</i> szintakszissal lehet átadni, argumentumot pedig a <i>-argumentum=\"érték\"</i> (kötőjellel) módon.\n\nHa a parancssort különféle parancsoknak kell átadni (mint pl. a logger vagy az ionice), akkor az előtagos argumentumokat felkiáltó jellel (!) kell elválasztani.\n\nPélda:\n<i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
+msgstr "Szóközzel elválasztott lista az argumentumokról és a környezetei változókról, melyek átadásra kerülnek a fenti binárisnak\n\nVáltozót a <i>VÁLTOZÓ=\"érték\"</i> szintaxissal lehet átadni, argumentumot pedig a <i>-argumentum=\"érték\"</i> (kötőjellel) módon.\n\nHa a parancssort különféle parancsoknak kell átadni (mint pl. a logger vagy az ionice), akkor az előtagos argumentumokat felkiáltó jellel \"!\" kell elválasztani.\n\nPélda:\n<i>STTRACE=\"all\" logger -t /var/log/syncthing.log ! -logflags=10</i>"
 
 #: ui-settings.glade:921
 msgid ""
