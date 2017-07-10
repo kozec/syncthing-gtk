@@ -3,7 +3,7 @@ Syncthing-GTK - InfoBox
 
 Colorfull, expandlable widget displaying folder/device data
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
 from syncthing_gtk.ribar import RevealerClass
 from syncthing_gtk.tools import _ # gettext function
@@ -372,7 +372,7 @@ class InfoBox(Gtk.Container):
 		"""
 		hx = hx.lstrip('#')
 		l = len(hx)
-		color = [ float(int(hx[i:i+l/3], 16)) / 255.0 for i in range(0, l, l/3) ]
+		color = [ float(int(hx[i:i+l//3], 16)) / 255.0 for i in range(0, l, l//3) ]
 		while len(color) < 4:
 			color.append(1.0)
 		return color

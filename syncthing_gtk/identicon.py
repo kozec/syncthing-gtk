@@ -7,7 +7,7 @@ Draws Ident Icon on transparent background.
 Most of drawing code is ported from
 https://github.com/syncthing/syncthing/blob/master/gui/scripts/syncthing/core/directives/identiconDirective.js"""
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 from gi.repository import Gtk
 import re, math
 
@@ -59,10 +59,10 @@ class IdentIcon(Gtk.DrawingArea):
 		
 		# Prepare stuff
 		allocation	= self.get_allocation()
-		rect_size	= min(allocation.width, allocation.height) / self.size
-		offset_x	= (allocation.width / 2) - (rect_size * self.size / 2)
-		offset_y	= (allocation.height / 2) - (rect_size * self.size / 2)
-		middle_col	= self.size / 2
+		rect_size	= min(allocation.width, allocation.height) // self.size
+		offset_x	= (allocation.width // 2) - (rect_size * self.size // 2)
+		offset_y	= (allocation.height // 2) - (rect_size * self.size // 2)
+		middle_col	= self.size // 2
 		
 		# Set color
 		cr.set_source_rgba(*self.color)
