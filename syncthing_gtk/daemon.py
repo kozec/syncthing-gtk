@@ -406,8 +406,9 @@ class Daemon(GObject.GObject, TimerManager):
 		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
 			(command, self._epoch, callback, error_callback, callback_data))
 	
-	def _rest_connected(self, sc, results, (command, epoch, callback, error_callback, callback_data)):
+	def _rest_connected(self, sc, results, command_tuple):
 		""" Second part of _rest_request, called after HTTP connection is initiated """
+		command, epoch, callback, error_callback, callback_data = command_tuple
 		try:
 			con = sc.connect_to_service_finish(results)
 			if con == None:
@@ -454,7 +455,9 @@ class Daemon(GObject.GObject, TimerManager):
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
 			(con, command, epoch, callback, error_callback, callback_data, []))
 	
-	def _rest_response(self, sc, results, (con, command, epoch, callback, error_callback, callback_data, buffer)):
+	def _rest_response(self, sc, results, command_tuple):
+		con, command, epoch, callback, \
+		error_callback, callback_data, buffer = command_tuple
 		try:
 			response = sc.read_bytes_finish(results)
 			if response == None:
@@ -557,8 +560,9 @@ class Daemon(GObject.GObject, TimerManager):
 		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
 			(command, data, self._epoch, callback, error_callback, callback_data))
 	
-	def _rest_post_connected(self, sc, results, (command, data, epoch, callback, error_callback, callback_data)):
+	def _rest_post_connected(self, sc, results, command_tuple):
 		""" Second part of _rest_post, called after HTTP connection is initiated """
+		command, data, epoch, callback, error_callback, callback_data = command_tuple
 		try:
 			con = sc.connect_to_service_finish(results)
 			if con == None:
@@ -608,7 +612,9 @@ class Daemon(GObject.GObject, TimerManager):
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
 			(con, command, data, epoch, callback, error_callback, callback_data, []))
 	
-	def _rest_post_response(self, sc, results, (con, command, data, epoch, callback, error_callback, callback_data, buffer)):
+	def _rest_post_response(self, sc, results, command_tuple):
+		con, command, data, epoch, callback, \
+		error_callback, callback_data, buffer = command_tuple
 		try:
 			response = sc.read_bytes_finish(results)
 			if response == None:
