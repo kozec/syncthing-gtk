@@ -337,7 +337,7 @@ class App(Gtk.Application, TimerManager):
 				self.daemon = Daemon(os.path.join(self.home_dir_override, "config.xml"))
 			else:
 				self.daemon = Daemon(self.home_dir_override)
-		except InvalidConfigurationException, e:
+		except InvalidConfigurationException as e:
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
 			if IS_XP:
@@ -348,7 +348,7 @@ class App(Gtk.Application, TimerManager):
 			self.hide()
 			self.show_wizard()
 			return False
-		except TLSErrorException, e:
+		except TLSErrorException as e:
 			# This is pretty-much fatal. Display error message and bail out.
 			self.cb_syncthing_con_error(daemon, Daemon.UNKNOWN, str(e), e)
 			return False
