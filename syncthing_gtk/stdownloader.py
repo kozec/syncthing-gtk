@@ -240,7 +240,8 @@ class StDownloader(GObject.GObject):
 		self.emit("download-starting")
 	
 	
-	def _cb_open_archive(self, f, result, (tmpfile,)):
+	def _cb_open_archive(self, f, result, tmpfile_tuple):
+		tmpfile, = tmpfile_tuple
 		stream = None
 		try:
 			stream = f.read_finish(result)
@@ -252,7 +253,8 @@ class StDownloader(GObject.GObject):
 		stream.read_bytes_async(CHUNK_SIZE, GLib.PRIORITY_DEFAULT, None,
 				self._cb_download, (tmpfile, 0))
 	
-	def _cb_download(self, stream, result, (tmpfile, downloaded)):
+	def _cb_download(self, stream, result, tmpfile_tuple):
+		tmpfile, downloaded = tmpfile_tuple
 		try:
 			# Get response from async call
 			response = stream.read_bytes_finish(result)
@@ -316,7 +318,8 @@ class StDownloader(GObject.GObject):
 				_("Failed to determine latest Syncthing version."))
 			return
 	
-	def _extract(self, (archive, compressed, output, extracted, ex_size)):
+	def _extract(self, archive_tuple):
+		archive, compressed, output, extracted, ex_size = archive_tuple
 		try:
 			buffer = compressed.read(CHUNK_SIZE)
 			read_size = len(buffer)
