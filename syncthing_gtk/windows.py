@@ -73,7 +73,7 @@ def nice_to_priority_class(nice):
 def override_menu_borders():
 	""" Loads custom CSS to create borders around popup menus """
 	style_provider = Gtk.CssProvider()
-	style_provider.load_from_data(b"""
+	style_provider.load_from_data("""
 		.menu {
 			border-image: linear-gradient(to top,
 										  alpha(@borders, 0.80),
