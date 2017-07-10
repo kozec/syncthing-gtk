@@ -337,7 +337,7 @@ class StDownloader(GObject.GObject):
 				# Change file mode to 0755
 				if hasattr(os, "fchmod"):
 					# ... on Unix
-					os.fchmod(output.fileno(), 0755)
+					os.fchmod(output.fileno(), 0o755)
 				output.close()
 				archive.close()
 				compressed.close()
