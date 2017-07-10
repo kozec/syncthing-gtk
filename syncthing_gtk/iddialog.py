@@ -9,8 +9,14 @@ from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 from syncthing_gtk.tools import IS_WINDOWS
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk import UIBuilder
-import urllib2, httplib, ssl
-import os, tempfile, logging
+import ssl
+import os, tempfile, logging, sys
+if sys.version_info[0] == 2:
+	import urllib2
+	import httplib
+else:
+	import urllib.request as urllib2
+	import http.client as httplib
 log = logging.getLogger("IDDialog")
 
 class IDDialog(object):
