@@ -327,7 +327,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self._configxml = os.path.join(get_config_dir(), "syncthing", "config.xml")
 		try:
 			log.debug("Reasing syncthing config %s", self._configxml)
-			config = file(self._configxml, "r").read()
+			config = open(self._configxml, "r").read()
 		except Exception as e:
 			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
 		try:

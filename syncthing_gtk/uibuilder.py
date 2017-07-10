@@ -36,7 +36,7 @@ class UIBuilder(Gtk.Builder):
 			# Gtk.Builder directly
 			Gtk.Builder.add_from_file(self, filename)
 		else:
-			self.add_from_string(file(filename, "r").read())
+			self.add_from_string(open(filename, "r").read())
 	
 	def add_from_string(self, string):
 		""" Builds UI from string """

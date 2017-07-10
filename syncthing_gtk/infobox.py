@@ -468,7 +468,7 @@ class InfoBox(Gtk.Container):
 			if not key in svg_cache:
 				if not self.dark_color is None:
 					# Recolor svg for dark theme
-					svg_source = file(os.path.join(self.app.iconpath, icon), "r").read()
+					svg_source = open(os.path.join(self.app.iconpath, icon), "r").read()
 					svg_source = svg_source.replace('fill:rgb(0%,0%,0%)', 'fill:rgb(100%,100%,100%)')
 					svg = Rsvg.Handle.new_from_data(svg_source.encode("utf-8"))
 				else:

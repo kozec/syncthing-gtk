@@ -85,7 +85,7 @@ class _Configuration(object):
 				log.exception(e)
 				sys.exit(1)
 		# Load json
-		self.values = json.loads(file(self.get_config_file(), "r").read())
+		self.values = json.loads(open(self.get_config_file(), "r").read())
 	
 	def get_config_dir(self):
 		return os.path.join(get_config_dir(), "syncthing-gtk")
@@ -157,7 +157,7 @@ class _Configuration(object):
 	
 	def save(self):
 		""" Saves configuration file """
-		file(self.get_config_file(), "w").write(json.dumps(
+		open(self.get_config_file(), "w").write(json.dumps(
 			self.values, sort_keys=True, indent=4,
 			separators=(',', ': '), default=serializer
 			))

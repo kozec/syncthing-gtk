@@ -456,7 +456,7 @@ def is_ran_on_startup(program_name):
 		# Check if desktop file is not marked as hidden
 		# (stupid way, but should work)
 		in_entry = False
-		for line in file(desktopfile, "r").readlines():
+		for line in open(desktopfile, "r").readlines():
 			line = line.strip(" \r\t").lower()
 			if line == "[desktop entry]":
 				in_entry = True
@@ -502,7 +502,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 				# Already exists
 				pass
 			try:
-				file(desktopfile, "w").write((DESKTOP_FILE % (
+				open(desktopfile, "w").write((DESKTOP_FILE % (
 					program_name, executable, icon, description)).encode('utf-8'))
 			except Exception as e:
 				# IO errors or out of disk space... Not really
@@ -533,10 +533,10 @@ def can_upgrade_binary(binary_path):
 		try:
 			path = binary_path + ".new"
 			if os.path.exists(path):
-				f = file(path, "r+b")
+				f = open(path, "r+b")
 				f.close()
 			else:
-				f = file(path, "wb")
+				f = open(path, "wb")
 				f.close()
 				os.unlink(path)
 			# return Maybe
