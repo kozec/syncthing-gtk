@@ -7,7 +7,7 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 """
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
@@ -1125,7 +1125,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("device-resumed", nid)
 			self._request_last_seen()
 		elif eType == "FolderRejected":
-			print e["data"]
+			print(e["data"])
 			nid = e["data"]["device"]
 			rid = e["data"]["folder"]
 			label = e["data"]["folderLabel"] if "folderLabel" in e["data"] else None
