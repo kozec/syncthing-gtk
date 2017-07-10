@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 """
 Nautilus plugin for Syncthing.
 This program is part of Syncthing-GTK, but can be used independently

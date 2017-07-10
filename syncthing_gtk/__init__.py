@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 import tools
 import os
 from timermanager		import TimerManager
