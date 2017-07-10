@@ -56,7 +56,14 @@ if IS_WINDOWS:
 
 """ Localization lambdas """
 _ = lambda a: _uc(gettext.gettext(a))
-_uc = lambda b: b if type(b) == unicode else b.decode("utf-8")
+# this can be replaced with six.text_type if there are more places
+# the six library would be used
+if sys.version_info[0] == 2:
+	unicode_type = unicode
+else:
+	unicode_type = str
+
+_uc = lambda b: b if type(b) == unicode_type else b.decode("utf-8")
 
 def luhn_b32generate(s):
 	"""
@@ -234,10 +241,10 @@ def init_logging():
 	old_log = logging.Logger._log
 	def _log(self, level, msg, args, exc_info=None, extra=None):
 		args = tuple([
-			(c if type(c) is unicode else str(c).decode("utf-8"))
+			(c if type(c) is unicode_type else str(c).decode("utf-8"))
 			for c in args
 		])
-		msg = msg if type(msg) is unicode else str(msg).decode("utf-8")
+		msg = msg if type(msg) is unicode_type else str(msg).decode("utf-8")
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
