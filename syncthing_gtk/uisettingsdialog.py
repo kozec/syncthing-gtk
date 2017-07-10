@@ -199,7 +199,7 @@ class UISettingsDialog(EditorDialog):
 					try:
 						# Create directory first
 						os.makedirs(os.path.dirname(target))
-					except Exception, e:
+					except Exception as e:
 						# Ignore "file already exists" error
 						pass
 					try:
@@ -207,7 +207,7 @@ class UISettingsDialog(EditorDialog):
 							os.unlink(target)
 						os.symlink(source, target)
 						log.info("Created symlink '%s' -> '%s'", source, target)
-					except Exception, e:
+					except Exception as e:
 						log.error("Failed to symlink '%s' -> '%s'", source, target)
 						log.error(e)
 			else:
@@ -218,7 +218,7 @@ class UISettingsDialog(EditorDialog):
 						try:
 							os.unlink(target)
 							log.info("Removed '%s'", target)
-						except Exception, e:
+						except Exception as e:
 							log.error("Failed to remove '%s'", target)
 							log.error(e)
 		

@@ -167,7 +167,7 @@ class StDownloader(GObject.GObject):
 			
 			log.verbose("STDownloader: Latest compatibile Syncthing version: %s", self.latest_compat)
 		
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
@@ -210,7 +210,7 @@ class StDownloader(GObject.GObject):
 			del f
 			if self.dll_url is None:
 				raise Exception("No release to download")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
@@ -230,7 +230,7 @@ class StDownloader(GObject.GObject):
 				suffix = ".zip"	
 			tmpfile = tempfile.NamedTemporaryFile(mode="wb",
 				prefix="syncthing-package.", suffix=suffix, delete=False)
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e, _("Failed to create temporaly file."))
 			return
@@ -245,7 +245,7 @@ class StDownloader(GObject.GObject):
 		try:
 			stream = f.read_finish(result)
 			del f
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
@@ -273,7 +273,7 @@ class StDownloader(GObject.GObject):
 				stream.close(None)
 				tmpfile.close()
 				GLib.idle_add(self._open_achive, tmpfile.name)
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
@@ -310,7 +310,7 @@ class StDownloader(GObject.GObject):
 						output = file(self.target, "wb")
 						GLib.idle_add(self._extract, (archive, compressed, output, 0, tinfo.size))
 						return
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
@@ -340,7 +340,7 @@ class StDownloader(GObject.GObject):
 				compressed.close()
 				self.emit("extraction-progress", 1.0)
 				self.emit("extraction-finished")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))

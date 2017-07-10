@@ -61,7 +61,7 @@ class _Configuration(object):
 	def __init__(self):
 		try:
 			self.load()
-		except Exception, e:
+		except Exception as e:
 			log.warning("Failed to load configuration; Creating new one.")
 			log.warning("Reason: %s", (e,))
 			self.create()
@@ -80,7 +80,7 @@ class _Configuration(object):
 		if not os.path.exists(self.get_config_dir()):
 			try:
 				os.makedirs(self.get_config_dir())
-			except Exception, e:
+			except Exception as e:
 				log.error("Cannot create configuration directory")
 				log.exception(e)
 				sys.exit(1)
@@ -134,7 +134,7 @@ class _Configuration(object):
 					elif tp == bool and type(self.values[key]) in (int, long):
 						# Convert bools
 						self.values[key] = bool(self.values[key])
-				except Exception, e:
+				except Exception as e:
 					log.warning("Failed to parse configuration value '%s'. Using default.", key)
 					log.warning(e)
 					# Value will be re-created by check_values method

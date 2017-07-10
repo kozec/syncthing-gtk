@@ -88,7 +88,7 @@ class IDDialog(object):
 				# Unauthorized. Grab CSRF token from daemon and try again
 				log.warning("Failed to load image using glib. Retrying with urllib2.")
 				self.load_data_urllib()
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			return
 		finally:

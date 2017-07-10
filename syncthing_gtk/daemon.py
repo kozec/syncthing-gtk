@@ -328,17 +328,17 @@ class Daemon(GObject.GObject, TimerManager):
 		try:
 			log.debug("Reasing syncthing config %s", self._configxml)
 			config = file(self._configxml, "r").read()
-		except Exception, e:
+		except Exception as e:
 			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
 		try:
 			xml = minidom.parseString(config)
-		except Exception, e:
+		except Exception as e:
 			raise InvalidConfigurationException("Failed to parse daemon configuration: %s" % e)
 		tls = "false"
 		try:
 			tls = xml.getElementsByTagName("configuration")[0] \
 				.getElementsByTagName("gui")[0].getAttribute("tls")
-		except Exception, e:
+		except Exception as e:
 			pass
 		self._tls = False
 		self._cert = None
@@ -347,7 +347,7 @@ class Daemon(GObject.GObject, TimerManager):
 			try:
 				self._cert = Gio.TlsCertificate.new_from_file(
 					os.path.join(get_config_dir(), "syncthing", "https-cert.pem"))
-			except Exception, e:
+			except Exception as e:
 				log.exception(e)
 				raise TLSErrorException("Failed to load daemon certificate")
 		try:
@@ -359,7 +359,7 @@ class Daemon(GObject.GObject, TimerManager):
 				addr, port = self._address.split(":", 1)
 				self._address = "127.0.0.1:%s" % (port,)
 				log.debug("WebUI listens on 0.0.0.0, connecting to 127.0.0.1 instead")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
 		try:
@@ -367,7 +367,7 @@ class Daemon(GObject.GObject, TimerManager):
 							.getElementsByTagName("gui")[0] \
 							.getElementsByTagName("apikey")[0] \
 							.firstChild.nodeValue
-		except Exception, e:
+		except Exception as e:
 			# API key can be none
 			pass
 	
@@ -412,7 +412,7 @@ class Daemon(GObject.GObject, TimerManager):
 			con = sc.connect_to_service_finish(results)
 			if con == None:
 				raise Exception("Unknown error")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
 				e = TLSUnsupportedException(e.message)
@@ -448,7 +448,7 @@ class Daemon(GObject.GObject, TimerManager):
 		# Send it out and wait for response
 		try:
 			con.get_output_stream().write_all(get_str, None)
-		except Exception, e:
+		except Exception as e:
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
@@ -459,7 +459,7 @@ class Daemon(GObject.GObject, TimerManager):
 			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
-		except Exception, e:
+		except Exception as e:
 			con.close(None)
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
@@ -503,7 +503,7 @@ class Daemon(GObject.GObject, TimerManager):
 			elif code != 200:
 				self._rest_error(HTTPCode(code, response, "".join(buffer), headers), epoch, command, callback, error_callback, callback_data)
 				return
-		except Exception, e:
+		except Exception as e:
 			# That probably wasn't HTTP
 			import traceback
 			traceback.print_exc()
@@ -563,7 +563,7 @@ class Daemon(GObject.GObject, TimerManager):
 			con = sc.connect_to_service_finish(results)
 			if con == None:
 				raise Exception("Unknown error")
-		except Exception, e:
+		except Exception as e:
 			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
 				e = TLSUnsupportedException(e.message)
 			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
@@ -602,7 +602,7 @@ class Daemon(GObject.GObject, TimerManager):
 		# Send it out and wait for response
 		try:
 			con.get_output_stream().write_all(post_str, None)
-		except Exception, e:
+		except Exception as e:
 			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
 			return
 		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
@@ -613,7 +613,7 @@ class Daemon(GObject.GObject, TimerManager):
 			response = sc.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
-		except Exception, e:
+		except Exception as e:
 			con.close(None)
 			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
 			return

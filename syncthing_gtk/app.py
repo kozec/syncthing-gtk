@@ -590,20 +590,20 @@ class App(Gtk.Application, TimerManager):
 		# Move old from way
 		try:
 			shutil.move(bin, old_bin)
-		except Exception, e:
+		except Exception as e:
 			log.warning("Failed to upgrade daemon binary: Failed to rename old binary")
 			log.warning(e)
 			return
 		# Place new
 		try:
 			shutil.move(new_bin, bin)
-		except Exception, e:
+		except Exception as e:
 			log.warning("Failed to upgrade daemon binary: Failed to rename new binary")
 			log.warning(e)
 			# Return old back to place
 			try:
 				shutil.move(old_bin, bin)
-			except Exception, e:
+			except Exception as e:
 				# This really shouldn't happen, in more than one sense
 				log.error("Failed to upgrade daemon binary: Failed to rename backup")
 				log.exception(e)
@@ -611,7 +611,7 @@ class App(Gtk.Application, TimerManager):
 		# Remove old
 		try:
 			os.unlink(old_bin)
-		except Exception, e:
+		except Exception as e:
 			# Not exactly fatal
 			log.warning("Failed to remove backup binary durring backup")
 			log.warning(e)
