@@ -94,7 +94,7 @@ def check_device_id(nid):
 		.replace("-", "") \
 		.replace(" ", "")
 	if len(nid) == 56:
-		for i in xrange(0, 4):
+		for i in range(0, 4):
 			p = nid[i*14:((i+1)*14)-1]
 			try:
 				l = luhn_b32generate(p)
@@ -352,7 +352,7 @@ def parse_version(ver):
 	while len(comps) < 6:
 		comps.append("0")
 	res = 0
-	for i in xrange(0, 6):
+	for i in range(0, 6):
 		res += min(255, int(comps[i])) << ((5-i) * 8)
 	return res
 

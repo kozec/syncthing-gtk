@@ -260,7 +260,7 @@ class EditorDialog(GObject.GObject):
 		elif isinstance(w, Gtk.ComboBox):
 			val = self.get_value(strip_v(key))
 			m = w.get_model()
-			for i in xrange(0, len(m)):
+			for i in range(0, len(m)):
 				if str(val) == str(m[i][0]).strip():
 					w.set_active(i)
 					break
