@@ -1208,7 +1208,7 @@ class App(Gtk.Application, TimerManager):
 					if box in f["devices"]:
 						to_hilight.add(f)
 				to_hilight.add(box)
-		for box in [] + self.devices.values() + self.folders.values():
+		for box in [] + list(self.devices.values()) + list(self.folders.values()):
 			box.set_hilight(box in to_hilight)
 	
 	def is_visible(self):
