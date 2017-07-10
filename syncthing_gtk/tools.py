@@ -59,11 +59,21 @@ _ = lambda a: _uc(gettext.gettext(a))
 # this can be replaced with six.text_type if there are more places
 # the six library would be used
 if sys.version_info[0] == 2:
-	unicode_type = unicode
+	def _uc(b):
+		if type(b) == unicode:
+			return b
+		elif type(b) == str:
+			return b.decode("utf-8")
+		else:
+			return str(b)
 else:
-	unicode_type = str
-
-_uc = lambda b: b if type(b) == unicode_type else b.decode("utf-8")
+	def _uc(b):
+		if type(b) == str:
+			return b
+		elif type(b) == bytes:
+			return b.decode("utf-8")
+		else:
+			return str(b)
 
 def luhn_b32generate(s):
 	"""
@@ -240,11 +250,8 @@ def init_logging():
 	# Wrap Logger._log in something that can handle utf-8 exceptions
 	old_log = logging.Logger._log
 	def _log(self, level, msg, args, exc_info=None, extra=None):
-		args = tuple([
-			(c if type(c) is unicode_type else str(c).decode("utf-8"))
-			for c in args
-		])
-		msg = msg if type(msg) is unicode_type else str(msg).decode("utf-8")
+		args = tuple([_uc(c) for c in args])
+		msg = _uc(msg)
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
