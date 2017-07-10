@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import tools
+from . import tools
 import os
 from .timermanager		import TimerManager
 from .daemonprocess		import DaemonProcess

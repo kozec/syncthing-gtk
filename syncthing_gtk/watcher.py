@@ -4,8 +4,8 @@ Syncthing-GTK - Watcher
 Watches for filesystem changes and reports them to daemon
 """
 
-from __future__ import unicode_literals
-from tools import IS_WINDOWS
+from __future__ import unicode_literals, absolute_import
+from .tools import IS_WINDOWS
 
 HAS_INOTIFY = False
 Watcher = None
