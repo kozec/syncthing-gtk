@@ -55,8 +55,8 @@ if IS_WINDOWS:
 	import wmi, _winreg
 
 """ Localization lambdas """
-_ = lambda(a): _uc(gettext.gettext(a))
-_uc = lambda(b): b if type(b) == unicode else b.decode("utf-8")
+_ = lambda a: _uc(gettext.gettext(a))
+_uc = lambda b: b if type(b) == unicode else b.decode("utf-8")
 
 def luhn_b32generate(s):
 	"""
