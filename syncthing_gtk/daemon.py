@@ -240,7 +240,7 @@ class Daemon(GObject.GObject, TimerManager):
 			"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			"folder-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			"device-rejected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
-		    "my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			"my-id-changed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			"device-added"			: (GObject.SIGNAL_RUN_FIRST, None, (object, object, bool, object)),
 			"device-connected"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			"device-disconnected"	: (GObject.SIGNAL_RUN_FIRST, None, (object,)),

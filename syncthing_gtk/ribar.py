@@ -26,7 +26,7 @@ class RIBar(RevealerClass):
 	"""
 	__gsignals__ = {
 			"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
-			"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			"close"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
 		}
 	
 	### Initialization
