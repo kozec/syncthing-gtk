@@ -4,7 +4,7 @@ Syncthing-GTK - App
 Main application window
 """
 
-from __future__ import unicode_literals, print_function
+from __future__ import unicode_literals, print_function, absolute_import
 from gi.repository import Gtk, Gio, Gdk
 from syncthing_gtk import *
 from syncthing_gtk.tools import *
@@ -684,7 +684,7 @@ class App(Gtk.Application, TimerManager):
 		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process is None and not StDownloader is None:
 			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
 			# Try to update.
-			from configuration import LONG_AGO
+			from .configuration import LONG_AGO
 			self.config["last_updatecheck"] = LONG_AGO
 			self.restart_after_update = True
 			self.close_connect_dialog()

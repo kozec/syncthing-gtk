@@ -5,7 +5,7 @@ This is only module not imported by __init__, so usage requires doing
 from syncthing_gtk import windows
 """
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
 from gi.repository import Gio, GLib, GObject, Gtk, Gdk
 import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
@@ -237,7 +237,7 @@ def WinWatcher():
 		path = os.path.dirname(__main__.__file__)
 	exe = os.path.join(path, ST_INOTIFY_EXE)
 	
-	from daemonprocess import DaemonProcess
+	from .daemonprocess import DaemonProcess
 	class _WinWatcher:
 		"""
 		Filesystem watcher implementation for Windows. Passes watched
