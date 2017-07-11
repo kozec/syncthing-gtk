@@ -4,7 +4,6 @@ Syncthing-GTK - DaemonProcess
 Runs syncthing daemon process as subprocess of application
 """
 
-from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk.tools import IS_WINDOWS
 from collections import deque

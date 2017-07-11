@@ -3,7 +3,6 @@ Syncthing-GTK - RIBar
 
 Infobar wrapped in Revealer, for greater justice
 """
-from __future__ import unicode_literals
 from gi.repository import Gtk, GLib, GObject, Pango
 import os
 RevealerClass = None
