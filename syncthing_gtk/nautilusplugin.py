@@ -11,7 +11,12 @@ from __future__ import unicode_literals
 from gi.repository import GObject, Gio, GLib
 from syncthing_gtk.tools import init_logging, set_logging_level
 from syncthing_gtk import Daemon
-import os, sys, logging, urlparse, urllib
+import os, sys, logging, urlparse
+if sys.version_info[0] == 2:
+	import urllib
+else:
+	import urllib.parse as urllib
+
 log = logging.getLogger("SyncthingPlugin")
 
 # Output options

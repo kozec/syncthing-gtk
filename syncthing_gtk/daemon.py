@@ -15,7 +15,13 @@ from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, sys, time, logging, urllib
+import json, os, sys, time, logging
+
+if sys.version_info[0] == 2:
+	import urllib
+else:
+	import urllib.parse as urllib
+
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
