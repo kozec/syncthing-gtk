@@ -17,6 +17,7 @@ from xml.dom import minidom
 from syncthing_gtk.tools import GETTEXT_DOMAIN, IS_WINDOWS
 from syncthing_gtk.tools import get_locale_dir
 from syncthing_gtk.tools import _ # gettext function
+from six import PY2
 import logging, sys
 log = logging.getLogger("UIBuilder")
 
@@ -104,7 +105,7 @@ class UIBuilder(Gtk.Builder):
 		# Now this will convert parsed DOM tree back to XML and fed it
 		# to Gtk.Builder XML parser.
 		# God probably kills kitten every time when method is called...
-		if sys.version_info[0] == 2:
+		if PY2:
 			Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8"))
 		else:
 			Gtk.Builder.add_from_string(self, self.xml.toxml())
