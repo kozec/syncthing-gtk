@@ -10,6 +10,7 @@ https://github.com/syncthing/syncthing/blob/master/gui/scripts/syncthing/core/di
 from __future__ import unicode_literals, division
 from gi.repository import Gtk
 import re, math
+from six.moves import range
 
 class IdentIcon(Gtk.DrawingArea):
 	def __init__(self, device_id):

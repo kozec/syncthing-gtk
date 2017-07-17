@@ -15,6 +15,7 @@ from syncthing_gtk.tools import _ # gettext function
 import os, sys, socket, random, string, bcrypt
 import logging, traceback, platform
 from xml.dom import minidom
+from six.moves import range
 
 log = logging.getLogger("Wizard")
 

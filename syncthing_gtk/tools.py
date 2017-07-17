@@ -10,6 +10,7 @@ from base64 import b32decode
 from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 from dateutil import parser
+from six.moves import range
 from six import text_type, string_types
 import re, os, sys, random, string, platform, logging, shlex, gettext, __main__
 log = logging.getLogger("tools.py")
