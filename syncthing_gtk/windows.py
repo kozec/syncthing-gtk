@@ -11,17 +11,13 @@ from gi.repository import Gio, GLib, GObject, Gtk, Gdk
 import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 import win32process
 from win32com.shell import shell, shellcon
+from six import string_types, text_type
+from six.moves import range
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
 ST_INOTIFY_EXE = "syncthing-inotify-v0.8.7.exe"
 
-if sys.version_info[0] == 2:
-	unicode_type = unicode
-	str_types = (unicode, str)
-else:
-	unicode_type = str
-	str_types = (str, )
 
 def fix_localized_system_error_messages():
 	"""
@@ -194,7 +190,7 @@ def WinConfiguration():
 		
 		def _store(self, r, name, tp, value):
 			""" Stores value in registry, handling special types """
-			if tp in str_types:
+			if tp in string_types:
 				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, str(value))
 			elif tp in (int, bool):
 				value = int(value)
@@ -231,7 +227,7 @@ def WinConfiguration():
 
 def WinWatcher():
 	if hasattr(sys, "frozen"):
-		path = os.path.dirname(unicode_type(sys.executable))
+		path = os.path.dirname(text_type(sys.executable))
 	else:
 		import __main__
 		path = os.path.dirname(__main__.__file__)
