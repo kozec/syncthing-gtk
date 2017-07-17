@@ -11,12 +11,9 @@ from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk import UIBuilder
 import ssl
 import os, tempfile, logging, sys
-if sys.version_info[0] == 2:
-	import urllib2
-	import httplib
-else:
-	import urllib.request as urllib2
-	import http.client as httplib
+from six.moves.urllib.request import build_opener, HTTPSHandler
+from six.moves.http_client import HTTPSConnection
+
 log = logging.getLogger("IDDialog")
 
 class IDDialog(object):
@@ -60,7 +57,7 @@ class IDDialog(object):
 		""" Loads QR code from Syncthing daemon """
 		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
 		api_key = self.app.daemon.get_api_key()
-		opener = urllib2.build_opener(DummyHTTPSHandler(self.ssl_ctx))
+		opener = build_opener(DummyHTTPSHandler(self.ssl_ctx))
 		if not api_key is None:
 			opener.addheaders = [("X-API-Key", api_key)]
 		a = opener.open(uri)
@@ -109,13 +106,13 @@ def create_ssl_context():
 	else:
 		log.warning("SSL is not available, cannot verify server certificate.")
 
-class DummyHTTPSHandler(urllib2.HTTPSHandler):
+class DummyHTTPSHandler(HTTPSHandler):
 	"""
 	Dummy HTTPS handler that ignores certificate errors. This in unsafe,
 	but used ONLY for QR code images.
 	"""
 	def __init__(self, ctx):
-		urllib2.HTTPSHandler.__init__(self)
+		HTTPSHandler.__init__(self)
 		self.ctx = ctx
 	
 	def https_open(self, req):
@@ -123,6 +120,6 @@ class DummyHTTPSHandler(urllib2.HTTPSHandler):
 	
 	def getConnection(self, host, timeout=300):
 		if not self.ctx is None:
-			return httplib.HTTPSConnection(host, context=ctx)
+			return HTTPSConnection(host, context=ctx)
 		return True
 

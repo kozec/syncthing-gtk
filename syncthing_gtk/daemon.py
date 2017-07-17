@@ -15,12 +15,9 @@ from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
+from six.moves.urllib.parse import quote
 import json, os, sys, time, logging
 
-if sys.version_info[0] == 2:
-	import urllib
-else:
-	import urllib.parse as urllib
 
 log = logging.getLogger("Daemon")
 
@@ -1259,7 +1256,7 @@ class Daemon(GObject.GObject, TimerManager):
 				callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
 			else:
 				callback("", *a)
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = quote(folder_id.encode('utf-8'))
 		self._rest_request("db/ignores?folder=%s" % (id_enc,), r_filter, error_callback, *calbackdata)
 	
 	def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
@@ -1268,7 +1265,7 @@ class Daemon(GObject.GObject, TimerManager):
 		with on success, error_callback(exception) on failure.
 		"""
 		data = { 'ignore': text.split("\n") }
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = quote(folder_id.encode('utf-8'))
 		self._rest_post("db/ignores?folder=%s" % (id_enc,), data, callback, error_callback, *calbackdata)
 	
 	def restart(self):
@@ -1351,18 +1348,18 @@ class Daemon(GObject.GObject, TimerManager):
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
 		if path is None:
-			id_enc = urllib.quote(folder_id.encode('utf-8'))
+			id_enc = quote(folder_id.encode('utf-8'))
 			self._rest_post("db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 		else:
 			url = "db/scan?folder=%s&sub=%s" % (
-				urllib.quote(folder_id.encode('utf-8')),
-				urllib.quote(path.encode('utf-8'))
+				quote(folder_id.encode('utf-8')),
+				quote(path.encode('utf-8'))
 			)
 			self._rest_post(url, {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = quote(folder_id.encode('utf-8'))
 		self._rest_post("db/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
 	
 	def request_events(self):
