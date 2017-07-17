@@ -6,7 +6,7 @@ Base class and universal handler for all Syncthing settings and editing
 
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, Gio, GObject, GLib
-from syncthing_gtk.tools import ints
+from syncthing_gtk.tools import ints, gdict_compat
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.daemon import ConnectionRestarted
 from syncthing_gtk import UIBuilder
@@ -25,11 +25,11 @@ class EditorDialog(GObject.GObject):
 		loaded()
 			Emitted after dialog loads and parses configuration data
 	"""
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-		}
 	
+		})
 	# Should be overrided by subclass
 	MESSAGES = {}
 	SETTING_NEEDS_RESTART = []

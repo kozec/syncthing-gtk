@@ -6,7 +6,7 @@ Runs syncthing daemon process as subprocess of application
 
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import IS_WINDOWS, gdict_compat
 from collections import deque
 import os, sys, logging
 log = logging.getLogger("DaemonProcess")
@@ -23,14 +23,14 @@ elif not HAS_SUBPROCESS:
 	from subprocess import Popen, PIPE
 
 class DaemonProcess(GObject.GObject):
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 		# line(text)	- emited when process outputs full line
 		b"line"			: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 		# exit(code)	- emited when process exits
 		b"exit"			: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
 		# failed(exception) - emited if process fails to start
 		b"failed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-	}
+	})
 	SCROLLBACK_SIZE = 500	# Maximum number of output lines stored in memory
 	PRIORITY_LOWEST		= 19
 	PRIORITY_LOW		= 10

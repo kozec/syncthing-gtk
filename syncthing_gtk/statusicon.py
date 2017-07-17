@@ -15,6 +15,7 @@ from gi.repository import GLib
 from gi.repository import Gtk
 
 from syncthing_gtk.tools import IS_UNITY, IS_KDE, IS_CINNAMON, IS_LXQT
+from syncthing_gtk.tools import gdict_compat
 from syncthing_gtk.tools import _ # gettext function
 
 log = logging.getLogger("StatusIcon")
@@ -46,20 +47,20 @@ class StatusIcon(GObject.GObject):
 	"""
 	TRAY_TITLE     = _("Syncthing")
 	
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 		b"clicked": (GObject.SIGNAL_RUN_FIRST, None, ()),
-	}
 	
-	__gproperties__ = {
+	})
+	__gproperties__ = gdict_compat({
 		b"active": (
 			GObject.TYPE_BOOLEAN,
 			"is the icon user-visible?",
 			"does the icon back-end think that anything is might be shown to the user?",
 			True,
 			GObject.PARAM_READWRITE
-		)		
-	}
 	
+		)
+	})
 	def __init__(self, icon_path, popupmenu, force=False):
 		GObject.GObject.__init__(self)
 		self.__icon_path = os.path.normpath(os.path.abspath(icon_path))

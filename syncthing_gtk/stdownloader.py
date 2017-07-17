@@ -7,7 +7,7 @@ to given location.
 
 from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
-from syncthing_gtk.tools import get_config_dir, compare_version
+from syncthing_gtk.tools import get_config_dir, compare_version, gdict_compat
 from syncthing_gtk.tools import IS_WINDOWS, is_portable
 from syncthing_gtk.tools import _ # gettext function
 import os, sys, stat, json, platform
@@ -54,7 +54,7 @@ class StDownloader(GObject.GObject):
 			Emited on error. Either exception or message can be None
 	"""
 	
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 			b"version"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"download-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
@@ -62,8 +62,8 @@ class StDownloader(GObject.GObject):
 			b"extraction-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
 			b"extraction-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
-		}
 	
+		})
 	def __init__(self, target, platform):
 		"""
 		Target		- ~/.local/bin/syncthing or similar target location 

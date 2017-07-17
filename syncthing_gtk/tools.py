@@ -11,7 +11,7 @@ from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 from dateutil import parser
 from six.moves import range
-from six import text_type, string_types
+from six import text_type, string_types, PY3
 import re, os, sys, random, string, platform, logging, shlex, gettext, __main__
 log = logging.getLogger("tools.py")
 
@@ -76,6 +76,18 @@ else:
 			return b.decode("utf-8")
 		else:
 			return str(b)
+
+def gdict_compat(d):
+	"""
+	GTK dictionaries like __gsignals__, __gproperties__ etc
+	appear to require a bytestring in python 2, but a unicode
+	string in python 3. This method reproceses a dictionary
+	with byte-string keys for cross-compatibility.
+	"""
+	if PY3:
+		return {k.decode("utf-8"): v for k, v in d.items()}
+	else:
+		return d
 
 def luhn_b32generate(s):
 	"""

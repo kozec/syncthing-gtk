@@ -5,6 +5,7 @@ Infobar wrapped in Revealer, for greater justice
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, GLib, GObject, Pango
+from syncthing_gtk.tools import gdict_compat
 import os
 RevealerClass = None
 if hasattr(Gtk, "Revealer"):
@@ -25,11 +26,11 @@ class RIBar(RevealerClass):
 		response(response_id)
 			Emitted when an action widget (button) is clicked
 	"""
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 			b"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
 			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-		}
 	
+		})
 	### Initialization
 	def __init__(self, label, message_type=Gtk.MessageType.INFO, *buttons):
 		"""

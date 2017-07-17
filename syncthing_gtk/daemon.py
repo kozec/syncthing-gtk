@@ -11,7 +11,7 @@ from __future__ import unicode_literals, print_function
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
-from syncthing_gtk.tools import get_config_dir
+from syncthing_gtk.tools import get_config_dir, gdict_compat
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
@@ -233,7 +233,7 @@ class Daemon(GObject.GObject, TimerManager):
 	"""
 	
 	
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 			b"config-out-of-sync"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"config-saved"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"connected"			: (GObject.SIGNAL_RUN_FIRST, None, ()),
@@ -270,8 +270,8 @@ class Daemon(GObject.GObject, TimerManager):
 			b"item-updated"			: (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
 			b"startup-complete"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"system-data-updated"	: (GObject.SIGNAL_RUN_FIRST, None, (int, float, int, int)),
-		}
 	
+		})
 	# Constants for 'reason' parameter of disconnected event
 	UNEXPECTED	= 0 # connection closed by daemon
 	SHUTDOWN	= 1

@@ -7,6 +7,7 @@ from __future__ import unicode_literals, division
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
 from syncthing_gtk.ribar import RevealerClass
 from syncthing_gtk.tools import _ # gettext function
+from syncthing_gtk.tools import gdict_compat
 import os, logging, math
 from six.moves import range
 log = logging.getLogger("InfoBox")
@@ -21,13 +22,13 @@ svg_cache = {}
 class InfoBox(Gtk.Container):
 	""" Expandlable widget displaying folder/device data """
 	__gtype_name__ = "InfoBox"
-	__gsignals__ = {
+	__gsignals__ = gdict_compat({
 			# right-click(button, time)
 			b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
 			# doubleclick, no arguments
 			b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
-		}
 	
+		})
 	### Initialization
 	def __init__(self, app, title, icon):
 		# Variables
