@@ -25,8 +25,8 @@ class EditorDialog(GObject.GObject):
 			Emitted after dialog loads and parses configuration data
 	"""
 	__gsignals__ = {
-			"close"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 		}
 	
 	# Should be overrided by subclass

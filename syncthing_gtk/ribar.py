@@ -25,8 +25,8 @@ class RIBar(RevealerClass):
 			Emitted when an action widget (button) is clicked
 	"""
 	__gsignals__ = {
-			"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
-			"close"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
+			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 		}
 	
 	### Initialization

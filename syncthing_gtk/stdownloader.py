@@ -54,13 +54,13 @@ class StDownloader(GObject.GObject):
 	"""
 	
 	__gsignals__ = {
-			"version"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-			"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			"download-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
-			"download-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			"extraction-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
-			"extraction-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+			b"version"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+			b"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"download-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
+			b"download-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"extraction-progress"	: (GObject.SIGNAL_RUN_FIRST, None, (float,)),
+			b"extraction-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 		}
 	
 	def __init__(self, target, platform):
