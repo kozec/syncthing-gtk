@@ -39,6 +39,7 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - [python-bcrypt](https://pypi.python.org/pypi/bcrypt/2.0.0)
 - [setuptools](https://pypi.python.org/pypi/setuptools)
 - [psmisc](http://psmisc.sourceforge.net) (for the `killall` command)
+- [six](https://pythonhosted.org/six/) (for python2 - python3 compatibility)
 - [Syncthing](https://github.com/syncthing/syncthing) v0.13 or newer
 
 ##### Optional Dependencies
