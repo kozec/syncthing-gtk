@@ -3,7 +3,7 @@ Syncthing-GTK - InfoBox
 
 Colorfull, expandlable widget displaying folder/device data
 """
-from __future__ import division
+from __future__ import unicode_literals, division
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
 from syncthing_gtk.ribar import RevealerClass
 from syncthing_gtk.tools import _ # gettext function

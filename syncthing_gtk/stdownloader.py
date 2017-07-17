@@ -5,6 +5,7 @@ Instance of this class can download, extract and save syncthing daemon
 to given location.
 """
 
+from __future__ import unicode_literals
 from gi.repository import GLib, Gio, GObject
 from syncthing_gtk.tools import get_config_dir, compare_version
 from syncthing_gtk.tools import IS_WINDOWS, is_portable
