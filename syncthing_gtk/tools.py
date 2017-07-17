@@ -11,7 +11,7 @@ from datetime import datetime, tzinfo, timedelta
 from subprocess import Popen
 from dateutil import parser
 from six.moves import range
-from six import text_type, string_types, PY3
+from six import text_type, string_types, binary_type, PY3
 import re, os, sys, random, string, platform, logging, shlex, gettext, __main__
 log = logging.getLogger("tools.py")
 
@@ -60,22 +60,13 @@ if IS_WINDOWS:
 _ = lambda a: _uc(gettext.gettext(a))
 # this can be replaced with six.text_type if there are more places
 # the six library would be used
-if sys.version_info[0] == 2:
-	def _uc(b):
-		if type(b) == unicode:
-			return b
-		elif type(b) == str:
-			return b.decode("utf-8")
-		else:
-			return str(b)
-else:
-	def _uc(b):
-		if type(b) == str:
-			return b
-		elif type(b) == bytes:
-			return b.decode("utf-8")
-		else:
-			return str(b)
+def _uc(b):
+	if isinstance(b, text_type):
+		return b
+	elif isinstance(b, binary_type):
+		return b.decode("utf-8")
+	else:
+		return str(b)
 
 def gdict_compat(d):
 	"""
