@@ -1,12 +1,9 @@
 #!/c/Python27/python.exe
 # Note: this one is used by Windows
-import sys, os, gi, cairo, _winreg	# cairo and _winreg imported so cx_Freeze knows about them
+import sys, os, _winreg
 
 if __name__ == "__main__":
 	portable = False
-	
-	gi.require_version('Gtk', '3.0')
-	gi.require_version('Rsvg', '2.0')
 	
 	if "--portable" in sys.argv:
 		sys.argv.remove("--portable")
@@ -32,6 +29,10 @@ if __name__ == "__main__":
 			path = get_install_path()
 			os.chdir(path)
 		os.environ["PATH"] = path
+	
+        import gi, cairo
+	gi.require_version('Gtk', '3.0')
+	gi.require_version('Rsvg', '2.0')
 	
 	from syncthing_gtk.tools import init_logging, init_locale
 	from syncthing_gtk.windows import (

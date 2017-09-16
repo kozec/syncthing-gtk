@@ -6,7 +6,6 @@ Various stuff that I don't care to fit anywhere else.
 """
 
 from __future__ import unicode_literals
-from gi.repository import GLib
 from base64 import b32decode
 from datetime import tzinfo, timedelta
 from subprocess import Popen
@@ -370,6 +369,7 @@ def get_config_dir():
 			return windows.get_unicode_home()
 		except Exception:
 			pass
+        from gi.repository import GLib
 	confdir = GLib.get_user_config_dir()
 	if confdir is None or IS_XP:
 		if IS_WINDOWS:
