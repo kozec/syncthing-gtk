@@ -11,7 +11,7 @@ from gi.repository import GLib, Gio, GObject
 from syncthing_gtk.tools import get_config_dir, compare_version
 from syncthing_gtk.tools import IS_WINDOWS, is_portable
 from syncthing_gtk.tools import _ # gettext function
-import os, sys, stat, json, platform
+import os, json, platform
 import tempfile, tarfile, zipfile, logging
 log = logging.getLogger("StDownloader")
 

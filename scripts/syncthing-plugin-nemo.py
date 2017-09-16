@@ -5,6 +5,6 @@ See syncthing_gtk/nautilusplugin.py for more info
 """
 
 from gi.repository import Nemo
-from syncthing_gtk import nautilusplugin
+from syncthing_gtk.nautilusplugin import build_class
 
-NemoExtensionCls = nautilusplugin.build_class(Nemo)
+NemoExtensionCls = build_class(Nemo)

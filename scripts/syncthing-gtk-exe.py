@@ -1,6 +1,6 @@
 #!/c/Python27/python.exe
 # Note: this one is used by Windows
-import sys, os, gi, cairo, _winreg
+import sys, os, gi, cairo, _winreg	# cairo and _winreg imported so cx_Freeze knows about them
 
 if __name__ == "__main__":
 	portable = False
@@ -34,9 +34,13 @@ if __name__ == "__main__":
 		os.environ["PATH"] = path
 	
 	from syncthing_gtk.tools import init_logging, init_locale
-	from syncthing_gtk import windows, Configuration
+	from syncthing_gtk.windows import (
+		enable_localization, fix_localized_system_error_messages,
+		override_menu_borders
+	)
+	from syncthing_gtk.configuration import Configuration
 	
-	init_logging()	
+	init_logging()
 	config = Configuration()
 	
 	# Force dark theme if reqested
@@ -46,7 +50,7 @@ if __name__ == "__main__":
 		os.environ["LANGUAGE"] = config["language"]
 	
 	
-	windows.enable_localization()
+	enable_localization()
 	init_locale(os.path.join(path, "locale"))
 	
 	# Tell cx_Freeze that I really need this library
@@ -54,7 +58,7 @@ if __name__ == "__main__":
 	
 	if portable:
 		# Enable portable mode
-		from syncthing_gtk.tools import make_portable, get_config_dir
+		from syncthing_gtk.tools import make_portable
 		make_portable()
 	
 	# Initialize stuff
@@ -64,15 +68,15 @@ if __name__ == "__main__":
 		_Configuration.WINDOWS_OVERRIDE["syncthing_binary"] = (str, ".\\data\\syncthing.exe")
 	
 	# Fix various windows-only problems
-	windows.fix_localized_system_error_messages()
-	windows.override_menu_borders()
+	fix_localized_system_error_messages()
+	override_menu_borders()
 	
 	from gi.repository import Gtk
 	Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons", "32x32", "apps")))
 	Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons", "32x32", "status")))
 	Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons")))
 	
-	from syncthing_gtk import App
+	from syncthing_gtk.app import App
 	if portable:
 		App("./", "./icons").run(sys.argv)
 	else:

@@ -6,9 +6,8 @@ Displays output from daemon subprocess
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio
-from syncthing_gtk import UIBuilder
-import os, tempfile
+from syncthing_gtk.uibuilder import UIBuilder
+import os
 
 class DaemonOutputDialog(object):
 	""" Displays output from daemon subprocess """

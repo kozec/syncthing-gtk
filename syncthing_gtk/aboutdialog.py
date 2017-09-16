@@ -4,10 +4,9 @@ Syncthing-GTK - About dialog
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GLib
 from syncthing_gtk.tools import IS_WINDOWS
-from syncthing_gtk import UIBuilder
-import os, sys, tempfile
+from syncthing_gtk.uibuilder import UIBuilder
+import os
 
 class AboutDialog(object):
 	""" Standard looking about dialog """

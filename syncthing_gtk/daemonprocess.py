@@ -9,15 +9,13 @@ from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk.tools import IS_WINDOWS
 from collections import deque
-import os, sys, logging
+import os, logging
 log = logging.getLogger("DaemonProcess")
 
 HAS_SUBPROCESS = hasattr(Gio, "Subprocess")
 if IS_WINDOWS:
 	# POpen is used on Windows
-	from subprocess import Popen, PIPE, STARTUPINFO, \
-		STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE, \
-		CREATE_NEW_PROCESS_GROUP
+	from subprocess import Popen, PIPE, STARTUPINFO, STARTF_USESHOWWINDOW
 	from syncthing_gtk.windows import WinPopenReader, nice_to_priority_class
 elif not HAS_SUBPROCESS:
 	# Gio.Subprocess is not available in Gio < 3.12
@@ -139,7 +137,7 @@ class DaemonProcess(GObject.GObject):
 		With Gio < 3.12, timer and _cb_check_alive is used.
 		"""
 		try:
-			r = proc.wait_check_finish(results)
+			proc.wait_check_finish(results)
 			log.info("Subprocess finished with code %s", proc.get_exit_status())
 		except GLib.GError:
 			# Exited with exit code

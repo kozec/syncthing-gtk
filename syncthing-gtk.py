@@ -15,22 +15,26 @@ if __name__ == "__main__":
 	init_logging()
 	
 	if IS_WINDOWS:
-		from syncthing_gtk import windows, Configuration
+		from syncthing_gtk.windows import (
+			enable_localization,
+			fix_localized_system_error_messages,
+			override_menu_borders
+		)
+		from syncthing_gtk.configuration import Configuration
 		config = Configuration()
 		if config["force_dark_theme"]:
 			os.environ["GTK_THEME"] = "Adwaita:dark"
 		if config["language"] not in ("", "None", None):
 			os.environ["LANGUAGE"] = config["language"]
-	
-	if IS_WINDOWS:
-		from syncthing_gtk import windows
-		windows.enable_localization()
+		
+		enable_localization()
 	
 	init_locale("locale/")
 	
 	if IS_WINDOWS:
-		windows.fix_localized_system_error_messages()
-		windows.override_menu_borders()
+		from syncthing_gtk.windows import enable_localization
+		fix_localized_system_error_messages()
+		override_menu_borders()
 		from gi.repository import Gtk
 		Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons", "32x32", "apps")))
 		Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons")))
@@ -38,5 +42,5 @@ if __name__ == "__main__":
 	from gi.repository import Gtk
 	Gtk.IconTheme.get_default().append_search_path(os.path.join(os.getcwd(), "icons"))
 	
-	from syncthing_gtk import App
+	from syncthing_gtk.app import App
 	App(".", "./icons").run(sys.argv)

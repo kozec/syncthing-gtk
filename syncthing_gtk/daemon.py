@@ -10,13 +10,13 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib, GObject
-from syncthing_gtk import TimerManager
+from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
 from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, sys, time, logging, urllib
+import json, os, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
@@ -930,7 +930,6 @@ class Daemon(GObject.GObject, TimerManager):
 				self._rest_request("system/version", self._syncthing_cb_version)
 		
 		d_failed, d_total = 0, 0
-		announce = None
 		if "discoveryEnabled" in data and data["discoveryEnabled"]:
 			d_total = data["discoveryMethods"]
 			d_failed = len(data["discoveryErrors"])

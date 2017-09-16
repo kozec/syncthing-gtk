@@ -25,7 +25,7 @@ else:
 
 if HAS_INOTIFY:
 	from gi.repository import GLib
-	import os, sys, logging
+	import logging
 	log = logging.getLogger("Watcher")
 	
 	class _WatcherCls(object):

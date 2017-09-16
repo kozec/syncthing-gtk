@@ -4,10 +4,9 @@ Syncthing-GTK - Ignore Pattern Editor
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GLib
 from syncthing_gtk.tools import _ # gettext function
-from syncthing_gtk import UIBuilder
-import os, sys, re, logging
+from syncthing_gtk.uibuilder import UIBuilder
+import os, logging
 log = logging.getLogger("IgnoreEditor")
 
 class IgnoreEditor(object):

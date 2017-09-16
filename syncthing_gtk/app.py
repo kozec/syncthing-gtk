@@ -6,10 +6,30 @@ Main application window
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gio, Gdk
-from syncthing_gtk import *
-from syncthing_gtk.tools import *
-from syncthing_gtk.tools import _ # gettext function
+from gi.repository import Gtk, Gio, Gdk, GLib
+from syncthing_gtk.tools import _
+from syncthing_gtk.tools import (
+	IS_UNITY, IS_GNOME, IS_I3, IS_MATE, IS_XFCE, IS_WINDOWS, IS_XP,
+	set_logging_level, generate_folder_id, sizeof_fmt, check_daemon_running,
+	compare_version, can_upgrade_binary
+)
+from syncthing_gtk.daemon import Daemon, TLSErrorException, InvalidConfigurationException
+from syncthing_gtk.notifications import Notifications, HAS_DESKTOP_NOTIFY
+from syncthing_gtk.statusicon import get_status_icon, StatusIconDummy
+from syncthing_gtk.daemonoutputdialog import DaemonOutputDialog
+from syncthing_gtk.deviceeditor import DeviceEditorDialog
+from syncthing_gtk.foldereditor import FolderEditorDialog
+from syncthing_gtk.tools import parse_config_arguments
+from syncthing_gtk.configuration import Configuration
+from syncthing_gtk.daemonprocess import DaemonProcess
+from syncthing_gtk.stdownloader import StDownloader
+from syncthing_gtk.timermanager import TimerManager
+from syncthing_gtk.uibuilder import UIBuilder
+from syncthing_gtk.identicon import IdentIcon
+from syncthing_gtk.infobox import InfoBox
+from syncthing_gtk.watcher import Watcher
+from syncthing_gtk.ribar import RIBar
+
 from datetime import datetime
 import os, webbrowser, sys, time, logging, shutil, re
 log = logging.getLogger("App")
@@ -142,6 +162,7 @@ class App(Gtk.Application, TimerManager):
 			self.exit_after_wizard = True
 			self.show_wizard()
 		elif is_option("about"):
+			from syncthing_gtk.aboutdialog import AboutDialog
 			ad = AboutDialog(self, self.gladepath)
 			ad.run([])
 			sys.exit(0)
@@ -325,7 +346,7 @@ class App(Gtk.Application, TimerManager):
 		if self.show_status_icon:
 			self.statusicon = get_status_icon(self.iconpath, self["si-menu"])
 		else:
-			self.statusicon = statusicon.StatusIconDummy(self.iconpath, self["si-menu"])
+			self.statusicon = StatusIconDummy(self.iconpath, self["si-menu"])
 		
 		self.statusicon.connect("clicked",        self.cb_statusicon_click)
 		self.statusicon.connect("notify::active", self.cb_statusicon_notify_active)
@@ -351,7 +372,7 @@ class App(Gtk.Application, TimerManager):
 			return False
 		except TLSErrorException, e:
 			# This is pretty-much fatal. Display error message and bail out.
-			self.cb_syncthing_con_error(daemon, Daemon.UNKNOWN, str(e), e)
+			self.cb_syncthing_con_error(self.daemon, Daemon.UNKNOWN, str(e), e)
 			return False
 		# Enable filesystem watching and desktop notifications,
 		# if desired and possible
@@ -396,6 +417,7 @@ class App(Gtk.Application, TimerManager):
 		return True
 	
 	def show_wizard(self):
+		from syncthing_gtk.wizard import Wizard
 		self.wizard = Wizard(self.gladepath, self.iconpath, self.config)
 		self.wizard.connect('cancel', self.cb_wizard_finished)
 		self.wizard.connect('close', self.cb_wizard_finished)
@@ -419,8 +441,8 @@ class App(Gtk.Application, TimerManager):
 	def start_daemon(self):
 		if self.process is None:
 			if IS_WINDOWS:
-				from syncthing_gtk import windows
-				if windows.is_shutting_down():
+				from syncthing_gtk.windows import is_shutting_down
+				if is_shutting_down():
 					log.warning("Not starting daemon: System shutdown detected")
 					return
 			self.ct_process()
@@ -491,7 +513,6 @@ class App(Gtk.Application, TimerManager):
 		log.info("Checking for updates...")
 		# Prepare
 		target = "%s.new" % (self.config["syncthing_binary"],)
-		target_dir = os.path.split(target)[0]
 		# Check for write access to parent directory
 		if not can_upgrade_binary(self.config["syncthing_binary"]):
 			self.cb_syncthing_error(None, "Warning: No write access to daemon binary; Skipping update check.")
@@ -1528,7 +1549,7 @@ class App(Gtk.Application, TimerManager):
 			log.error("change_setting_async: Failed to read configuration: %s", e)
 			if retry_on_error:
 				log.error("Retrying...")
-				change_setting_async(setting_name, value, retry_on_error, restart)
+				self.change_setting_async(setting_name, value, retry_on_error, restart)
 			else:
 				log.error("Giving up.")
 		
@@ -1677,6 +1698,7 @@ class App(Gtk.Application, TimerManager):
 		self.quit()
 	
 	def cb_about(self, *a):
+		from syncthing_gtk.aboutdialog import AboutDialog
 		AboutDialog(self, self.gladepath).show(self["window"])
 	
 	def cb_delete_event(self, *e):
@@ -1708,6 +1730,7 @@ class App(Gtk.Application, TimerManager):
 		self.hilight([])
 	
 	def cb_menu_show_id(self, *a):
+		from syncthing_gtk.iddialog import IDDialog
 		d = IDDialog(self, self.daemon.get_my_id())
 		d.show(self["window"])
 	
@@ -1723,12 +1746,14 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_daemon_settings(self, event, *a):
 		""" Handler for 'Daemon Settings' menu item """
+		from syncthing_gtk.daemonsettings import DaemonSettingsDialog
 		e = DaemonSettingsDialog(self)
 		e.load()
 		e.show(self["window"])
 	
 	def cb_menu_ui_settings(self, event, *a):
 		""" Handler for 'UI Settings' menu item """
+		from syncthing_gtk.uisettingsdialog import UISettingsDialog
 		e = UISettingsDialog(self)
 		e.load()
 		e.show(self["window"])
@@ -1794,6 +1819,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_popup_edit_ignored(self, *a):
 		""" Handler for 'edit ignore patterns' context menu item """
+		from syncthing_gtk.ignoreeditor import IgnoreEditor
 		e = IgnoreEditor(self,
 			self.rightclick_box["id"],
 			self.rightclick_box["path"],
@@ -1897,6 +1923,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_show_id(self, *a):
 		""" Handler for 'show id' context menu item """
 		# Available only for devices
+		from syncthing_gtk.iddialog import IDDialog
 		d = IDDialog(self, self.rightclick_box["id"])
 		d.show(self["window"])
 	
@@ -1935,7 +1962,7 @@ class App(Gtk.Application, TimerManager):
 					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
 					_("Syncthing-Inotify is unavailable or failed to start")
 				)
-			r = d.run()
+			d.run()
 			d.hide()
 			d.destroy()
 	
@@ -2080,6 +2107,7 @@ class App(Gtk.Application, TimerManager):
 		Check if daemon binary exists.
 		If not, ask user where did he put it
 		"""
+		from syncthing_gtk.finddaemondialog import FindDaemonDialog
 		# Prepare FindDaemonDialog instance where user can
 		# set new path for syncthing_binary
 		d = FindDaemonDialog(self)

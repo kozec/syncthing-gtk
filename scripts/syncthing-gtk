@@ -27,5 +27,5 @@ if __name__ == "__main__":
 	init_locale(localedir)
 	init_logging()
 	
-	from syncthing_gtk import App
+	from syncthing_gtk.app import App
 	App(path, os.path.join(path, "icons")).run(sys.argv)

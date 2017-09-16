@@ -7,9 +7,9 @@ values afterwards.
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, GLib
-from syncthing_gtk import EditorDialog, StDownloader
-from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, IS_XP
+from syncthing_gtk.editordialog import EditorDialog
+from syncthing_gtk.stdownloader import StDownloader
+from syncthing_gtk.tools import IS_WINDOWS, IS_XP
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.uisettingsdialog import UISettingsDialog, browse_for_binary
 import os, platform

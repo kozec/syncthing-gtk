@@ -3,16 +3,13 @@
 Nautilus plugin for Syncthing.
 This program is part of Syncthing-GTK, but can be used independently
 with small modification
-
-This module is not imported by __init__, so usage requires doing
-from syncthing_gtk import nautilusplugin
 """
 
 from __future__ import unicode_literals
-from gi.repository import GObject, Gio, GLib
+from gi.repository import GObject
 from syncthing_gtk.tools import init_logging, set_logging_level
-from syncthing_gtk import Daemon
-import os, sys, logging, urlparse, urllib
+from syncthing_gtk.daemon import Daemon
+import os, logging, urllib
 log = logging.getLogger("SyncthingPlugin")
 
 # Output options
@@ -31,9 +28,9 @@ def build_class(plugin_module):
 	This allows sharing code between extensions and creating
 	extensions for Nautilus forks just by doing:
 	
-	from syncthing_gtk import nautilusplugin
+	from syncthing_gtk.nautilusplugin import build_class
 	from gi.repository import Nemo
-	NemoExtensionCls = nautilusplugin.build_class(Nemo)
+	NemoExtensionCls = build_class(Nemo)
 	"""
 
 	class __NautiluslikeExtension(GObject.GObject, plugin_module.InfoProvider, plugin_module.MenuProvider):

@@ -10,7 +10,8 @@ https://github.com/syncthing/syncthing/blob/master/gui/scripts/syncthing/core/di
 
 from __future__ import unicode_literals
 from gi.repository import Gtk
-import re, math
+from syncthing_gtk.infobox import InfoBox
+import re
 
 class IdentIcon(Gtk.DrawingArea):
 	def __init__(self, device_id):

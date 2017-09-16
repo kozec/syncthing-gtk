@@ -8,8 +8,8 @@ or other ~/.config equivalent
 """
 
 from __future__ import unicode_literals
-from syncthing_gtk.tools import *
 from datetime import datetime
+from syncthing_gtk.tools import IS_WINDOWS, get_config_dir, is_portable
 import dateutil.parser
 import os, sys, json, logging
 log = logging.getLogger("Configuration")

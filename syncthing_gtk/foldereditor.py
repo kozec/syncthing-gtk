@@ -6,12 +6,12 @@ Universal dialog handler for all Syncthing settings and editing
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.tools import generate_folder_id
 from syncthing_gtk.editordialog import EditorDialog, strip_v
-from syncthing_gtk import EditorDialog, Watcher
-import os, sys, re, logging
+from syncthing_gtk.watcher import Watcher
+import os, re, logging
 log = logging.getLogger("FolderEditor")
 
 COLOR_NEW				= "#A0A0A0"

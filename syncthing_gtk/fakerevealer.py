@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 from gi.repository import Gtk
-import os, logging
+import logging
 log = logging.getLogger("FakeRevealer")
 
 class FakeRevealer(Gtk.HBox):

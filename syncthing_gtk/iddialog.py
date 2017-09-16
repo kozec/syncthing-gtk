@@ -6,10 +6,9 @@ Dialog with Device ID and generated QR code
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GLib, Pango
+from gi.repository import Gio, GLib
 from tools import IS_WINDOWS
-from syncthing_gtk.tools import _ # gettext function
-from syncthing_gtk import UIBuilder
+from syncthing_gtk.uibuilder import UIBuilder
 import urllib2, httplib, ssl
 import os, tempfile, logging
 log = logging.getLogger("IDDialog")
@@ -118,6 +117,6 @@ class DummyHTTPSHandler(urllib2.HTTPSHandler):
 	
 	def getConnection(self, host, timeout=300):
 		if not self.ctx is None:
-			return httplib.HTTPSConnection(host, context=ctx)
+			return httplib.HTTPSConnection(host, context=self.ctx)
 		return True
 

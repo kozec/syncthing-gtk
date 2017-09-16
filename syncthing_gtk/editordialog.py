@@ -6,12 +6,12 @@ Base class and universal handler for all Syncthing settings and editing
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, Gio, GObject, GLib
+from gi.repository import Gtk, Gdk, GObject, GLib
 from syncthing_gtk.tools import ints
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.daemon import ConnectionRestarted
-from syncthing_gtk import UIBuilder
-import os, sys, logging
+from syncthing_gtk.uibuilder import UIBuilder
+import os, logging
 log = logging.getLogger("EditorDialog")
 
 class EditorDialog(GObject.GObject):

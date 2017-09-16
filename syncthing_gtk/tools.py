@@ -8,7 +8,7 @@ Various stuff that I don't care to fit anywhere else.
 from __future__ import unicode_literals
 from gi.repository import GLib
 from base64 import b32decode
-from datetime import datetime, tzinfo, timedelta
+from datetime import tzinfo, timedelta
 from subprocess import Popen
 from dateutil import parser
 import re, os, sys, random, string, platform, logging, shlex, gettext, __main__
@@ -219,7 +219,6 @@ def init_logging():
 	logging level with name and method to call.
 	"""
 	logging.basicConfig(format=LOG_FORMAT)
-	logger = logging.getLogger()
 	# Rename levels
 	logging.addLevelName(10, "D")	# Debug
 	logging.addLevelName(20, "I")	# Info
@@ -320,7 +319,7 @@ def check_daemon_running():
 				p_user = p.ExecMethod_('GetOwner').Properties_('User').Value
 				if p_user == os.environ["USERNAME"]:
 					return True
-		except Exception, e:
+		except Exception:
 			# Can't get or parse list, something is horribly broken here
 			return False
 		return False
@@ -449,11 +448,11 @@ def is_ran_on_startup(program_name):
 			return False
 		# Check if desktop file is not marked as hidden
 		# (stupid way, but should work)
-		in_entry = False
+		is_entry = False
 		for line in file(desktopfile, "r").readlines():
 			line = line.strip(" \r\t").lower()
 			if line == "[desktop entry]":
-				in_entry = True
+				is_entry = True
 				continue
 			if "=" in line:
 				key, value = line.split("=", 1)
@@ -462,7 +461,7 @@ def is_ran_on_startup(program_name):
 						# Desktop file is 'hidden', i.e. disabled
 						return False
 		# File is present and not hidden - autostart is enabled
-		return True
+		return is_entry
 
 def set_run_on_startup(enabled, program_name, executable, icon="", description=""):
 	"""

@@ -24,12 +24,9 @@ except ImportError:
 
 if HAS_DESKTOP_NOTIFY:
 	from gi.repository import Gtk
-	from syncthing_gtk import TimerManager
-	from syncthing_gtk.tools import parsetime
+	from syncthing_gtk.timermanager import TimerManager
 	from syncthing_gtk.tools import _ # gettext function
-	from dateutil import tz
-	from datetime import datetime
-	import os, sys, logging
+	import os, logging
 	log = logging.getLogger("Notifications")
 	
 	class NotificationsCls(TimerManager):
@@ -89,7 +86,7 @@ if HAS_DESKTOP_NOTIFY:
 			try:
 				if n.show ():
 					return n
-			except Exception, e:
+			except Exception:
 				# Ignore all errors here, there is no way I can handle
 				# everything what can be broken with notifications...
 				pass
@@ -176,7 +173,6 @@ if HAS_DESKTOP_NOTIFY:
 				# One updated file
 				f_path = list(self.updated)[0]
 				filename = os.path.split(f_path)[-1]
-				ld = self.app.get_local_device()
 				self.info(_("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % {
 						'hostname' : self.app.get_local_name(),
 						'filename' : filename

@@ -6,11 +6,11 @@ Universal dialog handler for all Syncthing settings and editing
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
 from syncthing_gtk.tools import check_device_id
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.editordialog import EditorDialog, strip_v
-import sys, logging
+import logging
 log = logging.getLogger("DeviceEditor")
 
 COLOR_NEW				= "#A0A0A0"

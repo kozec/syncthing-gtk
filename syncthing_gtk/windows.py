@@ -1,14 +1,11 @@
 #!/usr/bin/env python2
 """
 Syncthing-GTK - Windows related stuff.
-
-This is only module not imported by __init__, so usage requires doing
-from syncthing_gtk import windows
 """
 
 from __future__ import unicode_literals
-from syncthing_gtk.tools import IS_WINDOWS, get_config_dir
-from gi.repository import Gio, GLib, GObject, Gtk, Gdk
+from syncthing_gtk.tools import get_config_dir
+from gi.repository import GLib, Gtk, Gdk
 import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
 import win32process
 from win32com.shell import shell, shellcon
@@ -38,11 +35,10 @@ def enable_localization():
 	Updates environment variables with windows locale.
 	"""
 	loc = "en"
-	domain = "syncthing-gtk"
 	try:
 		import locale
 		loc = locale.getdefaultlocale()[0]
-	except Exception, e:
+	except Exception:
 		pass
 	if not 'LANGUAGE' in os.environ:
 		os.environ['LANGUAGE'] = loc
@@ -231,7 +227,7 @@ def WinWatcher():
 		path = os.path.dirname(__main__.__file__)
 	exe = os.path.join(path, ST_INOTIFY_EXE)
 	
-	from daemonprocess import DaemonProcess
+	from syncthing_gtk.daemonprocess import DaemonProcess
 	class _WinWatcher:
 		"""
 		Filesystem watcher implementation for Windows. Passes watched

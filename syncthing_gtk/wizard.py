@@ -7,13 +7,15 @@ values afterwards.
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
-from syncthing_gtk import Configuration, DaemonProcess
-from syncthing_gtk import DaemonOutputDialog, StDownloader
+from gi.repository import Gtk, GLib, GdkPixbuf
+from syncthing_gtk.daemonoutputdialog import DaemonOutputDialog
+from syncthing_gtk.daemonprocess import DaemonProcess
+from syncthing_gtk.configuration import Configuration
+from syncthing_gtk.stdownloader import StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, is_portable
 from syncthing_gtk.tools import can_upgrade_binary, compare_version
 from syncthing_gtk.tools import _ # gettext function
-import os, sys, socket, random, string, bcrypt
+import os, socket, random, string, bcrypt
 import logging, traceback, platform
 from xml.dom import minidom
 
@@ -648,7 +650,6 @@ class SaveSettingsPage(Page):
 			s.listen(0.1)
 			s.close()
 			# Good, port is available
-			del s
 			self.parent.output_line("syncthing-gtk: chosen port %s" % (port,))
 			self.port = port
 			self.parent.syncthing_options["port"] = str(port)
@@ -656,9 +657,10 @@ class SaveSettingsPage(Page):
 			GLib.idle_add(self.save_settings)
 		except socket.error:
 			# Address already in use (or some crazy error)
-			del s
 			self.parent.output_line("syncthing-gtk: port %s is not available" % (port,))
 			GLib.idle_add(self.check_port, port + 1)
+		finally:
+			del s
 	
 	def ct_textnode(self, xml, parent, name, value):
 		""" Helper method """
