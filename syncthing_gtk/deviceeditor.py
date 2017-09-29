@@ -122,7 +122,7 @@ class DeviceEditorDialog(EditorDialog):
 				self.set_value("addresses", "dynamic")
 			else:
 				addresses = [
-					x.strip() if "://" in x else "tcp://%s" % (x.strip(),)
+					x.strip() if "://" in x or x == "dynamic" else "tcp://%s" % (x.strip(),)
 					for x in addresses.split(",") ]
 				self.set_value("addresses", ",".join(addresses))
 		elif key == "vfolders":
