@@ -105,6 +105,11 @@ if __name__ == "__main__" :
 		description = 'GTK3 GUI for Syncthing',
 		url = 'https://github.com/syncthing/syncthing-gtk',
 		packages = ['syncthing_gtk'],
+		install_requires = (
+		    'python-dateutil',
+		    'bcrypt',
+		    'pyinotify',
+		),
 		data_files = data_files,
 		scripts = [ "scripts/syncthing-gtk" ],
 		cmdclass = { 'build_py': BuildPyEx },
