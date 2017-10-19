@@ -722,7 +722,7 @@ class SaveSettingsPage(Page):
 			return False
 		try:
 			# Write XML back to file
-			file(self.parent.st_configfile, "w").write(xml.toxml())
+			file(self.parent.st_configfile, "w").write(xml.toxml().encode("utf-8"))
 		except Exception, e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			self.parent.error(self,
