@@ -175,7 +175,7 @@ if HAS_DESKTOP_NOTIFY:
 				filename = os.path.split(f_path)[-1]
 				self.info(_("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % {
 						'hostname' : self.app.get_local_name(),
-						'filename' : filename
+						'filename' : "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
 					})
 			elif len(self.updated) == 0 and len(self.deleted) == 1:
 				# One deleted file
