@@ -13,5 +13,8 @@ from gi.repository import Caja
 import os
 os.environ["GTK2APP"] = "1"
 
-from syncthing_gtk.nautilusplugin import build_class
-CajaExtensionCls = build_class(Caja)
+from syncthing_gtk.nautilusplugin import NautiluslikeExtension
+
+NautiluslikeExtension.set_plugin_module(Caja)
+class CajaNautilus(NautiluslikeExtension, Caja.InfoProvider, Caja.MenuProvider):
+	pass
