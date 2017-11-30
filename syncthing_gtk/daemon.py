@@ -326,6 +326,9 @@ class Daemon(GObject.GObject, TimerManager):
 		# Read syncthing config to get connection url
 		if not self._configxml:
 			self._configxml = os.path.join(get_config_dir(), "syncthing", "config.xml")
+		if not os.path.exists(self._configxml) and os.path.exists(os.path.expanduser("~/snap/syncthing/common/syncthing")):
+			# Special case for syncthing in snap package
+			self._configxml = os.path.expanduser("~/snap/syncthing/common/syncthing/config.xml")
 		try:
 			log.debug("Reasing syncthing config %s", self._configxml)
 			config = file(self._configxml, "r").read()
