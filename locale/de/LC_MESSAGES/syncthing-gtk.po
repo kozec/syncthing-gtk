@@ -975,7 +975,7 @@ msgstr "B_eenden"
 
 #: app.glade:490
 msgid "Override Remote Changes"
-msgstr "Änderungen von entfernt überschreiben"
+msgstr "Änderungen von Gegenstelle überschreiben"
 
 #: app.glade:519
 msgid "Edit _Ignore Patterns"
