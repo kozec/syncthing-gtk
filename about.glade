@@ -5,7 +5,7 @@
   <object class="GtkDialog" id="dialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">About Syncthing-GTK</property>
-    <property name="icon">icons/st-gtk-logo.png</property>
+    <property name="icon_name">syncthing-gtk</property>
     <property name="type_hint">dialog</property>
     <signal name="response" handler="on_dialog_response" swapped="no"/>
     <child internal-child="vbox">
@@ -53,7 +53,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">10</property>
-                <property name="pixbuf">icons/st-gtk-logo.png</property>
+                <property name="pixel_size">128</property>
+                <property name="icon_name">syncthing-gtk</property>
               </object>
               <packing>
                 <property name="expand">False</property>
