@@ -240,7 +240,7 @@ class StatusIconGTK3(StatusIcon):
 	def _on_embedded_change(self, *args):
 		# Without an icon update at this point GTK might consider the icon embedded and visible even through
 		# it can't actually be seen...
-		self._tray.set_from_file(self._get_icon())
+		self._tray.set_from_icon_name(self._get_icon())
 		
 		# An invisible tray icon will never be embedded but it also should not be replaced
 		# by a fallback icon
