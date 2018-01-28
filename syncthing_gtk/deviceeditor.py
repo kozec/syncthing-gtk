@@ -38,6 +38,8 @@ class DeviceEditorDialog(EditorDialog):
 	def get_value(self, key):
 		if key == "addresses":
 			return ",".join([ strip_v(x) for x in self.values[key]])
+		elif key == "deviceID":
+			return EditorDialog.get_value(self, key).strip(" \r\n\t")
 		elif key == "compression":
 			val = EditorDialog.get_value(self, key)
 			# For syncthing <= 0.10.25
