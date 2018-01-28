@@ -156,7 +156,14 @@ class FolderEditorDialog(EditorDialog):
 				self.set_value("rescanIntervalS", 30)
 				self.set_value("keepVersions", 10)
 			else:
-				self.values = [ x for x in self.config["folders"] if x["id"] == self.id ][0]
+				try:
+					self.values = [ x for x in self.config["folders"] if x["id"] == self.id ][0]
+				except IndexError:
+					# Unknown ID. May happen in rather crazy case when user deletes folder
+					# and tries to add new before daemon is able to process everything.
+					self.is_new = True
+					return self.on_data_loaded()
+				
 				self.checks = {
 					"vcommand" : self.check_command,
 				}
