@@ -43,4 +43,4 @@ if __name__ == "__main__":
 	Gtk.IconTheme.get_default().append_search_path(os.path.join(os.getcwd(), "icons"))
 	
 	from syncthing_gtk.app import App
-	App(".", "./icons").run(sys.argv)
+	App("./glade", "./icons").run(sys.argv)
