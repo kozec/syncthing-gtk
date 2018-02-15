@@ -16,7 +16,7 @@ from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, time, logging, urllib
+import json, os, sys, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
@@ -330,7 +330,7 @@ class Daemon(GObject.GObject, TimerManager):
 			# Special case for syncthing in snap package
 			self._configxml = os.path.expanduser("~/snap/syncthing/common/syncthing/config.xml")
 		try:
-			log.debug("Reasing syncthing config %s", self._configxml)
+			log.debug("Reading syncthing config %s", self._configxml)
 			config = file(self._configxml, "r").read()
 		except Exception, e:
 			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
@@ -392,166 +392,6 @@ class Daemon(GObject.GObject, TimerManager):
 					"address": "", "completion" : {}, "connected" : False,
 				}
 		return self._device_data[nid]
-	
-	def _rest_request(self, command, callback, error_callback=None, *callback_data):
-		"""
-		Requests response from server. After response is recieved,
-		callback with parsed json data is called.
-		If requests fails and error_callback is set, error_callback is
-		called. If error_callback is None, request is repeated.
-		
-		Callback signatures:
-			callback(json_data, callback_data... )
-			error_callback(exception, command, callback_data... )
-		"""
-		sc = Gio.SocketClient(tls=self._tls)
-		if self._tls:
-			GObject.Object.connect(sc, "event", self._rest_socket_event)
-		sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
-			(command, self._epoch, callback, error_callback, callback_data))
-	
-	def _rest_connected(self, sc, results, (command, epoch, callback, error_callback, callback_data)):
-		""" Second part of _rest_request, called after HTTP connection is initiated """
-		try:
-			con = sc.connect_to_service_finish(results)
-			if con == None:
-				raise Exception("Unknown error")
-		except Exception, e:
-			log.exception(e)
-			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
-				e = TLSUnsupportedException(e.message)
-			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
-			return
-		if epoch < self._epoch :
-			# Too late, throw it away
-			con.close(None)
-			log.verbose("Discarded old connection for %s", command)
-		if self._CSRFtoken is None and self._api_key is None:
-			# Request CSRF token first
-			log.verbose("Requesting cookie")
-			get_str = "\r\n".join([
-				"GET / HTTP/1.0",
-				"Host: %s" % self._address,
-				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
-				"Connection: close",
-				"",
-				"",
-				]).encode("utf-8")
-		else:
-			# Build GET request
-			get_str = "\r\n".join([
-				"GET /rest/%s HTTP/1.0" % command,
-				"Host: %s" % self._address,
-				"Cookie: %s" % self._CSRFtoken,
-				(("X-%s" % self._CSRFtoken.replace("=", ": ")) if self._CSRFtoken else "X-nothing: x"),
-				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing2: x"),
-				
-				"Connection: close",
-				"", ""
-				]).encode("utf-8")
-		# Send it out and wait for response
-		try:
-			con.get_output_stream().write_all(get_str, None)
-		except Exception, e:
-			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
-			return
-		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-			(con, command, epoch, callback, error_callback, callback_data, []))
-	
-	def _rest_response(self, sc, results, (con, command, epoch, callback, error_callback, callback_data, buffer)):
-		try:
-			response = sc.read_bytes_finish(results)
-			if response == None:
-				raise Exception("No data recieved")
-		except Exception, e:
-			con.close(None)
-			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
-			return
-		if epoch < self._epoch :
-			# Too late, throw it away
-			con.close(None)
-			log.verbose("Discarded old response for %s", command)
-		# Repeat read_bytes_async until entire response is readed in buffer
-		buffer.append(response.get_data().decode("utf-8"))
-		if response.get_size() > 0:
-			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_response,
-				(con, command, epoch, callback, error_callback, callback_data, buffer))
-			return
-		con.close(None)
-		response = "".join(buffer)
-		if self._CSRFtoken is None and self._api_key is None:
-			# I wanna cookie!
-			self._parse_csrf(response.split("\n"))
-			if self._CSRFtoken == None:
-				# This is pretty fatal and likely to fail again,
-				# so request is not repeated automaticaly
-				if error_callback == None:
-					log.error("Request '%s' failed: Error: failed to get CSRF cookie from daemon", command)
-				else:
-					self._rest_error(Exception("Failed to get CSRF cookie"), epoch, command, callback, error_callback, callback_data)
-				return
-			# Repeat request with acqiured cookie
-			self._rest_request(command, callback, error_callback, *callback_data)
-			return
-		# Split headers from response
-		try:
-			headers, response = response.split("\r\n\r\n", 1)
-			headers = headers.split("\r\n")
-			code = int(headers[0].split(" ")[1])
-			if code == 401:
-				self._rest_error(HTTPAuthException("".join(buffer)), epoch, command, callback, error_callback, callback_data)
-				return
-			elif code == 404:
-				self._rest_error(HTTPCode(404, "Not found", "".join(buffer), headers), epoch, command, callback, error_callback, callback_data)
-				return
-			elif code != 200:
-				self._rest_error(HTTPCode(code, response, "".join(buffer), headers), epoch, command, callback, error_callback, callback_data)
-				return
-		except Exception, e:
-			# That probably wasn't HTTP
-			import traceback
-			traceback.print_exc()
-			self._rest_error(InvalidHTTPResponse("".join(buffer)), epoch, command, callback, error_callback, callback_data)
-			return
-		# Parse response and call callback
-		try:
-			rdata = json.loads(response)
-		except IndexError: # No data
-			rdata = { }
-		except ValueError: # Not a JSON
-			rdata = {'data' : response }
-		if type(rdata) == dict:
-			rdata[HTTP_HEADERS] = headers
-		if callback_data:
-			callback(rdata, *callback_data)
-		else:
-			callback(rdata)
-	
-	def _rest_error(self, exception, epoch, command, callback, error_callback, callback_data):
-		""" Error handler for _rest_response method """
-		if error_callback:
-			if epoch != self._epoch:
-				exception = ConnectionRestarted()
-			if callback_data:
-				error_callback(exception, command, *callback_data)
-			else:
-				error_callback(exception, command)
-		elif epoch == self._epoch:
-			try:
-				log.error("Request '%s' failed (%s); Repeating...", command, exception)
-			except UnicodeDecodeError:
-				# Windows...
-				log.error("Request '%s' failed; Repeating...", command)
-			self.timer(None, 1, self._rest_request, command, callback, error_callback, *callback_data)
-	
-	def _rest_socket_event(self, sc, event, connectable, con):
-		""" Setups TSL certificate if HTTPS is used """
-		if event == Gio.SocketClientEvent.TLS_HANDSHAKING:
-			con.connect("accept-certificate", self._rest_accept_certificate)
-	
-	def _rest_accept_certificate(self, con, peer_cert, errors):
-		""" Check if server presents expected certificate and accept connection """
-		return peer_cert.is_same(self._cert)
 	
 	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
 		""" POSTs data (formated with json) to daemon. Works like _rest_request """
@@ -714,18 +554,14 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _request_config(self, *a):
 		""" Request settings from syncthing daemon """
-		self._rest_request("system/config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+		RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error).start()
 	
 	def _request_folder_data(self, rid):
-		self._rest_request("db/status?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid)
-	
-	def _request_events(self, *a):
-		""" Request new events from syncthing daemon """
-		self._rest_request("events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error)
+		RESTRequest(self, "db/status?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid).start()
 	
 	def _request_last_seen(self, *a):
 		""" Request 'last seen' values for all devices """
-		self._rest_request("stats/device", self._syncthing_cb_last_seen, lambda *a: True)
+		RESTRequest(self, "stats/device", self._syncthing_cb_last_seen).ignore_error().start()
 	
 	def _parse_dev_n_folders(self, config):
 		"""
@@ -756,6 +592,10 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("folder-added", rid, r)
 			self._request_folder_data(rid)
 	
+	def _request_events(self, *a):
+		""" Request new events from syncthing daemon """
+		RESTRequest(self, "events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error).start()
+	
 	### Callbacks ###
 	
 	def _syncthing_cb_shutdown(self, data, reason):
@@ -774,11 +614,11 @@ class Daemon(GObject.GObject, TimerManager):
 				self._last_error_time = parsetime(events[-1]["time"])
 			except ValueError:
 				self._last_error_time = datetime.now()
-			self._rest_request("system/error", self._syncthing_cb_errors)
+			RESTRequest(self, "system/error", self._syncthing_cb_errors).start()
 			self._request_events()
 		else:
 			# Retry for invalid data
-			self._rest_request("events?limit=1", self._init_event_pooling)
+			RESTRequest(self, "events?limit=1", self._init_event_pooling).start()
 
 	
 	def _syncthing_cb_events(self, events):
@@ -813,7 +653,8 @@ class Daemon(GObject.GObject, TimerManager):
 				if t > self._last_error_time:
 					self.emit("error", msg)
 					self._last_error_time = t
-		self.timer("errors", self._refresh_interval * 5, self._rest_request, "system/error", self._syncthing_cb_errors)
+		r = RESTRequest(self, "system/error", self._syncthing_cb_errors)
+		self.timer("errors", self._refresh_interval * 5, r.start)
 	
 	def _syncthing_cb_events_error(self, exception, command):
 		"""
@@ -882,7 +723,8 @@ class Daemon(GObject.GObject, TimerManager):
 				device_data["outBytesTotal"])
 		
 		# ... repeat until pronounced dead
-		self.timer("conns", self._refresh_interval * 5, self._rest_request, "system/connections", self._syncthing_cb_connections, None, now)
+		r = RESTRequest(self, "system/connections", self._syncthing_cb_connections, None, now)
+		self.timer("conns", self._refresh_interval * 5, r.start)
 	
 	def _syncthing_cb_last_seen(self, data):
 		for nid in data:
@@ -930,7 +772,7 @@ class Daemon(GObject.GObject, TimerManager):
 			if version:
 				self._syncthing_cb_version_known(version)
 			else:
-				self._rest_request("system/version", self._syncthing_cb_version)
+				RESTRequest(self, "system/version", self._syncthing_cb_version).start()
 		
 		d_failed, d_total = 0, 0
 		if "discoveryEnabled" in data and data["discoveryEnabled"]:
@@ -953,7 +795,8 @@ class Daemon(GObject.GObject, TimerManager):
 		self.emit('system-data-updated', data["sys"],
 			float(data["cpuPercent"]), d_failed, d_total)
 		
-		self.timer("system", self._refresh_interval * 5, self._rest_request, "system/status", self._syncthing_cb_system)
+		r = RESTRequest(self, "system/status", self._syncthing_cb_system)
+		self.timer("system", self._refresh_interval * 5, r.start)
 	
 	def _syncthing_cb_version(self, data):
 		if "version" in data:
@@ -1013,10 +856,10 @@ class Daemon(GObject.GObject, TimerManager):
 			
 			self._parse_dev_n_folders(config)
 			
-			self._rest_request("events?limit=1", self._init_event_pooling)	# Requests most recent event only
-			self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
-			self._rest_request("system/connections", self._syncthing_cb_connections, None, time.time())
-			self._rest_request("system/status", self._syncthing_cb_system)
+			RESTRequest(self, "events?limit=1", self._init_event_pooling).start()		# Requests most recent event only
+			RESTRequest(self, "system/config/insync", self._syncthing_cb_config_in_sync).start()
+			RESTRequest(self, "system/connections", self._syncthing_cb_connections, None, time.time()).start()
+			RESTRequest(self, "system/status", self._syncthing_cb_system).start()
 			self._request_last_seen()
 			self.check_config()
 			self.emit('config-loaded', config)
@@ -1029,7 +872,8 @@ class Daemon(GObject.GObject, TimerManager):
 				epoch = self._epoch
 				self.emit("connection-error", Daemon.REFUSED, exception.message, exception)
 				if epoch == self._epoch:
-					self.timer("config", self._refresh_interval, self._rest_request, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+					r = RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error)
+					self.timer("config", self._refresh_interval, r.start)
 				return
 		elif isinstance(exception, HTTPAuthException):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message, exception)
@@ -1189,8 +1033,8 @@ class Daemon(GObject.GObject, TimerManager):
 			self._parse_dev_n_folders(config)
 			if not callback is None:
 				callback()
-			self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
-		self._rest_request("system/config", reload_config_cb, error_callback)
+			RESTRequest(self, "system/config/insync", self._syncthing_cb_config_in_sync).start()
+		RESTRequest(self, "system/config", reload_config_cb, error_callback).start()
 	
 	def close(self):
 		"""
@@ -1217,7 +1061,7 @@ class Daemon(GObject.GObject, TimerManager):
 		Check if configuration is in sync.
 		Should cause 'config-out-of-sync' event to be raised ASAP.
 		"""
-		self._rest_request("system/config/insync", self._syncthing_cb_config_in_sync)
+		RESTRequest(self, "system/config/insync", self._syncthing_cb_config_in_sync).start()
 	
 	def read_config(self, callback, error_callback=None, *calbackdata):
 		"""
@@ -1226,7 +1070,7 @@ class Daemon(GObject.GObject, TimerManager):
 		callback(config) with data decoded from json on success,
 		error_callback(exception) on failure
 		"""
-		self._rest_request("system/config", callback, error_callback, *calbackdata)
+		RESTRequest(self, "system/config", callback, error_callback, *calbackdata).start()
 	
 	def write_config(self, config, callback, error_callback=None, *calbackdata):
 		"""
@@ -1251,7 +1095,7 @@ class Daemon(GObject.GObject, TimerManager):
 			else:
 				callback("", *a)
 		id_enc = urllib.quote(folder_id.encode('utf-8'))
-		self._rest_request("db/ignores?folder=%s" % (id_enc,), r_filter, error_callback, *calbackdata)
+		RESTRequest(self, "db/ignores?folder=%s" % (id_enc,), r_filter, error_callback, *calbackdata).start()
 	
 	def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
 		"""
@@ -1371,6 +1215,186 @@ class Daemon(GObject.GObject, TimerManager):
 		self._refresh_interval = i
 		log.verbose("Set refresh interval to %s", i)
 
+
+class RESTRequest(Gio.SocketClient):
+	"""
+	REST over HTTP(s) request. Handles everything and calls callback with response
+	recieved. It is assumed that response will always be JSON-encoded and
+	it is automatically decoded.
+	
+	If request fails and error_callback is not set, it is automatically repeated.
+	
+	Callback signatures:
+		callback(json_data, callback_data... )
+		error_callback(exception, command, callback_data... )
+	"""
+	
+	def __init__(self, parent, command, callback, error_callback=None, *callback_data):
+		Gio.SocketClient.__init__(self, tls=parent._tls)
+		self._callback = callback
+		self._error_callback = error_callback
+		self._command = command
+		self._parent = parent
+		self._connection = None
+		self._callback_data = callback_data or ()
+		if parent._tls:
+			self.connect("event", self._socket_event)
+	
+	def _connected(self, _self, results):
+		""" Called after TCP connection is initiated """
+		try:
+			self._connection = self.connect_to_service_finish(results)
+			if self._connection == None:
+				raise Exception("Unknown error")
+		except Exception, e:
+			log.exception(e)
+			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
+				e = TLSUnsupportedException(e.message)
+			self._error(e)
+			return
+		if self._epoch != self._parent._epoch:
+			# Too late, throw it away
+			self._connection.close(None)
+			log.verbose("Discarded old connection for %s", self._command)
+			return
+		if self._parent._CSRFtoken is None and self._parent._api_key is None:
+			# Request CSRF token first
+			log.verbose("Requesting cookie")
+			get_str = "\r\n".join([
+				"GET / HTTP/1.0",
+				"Host: %s" % self._parent._address,
+				(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing: x"),
+				"Connection: close",
+				"",
+				"",
+				]).encode("utf-8")
+		else:
+			# Build GET request
+			get_str = "\r\n".join([
+				"GET /rest/%s HTTP/1.0" % self._command,
+				"Host: %s" % self._parent._address,
+				"Cookie: %s" % self._parent._CSRFtoken,
+				(("X-%s" % self._parent._CSRFtoken.replace("=", ": ")) if self._parent._CSRFtoken else "X-nothing: x"),
+				(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing2: x"),
+				
+				"Connection: close",
+				"", ""
+				]).encode("utf-8")
+		# Send it out and wait for response
+		try:
+			self._connection.get_output_stream().write_all(get_str, None)
+		except Exception, e:
+			self._error(e)
+			return
+		self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
+	
+	def _response(self, stream, results):
+		try:
+			response = stream.read_bytes_finish(results)
+			if response == None:
+				raise Exception("No data recieved")
+		except Exception, e:
+			print e
+			self._connection.close(None)
+			self._error(e)
+			return
+		if self._epoch != self._parent._epoch:
+			# Too late, throw it away
+			self._connection.close(None)
+			log.verbose("Discarded old response for %s", command)
+			return
+		# Repeat read_bytes_async until entire response is readed in buffer
+		self._buffer.append(response.get_data().decode("utf-8"))
+		if response.get_size() > 0:
+			self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
+			return
+		self._connection.close(None)
+		response = "".join(self._buffer)
+		if self._parent._CSRFtoken is None and self._parent._api_key is None:
+			# I wanna cookie!
+			self._parse_csrf(response.split("\n"))
+			if self._parent._CSRFtoken == None:
+				# This is pretty fatal and likely to fail again,
+				# so request is not repeated automaticaly
+				if self._error_callback == None:
+					log.error("Request '%s' failed: Error: failed to get CSRF cookie from daemon", self._command)
+				else:
+					self._error(Exception("Failed to get CSRF cookie"))
+				return
+			# Repeat request with acqiured cookie
+			self.start()
+			return
+		# Split headers from response
+		try:
+			headers, response = response.split("\r\n\r\n", 1)
+			headers = headers.split("\r\n")
+			code = int(headers[0].split(" ")[1])
+			if code == 401:
+				self._error(HTTPAuthException("".join(buffer)))
+				return
+			elif code == 404:
+				self._error(HTTPCode(404, "Not found", "".join(buffer), headers))
+				return
+			elif code != 200:
+				self._error(HTTPCode(code, response, "".join(buffer), headers))
+				return
+		except Exception, e:
+			# That probably wasn't HTTP
+			import traceback
+			traceback.print_exc()
+			self._error(InvalidHTTPResponse("".join(buffer)))
+			return
+		# Parse response and call callback
+		try:
+			rdata = json.loads(response)
+		except IndexError: # No data
+			rdata = { }
+		except ValueError: # Not a JSON
+			rdata = {'data' : response }
+		if type(rdata) == dict:
+			rdata[HTTP_HEADERS] = headers
+		self._callback(rdata, *self._callback_data)
+	
+	def _error(self, exception):
+		""" Error handler for _response method """
+		if self._error_callback:
+			if self._epoch != self._parent._epoch:
+				exception = ConnectionRestarted()
+			self._error_callback(exception, self._command, *self._callback_data)
+		elif self._epoch == self._parent._epoch:
+			try:
+				log.error("Request '%s' failed (%s); Repeating...", self._command, exception)
+			except UnicodeDecodeError:
+				# Windows...
+				log.error("Request '%s' failed; Repeating...", command)
+			self._parent.timer(None, 1, self.start)
+	
+	def _socket_event(self, _self, event, connectable, con):
+		""" Setups TSL certificate if HTTPS is used """
+		if event == Gio.SocketClientEvent.TLS_HANDSHAKING:
+			con.connect("accept-certificate", self._accept_certificate)
+	
+	def _accept_certificate(self, con, peer_cert, errors):
+		""" Check if server presents expected certificate and accept connection """
+		return peer_cert.is_same(self._parent._cert)
+	
+	def ignore_error(self):
+		"""
+		Causes RESTRequest to ignore any error - no callback is called and
+		request is *not* autorepeated.
+		
+		Returns self.
+		"""
+		self._error_callback = lambda *a: True
+		return self
+	
+	def start(self):
+		self._epoch = self._parent._epoch
+		self._buffer = []
+		self.connect_to_host_async(self._parent._address, 0, None, self._connected)
+		return self
+
+
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(RuntimeError): pass
 class TLSErrorException(RuntimeError): pass
@@ -1405,3 +1429,14 @@ class HTTPAuthException(HTTPCode):
 class ConnectionRestarted(Exception):
 	def __init__(self):
 		Exception.__init__(self, "Connection was restarted after request")
+
+
+if __name__ == "__main__":
+	# Small thing for testing
+	from tools import init_logging, set_logging_level
+	init_logging()
+	set_logging_level(True, True)
+	daemon = Daemon()
+	daemon.connect('connected', lambda *a: sys.stdout.write("Connected\n"))
+	daemon.reconnect()
+	GLib.MainLoop().run()
