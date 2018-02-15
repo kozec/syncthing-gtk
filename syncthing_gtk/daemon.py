@@ -433,10 +433,6 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("folder-added", rid, r)
 			self._request_folder_data(rid)
 	
-	def _request_events(self, *a):
-		""" Request new events from syncthing daemon """
-		RESTRequest(self, "events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error).start()
-	
 	### Callbacks ###
 	
 	def _syncthing_cb_shutdown(self, data, reason):
@@ -447,20 +443,6 @@ class Daemon(GObject.GObject, TimerManager):
 				self._epoch += 1
 				self.emit("disconnected", reason, "")
 			self.cancel_all()
-	
-	def _init_event_pooling(self, events):
-		if type(events) == list and len(events) > 0:
-			self._last_id = events[-1]["id"]
-			try:
-				self._last_error_time = parsetime(events[-1]["time"])
-			except ValueError:
-				self._last_error_time = datetime.now()
-			RESTRequest(self, "system/error", self._syncthing_cb_errors).start()
-			self._request_events()
-		else:
-			# Retry for invalid data
-			RESTRequest(self, "events?limit=1", self._init_event_pooling).start()
-
 	
 	def _syncthing_cb_events(self, events):
 		""" Called when event list is pulled from syncthing daemon """
@@ -603,6 +585,13 @@ class Daemon(GObject.GObject, TimerManager):
 
 	
 	def _syncthing_cb_system(self, data):
+		if "myID" not in data:
+			# Invalid response
+			r = RESTRequest(self, "system/status", self._syncthing_cb_system)
+			log.warning("Invalid response recieved for rest/system/status request")
+			self.timer("system", self._refresh_interval * 5, r.start)
+			return
+		
 		if self._my_id != data["myID"]:
 			if self._my_id != None:
 				# Can myID be ever changed?
@@ -625,19 +614,30 @@ class Daemon(GObject.GObject, TimerManager):
 				self._instance_id = data["startTime"]
 			else:
 				if self._instance_id != data["startTime"]:
-					log.warning("Daemon instance was replaced unexpedtedly. Disconnecting from daemon.")
-					self._my_id = None
-					if self._connected:
-						self._connected = False
-						self.emit("disconnected", Daemon.UNEXPECTED, "Daemon instance replaced")
-					self.cancel_all()
-					return
+					return self._instance_replaced()
 		
 		self.emit('system-data-updated', data["sys"],
 			float(data["cpuPercent"]), d_failed, d_total)
 		
 		r = RESTRequest(self, "system/status", self._syncthing_cb_system)
 		self.timer("system", self._refresh_interval * 5, r.start)
+	
+	def _instance_replaced(self):
+		"""
+		Called when it is detected that syncthing daemon instance is no longer
+		same as we talked to before
+		"""
+		log.warning("Daemon instance was replaced unexpectedly. Disconnecting from daemon.")
+		self._disconnected(message="Daemon instance replaced unexpectedly")
+	
+	def _disconnected(self, reason=UNEXPECTED, message=""):
+		""" Called to prepare and emit "disconnected" signal """
+		self._my_id = None
+		if self._connected:
+			self._connected = False
+			self._epoch += 1
+			self.emit("disconnected", reason, message)
+		self.cancel_all()
 	
 	def _syncthing_cb_version(self, data):
 		if "version" in data:
@@ -697,7 +697,7 @@ class Daemon(GObject.GObject, TimerManager):
 			
 			self._parse_dev_n_folders(config)
 			
-			RESTRequest(self, "events?limit=1", self._init_event_pooling).start()		# Requests most recent event only
+			EventPollLoop(self).start()
 			RESTRequest(self, "system/config/insync", self._syncthing_cb_config_in_sync).start()
 			RESTRequest(self, "system/connections", self._syncthing_cb_connections, None, time.time()).start()
 			RESTRequest(self, "system/status", self._syncthing_cb_system).start()
@@ -807,7 +807,6 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("device-resumed", nid)
 			self._request_last_seen()
 		elif eType == "FolderRejected":
-			print e["data"]
 			nid = e["data"]["device"]
 			rid = e["data"]["folder"]
 			label = e["data"]["folderLabel"] if "folderLabel" in e["data"] else None
@@ -1110,9 +1109,10 @@ class RESTRequest(Gio.SocketClient):
 				"",
 				]).encode("utf-8")
 		else:
-			# Build request
-			get_str = self._format_request()
-		# Send it out and wait for response
+			self._send_request()
+	
+	def _send_request(self):
+		get_str = self._format_request()
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
 		except Exception, e:
@@ -1158,15 +1158,15 @@ class RESTRequest(Gio.SocketClient):
 		if self._epoch != self._parent._epoch:
 			# Too late, throw it away
 			self._connection.close(None)
-			log.verbose("Discarded old response for %s", command)
+			log.verbose("Discarded old response for %s", self._command)
 			return
 		# Repeat read_bytes_async until entire response is readed in buffer
-		self._buffer.append(response.get_data().decode("utf-8"))
+		self._buffer.append(response.get_data())
 		if response.get_size() > 0:
 			self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
 			return
 		self._connection.close(None)
-		response = "".join(self._buffer)
+		response, self._buffer = (b"".join(self._buffer)).decode("utf-8"), []
 		if self._parent._CSRFtoken is None and self._parent._api_key is None:
 			# I wanna cookie!
 			self._parse_csrf(response.split("\n"))
@@ -1182,25 +1182,8 @@ class RESTRequest(Gio.SocketClient):
 			self.start()
 			return
 		# Split headers from response
-		try:
-			headers, response = response.split("\r\n\r\n", 1)
-			headers = headers.split("\r\n")
-			code = int(headers[0].split(" ")[1])
-			if code == 401:
-				self._error(HTTPAuthException("".join(buffer)))
-				return
-			elif code == 404:
-				self._error(HTTPCode(404, "Not found", "".join(buffer), headers))
-				return
-			elif code != 200:
-				self._error(HTTPCode(code, response, "".join(buffer), headers))
-				return
-		except Exception, e:
-			# That probably wasn't HTTP
-			import traceback
-			traceback.print_exc()
-			self._error(InvalidHTTPResponse("".join(buffer)))
-			return
+		headers, response = self._split_headers(response)
+		if headers is None: return
 		# Parse response and call callback
 		try:
 			rdata = json.loads(response)
@@ -1211,6 +1194,28 @@ class RESTRequest(Gio.SocketClient):
 		if type(rdata) == dict:
 			rdata[HTTP_HEADERS] = headers
 		self._callback(rdata, *self._callback_data)
+	
+	def _split_headers(self, buffer):
+		try:
+			headers, response = buffer.split(b"\r\n\r\n", 1)
+			headers = headers.split(b"\r\n")
+			code = int(headers[0].split(b" ")[1])
+			if code == 401:
+				self._error(HTTPAuthException(buffer))
+				return
+			elif code == 404:
+				self._error(HTTPCode(404, "Not found", buffer, headers))
+				return
+			elif code != 200:
+				self._error(HTTPCode(code, response, buffer, headers))
+				return
+		except Exception, e:
+			# That probably wasn't HTTP
+			import traceback
+			traceback.print_exc()
+			self._error(InvalidHTTPResponse(buffer))
+			return None, None
+		return headers, response
 	
 	def _error(self, exception):
 		""" Error handler for _response method """
@@ -1223,8 +1228,8 @@ class RESTRequest(Gio.SocketClient):
 				log.error("Request '%s' failed (%s); Repeating...", self._command, exception)
 			except UnicodeDecodeError:
 				# Windows...
-				log.error("Request '%s' failed; Repeating...", command)
-			self._parent.timer(None, 1, self.start)
+				log.error("Request '%s' failed; Repeating...", self._command)
+			self._parent.timer(str(self), 1, self.start)
 	
 	def _socket_event(self, _self, event, connectable, con):
 		""" Setups TSL certificate if HTTPS is used """
@@ -1277,6 +1282,177 @@ class RESTPOSTRequest(RESTRequest):
 			]).encode("utf-8")
 
 
+class EventPollLoop(RESTRequest):
+	"""
+	Event polling 'loop' continupusly polls events from daemon using one HTTP(s)
+	connection. If connection is broken, EventPollLoop reconnects automatically.
+	'Loop' is canceled automatically when parent _epoch is increased.
+	"""
+	def __init__(self, parent):
+		RESTRequest.__init__(self, parent, "events", None, None)
+		self._last_event_id = -1
+	
+	def _format_request(self):
+		"""
+		Event request is as special as it gets, with HTTP/1.1 ,connection held
+		and continous requesting more and more data.
+		"""
+		if self._last_event_id < 0:
+			url = "/rest/events?limit=1"
+		else:
+			url = "/rest/events?since=%s" % (self._last_event_id,)
+		
+		return "\r\n".join([
+			"GET %s HTTP/1.1" % url,
+			"Host: %s" % self._parent._address,
+			"Cookie: %s" % self._parent._CSRFtoken,
+			(("X-%s" % self._parent._CSRFtoken.replace("=", ": ")) if self._parent._CSRFtoken else "X-nothing: x"),
+			(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing2: x"),
+			"Cache-Control: no-cache",
+			"Connection: keep-alive",
+			"Pragma: no-cache",
+			"", ""
+			]).encode("utf-8")
+	
+	def _error(self, exception):
+		self._connection.close(None)
+		if self._epoch == self._parent._epoch:
+			if isinstance(exception, GLib.GError):
+				if exception.code in (0, 39, 34):	# Connection terminated unexpectedly, Connection Refused
+					self._parent._disconnected(message=str(exception))
+					return
+			self._parent.timer(None, 1, self.start)
+	
+	def _response(self, stream, results):
+		if self._parent._CSRFtoken is None and self._parent._api_key is None:
+			return RESTRequest._response(self, stream, results)
+		try:
+			response = stream.read_bytes_finish(results)
+			if response == None:
+				raise Exception("No data recieved")
+		except Exception, e:
+			return self._error(e)
+		if self._epoch != self._parent._epoch:
+			self._connection.close(None)
+			return
+		
+		buffer = response.get_data()
+		assert type(buffer) == str
+		headers, response = self._split_headers(buffer)
+		if headers is None: return
+		headers = { x : y.strip() for (x,y) in [ h.split(":", 1) for h in headers if ":" in h ] }
+		if "Transfer-Encoding" not in headers or headers["Transfer-Encoding"] != "chunked":
+			# Something just went horribly wrong
+			self._error(InvalidHTTPResponse(buffer))
+			return
+		self._buffer = response
+		self._chunk_size = -1
+		self._parse_chunk()
+	
+	def _chunk(self, stream, results):
+		try:
+			response = stream.read_bytes_finish(results)
+			if response == None:
+				raise Exception("nothing")
+		except Exception, e:
+			return self._error(e)
+		if self._epoch != self._parent._epoch:
+			self._connection.close(None)
+			return
+		data = response.get_data()
+		if len(data) == 0:
+			# Connection broken
+			self._connection.close(None)
+			return self.start()
+		self._buffer += data
+		self._parse_chunk()
+	
+	def _resend_request(self):
+		""" Sends another request using same connection """
+		self._chunk_size = -1
+		get_str = b"GET /rest/events?since=%s HTTP/1.1\r\n\r\n" % (self._last_event_id,)
+		try:
+			self._connection.get_output_stream().write_all(get_str, None)
+		except Exception, e:
+			print e
+			self._connection.close(None)
+			return self.start()
+		self._connection.get_input_stream().read_bytes_async(10, 1, None, self._chunk)
+	
+	
+	def _parse_chunk(self):
+		if self._chunk_size < 0:
+			try:
+				# Try to decode chunk. May raise exception if only very few bytes
+				# are readed so far
+				size_str, rest = self._buffer.split(b"\r\n", 1)
+				size = int(size_str, 16)
+				self._chunk_size = int(size_str, 16)
+				self._buffer = rest
+				if self._chunk_size < 1:
+					# Zero-sized chunk means end of transfer
+					return self._resend_request()
+				self._chunk_size += 2	# 2b for following \r\n
+			except (ValueError, IndexError):
+				self._chunk_size = -1
+				self._connection.get_input_stream().read_bytes_async(100, 1, None, self._chunk)
+				return
+		retrieved = len(self._buffer)
+		if retrieved < self._chunk_size:
+			self._connection.get_input_stream().read_bytes_async(self._chunk_size - retrieved, 1, None, self._chunk)
+			return
+		
+		response, self._buffer = self._buffer[0:retrieved], self._buffer[retrieved:]
+		try:
+			events = json.loads(response)
+		except Exception:
+			# Invalid response
+			self._connection.close(None)
+			return self.start()
+		
+		for event in events:
+			if self._last_event_id >= 0 and event["id"] != self._last_event_id + 1:
+				# Event IDs are not continous, something just went horribly wrong
+				# There is only one case when this is expected: When connection
+				# to daemon is lost and ST-GTK unknownly reconnects to
+				# different instance.
+				return self._parent._instance_replaced()
+			self._last_event_id = event["id"]
+			self._parent._on_event(event)
+			sys.stdout.flush()
+		
+		self._resend_request()
+	
+	def _request_events(self, *a):
+		"""
+		Intiates event polling 'loop' that calls TODO: WHAT automatically for
+		every new event recieved.
+		'Loop' is broken automatically when self._epoch is increased.
+		"""
+		# sc = Gio.SocketClient(tls=self._tls)
+		# if self._tls:
+		# 	GObject.Object.connect(sc, "event", self._rest_socket_event)
+		# sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
+		# 	(command, self._epoch, callback, error_callback, callback_data))
+		
+		""" Request new events from syncthing daemon """
+		RESTRequest(self, "events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error).start()
+	
+	def _init_event_polling(self, events):
+		if type(events) == list and len(events) > 0:
+			self._last_id = events[-1]["id"]
+			try:
+				self._last_error_time = parsetime(events[-1]["time"])
+			except ValueError:
+				self._last_error_time = datetime.now()
+			RESTRequest(self, "system/error", self._syncthing_cb_errors).start()
+			self._request_events()
+		else:
+			# Retry for invalid data
+			RESTRequest(self, "events?limit=1", self._init_event_polling).start()
+
+
+
 class InvalidConfigurationException(RuntimeError): pass
 class TLSUnsupportedException(RuntimeError): pass
 class TLSErrorException(RuntimeError): pass
@@ -1319,6 +1495,7 @@ if __name__ == "__main__":
 	init_logging()
 	set_logging_level(True, True)
 	daemon = Daemon()
-	daemon.connect('connected', lambda *a: sys.stdout.write("Connected\n"))
+	daemon.connect('connected', lambda *a: sys.stdout.write("*** connected ***\n"))
+	daemon.connect('disconnected', lambda *a: sys.stdout.write("*** disconnected ***\n"))
 	daemon.reconnect()
 	GLib.MainLoop().run()
