@@ -393,165 +393,6 @@ class Daemon(GObject.GObject, TimerManager):
 				}
 		return self._device_data[nid]
 	
-	def _rest_post(self, command, data, callback, error_callback=None, *callback_data):
-		""" POSTs data (formated with json) to daemon. Works like _rest_request """
-		sc = Gio.SocketClient(tls=self._tls)
-		if self._tls:
-			GObject.Object.connect(sc, "event", self._rest_socket_event)
-		sc.connect_to_host_async(self._address, 0, None, self._rest_post_connected,
-			(command, data, self._epoch, callback, error_callback, callback_data))
-	
-	def _rest_post_connected(self, sc, results, (command, data, epoch, callback, error_callback, callback_data)):
-		""" Second part of _rest_post, called after HTTP connection is initiated """
-		try:
-			con = sc.connect_to_service_finish(results)
-			if con == None:
-				raise Exception("Unknown error")
-		except Exception, e:
-			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
-				e = TLSUnsupportedException(e.message)
-			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
-			return
-		if epoch < self._epoch :
-			# Too late, throw it away
-			con.close(None)
-			log.verbose("Discarded old connection for POST %s", command)
-		post_str = None
-		if self._CSRFtoken is None and self._api_key is None:
-			# Request CSRF token first
-			log.verbose("Requesting cookie")
-			post_str = "\r\n".join([
-				"GET / HTTP/1.0",
-				"Host: %s" % self._address,
-				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing: x"),
-				"Connection: close",
-				"",
-				"",
-				]).encode("utf-8")
-		else:
-			# Build POST request
-			json_str = json.dumps(data)
-			post_str = "\r\n".join([
-				"POST /rest/%s HTTP/1.0" % command,
-				"Host: %s" % self._address,
-				"Connection: close",
-				"Cookie: %s" % self._CSRFtoken,
-				(("X-%s" % self._CSRFtoken.replace("=", ": ")) if self._CSRFtoken else "X-nothing: x"),
-				(("X-API-Key: %s" % self._api_key) if not self._api_key is None else "X-nothing2: x"),
-				"Content-Length: %s" % len(json_str),
-				"Content-Type: application/json",
-				"",
-				json_str
-				]).encode("utf-8")
-		# Send it out and wait for response
-		try:
-			con.get_output_stream().write_all(post_str, None)
-		except Exception, e:
-			self._rest_error(e, epoch, command, callback, error_callback, callback_data)
-			return
-		con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-			(con, command, data, epoch, callback, error_callback, callback_data, []))
-	
-	def _rest_post_response(self, sc, results, (con, command, data, epoch, callback, error_callback, callback_data, buffer)):
-		try:
-			response = sc.read_bytes_finish(results)
-			if response == None:
-				raise Exception("No data recieved")
-		except Exception, e:
-			con.close(None)
-			self._rest_post_error(e, epoch, command, data, callback, error_callback, callback_data)
-			return
-		if epoch < self._epoch :
-			# Too late, throw it away
-			con.close(None)
-			log.verbose("Discarded old response for POST %s", command)
-		# Repeat _rest_post_response until entire response is readed in buffer
-		buffer.append(response.get_data().decode("utf-8"))
-		if response.get_size() > 0:
-			con.get_input_stream().read_bytes_async(102400, 1, None, self._rest_post_response,
-				(con, command, data, epoch, callback, error_callback, callback_data, buffer))
-			return
-		con.close(None)
-		response = "".join(buffer)
-		# Parse response
-		if self._CSRFtoken is None and self._api_key is None:
-			# I wanna cookie!
-			self._parse_csrf(response.split("\n"))
-			if self._CSRFtoken == None:
-				# This is pretty fatal and likely to fail again,
-				# so request is not repeated automaticaly
-				if error_callback == None:
-					log.error("Request '%s' failed: Error: failed to get CSRF cookie from daemon", command)
-				else:
-					self._rest_post_error(Exception("Failed to get CSRF cookie"), epoch, command, data, callback, error_callback, callback_data)
-				return
-			# Repeat request with acqiured cookie
-			self._rest_post(command, data, callback, error_callback, *callback_data)
-			return
-		# Extract response code
-		try:
-			headers, response = response.split("\r\n\r\n", 1)
-			headers = headers.split("\r\n")
-			code = int(headers[0].split(" ")[1])
-			if code == 500:
-				self._rest_error(HTTPCode(500, response, "".join(buffer)), epoch, command, callback, error_callback, callback_data)
-				return
-			elif code != 200:
-				self._rest_post_error(HTTPCode(code, response, "".join(buffer)), epoch, command, data, callback, error_callback, callback_data)
-				return
-		except Exception:
-			# That probably wasn't HTTP
-			self._rest_post_error(InvalidHTTPResponse("".join(buffer)), epoch, command, data, callback, error_callback, callback_data)
-			return
-		if "CSRF Error" in response:
-			# My cookie is too old; Throw it away and try again
-			log.verbose("Throwing away my cookie :(")
-			self._CSRFtoken = None
-			self._rest_post(command, data, callback, error_callback, *callback_data)
-			return
-		
-		# Parse response and call callback
-		try:
-			rdata = json.loads(response)
-		except IndexError: # No data
-			rdata = { }
-		except ValueError: # Not a JSON
-			rdata = {'data' : response }
-		if type(rdata) == dict:
-			rdata[HTTP_HEADERS] = headers
-		if callback_data:
-			callback(rdata, *callback_data)
-		else:
-			callback(rdata)
-	
-	def _rest_post_error(self, exception, epoch, command, data, callback, error_callback, callback_data):
-		""" Error handler for _rest_post_response method """
-		if error_callback:
-			if epoch != self._epoch:
-				exception = ConnectionRestarted()
-			if callback_data:
-				error_callback(exception, command, data, *callback_data)
-			else:
-				error_callback(exception, command, data)
-		elif epoch != self._epoch:
-			try:
-				log.error("Post '%s' failed (%s) Repeating...", command, exception)
-			except UnicodeDecodeError:
-				# Windows...
-				log.error("Post '%s' failed; Repeating...", command)
-			self.timer(None, 1, self._rest_post, command, data, callback, error_callback, callback_data)
-	
-	def _parse_csrf(self, response):
-		for d in response:
-			if d.startswith("Set-Cookie:"):
-				for c in d.split(":", 1)[1].split(";"):
-					if c.strip().startswith("CSRF-Token-"):
-						self._CSRFtoken = c.strip(" \r\n")
-						log.verbose("Got new cookie: %s", self._CSRFtoken)
-						break
-				if self._CSRFtoken != None:
-					break
-	
 	def _request_config(self, *a):
 		""" Request settings from syncthing daemon """
 		RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error).start()
@@ -1081,7 +922,7 @@ class Daemon(GObject.GObject, TimerManager):
 		def run_before(data, *a):
 			self.check_config()
 			callback(*calbackdata)
-		self._rest_post("system/config", config, run_before, error_callback, *calbackdata)
+		RESTPOSTRequest(self, "system/config", config, run_before, error_callback, *calbackdata).start()
 	
 	def read_stignore(self, folder_id, callback, error_callback=None, *calbackdata):
 		"""
@@ -1104,21 +945,21 @@ class Daemon(GObject.GObject, TimerManager):
 		"""
 		data = { 'ignore': text.split("\n") }
 		id_enc = urllib.quote(folder_id.encode('utf-8'))
-		self._rest_post("db/ignores?folder=%s" % (id_enc,), data, callback, error_callback, *calbackdata)
+		RESTPOSTRequest(self, "db/ignores?folder=%s" % (id_enc,), data, callback, error_callback, *calbackdata).start()
 	
 	def restart(self):
 		"""
 		Asks daemon to restart. If sucesfull, call will cause
 		'disconnected' event with Daemon.RESTART reason to be fired
 		"""
-		self._rest_post("system/restart",  {}, self._syncthing_cb_shutdown, None, Daemon.RESTART)
+		RESTPOSTRequest(self, "system/restart",  {}, self._syncthing_cb_shutdown, None, Daemon.RESTART).start()
 	
 	def shutdown(self):
 		"""
 		Asks daemon to shutdown. If sucesfull, call will cause
 		'disconnected' event with Daemon.SHUTDOWN reason to be fired
 		"""
-		self._rest_post("system/shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN)
+		RESTPOSTRequest(self, "system/shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN).start()
 	
 	def syncing(self):
 		""" Returns true if any folder is being synchronized right now  """
@@ -1177,28 +1018,28 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def pause(self, device_id):
 		""" Pauses synchronization with specified device """
-		self._rest_post("system/pause?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
+		RESTPOSTRequest(self, "system/pause?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id).start()
 	
 	def resume(self, device_id):
 		""" Resumes synchronization with specified device """
-		self._rest_post("system/resume?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id)
+		RESTPOSTRequest(self, "system/resume?device=%s" % (device_id,), {}, lambda *a: a, lambda *a: log.error(a), device_id).start()
 	
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
 		if path is None:
 			id_enc = urllib.quote(folder_id.encode('utf-8'))
-			self._rest_post("db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+			RESTPOSTRequest(self, "db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 		else:
 			url = "db/scan?folder=%s&sub=%s" % (
 				urllib.quote(folder_id.encode('utf-8')),
 				urllib.quote(path.encode('utf-8'))
 			)
-			self._rest_post(url, {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+			RESTPOSTRequest(self, url, {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 	
 	def override(self, folder_id):
 		""" Asks daemon to override changes made in specified folder """
 		id_enc = urllib.quote(folder_id.encode('utf-8'))
-		self._rest_post("db/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id)
+		RESTPOSTRequest(self, "db/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 	
 	def request_events(self):
 		"""
@@ -1269,17 +1110,8 @@ class RESTRequest(Gio.SocketClient):
 				"",
 				]).encode("utf-8")
 		else:
-			# Build GET request
-			get_str = "\r\n".join([
-				"GET /rest/%s HTTP/1.0" % self._command,
-				"Host: %s" % self._parent._address,
-				"Cookie: %s" % self._parent._CSRFtoken,
-				(("X-%s" % self._parent._CSRFtoken.replace("=", ": ")) if self._parent._CSRFtoken else "X-nothing: x"),
-				(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing2: x"),
-				
-				"Connection: close",
-				"", ""
-				]).encode("utf-8")
+			# Build request
+			get_str = self._format_request()
 		# Send it out and wait for response
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
@@ -1287,6 +1119,31 @@ class RESTRequest(Gio.SocketClient):
 			self._error(e)
 			return
 		self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
+	
+	def _parse_csrf(self, response):
+		for d in response:
+			if d.startswith("Set-Cookie:"):
+				for c in d.split(":", 1)[1].split(";"):
+					if c.strip().startswith("CSRF-Token-"):
+						self._CSRFtoken = c.strip(" \r\n")
+						log.verbose("Got new cookie: %s", self._CSRFtoken)
+						break
+				if self._CSRFtoken != None:
+					break
+	
+	def _format_request(self):
+		"""
+		Formats HTTP request (GET /xyz HTTP/1.0... ) before sending it to daemon
+		"""
+		return "\r\n".join([
+			"GET /rest/%s HTTP/1.0" % self._command,
+			"Host: %s" % self._parent._address,
+			"Cookie: %s" % self._parent._CSRFtoken,
+			(("X-%s" % self._parent._CSRFtoken.replace("=", ": ")) if self._parent._CSRFtoken else "X-nothing: x"),
+			(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing2: x"),
+			"Connection: close",
+			"", ""
+			]).encode("utf-8")
 	
 	def _response(self, stream, results):
 		try:
@@ -1393,6 +1250,31 @@ class RESTRequest(Gio.SocketClient):
 		self._buffer = []
 		self.connect_to_host_async(self._parent._address, 0, None, self._connected)
 		return self
+
+
+class RESTPOSTRequest(RESTRequest):
+	""" Similar to RESTRequest, but this one uses HTTP POST and sends data """
+	def __init__(self, parent, command, data, callback, error_callback=None, *callback_data):
+		RESTRequest.__init__(self, parent, command, callback, error_callback, *callback_data)
+		self._data = data
+	
+	def _format_request(self):
+		"""
+		Formats POST request before sending it to daemon
+		"""
+		json_str = json.dumps(self._data)
+		return "\r\n".join([
+			"POST /rest/%s HTTP/1.0" % self._command,
+			"Host: %s" % self._parent._address,
+			"Cookie: %s" % self._parent._CSRFtoken,
+			(("X-%s" % self._parent._CSRFtoken.replace("=", ": ")) if self._parent._CSRFtoken else "X-nothing: x"),
+			(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing2: x"),
+			"Content-Length: %s" % len(json_str),
+			"Content-Type: application/json",
+			"Connection: close",
+			"",
+			json_str
+			]).encode("utf-8")
 
 
 class InvalidConfigurationException(RuntimeError): pass
