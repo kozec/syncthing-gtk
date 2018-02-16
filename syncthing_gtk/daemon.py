@@ -1183,6 +1183,9 @@ class RESTRequest(Gio.SocketClient):
 	
 	def _error(self, exception):
 		""" Error handler for _response method """
+		if self._connection:
+			self._connection.close(None)
+			self._connection = None
 		if self._error_callback:
 			if self._epoch != self._parent._epoch:
 				exception = ConnectionRestarted()
@@ -1287,6 +1290,10 @@ class EventPollLoop(RESTRequest):
 					return
 			self._parent.timer(None, 1, self.start)
 	
+	def start(self):
+		RESTRequest.start(self)
+		self._buffer = b""
+		
 	def _response(self, stream, results):
 		if self._parent._CSRFtoken is None and self._parent._api_key is None:
 			return RESTRequest._response(self, stream, results)
@@ -1350,7 +1357,6 @@ class EventPollLoop(RESTRequest):
 				# Try to decode chunk. May raise exception if only very few bytes
 				# are readed so far
 				size_str, rest = self._buffer.split(b"\r\n", 1)
-				size = int(size_str, 16)
 				self._chunk_size = int(size_str, 16)
 				self._buffer = rest
 				if self._chunk_size < 1:
