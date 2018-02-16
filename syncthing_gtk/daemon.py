@@ -444,22 +444,6 @@ class Daemon(GObject.GObject, TimerManager):
 				self.emit("disconnected", reason, "")
 			self.cancel_all()
 	
-	def _syncthing_cb_events(self, events):
-		""" Called when event list is pulled from syncthing daemon """
-		if type(events) == list:	# Ignore invalid data
-			if len(events) > 0:
-				this_epoch = self._epoch
-				for e in events:
-					if e["id"] > self._last_id:
-						self._on_event(e)
-						if this_epoch != self._epoch:
-							# Restarted durring last event handler
-							self._last_id = events[-1]["id"]
-							return
-				self._last_id = events[-1]["id"]
-		
-		self.timer("event", self._refresh_interval, self._request_events)
-	
 	def _syncthing_cb_errors(self, errors):
 		if errors["errors"] is not None:
 			for e in errors["errors"]:
@@ -478,22 +462,6 @@ class Daemon(GObject.GObject, TimerManager):
 					self._last_error_time = t
 		r = RESTRequest(self, "system/error", self._syncthing_cb_errors)
 		self.timer("errors", self._refresh_interval * 5, r.start)
-	
-	def _syncthing_cb_events_error(self, exception, command):
-		"""
-		As most frequent request, "event" request is used to detect when
-		daemon stops to respond. "Please wait" message is displayed in
-		that case, UI is restarted and waits until daemon respawns.
-		"""
-		if isinstance(exception, GLib.GError):
-			if exception.code in (0, 39, 34):	# Connection terminated unexpectedly, Connection Refused
-				if self._connected:
-					self._connected = False
-					self.emit("disconnected", Daemon.UNEXPECTED, exception.message)
-				self.cancel_all()
-				return
-		# Other errors are ignored and events are pulled again after prolonged delay
-		self.timer("event", self._refresh_interval * 5, self._request_events)
 	
 	def _syncthing_cb_connections(self, data, prev_time):
 		now = time.time()
@@ -1042,13 +1010,9 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def request_events(self):
 		"""
-		Requests event directly, without waiting for timer to fire.
-		May fail silently if instance is not connected to daemon or is
-		already waiting for events.
+		No longer needed.
 		"""
-		if self.cancel_timer("event"):
-			self._request_events()
-			log.verbose("Forced to request events")
+		pass
 	
 	def set_refresh_interval(self, i):
 		""" Sets interval used mainly by event quering timer """
@@ -1284,7 +1248,7 @@ class RESTPOSTRequest(RESTRequest):
 
 class EventPollLoop(RESTRequest):
 	"""
-	Event polling 'loop' continupusly polls events from daemon using one HTTP(s)
+	Event polling 'loop' continuously polls events from daemon using one HTTP(s)
 	connection. If connection is broken, EventPollLoop reconnects automatically.
 	'Loop' is canceled automatically when parent _epoch is increased.
 	"""
@@ -1294,7 +1258,7 @@ class EventPollLoop(RESTRequest):
 	
 	def _format_request(self):
 		"""
-		Event request is as special as it gets, with HTTP/1.1 ,connection held
+		Event request is as special as it gets, with HTTP/1.1, connection held
 		and continous requesting more and more data.
 		"""
 		if self._last_event_id < 0:
@@ -1422,34 +1386,6 @@ class EventPollLoop(RESTRequest):
 			sys.stdout.flush()
 		
 		self._resend_request()
-	
-	def _request_events(self, *a):
-		"""
-		Intiates event polling 'loop' that calls TODO: WHAT automatically for
-		every new event recieved.
-		'Loop' is broken automatically when self._epoch is increased.
-		"""
-		# sc = Gio.SocketClient(tls=self._tls)
-		# if self._tls:
-		# 	GObject.Object.connect(sc, "event", self._rest_socket_event)
-		# sc.connect_to_host_async(self._address, 0, None, self._rest_connected,
-		# 	(command, self._epoch, callback, error_callback, callback_data))
-		
-		""" Request new events from syncthing daemon """
-		RESTRequest(self, "events?since=%s" % self._last_id, self._syncthing_cb_events, self._syncthing_cb_events_error).start()
-	
-	def _init_event_polling(self, events):
-		if type(events) == list and len(events) > 0:
-			self._last_id = events[-1]["id"]
-			try:
-				self._last_error_time = parsetime(events[-1]["time"])
-			except ValueError:
-				self._last_error_time = datetime.now()
-			RESTRequest(self, "system/error", self._syncthing_cb_errors).start()
-			self._request_events()
-		else:
-			# Retry for invalid data
-			RESTRequest(self, "events?limit=1", self._init_event_polling).start()
 
 
 
