@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+<b>ambidot</b>#!/usr/bin/env python2
 """
 Syncthing-GTK - Daemon
 
@@ -20,7 +20,7 @@ import json, os, sys, time, logging, urllib
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
-MIN_VERSION = "0.13"
+MIN_VERSION = "0.14"
 
 # Random constant used as key when adding headers to returned data in
 # REST requests; Anything goes, as long as it isn't string
