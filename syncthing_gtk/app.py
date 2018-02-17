@@ -1043,11 +1043,14 @@ class App(Gtk.Application, TimerManager):
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always
 			folder = self.folders[rid]
-			folder["global"] = "%s %s, %s" % (data["globalFiles"], _("Files"), sizeof_fmt(data["globalBytes"]))
-			folder["local"]	 = "%s %s, %s" % (data["localFiles"], _("Files"), sizeof_fmt(data["localBytes"]))
-			folder["oos"]	 = "%s %s, %s" % (data["needFiles"], _("Files"), sizeof_fmt(data["needBytes"]))
+			global_files = data["globalFiles"] + data["globalSymlinks"]
+			local_files = data["localFiles"] + data["localSymlinks"]
+			need_files = data["needFiles"] + data["needSymlinks"]
+			folder["global"] = "%s %s, %s" % (global_files, _("Files"), sizeof_fmt(data["globalBytes"]))
+			folder["local"]	 = "%s %s, %s" % (local_files, _("Files"), sizeof_fmt(data["localBytes"]))
+			folder["oos"]	 = "%s %s, %s" % (need_files, _("Files"), sizeof_fmt(data["needBytes"]))
 			if folder["b_master"]:
-				can_override = (data["needFiles"] > 0)
+				can_override = (need_files > 0)
 				if can_override != folder["can_override"]:
 					folder["can_override"] = can_override
 					self.cb_syncthing_folder_up_to_date(None, rid)
