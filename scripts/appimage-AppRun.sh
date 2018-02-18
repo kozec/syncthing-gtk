@@ -29,6 +29,8 @@ python2 -c 'import gi' \
 	|| dependency_check_failed "Please, install python-gobject package using your package manager"
 python2 -c 'import gi; gi.require_version("Gtk", "3.0")' \
 	|| dependency_check_failed "Syncthing-GTK requires GTK. Please, install GTK3 package using your package manager"
+python2 -c 'import gi; gi.require_version("Rsvg", "2.0"); gi.require_version("cairo", "1.0"); gi.require_version("Notify", "0.7")' \
+	|| dependency_check_failed "Please, make sure that following packages are installed using your package manager:\npython-gi-cairo gir1.2-notify gir1.2-rsvg"
 
 # Start
 python2 ${APPDIR}/usr/bin/syncthing-gtk $@
