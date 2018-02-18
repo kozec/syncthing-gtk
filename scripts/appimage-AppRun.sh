@@ -29,8 +29,6 @@ python2 -c 'import gi' \
 	|| dependency_check_failed "Please, install python-gobject package using your package manager"
 python2 -c 'import gi; gi.require_version("Gtk", "3.0")' \
 	|| dependency_check_failed "Syncthing-GTK requires GTK. Please, install GTK3 package using your package manager"
-python2 -c 'import bcrypt' || dependency_check_failed "Please, install python-bcrypt package using your package manager"
-python2 -c 'import dateutil' || dependency_check_failed "Please, install python-dateutil package using your package manager"
 
 # Start
 python2 ${APPDIR}/usr/bin/syncthing-gtk $@
