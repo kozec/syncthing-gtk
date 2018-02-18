@@ -1166,13 +1166,13 @@ class RESTRequest(Gio.SocketClient):
 			code = int(headers[0].split(b" ")[1])
 			if code == 401:
 				self._error(HTTPAuthException(buffer))
-				return
+				return None, None
 			elif code == 404:
 				self._error(HTTPCode(404, "Not found", buffer, headers))
-				return
+				return None, None
 			elif code != 200:
 				self._error(HTTPCode(code, response, buffer, headers))
-				return
+				return None, None
 		except Exception, e:
 			# That probably wasn't HTTP
 			import traceback
