@@ -450,11 +450,13 @@ class StatusIconAppIndicator(StatusIconDBus):
 		StatusIcon.__init__(self, *args, **kwargs)
 		
 		try:
+			import gi
+			gi.require_version('AppIndicator3', '0.1')
 			from gi.repository import AppIndicator3 as appindicator
 			
 			self._status_active  = appindicator.IndicatorStatus.ACTIVE
 			self._status_passive = appindicator.IndicatorStatus.PASSIVE
-		except ImportError:
+		except (ImportError, ValueError):
 			raise NotImplementedError
 		
 		category = appindicator.IndicatorCategory.APPLICATION_STATUS
