@@ -27,5 +27,13 @@ if __name__ == "__main__":
 	init_locale(localedir)
 	init_logging()
 	
+	if "APPDIR" in os.environ:
+		# Running as AppImage
+		from gi.repository import Gtk
+		icons = os.path.abspath(os.path.join(os.environ["APPDIR"], "icons"))
+		Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"])
+		Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"] + "/32x32/apps")
+		Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"] + "/32x32/status")
+	
 	from syncthing_gtk.app import App
 	App(path, os.path.join(path, "icons")).run(sys.argv)
