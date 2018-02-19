@@ -10,8 +10,9 @@ import os
 
 class AboutDialog(object):
 	""" Standard looking about dialog """
-	def __init__(self, app, gladepath):
+	def __init__(self, app, gladepath, iconpath):
 		self.gladepath = gladepath
+		self.iconpath = iconpath
 		self.setup_widgets(app)
 	
 	def show(self, parent=None):
@@ -28,8 +29,10 @@ class AboutDialog(object):
 			self.dialog.destroy()
 	
 	def setup_widgets(self, app):
-		# Load glade file
 		self.builder = UIBuilder()
+		# Fix icon path
+		self.builder.replace_icon_path("icons/", self.iconpath)
+		# Load glade file
 		self.builder.add_from_file(os.path.join(self.gladepath, "about.glade"))
 		self.builder.connect_signals(self)
 		self.dialog = self.builder.get_object("dialog")

@@ -1702,7 +1702,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_about(self, *a):
 		from syncthing_gtk.aboutdialog import AboutDialog
-		AboutDialog(self, self.gladepath).show(self["window"])
+		AboutDialog(self, self.gladepath, self.iconpath).show(self["window"])
 	
 	def cb_delete_event(self, *e):
 		# Hide main window
