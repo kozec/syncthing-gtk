@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-01-12 11:24+0000\n"
-"Last-Translator: Robson Sobral\n"
+"PO-Revision-Date: 2017-09-23 02:19+0000\n"
+"Last-Translator: kozec <kozec2@kozec.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -579,29 +579,30 @@ msgstr "Sincronização da pasta '%s' completa."
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
-msgid "The file '%s' was updated on remote device."
-msgstr "Arquivo '%s' atualizado em dispositivo remoto."
+msgid "%(hostname)s: Downloaded '%(filename)s' to reflect remote changes."
+msgstr ""
 
 #: syncthing_gtk/notifications.py:165
 #, python-format
-msgid "The file '%s' was deleted on remote device."
-msgstr "Arquivo '%s' removido em dispositivo remoto."
+msgid "%(hostname)s: Deleted '%(filename)s' to reflect remote changes."
+msgstr ""
 
 #: syncthing_gtk/notifications.py:168
 #, python-format
-msgid "%s files were updated on remote device."
-msgstr "%s arquivos atualizados em dispositivo remoto."
+msgid "%(hostname)s: Downloaded %(updated)s files to reflect remote changes."
+msgstr ""
 
 #: syncthing_gtk/notifications.py:171
 #, python-format
-msgid "%s files were deleted on remote device."
-msgstr "%s removidos em dispositivo remoto."
+msgid "%(hostname)s: Deleted %(deleted)s files to reflect remote changes."
+msgstr ""
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
 msgid ""
-"%(updated)s files were updated and %(deleted)s deleted on remote device."
-msgstr "%(updated)s arquivos atualizados e %(deleted)s removidos em dispositivo remoto."
+"%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to "
+"reflect remote changes."
+msgstr ""
 
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
@@ -712,9 +713,9 @@ msgstr "A configuração inicial precisa ser executada."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>Next</b> to create a Syncthing configuration file or "
+"Please click <b>%s</b> to create a Syncthing configuration file or "
 "<b>Quit</b> to exit"
-msgstr "Por favor, clique em <b>Avançar</b> pra criar um arquivo de configuração do Syncthing ou <b>Encerrar</b> para sair"
+msgstr ""
 
 #: syncthing_gtk/wizard.py:204
 #, python-format
