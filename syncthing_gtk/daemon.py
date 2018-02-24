@@ -398,7 +398,8 @@ class Daemon(GObject.GObject, TimerManager):
 		RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error).start()
 	
 	def _request_folder_data(self, rid):
-		RESTRequest(self, "db/status?folder=%s" % (rid,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid).start()
+		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		RESTRequest(self, "db/status?folder=%s" % (id_enc,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid).start()
 	
 	def _request_last_seen(self, *a):
 		""" Request 'last seen' values for all devices """
@@ -1341,7 +1342,13 @@ class EventPollLoop(RESTRequest):
 	def _resend_request(self):
 		""" Sends another request using same connection """
 		self._chunk_size = -1
-		get_str = b"GET /rest/events?since=%s HTTP/1.1\r\n\r\n" % (self._last_event_id,)
+		get_str = "\r\n".join([
+			"GET /rest/events?since=%s HTTP/1.1\r\n\r\n" % (self._last_event_id,),
+			"Host: %s" % self._parent._address,
+			(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing: x"),
+			"",
+			"",
+			]).encode("utf-8")
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
 		except Exception, e:
