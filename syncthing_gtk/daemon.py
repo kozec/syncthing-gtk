@@ -1343,7 +1343,7 @@ class EventPollLoop(RESTRequest):
 		""" Sends another request using same connection """
 		self._chunk_size = -1
 		get_str = "\r\n".join([
-			"GET /rest/events?since=%s HTTP/1.1\r\n\r\n" % (self._last_event_id,),
+			"GET /rest/events?since=%s HTTP/1.1" % (self._last_event_id,),
 			"Host: %s" % self._parent._address,
 			(("X-API-Key: %s" % self._parent._api_key) if not self._parent._api_key is None else "X-nothing: x"),
 			"",
