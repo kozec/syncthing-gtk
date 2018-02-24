@@ -397,9 +397,9 @@ class Daemon(GObject.GObject, TimerManager):
 		""" Request settings from syncthing daemon """
 		RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error).start()
 	
-	def _request_folder_data(self, rid):
+	def _request_folder_data(self, folder_id):
 		id_enc = urllib.quote(folder_id.encode('utf-8'))
-		RESTRequest(self, "db/status?folder=%s" % (id_enc,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, rid).start()
+		RESTRequest(self, "db/status?folder=%s" % (id_enc,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, folder_id).start()
 	
 	def _request_last_seen(self, *a):
 		""" Request 'last seen' values for all devices """
