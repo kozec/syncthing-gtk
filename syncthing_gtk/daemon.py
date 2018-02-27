@@ -1043,7 +1043,7 @@ class RESTRequest(Gio.SocketClient):
 		self._connection = None
 		self._callback_data = callback_data or ()
 		if parent._tls:
-			self.connect("event", self._socket_event)
+			GObject.Object.connect(self, "event", self._socket_event)
 	
 	def _connected(self, _self, results):
 		""" Called after TCP connection is initiated """
