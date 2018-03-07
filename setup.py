@@ -108,7 +108,6 @@ if __name__ == "__main__" :
 		install_requires = (
 		    'python-dateutil',
 		    'bcrypt',
-		    'pyinotify',
 		),
 		data_files = data_files,
 		scripts = [ "scripts/syncthing-gtk" ],
