@@ -51,11 +51,11 @@ download_dep "icu-60.2" "https://archive.archlinux.org/packages/i/icu/icu-60.2-1
 
 # Prepare & build
 mkdir -p ${BUILD_APPDIR}/usr/lib/python2.7/site-packages/
+build_dep "cffi-1.11.4"
 build_dep "python-pyinotify-0.9.6"
 build_dep "python-bcrypt-2.0.0"
 build_dep "python-dateutil-1.5"
 build_dep "six-1.11.0"
-build_dep "cffi-1.11.4"
 build_dep "PyGObject-3.26.1"
 build_dep "pycairo-1.16.3"
 unpack_dep "libxml2-2.9.7"
