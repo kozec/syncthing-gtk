@@ -25,12 +25,12 @@ function run_and_die() {
 }
 
 # Check dependencies 1st
-python2 -c 'import gi' \
-	|| dependency_check_failed "Please, install python-gobject package using your package manager"
-python2 -c 'import gi; gi.require_version("Gtk", "3.0")' \
-	|| dependency_check_failed "Syncthing-GTK requires GTK. Please, install GTK3 package using your package manager"
-python2 -c 'import gi; gi.require_version("Rsvg", "2.0"); gi.require_version("cairo", "1.0"); gi.require_version("Notify", "0.7")' \
-	|| dependency_check_failed "Please, make sure that following packages are installed using your package manager:\npython-gi-cairo gir1.2-notify gir1.2-rsvg"
+python2 -c "pass" \
+	|| dependency_check_failed "Please, install python package using"
+python2 -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' \
+	|| dependency_check_failed "Syncthing-GTK requires GTK and gobject-introspection packages.\n Please, install GTK3 and gobject-introspection packages using your package manager"
+python2 -c 'import cairo;' \
+	|| dependency_check_failed "Cairo library is missing.\n Please, install cairo package using your package manager"
 
 # Start
 python2 ${APPDIR}/usr/bin/syncthing-gtk $@
