@@ -450,7 +450,7 @@ def is_ran_on_startup(program_name):
 		# (stupid way, but should work)
 		is_entry = False
 		for line in file(desktopfile, "r").readlines():
-			line = line.strip(" \r\t").lower()
+			line = line.strip(" \r\t\n").lower()
 			if line == "[desktop entry]":
 				is_entry = True
 				continue
