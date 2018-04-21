@@ -142,16 +142,16 @@ class Timezone(tzinfo):
 		else:
 			self.name = "+%s:%s" % (hours, minutes)
 		self.delta = timedelta(minutes=minutes, hours=hours)
-	
+
 	def __str__(self):
 		return "<Timezone %s>" % (self.name,)
-	
+
 	def utcoffset(self, dt):
 		return self.delta
-	
+
 	def tzname(self, dt):
 		return self.name
-	
+
 	def dst(self, dt):
 		return timedelta(0)
 
@@ -356,6 +356,28 @@ def compare_version(a, b):
 	"""
 	return parse_version(a) >= parse_version(b)
 
+def set_is_snap():
+	""" Sets the is_snap_binary flag to True. """
+	global is_snap_binary
+	log.warning("snap binary flag is set")
+	is_snap_binary = True
+
+def is_snap():
+	""" Returns True after set_is_snap() is called. """
+	global is_snap_binary
+	return is_snap_binary
+
+def get_st_config_dir():
+	"""
+	Returns the full path to the syncthing configuration folder.
+	If the is_snap_binary flag is True, the path is set to the snap configuration folder.
+	Otherwise what ever get_config_dir() returns is used.
+	"""
+	if 'is_snap_binary' in globals() and is_snap_binary:
+		return os.path.expanduser("~/snap/syncthing/common/syncthing")
+	else:
+		return os.path.join(get_config_dir(),"syncthing")
+
 def get_config_dir():
 	"""
 	Returns ~/.config, %APPDATA% or whatever has user set as
@@ -407,7 +429,7 @@ if IS_WINDOWS:
 		except WindowsError:
 			# This is really shouldn't happen. Use executable path.
 			os.path.dirname(sys.executable)
-		
+
 	get_install_path = _get_install_path
 
 def get_executable():

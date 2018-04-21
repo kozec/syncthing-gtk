@@ -12,7 +12,7 @@ from syncthing_gtk.daemonoutputdialog import DaemonOutputDialog
 from syncthing_gtk.daemonprocess import DaemonProcess
 from syncthing_gtk.configuration import Configuration
 from syncthing_gtk.stdownloader import StDownloader
-from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, is_portable
+from syncthing_gtk.tools import get_st_config_dir, IS_WINDOWS, is_portable, set_is_snap
 from syncthing_gtk.tools import can_upgrade_binary, compare_version
 from syncthing_gtk.tools import _ # gettext function
 import os, socket, random, string, bcrypt
@@ -41,8 +41,10 @@ class Wizard(Gtk.Assistant):
 		self.finished = False
 		self.connect("prepare", self.prepare_page)
 		# Find syncthing configuration directory
-		self.st_configdir = os.path.join(get_config_dir(), "syncthing")
-		self.st_configfile = os.path.join(get_config_dir(), "syncthing", "config.xml")
+		global is_snap_binary
+		is_snap_binary = False
+		self.st_configdir = get_st_config_dir()
+		self.st_configfile = os.path.join(get_st_config_dir(), "config.xml")
 		# Window setup
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_size_request(720, -1)
@@ -65,7 +67,7 @@ class Wizard(Gtk.Assistant):
 		self.add_page(HttpSettingsPage())
 		self.add_page(SaveSettingsPage())
 		self.add_page(LastPage())
-	
+
 	def add_page(self, page):
 		""" Adds page derived from custom Page class """
 		index = self.append_page(page)
@@ -73,7 +75,7 @@ class Wizard(Gtk.Assistant):
 		self.set_page_type(page, page.TYPE)
 		self.set_page_title(page, _(page.TITLE) + "  ")
 		return index
-	
+
 	def insert(self, page):
 		"""
 		Inserts new page after currently displayed.
@@ -84,21 +86,21 @@ class Wizard(Gtk.Assistant):
 		self.set_page_type(page, page.TYPE)
 		self.set_page_title(page, _(page.TITLE) + "  ")
 		return index
-	
+
 	def insert_and_go(self, page):
 		"""
 		Inserts new page after currently displayed
 		and switches to it.
 		"""
 		index = self.insert(page)
-		self.set_current_page(index)		
+		self.set_current_page(index)
 		return index
-	
+
 	def prepare_page(self, another_self, page):
 		""" Called before page is displayed """
 		self.commit() # Prevents back button from being displayed
 		page.prepare()
-	
+
 	def find_widget(self, compare_fn, parent=None):
 		"""
 		Recursively searches for widget, returning first one
@@ -111,12 +113,12 @@ class Wizard(Gtk.Assistant):
 				r = self.find_widget(compare_fn, w)
 				if not r is None: return r
 		return None
-	
+
 	def output_line(self, line):
 		""" Called for every line that wizard or daemon process outputs """
 		self.lines.append(line)
 		log.info(line)
-	
+
 	def error(self, page, title, message, display_bugreport_link):
 		"""
 		Called from pages on error. Removes everything from page and
@@ -144,10 +146,10 @@ class Wizard(Gtk.Assistant):
 			button.props.margin_top = 25
 			page.attach(button, 1, 3, 2, 1)
 			button.connect("clicked", lambda *a : self.show_output())
-		
+
 		page.show_all()
 		return page
-	
+
 	def show_output(self, *a):
 		"""
 		Displays DaemonOutput window with error messages captured
@@ -155,11 +157,11 @@ class Wizard(Gtk.Assistant):
 		"""
 		d = DaemonOutputDialog(self, None)
 		d.show_with_lines(self.lines, self)
-	
+
 	def is_finished(self):
 		""" Returns True if user finished entire wizard """
 		return self.finished
-	
+
 	def run(self, *a):
 		self.show()
 		self.connect('cancel', Gtk.main_quit)
@@ -184,7 +186,7 @@ class Page(Gtk.Grid):
 		self.parent = None
 		self.init_page()
 		self.show_all()
-	
+
 	def prepare(self):
 		""" Sets page as complete by default """
 		self.parent.set_page_complete(self, True)
@@ -193,7 +195,7 @@ class IntroPage(Page):
 	TYPE = Gtk.AssistantPageType.INTRO
 	TITLE = "Intro"
 	def init_page(self):
-		""" First, intro page. Just static text that explains what's going on """ 
+		""" First, intro page. Just static text that explains what's going on """
 		config_folder = "~/.config/syncthing"
 		config_folder_link = '<a href="file://%s">%s</a>' % (
 				os.path.expanduser(config_folder), config_folder)
@@ -236,7 +238,7 @@ class FindDaemonPage(Page):
 		self.version_string = "v0.0"
 		self.ignored_version = None
 		self.attach(self.label, 0, 0, 1, 1)
-	
+
 	def prepare(self):
 		self.paths = [ "./" ]
 		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
@@ -260,7 +262,7 @@ class FindDaemonPage(Page):
 			self.paths += os.environ["PATH"].split(":")
 		log.info("Searching for syncthing binary...")
 		GLib.idle_add(self.search)
-	
+
 	def search(self):
 		"""
 		Called repeatedly through GLib.idle_add, until binary is found
@@ -334,7 +336,7 @@ class FindDaemonPage(Page):
 				# Add Download page
 				self.parent.insert(DownloadSTPage())
 				return False
-		
+
 		for bin in self.binaries:
 			bin_path = os.path.join(path, bin)
 			log.info(" ... %s", bin_path)
@@ -343,6 +345,10 @@ class FindDaemonPage(Page):
 					# File exists and is executable, run it and parse
 					# version string from output
 					log.info("Binary found in %s", bin_path)
+					if path == '/snap/bin':
+						set_is_snap()
+						self.parent.st_configdir = get_st_config_dir()
+						self.parent.st_configfile = os.path.join(get_st_config_dir(), "config.xml")
 					if IS_WINDOWS: bin_path = bin_path.replace("/", "\\")
 					p = DaemonProcess([ bin_path, '-version' ])
 					p.connect('line', self.cb_process_output)
@@ -353,7 +359,7 @@ class FindDaemonPage(Page):
 				else:
 					log.info("Binary in %s is not not executable", bin_path)
 		return True
-	
+
 	def cb_process_output(self, process, line):
 		"""
 		Called when daemon binary outputs line while it's being asked
@@ -367,7 +373,7 @@ class FindDaemonPage(Page):
 		except Exception:
 			# Not line with version string, probably some other output
 			pass
-	
+
 	def cb_process_exit(self, process, *a):
 		""" Called after daemon binary outputs version and exits """
 		from syncthing_gtk.app import MIN_ST_VERSION
@@ -398,7 +404,7 @@ class FindDaemonPage(Page):
 class DownloadSTPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	TITLE = "Download Daemon"
-	
+
 	def init_page(self):
 		""" Displayed while wizard downloads and extracts daemon """
 		self.label = WrappedLabel("<b>" + _("Downloading Syncthing daemon.") + "</b>")
@@ -409,7 +415,7 @@ class DownloadSTPage(Page):
 		self.attach(self.label,		0, 0, 1, 1)
 		self.attach(self.version,	0, 1, 1, 1)
 		self.attach(self.pb,		0, 2, 1, 1)
-	
+
 	def prepare(self):
 		# Determine which Syncthing to use
 		suffix, tag = StDownloader.determine_platform()
@@ -438,7 +444,7 @@ class DownloadSTPage(Page):
 		self.sd.connect("extraction-finished", self.on_extract_finished)
 		# Start downloading
 		self.sd.get_version()
-	
+
 	def on_download_error(self, downloader, error, message):
 		"""
 		Called when download fails. This is fatal for now, user can
@@ -452,17 +458,17 @@ class DownloadSTPage(Page):
 			_("Failed to download Syncthing daemon package."),
 			message, False)
 		return
-	
+
 	def on_version(self, dowloader, version):
 		self.version.set_markup("Downloading %s..." % (version, ))
 		dowloader.download()
-	
+
 	def on_extract_start(self, *a):
 		self.version.set_markup("Extracting...")
-	
+
 	def on_progress(self, dowloader, progress):
 		self.pb.set_fraction(progress)
-	
+
 	def on_extract_finished(self, *a):
 		""" Called after extraction is finished """
 		# Everything done. Praise supernatural entities...
@@ -472,7 +478,7 @@ class DownloadSTPage(Page):
 				" " + self.target)
 		self.pb.set_visible(False)
 		self.parent.set_page_complete(self, True)
-	
+
 class GenerateKeysPage(Page):
 	TYPE = Gtk.AssistantPageType.PROGRESS
 	TITLE = "Generate Keys"
@@ -485,10 +491,10 @@ class GenerateKeysPage(Page):
 			)
 		)
 		self.attach(self.label, 0, 0, 1, 1)
-	
+
 	def prepare(self):
 		GLib.idle_add(self.start_binary)
-	
+
 	def start_binary(self):
 		"""
 		Starts Syncthing binary with -generate parameter and waits until
@@ -509,12 +515,12 @@ class GenerateKeysPage(Page):
 		self.process.connect('failed', self.cb_daemon_start_failed)
 		self.process.start()
 		return False
-	
+
 	def cb_daemon_start_failed(self, dproc, exception):
 		self.parent.output_line("syncthing-gtk: Daemon startup failed")
 		self.parent.output_line("syncthing-gtk: %s" % (str(exception),))
 		self.cb_daemon_exit(dproc, -1)
-	
+
 	def cb_daemon_exit(self, dproc, exit_code):
 		""" Called when Syncthing finishes """
 		if exit_code == 0:
@@ -590,7 +596,7 @@ class HttpSettingsPage(Page):
 		self.attach(self.lbl_password, 0, 5, 1, 1)
 		self.attach(self.tx_username, 1, 4, 2, 1)
 		self.attach(self.tx_password, 1, 5, 2, 1)
-	
+
 	def cb_stuff_changed(self, *a):
 		""" Called every time user changes anything on this page """
 		# Enable / disable username & password input boxes
@@ -607,7 +613,7 @@ class HttpSettingsPage(Page):
 				self.parent.syncthing_options["listen_ip"] = "0.0.0.0"
 			self.parent.syncthing_options["user"] = str(self.tx_username.get_text())
 			self.parent.syncthing_options["password"] = str(self.tx_password.get_text())
-	
+
 	def prepare(self):
 		# Refresh UI
 		self.cb_stuff_changed()
@@ -621,10 +627,10 @@ class SaveSettingsPage(Page):
 		self.status = Gtk.Label(_("Checking for available port..."))
 		self.attach(self.label,		0, 0, 1, 1)
 		self.attach(self.status,	0, 1, 1, 1)
-	
+
 	def prepare(self):
 		GLib.idle_add(self.check_port, DEFAULT_PORT)
-	
+
 	def check_port(self, port):
 		"""
 		Tries to open TCP port to check it availability.
@@ -661,14 +667,14 @@ class SaveSettingsPage(Page):
 			GLib.idle_add(self.check_port, port + 1)
 		finally:
 			del s
-	
+
 	def ct_textnode(self, xml, parent, name, value):
 		""" Helper method """
 		el = xml.createElement(name)
 		text = xml.createTextNode(value)
 		el.appendChild(text)
 		parent.appendChild(el)
-	
+
 	def save_settings(self):
 		"""
 		Loads&parses XML, changes some values and writes it back.
@@ -749,7 +755,7 @@ class LastPage(GenerateKeysPage):
 			  "in main window of application.")
 		)
 		self.attach(label, 0, 0, 1, 1)
-	
+
 	def prepare(self):
 		# Configure main app to manage Syncthing daemon by default
 		self.parent.config["autostart_daemon"] = 1
