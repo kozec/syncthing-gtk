@@ -531,7 +531,7 @@ class App(Gtk.Application, TimerManager):
 			if "WinHttp" in str(e) and "SECURE_FAILURE" in str(e) and self["infobar"] == None:
 				message = _("Your Windows version doesn't supports cryptographic standards needed\n"
 					"for Syncthing-GTK to check for Syncthing updates.\n"
-					"Please, install <a href='%(url)s'>this Windows update</a> or disable updating feature."
+					"Please, install <a href='%(url)s'>this Windows update</a> or disable update feature."
 				) % { 'url': "https://support.microsoft.com/en-us/help/3140245/" }
 				r = RIBar(message, Gtk.MessageType.WARNING)
 				self["infobar"] = r
