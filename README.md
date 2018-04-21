@@ -26,7 +26,7 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 ##### Packages
 - Ubuntu, Debian, deb-based distros: in [OpenSUSE Build Service](http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk).
 - Arch Linux: In [[community] repository](https://www.archlinux.org/packages/community/any/syncthing-gtk/)
-- Fedora: [in decathorpe's copr repository](https://copr.fedoraproject.org/coprs/decathorpe/syncthing/)
+- Fedora: search for `syncthing-gtk` in Software Center
 - SUSE (and other rpm-based distros): in [OpenSUSE Build Service](http://software.opensuse.org/download.html?project=home%3Akozec&package=syncthing-gtk).
 - Windows: Get [latest installer from here](https://github.com/kozec/syncthing-gui/releases/latest), or use [the Chocolatey package](https://chocolatey.org/packages/syncthing-gtk).
 - Or, in worst case scenario, download [latest tarball](https://github.com/kozec/syncthing-gui/releases/latest), extract it and run syncthing-gtk.py.
