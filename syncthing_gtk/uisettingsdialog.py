@@ -83,6 +83,9 @@ class UISettingsDialog(EditorDialog):
 			self["vuse_old_header"].set_no_show_all(True)
 			self["vicons_in_menu"].set_visible(False)
 			self["vicons_in_menu"].set_no_show_all(True)
+		if IS_GNOME:
+			self["vautostart"].set_visible(False)
+			self["vautostart"].set_no_show_all(True)
 		if not HAS_DESKTOP_NOTIFY:
 			# Disable notifications settings if required
 			# library is not available

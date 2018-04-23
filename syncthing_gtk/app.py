@@ -525,9 +525,19 @@ class App(Gtk.Application, TimerManager):
 			return
 		
 		# Define callbacks
-		def cb_cu_error(*a):
+		# Define callbacks
+		def cb_cu_error(sd, e, message):
 			# Version check failed. Try it again later
-			self.timer("updatecheck", 1 * 60 * 60, self.check_for_upgrade)
+			if "WinHttp" in str(e) and "SECURE_FAILURE" in str(e) and self["infobar"] == None:
+				message = _("Your Windows version doesn't supports cryptographic standards needed\n"
+					"for Syncthing-GTK to check for Syncthing updates.\n"
+					"Please, install <a href='%(url)s'>this Windows update</a> or disable update feature."
+				) % { 'url': "https://support.microsoft.com/en-us/help/3140245/" }
+				r = RIBar(message, Gtk.MessageType.WARNING)
+				self["infobar"] = r
+				self.show_info_box(r)
+			else:
+				self.timer("updatecheck", 1 * 60 * 60, self.check_for_upgrade)
 		
 		def cb_cu_progress(sd, progress, pb):
 			pb.set_fraction(progress)
