@@ -191,6 +191,12 @@ class StatusIconDummy(StatusIcon):
 		
 		# Pretty unlikely that this will be visible...
 		self.set_property("active", False)
+		if IS_UNITY or IS_KDE:
+			log.warning("Failed to load modules required for status icon. "
+						"Please, make sure libappindicator package and python "
+						"bindings are installed.")
+		else:
+			log.warning("Failed to load modules required for status icon")
 	
 	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)
@@ -525,7 +531,7 @@ class StatusIconProxy(StatusIcon):
 		self.set_property("active", active)
 	
 	def _load_fallback(self):
-		if IS_UNITY:
+		if IS_UNITY or IS_KDE:
 			status_icon_backends = [StatusIconAppIndicator, StatusIconKDE4, StatusIconDummy]
 		else:
 			status_icon_backends = [StatusIconKDE4, StatusIconAppIndicator, StatusIconDummy]
