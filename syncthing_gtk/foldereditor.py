@@ -30,7 +30,7 @@ class FolderEditorDialog(EditorDialog):
 			"folder-edit.glade",
 			"New Shared Folder" if is_new else "Edit Shared Folder"
 			)
-		self.id = idV
+		self.id = id
 		self.path = path
 		self.is_new = is_new
 	
