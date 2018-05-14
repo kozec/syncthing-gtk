@@ -1036,7 +1036,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_syncthing_folder_added(self, daemon, rid, r):
 		box = self.show_folder(
 			rid, r["label"], r["path"],
-			r["type"] == "readonly",
+			r["type"] in ["readonly", "sendonly"],
 			r["ignorePerms"], 
 			r["rescanIntervalS"],
 			sorted(
