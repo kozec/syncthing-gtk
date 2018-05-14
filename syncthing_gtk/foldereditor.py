@@ -30,7 +30,7 @@ class FolderEditorDialog(EditorDialog):
 			"folder-edit.glade",
 			"New Shared Folder" if is_new else "Edit Shared Folder"
 			)
-		self.id = id
+		self.id = idV
 		self.path = path
 		self.is_new = is_new
 	
@@ -80,7 +80,7 @@ class FolderEditorDialog(EditorDialog):
 		elif key == "versionsPath":
 			return self.get_burried_value("versioning/params/versionsPath", self.values, "")
 		elif key == "readOnly":
-			return self.get_burried_value("type", self.values, "") == "readonly"
+			return self.get_burried_value("type", self.values, "") in ["readonly", "sendonly"]
 		elif key == "versioning":
 			return self.get_burried_value("versioning/type", self.values, "")
 		elif key == "inotify":
@@ -115,7 +115,7 @@ class FolderEditorDialog(EditorDialog):
 			self.create_dicts(self.values, ("versioning", "params", "versionsPath"))
 			self.values["versioning"]["params"]["versionsPath"] = value
 		elif key == "readOnly":
-			self.values["type"] = "readonly" if value else "readwrite"
+			self.values["type"] = "sendonly" if value else "sendreceive"
 		elif key == "inotify":
 			id = self.id
 			if id is None:
