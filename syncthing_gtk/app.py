@@ -810,6 +810,13 @@ class App(Gtk.Application, TimerManager):
 		if config["options"]["urAccepted"] == 0:
 			# User did not responded to usage reporting yet. Ask
 			self.ask_for_ur()
+
+		if "use_inotify" in self.config:
+			from syncthing_gtk.configuration import migrate_fs_watch
+			if migrate_fs_watch(self.config, config):
+				self.daemon.write_config(config, lambda *a: False)
+				self.config.save()
+				log.info("Filesystem watcher configuration migrated")
 		
 		if not self.watcher is None:
 			self.watcher.start()

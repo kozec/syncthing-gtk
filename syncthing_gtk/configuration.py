@@ -34,7 +34,6 @@ class _Configuration(object):
 		"syncthing_arguments"		: (str, ""),
 		"minimize_on_start"			: (bool, False),
 		"folder_as_path"			: (bool, True),
-		"use_inotify"				: (list, []),
 		"use_old_header"			: (bool, False),
 		"icons_in_menu"				: (bool, True),
 		"animate_icon"				: (bool, True),
@@ -177,6 +176,9 @@ class _Configuration(object):
 	__getitem__ = get
 	__setitem__ = set
 	
+	def __delitem__(self, key):
+		del self.values[key]
+	
 	def __contains__(self, key):
 		""" Returns true if there is such value """
 		return key in self.values
@@ -195,3 +197,26 @@ def Configuration(*a, **b):
 	return _Configuration(*a, **b)
 Configuration.REQUIRED_KEYS = _Configuration.REQUIRED_KEYS
 Configuration.WINDOWS_OVERRIDE = _Configuration.WINDOWS_OVERRIDE
+
+
+def migrate_fs_watch(stgtk_config, st_config):
+	"""
+	Migrates filesystem watch config from ST-GTK configuration
+	to Syncthing configuration and posts it to daemon.
+	
+	Returns True if anything was changed.
+	
+	Called automaticaly if old fs watch setting is found in ST-GTK config.
+	"""
+	# TODO: This can be removed later
+	if "use_inotify" not in stgtk_config:
+		return False
+	changed = False
+	folder_by_id = { x["id"]: x for x in st_config['folders'] }
+	for rid in stgtk_config["use_inotify"]:
+		if rid in folder_by_id:
+			folder_by_id[rid]["fsWatcherDelayS"] = 10
+			folder_by_id[rid]["fsWatcherEnabled"] = True
+			changed = True
+	del stgtk_config["use_inotify"]
+	return changed
