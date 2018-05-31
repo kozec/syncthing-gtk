@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.20.4 -->
 <interface>
-  <requires lib="gtk+" version="3.8"/>
+  <requires lib="gtk+" version="3.10"/>
   <object class="GtkAdjustment" id="adjKeepVersions">
     <property name="lower">1</property>
     <property name="upper">99999</property>
@@ -282,10 +282,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="vinotify">
+                  <object class="GtkCheckButton" id="vfsWatcherEnabled">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="margin_bottom">10</property>
                     <property name="use_underline">True</property>
                     <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
@@ -295,7 +296,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Monitor filesystem for _changes</property>
                         <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">vinotify</property>
+                        <property name="mnemonic_widget">vfsWatcherEnabled</property>
                         <property name="ellipsize">start</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
@@ -306,22 +307,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">11</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="lblinotify">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_bottom">10</property>
-                    <property name="label" translatable="yes">If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.
-Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot of resources.</property>
-                    <property name="wrap">True</property>
-                    <property name="xalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">12</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -429,7 +414,7 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">13</property>
+                    <property name="top_attach">12</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -446,7 +431,7 @@ Note: Using this along with short Rescan Interval (&lt;300s) may consume a lot o
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">14</property>
+                    <property name="top_attach">13</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -1128,6 +1113,9 @@ The following intervals are used: for the first hour a version is kept every 30 
           </packing>
         </child>
       </object>
+    </child>
+    <child>
+      <placeholder/>
     </child>
   </object>
 </interface>

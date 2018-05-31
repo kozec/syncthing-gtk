@@ -10,7 +10,6 @@ from gi.repository import Gtk
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.tools import generate_folder_id
 from syncthing_gtk.editordialog import EditorDialog, strip_v
-from syncthing_gtk.watcher import Watcher
 import os, re, logging
 log = logging.getLogger("FolderEditor")
 
@@ -19,7 +18,7 @@ COLOR_NEW				= "#A0A0A0"
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
 VALUES = [ "vlabel", "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
-	"vversionsPath", "vinotify", "vcleanoutDays", "vcommand", "vorder",
+	"vversionsPath", "vfsWatcherEnabled", "vcleanoutDays", "vcommand", "vorder",
 	"vminDiskFreePct"
 	]
 VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
@@ -83,8 +82,6 @@ class FolderEditorDialog(EditorDialog):
 			return self.get_burried_value("type", self.values, "") == "readonly"
 		elif key == "versioning":
 			return self.get_burried_value("versioning/type", self.values, "")
-		elif key == "inotify":
-			return self.id in self.app.config["use_inotify"]
 		else:
 			return EditorDialog.get_value(self, key)
 	
@@ -116,19 +113,6 @@ class FolderEditorDialog(EditorDialog):
 			self.values["versioning"]["params"]["versionsPath"] = value
 		elif key == "readOnly":
 			self.values["type"] = "readonly" if value else "readwrite"
-		elif key == "inotify":
-			id = self.id
-			if id is None:
-				# Happens when saving new folder
-				id = self["vid"].get_text().strip()
-			l = self.app.config["use_inotify"]
-			if value:
-				if not id in l:
-					l.append(id)
-			else:
-				while id in l:
-					l.remove(id)
-			self.app.config["use_inotify"] = l
 		else:
 			EditorDialog.set_value(self, key, value)
 	
@@ -175,11 +159,6 @@ class FolderEditorDialog(EditorDialog):
 			log.exception(e)
 			self.close()
 			return False
-		if Watcher is None:
-			self["vinotify"].set_sensitive(False)
-			self["lblinotify"].set_sensitive(False)
-			self["vinotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
-			self["lblinotify"].set_tooltip_text(_("Please, install pyinotify package to use this feature"))
 		return self.display_values(VALUES)
 	
 	#@Overrides
@@ -241,7 +220,7 @@ class FolderEditorDialog(EditorDialog):
 			box = self.app.show_folder(
 				self.get_value("id"), self.get_value("label"), self.get_value("path"),
 				self.get_value("readOnly"), self.get_value("ignorePerms"),
-				self.get_value("rescanIntervalS"),
+				self.get_value("rescanIntervalS"), self.get_value("fsWatcherEnabled"),
 				sorted(
 					[ self.app.devices[n["deviceID"]] for n in self.get_value("devices") ],
 					key=lambda x : x.get_title().lower()

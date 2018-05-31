@@ -12,7 +12,6 @@ from win32com.shell import shell, shellcon
 log = logging.getLogger("windows.py")
 
 SM_SHUTTINGDOWN = 0x2000
-ST_INOTIFY_EXE = "syncthing-inotify-v0.8.7.exe"
 
 def fix_localized_system_error_messages():
 	"""
@@ -218,63 +217,3 @@ def WinConfiguration():
 				return value
 		
 	return _WinConfiguration()
-
-def WinWatcher():
-	if hasattr(sys, "frozen"):
-		path = os.path.dirname(unicode(sys.executable))
-	else:
-		import __main__
-		path = os.path.dirname(__main__.__file__)
-	exe = os.path.join(path, ST_INOTIFY_EXE)
-	
-	from syncthing_gtk.daemonprocess import DaemonProcess
-	class _WinWatcher:
-		"""
-		Filesystem watcher implementation for Windows. Passes watched
-		directories to syncthing-notify executable ran on background.
-		
-		Available only if executable is found in same folder as
-		syncthing-gtk.exe is.
-		"""
-		
-		def __init__(self, app, daemon):
-			self.watched_ids = []
-			self.app = app
-			self.proc = None
-		
-		def watch(self, id, path):
-			self.watched_ids += [id]
-		
-		def kill(self):
-			""" Cancels & deallocates everything """
-			self.watched_ids = []
-			if not self.proc is None:
-				self.proc.kill()
-			self.proc = None
-		
-		def start(self):
-			if not self.proc is None:
-				self.proc.kill()
-			if len(self.watched_ids) > 0:
-				self.proc = DaemonProcess([
-					exe,
-					"-home", os.path.join(get_config_dir(), "syncthing"),
-					"-folders", ",".join(self.watched_ids)
-					])
-				self.proc.connect("exit", self._on_exit)
-				self.proc.connect("failed", self._on_failed)
-				log.info("Starting syncthing-inotify for %s" % (",".join(self.watched_ids)))
-				self.proc.start()
-		
-		def _on_exit(self, proc, code):
-			log.warning("syncthing-inotify exited with code %s" % (code,))
-		
-		def _on_failed(self, proc, error):
-			log.error("Failed to start syncthing-inotify: %s" % (error,))
-			self.proc = None
-	
-	if os.path.exists(exe):
-		return _WinWatcher
-	else:
-		return None
-

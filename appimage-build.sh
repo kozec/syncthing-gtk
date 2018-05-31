@@ -40,7 +40,6 @@ function unpack_dep() {
 set -exu		# display commands, no empty vars, terminate on 1st failure
 
 # Download deps
-download_dep "python-pyinotify-0.9.6" "https://github.com/seb-m/pyinotify/archive/0.9.6.tar.gz"
 download_dep "python-bcrypt-2.0.0" "https://pypi.python.org/packages/11/7d/4c7980d04314466de42ea804db71995c9b3a2a47dc79a63c51f1be0cfd50/bcrypt-2.0.0.tar.gz"
 download_dep "python-dateutil-1.5" "http://labix.org/download/python-dateutil/python-dateutil-1.5.tar.gz"
 download_dep "six-1.11.0" "https://pypi.python.org/packages/16/d8/bc6316cf98419719bd59c91742194c111b6f2e85abac88e496adefaf7afe/six-1.11.0.tar.gz"
@@ -55,7 +54,6 @@ download_dep "icu-60.2" "https://archive.archlinux.org/packages/i/icu/icu-60.2-1
 # Prepare & build
 mkdir -p ${BUILD_APPDIR}/usr/lib/python2.7/site-packages/
 build_dep "cffi-1.11.4"
-build_dep "python-pyinotify-0.9.6"
 build_dep "python-bcrypt-2.0.0"
 build_dep "python-dateutil-1.5"
 build_dep "six-1.11.0"

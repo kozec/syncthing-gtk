@@ -27,7 +27,6 @@ from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.uibuilder import UIBuilder
 from syncthing_gtk.identicon import IdentIcon
 from syncthing_gtk.infobox import InfoBox
-from syncthing_gtk.watcher import Watcher
 from syncthing_gtk.ribar import RIBar
 
 from datetime import datetime
@@ -111,7 +110,6 @@ class App(Gtk.Application, TimerManager):
 			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME)
 			and (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 10) )
 		
-		self.watcher = None
 		self.daemon = None	# Created by setup_connection method
 		# If enabled (by -o argument), daemon output is captured and printed
 		# to stdout
@@ -285,7 +283,6 @@ class App(Gtk.Application, TimerManager):
 			return action
 		add_simple_action('webui', self.cb_menu_webui)
 		add_simple_action('daemon_output', self.cb_menu_daemon_output).set_enabled(False)
-		add_simple_action('inotify_output', self.cb_menu_inotify_output).set_enabled(False)
 		add_simple_action('preferences', self.cb_menu_ui_settings)
 		add_simple_action('about', self.cb_about)
 		add_simple_action('quit', self.cb_exit)
@@ -374,10 +371,6 @@ class App(Gtk.Application, TimerManager):
 			# This is pretty-much fatal. Display error message and bail out.
 			self.cb_syncthing_con_error(self.daemon, Daemon.UNKNOWN, str(e), e)
 			return False
-		# Enable filesystem watching and desktop notifications,
-		# if desired and possible
-		if not Watcher is None:
-			self.watcher = Watcher(self, self.daemon)
 		if HAS_DESKTOP_NOTIFY:
 			if self.config["notification_for_update"] or self.config["notification_for_error"]:
 				self.notifications = Notifications(self, self.daemon)
@@ -817,9 +810,6 @@ class App(Gtk.Application, TimerManager):
 				self.daemon.write_config(config, lambda *a: False)
 				self.config.save()
 				log.info("Filesystem watcher configuration migrated")
-		
-		if not self.watcher is None:
-			self.watcher.start()
 	
 	def cb_syncthing_error(self, daemon, message):
 		""" Handles errors reported by syncthing daemon """
@@ -1041,21 +1031,17 @@ class App(Gtk.Application, TimerManager):
 				device.set_status(_("Up to Date"))
 	
 	def cb_syncthing_folder_added(self, daemon, rid, r):
-		box = self.show_folder(
+		self.show_folder(
 			rid, r["label"], r["path"],
 			r["type"] == "readonly",
 			r["ignorePerms"], 
 			r["rescanIntervalS"],
+			r["fsWatcherEnabled"],
 			sorted(
 				[ self.devices[n["deviceID"]] for n in r["devices"] if n["deviceID"] in self.devices ],
 				key=lambda x : x.get_title().lower()
 				)
 			)
-		if not self.watcher is None:
-			if rid in self.config["use_inotify"]:
-				self.watcher.watch(box["id"], box["norm_path"])
-				if IS_WINDOWS:
-					self.lookup_action('inotify_output').set_enabled(True)
 	
 	def cb_syncthing_folder_data_changed(self, daemon, rid, data):
 		if rid in self.folders:	# Should be always
@@ -1376,7 +1362,7 @@ class App(Gtk.Application, TimerManager):
 					self["window"].move(x, y)
 				GLib.idle_add(move_back)
 	
-	def show_folder(self, id, label, path, is_master, ignore_perms, rescan_interval, shared):
+	def show_folder(self, id, label, path, is_master, ignore_perms, rescan_interval, fswatcher_enabled, shared):
 		""" Shared is expected to be list """
 		display_path = path
 		if IS_WINDOWS:
@@ -1431,7 +1417,7 @@ class App(Gtk.Application, TimerManager):
 		box.set_value("master",	_("Send Only") if is_master else _("Send & Receive"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s%s" % (
-			rescan_interval, " " + _("(watch)") if id in self.config["use_inotify"] else "" ))
+			rescan_interval, " " + _("(watch)") if fswatcher_enabled else "" ))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
 		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)
@@ -1516,8 +1502,6 @@ class App(Gtk.Application, TimerManager):
 		self.error_boxes = []
 		self.error_messages = set([])
 		self.cancel_all() # timers
-		if not self.watcher is None:
-			self.watcher.kill()
 		self.daemon.reconnect()
 	
 	def refresh(self):
@@ -1528,13 +1512,7 @@ class App(Gtk.Application, TimerManager):
 		Looks cleaner & prevents UI from blinking.
 		"""
 		log.debug("Reloading config...")
-		if not self.watcher is None:
-			self.watcher.kill()
-			self.lookup_action('inotify_output').set_enabled(False)
-		def callback(*a):
-			if not self.watcher is None:
-				GLib.timeout_add_seconds(1, self.watcher.start)
-		self.daemon.reload_config(callback)
+		self.daemon.reload_config()
 	
 	def change_setting_async(self, setting_name, value, retry_on_error=False, restart=True):
 		"""
@@ -1618,8 +1596,6 @@ class App(Gtk.Application, TimerManager):
 				# Always kill subprocess on windows
 				self.process.kill()
 				self.process = None
-				if not self.watcher is None:
-					self.watcher.kill()
 			elif self.config["autokill_daemon"] == 2:	# Ask
 				d = Gtk.MessageDialog(
 					self["window"],
@@ -1969,22 +1945,6 @@ class App(Gtk.Application, TimerManager):
 		if self.process != None:
 			d = DaemonOutputDialog(self, self.process)
 			d.show(None)
-	
-	def cb_menu_inotify_output(self, *a):
-		# Available & called only on Windows
-		if hasattr(self.watcher, "proc") and not self.watcher.proc is None:
-			d = DaemonOutputDialog(self, self.watcher.proc)
-			d.show(None, _("Syncthing-Inotify Output"))
-		else:
-			d = Gtk.MessageDialog(
-					self["window"],
-					Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-					Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
-					_("Syncthing-Inotify is unavailable or failed to start")
-				)
-			d.run()
-			d.hide()
-			d.destroy()
 	
 	def cb_statusicon_click(self, *a):
 		""" Called when user clicks on status icon """

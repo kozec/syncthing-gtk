@@ -16,7 +16,6 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - First run wizard for initial configuration
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
-- Filesystem watching and instant synchronization using inotify
 - Nautilus (a.k.a. Files), Nemo and Caja integration
 - Desktop notifications
 
@@ -42,7 +41,6 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - [Syncthing](https://github.com/syncthing/syncthing) v0.13 or newer
 
 ##### Optional Dependencies
-- [pyinotify](https://github.com/seb-m/pyinotify/wiki) for instant synchronization.
 - libnotify for desktop notifications.
 - nautilus-python, nemo-python or caja-python for filemanager integration
 - [this Gnome Shell extension](https://extensions.gnome.org/extension/615/appindicator-support/), if running Gnome Shell
@@ -54,7 +52,6 @@ GTK3 &amp; Python based GUI and notification area icon for [Syncthing](https://g
 - [python-dateutil](http://labix.org/python-dateutil) (Python 2 version)
 - [Python for Windows Extensions](http://sourceforge.net/projects/pywin32/)
 - [WMI](http://timgolden.me.uk/python/wmi/index.html)
-- [syncthing-inotify](https://github.com/syncthing/syncthing-inotify) (optional)
 - [NSIS2](http://nsis.sourceforge.net/NSIS_2) with NSISdl, [ZipDLL](http://nsis.sourceforge.net/ZipDLL_plug-in) and [FindProcDLL](http://forums.winamp.com/showpost.php?p=2777729&postcount=8) plugins (optional, for building installer)
 
 ##### Related links

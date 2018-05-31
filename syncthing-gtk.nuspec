@@ -23,7 +23,6 @@ Additional features:
 - First run wizard for initial configuration
 - Running Syncthing daemon in background
 - Half-automatic setup for new nodes and repositories
-- Filesystem watching and instant synchronization using inotify
 - Desktop notifications</description>
     <projectUrl>https://github.com/syncthing/syncthing-gtk</projectUrl>
     <tags>syncthing-gtk admin</tags>

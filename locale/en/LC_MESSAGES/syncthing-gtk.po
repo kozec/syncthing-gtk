@@ -427,14 +427,6 @@ msgstr ""
 msgid "Do you really want remove device '%s' from Syncthing?"
 msgstr ""
 
-#: syncthing_gtk/app.py:1838
-msgid "Syncthing-Inotify Output"
-msgstr ""
-
-#: syncthing_gtk/app.py:1844
-msgid "Syncthing-Inotify is unavailable or failed to start"
-msgstr ""
-
 #: syncthing_gtk/app.py:1991
 msgid "Failed to start Syncthing daemon."
 msgstr ""
@@ -548,10 +540,6 @@ msgstr ""
 
 #: syncthing_gtk/foldereditor.py:45
 msgid "Select Folder for new Folder"
-msgstr ""
-
-#: syncthing_gtk/foldereditor.py:166 syncthing_gtk/foldereditor.py:167
-msgid "Please, install pyinotify package to use this feature"
 msgstr ""
 
 #: syncthing_gtk/ignoreeditor.py:44
@@ -924,10 +912,6 @@ msgstr ""
 msgid "Display _Daemon Output"
 msgstr ""
 
-#: app.glade:263
-msgid "Display Syncthing-Inotify Output"
-msgstr ""
-
 #: app.glade:280 app.glade:430
 msgid "UI _Settings"
 msgstr ""
@@ -1182,14 +1166,6 @@ msgstr ""
 
 #: folder-edit.glade:293
 msgid "Monitor filesystem for _changes"
-msgstr ""
-
-#: folder-edit.glade:314
-msgid ""
-"If enabled, changed, created and delete files are synchronized immediately, "
-"as long as Syncthing-GTK is running.\n"
-"Note: Using this along with short Rescan Interval (<300s) may consume a lot "
-"of resources."
 msgstr ""
 
 #: folder-edit.glade:343
