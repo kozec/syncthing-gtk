@@ -72,7 +72,6 @@ class EditorDialog(GObject.GObject):
 		""" Loads configuration data and pre-fills values to fields """
 		self._loading = True
 		self.load_data()
-		self._loading = False
 	
 	def __getitem__(self, name):
 		""" Convince method that allows widgets to be accessed via self["widget"] """
@@ -214,6 +213,7 @@ class EditorDialog(GObject.GObject):
 			self.update_special_widgets()
 			# Enable dialog
 			self["editor"].set_sensitive(True)
+			self._loading = False
 			# Brag
 			self.emit("loaded")
 	

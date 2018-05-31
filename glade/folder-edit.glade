@@ -290,6 +290,7 @@
                     <property name="use_underline">True</property>
                     <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
+                    <signal name="toggled" handler="on_vfsWatcherEnabled_toggled" swapped="no"/>
                     <child>
                       <object class="GtkLabel" id="label27">
                         <property name="visible">True</property>

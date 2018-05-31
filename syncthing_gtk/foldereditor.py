@@ -256,6 +256,22 @@ class FolderEditorDialog(EditorDialog):
 		self.update_special_widgets()
 		self["vid"].set_sensitive(not readonly)
 	
+	def on_vfsWatcherEnabled_toggled(self, cb, *a):
+		# Called when checkbox value changes to automatically change rescan interval
+		if self._loading: return
+		vrescanIntervalS = self.builder.get_object("vrescanIntervalS")
+		interval = vrescanIntervalS.get_value()
+		if cb.get_active():
+			# fswatch enabled, increase rescan interval
+			if interval < 720:
+				vrescanIntervalS.set_value(interval * 60)
+		else:
+			# fswatch disabled, return rescan interval back
+			if interval > 300:
+				vrescanIntervalS.set_value(interval / 60)
+				
+		# print self.get_value("vfsWatcherEnabled"),  cb.get_value()
+	
 	def mark_device(self, nid):
 		""" Marks (checks) checkbox for specified device """
 		if "vdevices" in self:	# ... only if there are checkboxes here
