@@ -6,7 +6,7 @@ Main application window
 """
 
 from __future__ import unicode_literals
-from gi.repository import Gtk, Gio, Gdk, GLib
+from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
 from syncthing_gtk.tools import _
 from syncthing_gtk.tools import (
 	IS_UNITY, IS_GNOME, IS_I3, IS_MATE, IS_XFCE, IS_WINDOWS, IS_XP,
@@ -341,6 +341,7 @@ class App(Gtk.Application, TimerManager):
 		# Set window title in way that even Gnome can understand
 		self["window"].set_title(_("Syncthing-GTK"))
 		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
+		self["window"].set_icon(GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.iconpath, "syncthing-gtk.png")))
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):

@@ -40,7 +40,8 @@ if __name__ == "__main__":
 		Gtk.IconTheme.get_default().prepend_search_path(os.path.abspath(os.path.join(os.getcwd(), "icons")))
 	
 	from gi.repository import Gtk
-	Gtk.IconTheme.get_default().append_search_path(os.path.join(os.getcwd(), "icons"))
+	Gtk.IconTheme.get_default().prepend_search_path(os.path.join(os.getcwd(), "icons"))
+	Gtk.IconTheme.get_default().prepend_search_path(os.path.join(os.getcwd(), "icons/32x32/status"))
 	
 	from syncthing_gtk.app import App
 	App("./glade", "./icons").run(sys.argv)
