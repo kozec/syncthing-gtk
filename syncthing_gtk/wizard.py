@@ -11,10 +11,14 @@ from gi.repository import Gtk, GLib, GdkPixbuf
 from syncthing_gtk.daemonoutputdialog import DaemonOutputDialog
 from syncthing_gtk.daemonprocess import DaemonProcess
 from syncthing_gtk.configuration import Configuration
-from syncthing_gtk.stdownloader import StDownloader
 from syncthing_gtk.tools import get_config_dir, IS_WINDOWS, is_portable
 from syncthing_gtk.tools import can_upgrade_binary, compare_version
 from syncthing_gtk.tools import _ # gettext function
+try:
+	from syncthing_gtk.stdownloader import StDownloader
+except ImportError:
+	StDownloader = None
+
 import os, socket, random, string, bcrypt
 import logging, traceback, platform
 from xml.dom import minidom
@@ -91,8 +95,15 @@ class Wizard(Gtk.Assistant):
 		and switches to it.
 		"""
 		index = self.insert(page)
-		self.set_current_page(index)		
+		self.set_current_page(index)
 		return index
+	
+	def only_page(self, page):
+		for r in xrange(1, page):
+			self.remove_page(r)
+		while self.get_n_pages() > 3:
+			self.remove_page(self.get_n_pages() - 2)
+		self.set_current_page(1)
 	
 	def prepare_page(self, another_self, page):
 		""" Called before page is displayed """

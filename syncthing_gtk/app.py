@@ -22,12 +22,16 @@ from syncthing_gtk.foldereditor import FolderEditorDialog
 from syncthing_gtk.tools import parse_config_arguments
 from syncthing_gtk.configuration import Configuration
 from syncthing_gtk.daemonprocess import DaemonProcess
-from syncthing_gtk.stdownloader import StDownloader
 from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.uibuilder import UIBuilder
 from syncthing_gtk.identicon import IdentIcon
 from syncthing_gtk.infobox import InfoBox
 from syncthing_gtk.ribar import RIBar
+try:
+	from syncthing_gtk.stdownloader import StDownloader
+except ImportError:
+	StDownloader = None
+
 
 from datetime import datetime
 import os, webbrowser, sys, time, logging, shutil, re
@@ -2054,6 +2058,9 @@ class App(Gtk.Application, TimerManager):
 			wizard.hide()
 			wizard.destroy()
 			self.show()
+			if self.process:
+				self.process.kill()
+				self.cb_daemon_exit(self.process, 0)
 			if self.setup_connection():
 				self.daemon.reconnect()
 		else:
@@ -2087,27 +2094,40 @@ class App(Gtk.Application, TimerManager):
 		Check if daemon binary exists.
 		If not, ask user where did he put it
 		"""
-		from syncthing_gtk.finddaemondialog import FindDaemonDialog
 		# Prepare FindDaemonDialog instance where user can
 		# set new path for syncthing_binary
-		d = FindDaemonDialog(self)
-		d.load()
-		d.set_transient_for(self["window"] if self.connect_dialog is None
-				else self.connect_dialog)
-		# If binary exists, assume that something is completly wrong,
-		# and change error message
-		if os.path.exists(self.config["syncthing_binary"]):
-			d.set_message("%s\n%s %s\n\n%s" % (
-					_("Failed to start Syncthing daemon."),
-					_("Error message:"), str(exception),
-					_("Please, check your installation or set new path to Syncthing daemon binary."),
-			))
-			d.hide_download_button()
-		# Let dialog run and try running syncthing again if new
-		# syncthing_binary is acquired
-		r = d.run()
-		d.destroy()
-		if r == FindDaemonDialog.RESPONSE_SAVED:
-			self.cb_daemon_exit(self.process, -1)
+		try:
+			from syncthing_gtk.finddaemondialog import FindDaemonDialog
+			d = FindDaemonDialog(self)
+		except ImportError:
+			d = None
+		
+		if d is None:
+			# FindDaemonDialog can be disabled by setup.py; If that's the case,
+			# setting is reset to default and 1st run wizard is started
+			self.config["syncthing_binary"] = self.config.get_default_value("syncthing_binary")
+			self.config.save()
+			self.hide()
+			self.show_wizard()
+			self.wizard.only_page(1)
 		else:
-			self.quit()
+			d.load()
+			d.set_transient_for(self["window"] if self.connect_dialog is None
+					else self.connect_dialog)
+			# If binary exists, assume that something is completly wrong,
+			# and change error message
+			if os.path.exists(self.config["syncthing_binary"]):
+				d.set_message("%s\n%s %s\n\n%s" % (
+						_("Failed to start Syncthing daemon."),
+						_("Error message:"), str(exception),
+						_("Please, check your installation or set new path to Syncthing daemon binary."),
+				))
+				d.hide_download_button()
+			# Let dialog run and try running syncthing again if new
+			# syncthing_binary is acquired
+			r = d.run()
+			d.destroy()
+			if r == FindDaemonDialog.RESPONSE_SAVED:
+				self.cb_daemon_exit(self.process, -1)
+			else:
+				self.quit()

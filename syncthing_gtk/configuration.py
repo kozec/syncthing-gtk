@@ -87,6 +87,11 @@ class _Configuration(object):
 		# Load json
 		self.values = json.loads(file(self.get_config_file(), "r").read())
 	
+	def get_default_value(self, key):
+		if IS_WINDOWS:
+			return self.WINDOWS_OVERRIDE.get(key, self.REQUIRED_KEYS[key])[-1]
+		return self.REQUIRED_KEYS[key][-1]
+	
 	def get_config_dir(self):
 		return os.path.join(get_config_dir(), "syncthing-gtk")
 	
