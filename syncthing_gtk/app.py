@@ -339,9 +339,11 @@ class App(Gtk.Application, TimerManager):
 					self["edit-menu-icon"].set_from_icon_name("emblem-system-symbolic", self["edit-menu-icon"].get_icon_name()[1])
 		
 		# Set window title in way that even Gnome can understand
+		icon = os.path.join(self.iconpath, "syncthing-gtk.png")
 		self["window"].set_title(_("Syncthing-GTK"))
 		self["window"].set_wmclass("Syncthing GTK", "Syncthing GTK")
-		self["window"].set_icon(GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.iconpath, "syncthing-gtk.png")))
+		if os.path.exists(icon):
+			self["window"].set_icon(GdkPixbuf.Pixbuf.new_from_file(icon))
 		self.add_window(self["window"])
 	
 	def setup_statusicon(self):

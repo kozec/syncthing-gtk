@@ -2,9 +2,9 @@
 export PATH=${APPDIR}:${APPDIR}/usr/bin:$PATH
 export LD_LIBRARY_PATH=${APPDIR}/usr/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${APPDIR}/usr/lib64:$LD_LIBRARY_PATH
+export GI_TYPELIB_PATH=${APPDIR}/usr/lib/girepository-1.0
 export PYTHONPATH=${APPDIR}/usr/lib/python2.7/site-packages:$PYTHONPATH
 export PYTHONPATH=${APPDIR}/usr/lib64/python2.7/site-packages:$PYTHONPATH
-export SCC_SHARED=${APPDIR}/usr/share/scc
 
 function dependency_check_failed() {
 	# This checks 4 different ways to open error message in addition to
