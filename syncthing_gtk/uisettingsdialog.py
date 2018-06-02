@@ -12,9 +12,12 @@ from syncthing_gtk.tools import (
 )
 from syncthing_gtk.notifications import Notifications, HAS_DESKTOP_NOTIFY
 from syncthing_gtk.editordialog import EditorDialog
-from syncthing_gtk.stdownloader import StDownloader
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.configuration import LONG_AGO
+try:
+	from syncthing_gtk.stdownloader import StDownloader
+except ImportError:
+	StDownloader = None
 import os, logging
 
 log = logging.getLogger("UISettingsDialog")
