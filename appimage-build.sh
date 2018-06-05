@@ -47,7 +47,6 @@ function build_dep() {
 	popd
 }
 
-
 function unpack_dep() {
 	NAME="$1"
 	pushd ${BUILD_APPDIR}
@@ -55,6 +54,15 @@ function unpack_dep() {
 			--exclude="usr/lib/python3.6**" -f /tmp/${NAME}.tar.gz
 	popd
 }
+
+function unpack_gi() {
+	NAME="$1"
+	pushd ${BUILD_APPDIR}
+	tar --extract --wildcards "usr/lib/girepository-1.0/*" -f /tmp/${NAME}.tar.gz
+	popd
+}
+
+unpack_gi "pango-1.42.1"
 
 set -exu		# display commands, no empty vars, terminate on 1st failure
 
@@ -68,6 +76,8 @@ download_dep "python-gobject-3.28.1" "https://archive.archlinux.org/packages/p/p
 download_dep "gir-1.56.1" "https://archive.archlinux.org/packages/g/gobject-introspection-runtime/gobject-introspection-runtime-1.56.1-1-x86_64.pkg.tar.xz"
 download_dep "gtk-3.22.30" "https://archive.archlinux.org/packages/g/gtk3/gtk3-3.22.30-1-x86_64.pkg.tar.xz"
 download_dep "glib-2.56.1" "https://archive.archlinux.org/packages/g/glib2/glib2-2.56.1-1-x86_64.pkg.tar.xz"
+download_dep "pango-1.42.1" "https://archive.archlinux.org/packages/p/pango/pango-1.42.1-1-x86_64.pkg.tar.xz"
+download_dep "gdk-pixbuf-2.36.9" "http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.36/gdk-pixbuf-2.36.9.tar.xz"
 download_dep "libxml2-2.9.7" "https://archive.archlinux.org/packages/l/libxml2/libxml2-2.9.7%2B4%2Bg72182550-2-x86_64.pkg.tar.xz"
 download_dep "librsvg-2.42.2" "http://ftp.gnome.org/pub/gnome/sources/librsvg/2.42/librsvg-2.42.2.tar.xz"
 download_dep "libpng-1.6.9" "https://archive.archlinux.org/packages/l/libpng/libpng-1.6.9-1-x86_64.pkg.tar.xz"
@@ -90,8 +100,10 @@ unpack_dep "glib-2.56.1"
 build_dep "icu-60.2" "--prefix=/usr --disable-dyload --enable-rpath --disable-draft --disable-extras --disable-tools --disable-tests --disable-samples" "cd source"
 PYTHON=python2 build_dep "gtk-3.22.30" "--prefix=/usr --disable-rpath --enable-x11-backend --disable-cups --disable-papi --disable-cloudprint --enable-introspection=yes"
 build_dep "librsvg-2.42.2" "--prefix=/usr --disable-rpath --disable-static --enable-introspection=yes --disable-tools"
-build_dep "libpcre-8.42" "--prefix=/usr --enable-rpath --disable-cpp --disable-static"
+build_dep "libpcre-8.42" "--prefix=/usr --disable-rpath --disable-cpp --disable-static"
+build_dep "gdk-pixbuf-2.36.9" "--prefix=/usr --disable-rpath --disable-static --enable-introspection=yes --without-libtiff --with-x11 --with-included-loaders=png,jpeg"
 unpack_dep "gir-1.56.1"
+unpack_gi "pango-1.42.1"
 unpack_dep "libxml2-2.9.7"
 unpack_dep "libpng-1.6.9"
 unpack_dep "libepoxy-1.5.1"

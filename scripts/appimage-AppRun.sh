@@ -24,13 +24,18 @@ function run_and_die() {
 	exit 1
 }
 
-# Check dependencies 1st
-python2 -c "pass" \
-	|| dependency_check_failed "Please, install python package using"
-python2 -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' \
-	|| dependency_check_failed "Syncthing-GTK requires GTK and gobject-introspection packages.\n Please, install GTK3 and gobject-introspection packages using your package manager"
-python2 -c 'import cairo;' \
-	|| dependency_check_failed "Cairo library is missing.\n Please, install cairo package using your package manager"
-
 # Start
-python2 ${APPDIR}/usr/bin/syncthing-gtk $@
+if [ "x$1" == "xbash" ] ; then
+	cd "${APPDIR}"
+	bash
+else
+	# Check dependencies 1st
+	python2 -c "pass" \
+		|| dependency_check_failed "Please, install python package using"
+	python2 -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' \
+		|| dependency_check_failed "Syncthing-GTK requires GTK and gobject-introspection packages.\n Please, install GTK3 and gobject-introspection packages using your package manager"
+	python2 -c 'import cairo;' \
+		|| dependency_check_failed "Cairo library is missing.\n Please, install cairo package using your package manager"
+	
+	python2 ${APPDIR}/usr/bin/syncthing-gtk $@
+fi
