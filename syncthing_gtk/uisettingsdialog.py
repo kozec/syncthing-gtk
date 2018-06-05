@@ -125,8 +125,9 @@ class UISettingsDialog(EditorDialog):
 				log.warning("Cannot find %s.py required to support %s", plugin, name)
 		self["fmLblIntegrationStatus"].set_text("\n".join(status))
 		if StDownloader is None:
-			self["vst_autoupdate"].set_visible(False)
-			self["lblAutoupdate"].set_visible(False)
+			for name in ("vst_autoupdate", "lblAutoupdate", "lblsyncthing_binary",
+						 "lblsyncthing_binary2", "vsyncthing_binary", "btBrowse"):
+				self[name].set_visible(False)
 		self.cb_data_loaded(copy)
 		self.cb_check_value()
 	

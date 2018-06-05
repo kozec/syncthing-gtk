@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.20.4 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAdjustment" id="adjKeepVersions">
@@ -755,7 +755,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">9</property>
+                    <property name="top_attach">6</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -772,7 +772,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">10</property>
+                    <property name="top_attach">7</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -789,7 +789,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">3</property>
+                    <property name="top_attach">0</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -807,7 +807,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">4</property>
+                    <property name="top_attach">1</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -823,7 +823,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">5</property>
+                    <property name="top_attach">2</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -840,7 +840,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">6</property>
+                    <property name="top_attach">3</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -856,7 +856,7 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">8</property>
+                    <property name="top_attach">5</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -872,27 +872,9 @@ Install blahblahblah to enable Caja support</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">7</property>
+                    <property name="top_attach">4</property>
                     <property name="width">2</property>
                   </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -923,9 +905,10 @@ Install blahblahblah to enable Caja support</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
                 <child>
-                  <object class="GtkLabel" id="label6">
+                  <object class="GtkLabel" id="lblsyncthing_binary2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
                     <property name="margin_bottom">10</property>
                     <property name="label" translatable="yes">This binary will be started when syncthing daemon is not running and "&lt;i&gt;start daemon in background&lt;/i&gt;" option is checked on "&lt;i&gt;Interface&lt;/i&gt;" page.</property>
                     <property name="use_markup">True</property>
@@ -944,6 +927,7 @@ Install blahblahblah to enable Caja support</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="no_show_all">True</property>
                     <property name="use_underline">True</property>
                     <property name="yalign">0.51999998092651367</property>
                     <signal name="clicked" handler="cb_btBrowse_clicked" swapped="no"/>
@@ -954,9 +938,10 @@ Install blahblahblah to enable Caja support</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="label3">
+                  <object class="GtkLabel" id="lblsyncthing_binary">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
                     <property name="label" translatable="yes">Syncthing binary location</property>
                     <property name="use_underline">True</property>
                     <property name="xalign">0</property>
@@ -974,6 +959,7 @@ Install blahblahblah to enable Caja support</property>
                   <object class="GtkEntry" id="vsyncthing_binary">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="no_show_all">True</property>
                     <property name="hexpand">True</property>
                     <signal name="changed" handler="cb_check_value" swapped="no"/>
                   </object>
@@ -1091,6 +1077,9 @@ Example:
           </packing>
         </child>
       </object>
+    </child>
+    <child>
+      <placeholder/>
     </child>
   </object>
 </interface>
