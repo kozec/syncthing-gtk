@@ -249,8 +249,14 @@ class FindDaemonPage(Page):
 		self.attach(self.label, 0, 0, 1, 1)
 	
 	def prepare(self):
-		self.paths = [ "./" ]
-		self.paths += [ os.path.expanduser("~/.local/bin"), self.parent.st_configdir ]
+		default_path, default_binary = os.path.split(
+				self.parent.config.get_default_value("syncthing_binary"))
+		self.paths = []
+		if default_path:
+			self.paths += [ default_path ]
+		self.paths += [ "./" ]
+		self.paths += [ os.path.expanduser("~/.local/bin") ]
+		self.paths += [ self.parent.st_configdir ]
 		if is_portable():
 			self.paths += [ ".\\data" ]
 		if StDownloader is None:
@@ -261,6 +267,8 @@ class FindDaemonPage(Page):
 			if suffix == "x64":
 				# Allow 32bit binary on 64bit
 				self.binaries += ["syncthing.x86"]
+			if default_binary not in self.binaries:
+				self.binaries = [ default_binary ] + self.binaries
 		if IS_WINDOWS:
 			self.paths += [ "c:/Program Files/syncthing",
 				"c:/Program Files (x86)/syncthing",
