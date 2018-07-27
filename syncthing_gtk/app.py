@@ -140,6 +140,8 @@ class App(Gtk.Application, TimerManager):
 		self.devices_never_loaded = True
 		self.folders_never_loaded = True
 		self.sync_animation = 0
+
+		self.editor_device = None
 	
 	
 	def do_startup(self, *a):
@@ -1743,9 +1745,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_menu_add_device(self, event, *a):
 		""" Handler for 'Add device' menu item """
-		e = DeviceEditorDialog(self, True)
-		e.load()
-		e.show(self["window"])
+		self.open_editor_device()
 	
 	def cb_menu_daemon_settings(self, event, *a):
 		""" Handler for 'Daemon Settings' menu item """
@@ -1833,7 +1833,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_menu_popup_edit_device(self, *a):
 		""" Handler for other 'edit' context menu item """
 		# Editing device
-		self.open_editor(DeviceEditorDialog, self.rightclick_box["id"])
+		self.open_editor_device(self.rightclick_box["id"])
 	
 	def cb_menu_popup_browse_folder(self, *a):
 		""" Handler for 'browse' folder context menu item """
@@ -1922,6 +1922,18 @@ class App(Gtk.Application, TimerManager):
 		e = cls(self, False, id)
 		e.load()
 		e.show(self["window"])
+
+	def open_editor_device(self, id=None, name=None):
+		# Close a previously opened deviceeditor
+		if self.editor_device:
+			self.editor_device.close()
+
+		self.editor_device = DeviceEditorDialog(self, id not in self.devices, id)
+
+		if name and id not in self.devices:
+			self.editor_device.call_after_loaded(self.editor_device["vname"].set_text, name)
+		self.editor_device.load()
+		self.editor_device.show(self["window"])
 	
 	def cb_menu_popup_show_id(self, *a):
 		""" Handler for 'show id' context menu item """
@@ -2006,11 +2018,7 @@ class App(Gtk.Application, TimerManager):
 					e.load()
 					e.show(self["window"])
 		elif response_id == RESPONSE_FIX_NEW_DEVICE:
-			e = DeviceEditorDialog(self, True, additional_data["nid"])
-			if additional_data["name"]:
-				e.call_after_loaded(e["vname"].set_text, additional_data["name"])
-			e.load()
-			e.show(self["window"])
+			self.open_editor_device(additional_data['nid'], additional_data['name'])
 		elif response_id == RESPONSE_FIX_IGNORE:
 			# Ignore unknown device
 			def add_ignored(target, trash):
