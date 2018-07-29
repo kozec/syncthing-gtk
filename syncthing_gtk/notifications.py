@@ -9,6 +9,8 @@ Listens to syncing events on daemon and displays desktop notifications.
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 DELAY = 5	# Display notification only after no file is downloaded for <DELAY> seconds
+ICON_DEF = "syncthing-gtk"
+ICON_ERR = "syncthing-gtk-error"
 
 HAS_DESKTOP_NOTIFY = False
 Notifications = None
@@ -23,7 +25,6 @@ except ImportError:
 	pass
 
 if HAS_DESKTOP_NOTIFY:
-	from gi.repository import Gtk
 	from syncthing_gtk.timermanager import TimerManager
 	from syncthing_gtk.tools import _ # gettext function
 	import os, logging
@@ -41,14 +42,6 @@ if HAS_DESKTOP_NOTIFY:
 			self.updated = set([])		# Filenames
 			self.deleted = set([])		# Filenames
 			self.syncing = set([])		# Folder id's
-			# Load icons
-			self.icon = None
-			self.error_icon = None
-			try:
-				self.icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk", 64, Gtk.IconLookupFlags.FORCE_SIZE)
-				self.error_icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk-error", 64, Gtk.IconLookupFlags.FORCE_SIZE)
-			except Exception, e:
-				log.error("Failed to load icon: %s", e)
 			# Make deep connection with daemon
 			self.signals = [
 				self.daemon.connect("connected", self.cb_syncthing_connected)
@@ -73,16 +66,12 @@ if HAS_DESKTOP_NOTIFY:
 					]
 				log.verbose("Folder notifications enabled")
 		
-		def info(self, text, icon=None):
+		def info(self, text, icon=ICON_DEF):
 			n = Notify.Notification.new(
 					_("Syncthing-GTK"),
 					text,
-					None
+					icon
 				)
-			if icon is None:
-				icon = self.icon
-			if not icon is None:
-				n.set_icon_from_pixbuf(icon)
 			try:
 				if n.show ():
 					return n
@@ -94,7 +83,7 @@ if HAS_DESKTOP_NOTIFY:
 			return None
 		
 		def error(self, text):
-			self.info(text, self.error_icon)
+			self.info(text, ICON_ERR)
 		
 		def kill(self, *a):
 			""" Removes all event handlers and frees some stuff """
