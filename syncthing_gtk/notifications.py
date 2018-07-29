@@ -110,9 +110,6 @@ if HAS_DESKTOP_NOTIFY:
 			self.syncing = set([])
 		
 		def cb_syncthing_error(self, daemon, message):
-			if "Unexpected folder ID" in message:
-				# Handled by event, don't display twice
-				return
 			self.error(message)
 		
 		def cb_syncthing_folder_rejected(self, daemon, nid, rid, label):
