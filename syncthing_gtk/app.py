@@ -502,7 +502,7 @@ class App(Gtk.Application, TimerManager):
 		if self.process == None:
 			# Upgrading if executable is not launched by Syncthing-GTK
 			# may fail in too many ways.
-			log.warning("Skiping updatecheck: Daemon not launched by me")
+			log.warning("Skipping updatecheck: Daemon not launched by me")
 			return
 		if self.force_update_version is None:
 			if (datetime.now() - self.config["last_updatecheck"]).total_seconds() < UPDATE_CHECK_INTERVAL:
