@@ -142,6 +142,7 @@ class App(Gtk.Application, TimerManager):
 		self.sync_animation = 0
 
 		self.editor_device = None
+		self.editor_folder = None
 	
 	
 	def do_startup(self, *a):
@@ -1934,6 +1935,29 @@ class App(Gtk.Application, TimerManager):
 			self.editor_device.call_after_loaded(self.editor_device["vname"].set_text, name)
 		self.editor_device.load()
 		self.editor_device.show(self["window"])
+
+	def open_editor_folder(self, id=None, label=None, nid=None):
+		# Close a previously opened deviceeditor
+		if self.editor_folder:
+			self.editor_folder.close()
+
+		self.editor_folder = FolderEditorDialog(self, id not in self.folders, id)
+
+		# Find folder with matching ID ...
+		if id in self.folders:
+			# ... if found, show edit dialog and pre-select
+			# matching device
+			self.editor_folder.call_after_loaded(self.editor_folder.mark_device, nid)
+		else:
+			# If there is no matching folder, prefill 'new folder'
+			# dialog and let user to save it
+			self.editor_folder.call_after_loaded(self.editor_folder.mark_device, nid)
+			self.editor_folder.call_after_loaded(self.editor_folder.fill_folder_id, id)
+			if label:
+				self.editor_folder.call_after_loaded(self.editor_folder["vlabel"].set_text, label)
+
+		self.editor_folder.load()
+		self.editor_folder.show(self["window"])
 	
 	def cb_menu_popup_show_id(self, *a):
 		""" Handler for 'show id' context menu item """
@@ -1999,24 +2023,7 @@ class App(Gtk.Application, TimerManager):
 		elif response_id == RESPONSE_FIX_FOLDER_ID:
 			# Give up if there is no device with matching ID
 			if additional_data["nid"] in self.devices:
-				# Find folder with matching ID ...
-				if additional_data["rid"] in self.folders:
-					# ... if found, show edit dialog and pre-select
-					# matching device
-					e = FolderEditorDialog(self, False, additional_data["rid"])
-					e.call_after_loaded(e.mark_device, additional_data["nid"])
-					e.load()
-					e.show(self["window"])
-				else:
-					# If there is no matching folder, prefill 'new folder'
-					# dialog and let user to save it
-					e = FolderEditorDialog(self, True, additional_data["rid"])
-					e.call_after_loaded(e.mark_device, additional_data["nid"])
-					e.call_after_loaded(e.fill_folder_id, additional_data["rid"])
-					if additional_data["label"]:
-						e.call_after_loaded(e["vlabel"].set_text, additional_data["label"])
-					e.load()
-					e.show(self["window"])
+				self.open_editor_folder(additional_data['rid'], additional_data['label'], additional_data['nid'])
 		elif response_id == RESPONSE_FIX_NEW_DEVICE:
 			self.open_editor_device(additional_data['nid'], additional_data['name'])
 		elif response_id == RESPONSE_FIX_IGNORE:
