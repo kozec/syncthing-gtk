@@ -12,6 +12,8 @@ DELAY = 5	# Display notification only after no file is downloaded for <DELAY> se
 ICON_DEF = "syncthing-gtk"
 ICON_ERR = "syncthing-gtk-error"
 
+SERVER_CAPS = []
+
 HAS_DESKTOP_NOTIFY = False
 Notifications = None
 
@@ -35,6 +37,9 @@ if HAS_DESKTOP_NOTIFY:
 		def __init__(self, app, daemon):
 			TimerManager.__init__(self)
 			Notify.init("Syncthing GTK")
+			# Cache the server capabilities, as get_server_caps() always queries DBus
+			global SERVER_CAPS
+			SERVER_CAPS = Notify.get_server_caps()
 			# Prepare stuff
 			self.app = app
 			self.daemon = daemon
@@ -104,9 +109,14 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_syncthing_folder_rejected(self, daemon, nid, rid, label):
 			if nid in self.app.devices:
 				device = self.app.devices[nid].get_title()
+				markup_dev = device
+				markup_fol = (label or rid)
+				if "body-markup" in SERVER_CAPS:
+					markup_dev = "<b>%s</b>" % device
+					markup_fol = "<b>%s</b>" % (label or rid)
 				markup = _('Unexpected folder "%(folder)s" sent from device "%(device)s".') % {
-							'device' : "<b>%s</b>" % device,
-							'folder' : "<b>%s</b>" % (label or rid)
+					'device' : markup_dev,
+					'folder' : markup_fol
 				}
 				self.info(markup)
 		
@@ -159,9 +169,13 @@ if HAS_DESKTOP_NOTIFY:
 				# One updated file
 				f_path = list(self.updated)[0]
 				filename = os.path.split(f_path)[-1]
+				if "body-hyperlinks" in SERVER_CAPS:
+					link = "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
+				else:
+					link = f_path
 				self.info(_("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % {
 						'hostname' : self.app.get_local_name(),
-						'filename' : "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
+						'filename' : link
 					})
 			elif len(self.updated) == 0 and len(self.deleted) == 1:
 				# One deleted file
