@@ -60,6 +60,12 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_notification_closed(self, notif):
 			self.n = None
 
+		def addactions(self, n, actions=[], clear=True):
+			if "actions" not in SERVER_CAPS: return
+			if clear: n.clear_actions()
+			for act, label, cb, data in actions:
+				n.add_action(act, label, cb, data)
+
 		def show(self, n):
 			try:
 				n.show()
@@ -68,7 +74,7 @@ if HAS_DESKTOP_NOTIFY:
 				# everything what can be broken with notifications...
 				pass
 
-		def push(self, summary, body=None, icon=ICON_DEF):
+		def push(self, summary, body=None, actions=[], icon=ICON_DEF):
 
 			if not self.n:
 				self.n = Notify.Notification.new(summary, body, icon)
@@ -76,16 +82,35 @@ if HAS_DESKTOP_NOTIFY:
 			else:
 				self.n.update(summary, body, icon)
 
+			self.addactions(self.n, actions)
 			self.show(self.n)
 
 	class STNotificationDevice(STNotification):
 		"""Notification class to track a notification, which is related to a syncthing device"""
 
+		def cb_accept(self, n, action, user_data):
+			self.app.open_editor_device(self.id, self.label)
+
+		def cb_ignore(self, n, action, user_data):
+			# Ignore unknown device
+			# TODO: use better function
+			# Copied from app.py, warrants an actual function
+			def add_ignored(target, trash):
+				if "ignoredDevices" not in target:
+					target["ignoredDevices"] = []
+				target["ignoredDevices"].append(self.id)
+			self.app.change_setting_async("ignoredDevices", add_ignored, restart=False)
+
 		def rejected(self):
 			label_fb = self.label or self.id
+			actions = [
+				(self.ACT_DEFAULT, _('Accept device "%s"') % label_fb, self.cb_accept, None),
+				(self.ACT_ACCEPT,  _('Accept device "%s"') % label_fb, self.cb_accept, None),
+				(self.ACT_IGNORE,  _('Ignore device "%s"') % label_fb, self.cb_ignore, None),
+			]
 			summary = _("Unknown Device")
 			body = _('Device "%s" is trying to connect to syncthing daemon.' % self.label)
-			self.push(summary, body)
+			self.push(summary, body, actions)
 
 	class STNotificationFolder(STNotification, TimerManager):
 		"""Notification class to track a notification, which is related to a syncthing folder"""
@@ -115,9 +140,23 @@ if HAS_DESKTOP_NOTIFY:
 			self.deleted.clear()
 			self.updating.clear()
 
+		def cb_accept(self, n, action, user_data):
+			self.app.open_editor_folder(self.id, self.label, user_data)
+
+		def cb_ignore(self, n, action, user_data):
+			# TODO: unimplemented
+			# I probably need help here!
+			pass
+
 		def rejected(self, nid):
 			device = self.app.devices[nid].get_title()
 			label_fb = self.label or self.id
+			actions = [
+				(self.ACT_DEFAULT, _('Accept folder "%s"') % label_fb, self.cb_accept, nid),
+				(self.ACT_ACCEPT,  _('Accept folder "%s"') % label_fb, self.cb_accept, nid),
+				(self.ACT_IGNORE,  _('Ignore folder "%s"') % label_fb, self.cb_ignore, nid),
+			]
+
 			markup_dev = device
 			markup_fol = label_fb
 			if "body-markup" in SERVER_CAPS:
@@ -129,7 +168,7 @@ if HAS_DESKTOP_NOTIFY:
 				'device' : markup_dev,
 				'folder' : markup_fol
 			}
-			self.push(summary, body)
+			self.push(summary, body, actions)
 
 		def add_path(self, path, itm_finished=True):
 			path_full = os.path.join(self.app.folders[self.id]["norm_path"], path)
@@ -223,8 +262,14 @@ if HAS_DESKTOP_NOTIFY:
 
 			n = Notify.Notification.new(summary, text, ICON_ERR)
 			n.set_urgency(Notify.Urgency.CRITICAL)
+			n.add_action(self.ACT_DEFAULT, _("Open Conflicting file in filemanager"), self.cb_open_conflict, path_full)
 
 			self.show(n)
+
+		def cb_open_conflict(self, n, action, user_data):
+			if user_data and os.path.exists(user_data):
+				# TODO: open filemanager here
+				pass
 
 	class NotificationsCls():
 		""" Watches for filesystem changes and reports them to daemon """
