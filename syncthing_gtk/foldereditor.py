@@ -21,7 +21,7 @@ VALUES = [ "vlabel", "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversionsPath", "vfsWatcherEnabled", "vcleanoutDays", "vcommand", "vorder",
 	"vminDiskFreePct"
 	]
-VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
+VERSIONING_TYPES = {'simple', 'staggered', 'trashcan', 'external'}
 
 class FolderEditorDialog(EditorDialog):
 	def __init__(self, app, is_new, id=None, path=None):
