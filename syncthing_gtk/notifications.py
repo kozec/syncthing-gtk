@@ -50,6 +50,9 @@ if HAS_DESKTOP_NOTIFY:
 		def set_label(self, label):
 			self.label = label
 
+		def clean(self):
+			pass
+
 		def close_notification(self):
 			try:
 				self.n.close_notification()
@@ -59,6 +62,7 @@ if HAS_DESKTOP_NOTIFY:
 
 		def cb_notification_closed(self, notif):
 			self.n = None
+			self.clean()
 
 		def supports(self, caps, supported=True, unsupported=False):
 			if caps in SERVER_CAPS:
@@ -200,8 +204,8 @@ if HAS_DESKTOP_NOTIFY:
 
 					self.updating.remove(path)
 
-					self.cancel_timer(self.timer_id)
-					self.timer(self.timer_id, self.timer_delay, self.display)
+					if not self.timer_active(self.timer_id):
+						self.timer(self.timer_id, self.timer_delay, self.display)
 			else:
 				self.updating.add(path)
 
@@ -241,7 +245,6 @@ if HAS_DESKTOP_NOTIFY:
 				'filename' : (filename),
 			}
 
-			self.clean()
 			self.push(summary, body)
 
 		def set_progress(self, progress):
