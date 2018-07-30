@@ -75,7 +75,7 @@ class StDownloader(GObject.GObject):
 		GObject.GObject.__init__(self)
 		self.target = target
 		self.platform = platform
-		# Latest Syncthing version known to be compatibile with
+		# Latest Syncthing version known to be compatible with
 		# Syncthing-GTK. This is just hardcoded minimal version,
 		# actual value will be determined later
 		self.latest_compat = "v0.11.0"
@@ -160,13 +160,13 @@ class StDownloader(GObject.GObject):
 						if tag.startswith("Syncthing_"):
 							# ST-GTK version has ST version attached.
 							# Check if this is newer than last known
-							# compatibile version
+							# compatible version
 							st_ver = tag.split("_")[-1]
 							if compare_version(st_ver, self.latest_compat):
-								log.verbose("STDownloader: Got newer compatibile Syncthing version %s", st_ver)
+								log.verbose("STDownloader: Got newer compatible Syncthing version %s", st_ver)
 								self.latest_compat = st_ver
 
-			log.verbose("STDownloader: Latest compatibile Syncthing version: %s", self.latest_compat)
+			log.verbose("STDownloader: Latest compatible Syncthing version: %s", self.latest_compat)
 
 		except Exception as e:
 			log.exception(e)
@@ -174,8 +174,8 @@ class StDownloader(GObject.GObject):
 				_("Failed to determine latest Syncthing version."))
 			return
 
-		# After latest compatibile ST version is determined, determine
-		# latest actually existing version. This should be usualy same,
+		# After latest compatible ST version is determined, determine
+		# latest actually existing version. This should be usually same,
 		# but checking is better than downloading non-existant file.
 		uri = StDownloader.ST_URL
 		f = Gio.File.new_for_uri(uri)
@@ -188,7 +188,7 @@ class StDownloader(GObject.GObject):
 		try:
 			success, data, etag = f.load_contents_finish(result)
 			if not success: raise Exception("Gio download failed")
-			# Go over all available versions until compatibile one
+			# Go over all available versions until compatible one
 			# is found
 			data = json.loads(data)
 			for release in data:
@@ -196,8 +196,8 @@ class StDownloader(GObject.GObject):
 				if latest_ver is None:
 					latest_ver = version
 				if compare_version(self.latest_compat, version) and (self.forced or compare_version(version, MIN_ST_VERSION)):
-					# Compatibile
-					log.verbose("STDownloader: Found compatibile Syncthing version: %s", version)
+					# compatible
+					log.verbose("STDownloader: Found compatible Syncthing version: %s", version)
 					self.version = version
 					for asset in release["assets"]:
 						if self.platform in asset["name"]:
@@ -233,7 +233,7 @@ class StDownloader(GObject.GObject):
 				prefix="syncthing-package.", suffix=suffix, delete=False)
 		except Exception as e:
 			log.exception(e)
-			self.emit("error", e, _("Failed to create temporaly file."))
+			self.emit("error", e, _("Failed to create temporary file."))
 			return
 		f = Gio.File.new_for_uri(self.dll_url)
 		f.read_async(GLib.PRIORITY_DEFAULT, None, self._cb_open_archive,
@@ -260,7 +260,7 @@ class StDownloader(GObject.GObject):
 			# Get response from async call
 			response = stream.read_bytes_finish(result)
 			if response == None:
-				raise Exception("No data recieved")
+				raise Exception("No data received")
 			# 0b of data read indicates end of file
 			if response.get_size() > 0:
 				# Not EOF. Write buffer to disk and download some more
@@ -275,13 +275,13 @@ class StDownloader(GObject.GObject):
 				self.emit("download-finished")
 				stream.close(None)
 				tmpfile.close()
-				GLib.idle_add(self._open_achive, tmpfile.name)
+				GLib.idle_add(self._open_archive, tmpfile.name)
 		except Exception as e:
 			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
 
-	def _open_achive(self, archive_name):
+	def _open_archive(self, archive_name):
 		try:
 			# Determine archive format
 			archive = None
