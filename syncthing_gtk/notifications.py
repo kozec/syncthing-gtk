@@ -199,54 +199,41 @@ if HAS_DESKTOP_NOTIFY:
 				self.updating.add(path)
 
 		def display(self, finished=False):
-			summary = None
-			body = None
+			summary = ""
+			body = ""
+			filename = ""
 			if finished:
 				summary = _('Completed synchronisation in "%s"') % (self.label or self.id)
 			else:
 				summary = _('Updates in folder "%s"') % (self.label or self.id)
 
 			if len(self.updated) == 1 and len(self.deleted) == 0:
-				# One updated file
 				f_path = os.path.join(self.app.folders[self.id]["norm_path"], self.updated.pop())
 				filename = os.path.split(f_path)[-1]
 
 				if "body-hyperlinks" in SERVER_CAPS:
-					link = "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
+					filename = "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
 				else:
-					link = f_path
+					filename = f_path
 
-				body = _("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % {
-					'hostname' : self.app.get_local_name(),
-					'filename' : link
-				}
+				body = _("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.")
 			elif len(self.updated) == 0 and len(self.deleted) == 1:
-				# One deleted file
 				f_path = os.path.join(self.app.folders[self.id]["norm_path"], self.deleted.pop())
 				filename = os.path.split(f_path)[-1]
-				body = _("%(hostname)s: Deleted '%(filename)s' to reflect remote changes.") % {
-					'hostname' : self.app.get_local_name(),
-					'filename' : filename
-				}
+				body = _("%(hostname)s: Deleted '%(filename)s' to reflect remote changes.")
 			elif len(self.deleted) == 0 and len(self.updated) > 0:
-				# Multiple updated, nothing deleted
-				body = _("%(hostname)s: Downloaded %(updated)s files to reflect remote changes.") % {
-					'hostname' : self.app.get_local_name(),
-					'updated'  : len(self.updated)
-				}
+				body = _("%(hostname)s: Downloaded %(updated)s files to reflect remote changes.")
 			elif len(self.updated) == 0 and len(self.deleted) > 0:
-				# Multiple deleted, no updated
-				body = _("%(hostname)s: Deleted %(deleted)s files to reflect remote changes.") % {
-					'hostname' : self.app.get_local_name(),
-					'deleted'  : len(self.deleted)
-				}
+				body = _("%(hostname)s: Deleted %(deleted)s files to reflect remote changes.")
 			elif len(self.deleted) > 0 and len(self.updated) > 0:
-				# Multiple deleted, multiple updated
-				body = _("%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes.") % {
-					'hostname' : self.app.get_local_name(),
-					'updated'  : len(self.updated),
-					'deleted'  : len(self.deleted)
-				}
+				body = _("%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes.")
+
+			body = body % {
+				'hostname' : self.app.get_local_name(),
+				'updated'  : len(self.updated),
+				'deleted'  : len(self.deleted),
+				'filename' : (filename),
+			}
 
 			self.clean()
 			self.push(summary, body)
