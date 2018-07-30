@@ -60,8 +60,14 @@ if HAS_DESKTOP_NOTIFY:
 		def cb_notification_closed(self, notif):
 			self.n = None
 
+		def supports(self, caps, supported=True, unsupported=False):
+			if caps in SERVER_CAPS:
+				return supported
+			else:
+				return unsupported
+
 		def addactions(self, n, actions=[], clear=True):
-			if "actions" not in SERVER_CAPS: return
+			if not self.supports("actions"): return
 			if clear: n.clear_actions()
 			for act, label, cb, data in actions:
 				n.add_action(act, label, cb, data)
@@ -163,11 +169,12 @@ if HAS_DESKTOP_NOTIFY:
 				(self.ACT_IGNORE,  _('Ignore folder "%s"') % label_fb, self.cb_ignore, nid),
 			]
 
-			markup_dev = device
-			markup_fol = label_fb
-			if "body-markup" in SERVER_CAPS:
-				markup_dev = "<b>%s</b>" % device
-				markup_fol = "<b>%s</b>" % label_fb
+			markup_dev = self.supports("body-markup",
+				"<b>%s</b>" % device,
+				device)
+			markup_fol = self.supports("body-markup",
+				"<b>%s</b>" % label_fb,
+				label_fb)
 
 			summary = _("Folder rejected")
 			body = _('Unexpected folder "%(folder)s" sent from device "%(device)s".') % {
@@ -211,10 +218,9 @@ if HAS_DESKTOP_NOTIFY:
 				f_path = os.path.join(self.app.folders[self.id]["norm_path"], self.updated.pop())
 				filename = os.path.split(f_path)[-1]
 
-				if "body-hyperlinks" in SERVER_CAPS:
-					filename = "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
-				else:
-					filename = f_path
+				self.supports("body-hyperlinks",
+					"<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename),
+					f_path)
 
 				body = _("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.")
 			elif len(self.updated) == 0 and len(self.deleted) == 1:
