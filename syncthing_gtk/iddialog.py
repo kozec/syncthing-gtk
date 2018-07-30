@@ -83,12 +83,12 @@ class IDDialog(object):
 				tf.close()
 				self["vQR"].set_from_file(tf.name)
 				os.unlink(tf.name)
-		except GLib.Error, e:
+		except GLib.Error as e:
 			if e.code in [14, 15]:
 				# Unauthorized. Grab CSRF token from daemon and try again
 				log.warning("Failed to load image using glib. Retrying with urllib2.")
 				self.load_data_urllib()
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			return
 		finally:

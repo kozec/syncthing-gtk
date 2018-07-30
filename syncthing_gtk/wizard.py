@@ -517,7 +517,7 @@ class GenerateKeysPage(Page):
 		# Create it, if needed
 		try:
 			os.makedirs(self.parent.st_configdir)
-		except Exception, e:
+		except Exception as e:
 			self.parent.output_line("syncthing-gtk: Failed to create configuration directory")
 			self.parent.output_line("syncthing-gtk: %s" % (str(e),))
 		# Run syncthing -generate
@@ -655,7 +655,7 @@ class SaveSettingsPage(Page):
 			# Remove config.xml that I just created
 			try:
 				os.unlink(self.parent.st_configfile)
-			except Exception, e:
+			except Exception as e:
 				self.parent.output_line("syncthing-gtk: %s" % (str(e),))
 			self.parent.error(self,
 				_("Failed to find unused port for listening."),
@@ -702,7 +702,7 @@ class SaveSettingsPage(Page):
 			# Load XML file
 			config = file(self.parent.st_configfile, "r").read()
 			xml = minidom.parseString(config)
-		except Exception, e:
+		except Exception as e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			self.parent.error(self,
 				_("Failed to load Syncthing configuration"),
@@ -732,7 +732,7 @@ class SaveSettingsPage(Page):
 			gui.setAttribute("enabled", "true")
 			gui.setAttribute("tls", "false")
 			au.firstChild.replaceWholeText("0")
-		except Exception, e:
+		except Exception as e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			self.parent.error(self,
 				_("Failed to modify Syncthing configuration"),
@@ -742,7 +742,7 @@ class SaveSettingsPage(Page):
 		try:
 			# Write XML back to file
 			file(self.parent.st_configfile, "w").write(xml.toxml().encode("utf-8"))
-		except Exception, e:
+		except Exception as e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			self.parent.error(self,
 				_("Failed to save Syncthing configuration"),

@@ -332,17 +332,17 @@ class Daemon(GObject.GObject, TimerManager):
 		try:
 			log.debug("Reading syncthing config %s", self._configxml)
 			config = file(self._configxml, "r").read()
-		except Exception, e:
+		except Exception as e:
 			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
 		try:
 			xml = minidom.parseString(config)
-		except Exception, e:
+		except Exception as e:
 			raise InvalidConfigurationException("Failed to parse daemon configuration: %s" % e)
 		tls = "false"
 		try:
 			tls = xml.getElementsByTagName("configuration")[0] \
 				.getElementsByTagName("gui")[0].getAttribute("tls")
-		except Exception, e:
+		except Exception as e:
 			pass
 		self._tls = False
 		self._cert = None
@@ -351,7 +351,7 @@ class Daemon(GObject.GObject, TimerManager):
 			try:
 				self._cert = Gio.TlsCertificate.new_from_file(
 					os.path.join(get_config_dir(), "syncthing", "https-cert.pem"))
-			except Exception, e:
+			except Exception as e:
 				log.exception(e)
 				raise TLSErrorException("Failed to load daemon certificate")
 		try:
@@ -363,7 +363,7 @@ class Daemon(GObject.GObject, TimerManager):
 				addr, port = self._address.split(":", 1)
 				self._address = "127.0.0.1:%s" % (port,)
 				log.debug("WebUI listens on 0.0.0.0, connecting to 127.0.0.1 instead")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			raise InvalidConfigurationException("Required configuration node not found in daemon config file")
 		try:
@@ -371,7 +371,7 @@ class Daemon(GObject.GObject, TimerManager):
 							.getElementsByTagName("gui")[0] \
 							.getElementsByTagName("apikey")[0] \
 							.firstChild.nodeValue
-		except Exception, e:
+		except Exception as e:
 			# API key can be none
 			pass
 	
@@ -1051,7 +1051,7 @@ class RESTRequest(Gio.SocketClient):
 			self._connection = self.connect_to_service_finish(results)
 			if self._connection == None:
 				raise Exception("Unknown error")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			if hasattr(e, "domain") and e.domain == "g-tls-error-quark":
 				e = TLSUnsupportedException(e.message)
@@ -1080,7 +1080,7 @@ class RESTRequest(Gio.SocketClient):
 		get_str = self._format_request()
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
-		except Exception, e:
+		except Exception as e:
 			self._error(e)
 			return
 		self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
@@ -1115,7 +1115,7 @@ class RESTRequest(Gio.SocketClient):
 			response = stream.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
-		except Exception, e:
+		except Exception as e:
 			print e
 			self._connection.close(None)
 			self._error(e)
@@ -1174,7 +1174,7 @@ class RESTRequest(Gio.SocketClient):
 			elif code != 200:
 				self._error(HTTPCode(code, response, buffer, headers))
 				return None, None
-		except Exception, e:
+		except Exception as e:
 			# That probably wasn't HTTP
 			import traceback
 			traceback.print_exc()
@@ -1302,7 +1302,7 @@ class EventPollLoop(RESTRequest):
 			response = stream.read_bytes_finish(results)
 			if response == None:
 				raise Exception("No data recieved")
-		except Exception, e:
+		except Exception as e:
 			return self._error(e)
 		if self._epoch != self._parent._epoch:
 			self._connection.close(None)
@@ -1326,7 +1326,7 @@ class EventPollLoop(RESTRequest):
 			response = stream.read_bytes_finish(results)
 			if response == None:
 				raise Exception("nothing")
-		except Exception, e:
+		except Exception as e:
 			return self._error(e)
 		if self._epoch != self._parent._epoch:
 			self._connection.close(None)
@@ -1351,7 +1351,7 @@ class EventPollLoop(RESTRequest):
 			]).encode("utf-8")
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
-		except Exception, e:
+		except Exception as e:
 			print e
 			self._connection.close(None)
 			return self.start()

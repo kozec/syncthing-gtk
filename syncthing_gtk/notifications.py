@@ -47,7 +47,7 @@ if HAS_DESKTOP_NOTIFY:
 			try:
 				self.icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk", 64, Gtk.IconLookupFlags.FORCE_SIZE)
 				self.error_icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk-error", 64, Gtk.IconLookupFlags.FORCE_SIZE)
-			except Exception, e:
+			except Exception as e:
 				log.error("Failed to load icon: %s", e)
 			# Make deep connection with daemon
 			self.signals = [
