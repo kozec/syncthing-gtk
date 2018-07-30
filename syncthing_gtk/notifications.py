@@ -74,13 +74,19 @@ if HAS_DESKTOP_NOTIFY:
 				# everything what can be broken with notifications...
 				pass
 
-		def push(self, summary, body=None, actions=[], icon=ICON_DEF):
+		def push(self, summary, body=None, **kwargs):
+			icon = kwargs.get('icon', ICON_DEF)
+			urg = kwargs.get('urg')
+			actions = kwargs.get('actions', [])
 
 			if not self.n:
 				self.n = Notify.Notification.new(summary, body, icon)
 				self.n.connect("closed", self.cb_notification_closed),
 			else:
 				self.n.update(summary, body, icon)
+
+			if urg:
+				self.n.set_urgency(urg)
 
 			self.addactions(self.n, actions)
 			self.show(self.n)
@@ -110,7 +116,7 @@ if HAS_DESKTOP_NOTIFY:
 			]
 			summary = _("Unknown Device")
 			body = _('Device "%s" is trying to connect to syncthing daemon.' % self.label)
-			self.push(summary, body, actions)
+			self.push(summary, body, actions=actions, urg=Notify.Urgency.CRITICAL)
 
 	class STNotificationFolder(STNotification, TimerManager):
 		"""Notification class to track a notification, which is related to a syncthing folder"""
@@ -168,7 +174,7 @@ if HAS_DESKTOP_NOTIFY:
 				'device' : markup_dev,
 				'folder' : markup_fol
 			}
-			self.push(summary, body, actions)
+			self.push(summary, body, actions=actions, urg=Notify.Urgency.CRITICAL)
 
 		def add_path(self, path, itm_finished=True):
 			path_full = os.path.join(self.app.folders[self.id]["norm_path"], path)
