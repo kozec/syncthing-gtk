@@ -310,13 +310,15 @@ if HAS_DESKTOP_NOTIFY:
 				]
 				log.verbose("Folder notifications enabled")
 
-		def ensure_folder(self, folder_id, label=None):
+		def get_folder(self, folder_id, label=None):
 			if folder_id not in self.notify_folders:
 				self.notify_folders[folder_id] = STNotificationFolder(self.app, folder_id, label)
+			return self.notify_folders[folder_id]
 
-		def ensure_device(self, device_id, label=None):
+		def get_device(self, device_id, label=None):
 			if device_id not in self.notify_devices:
 				self.notify_devices[device_id] = STNotificationDevice(self.app, device_id, label)
+			return self.notify_devices[device_id]
 
 		def clear_notifications(self):
 			# Clear download list and close related notifications
@@ -349,28 +351,28 @@ if HAS_DESKTOP_NOTIFY:
 			if device_id not in self.app.devices:
 				return
 
-			self.ensure_folder(folder_id, label)
-			self.notify_folders[folder_id].rejected(device_id)
+			n = self.get_folder(folder_id, label)
+			n.rejected(device_id)
 
 		def cb_syncthing_device_rejected(self, daemon, nid, name, address):
-			self.ensure_device(nid, name)
-			self.notify_devices[nid].rejected()
+			n = self.get_device(nid, name)
+			n.rejected()
 
 		def cb_syncthing_item_started(self, daemon, folder_id, path, time):
-			self.ensure_folder(folder_id)
-			self.notify_folders[folder_id].add_path(path, itm_finished=False)
+			n = self.get_folder(folder_id)
+			n.add_path(path, itm_finished=False)
 
 		def cb_syncthing_item_updated(self, daemon, folder_id, path, *a):
-			self.ensure_folder(folder_id)
-			self.notify_folders[folder_id].add_path(path)
+			n = self.get_folder(folder_id)
+			n.add_path(path)
 
 		def cb_syncthing_folder_progress(self, daemon, folder_id, progress):
-			self.ensure_folder(folder_id)
-			self.notify_folders[folder_id].set_progress(progress)
+			n = self.get_folder(folder_id)
+			n.set_progress(progress)
 
 		def cb_syncthing_folder_finished(self, daemon, folder_id):
-			self.ensure_folder(folder_id)
-			self.notify_folders[folder_id].finished()
+			n = self.get_folder(folder_id)
+			n.finished()
 
 	# Notifications is set to class only if libnotify is available
 	Notifications = NotificationsCls
