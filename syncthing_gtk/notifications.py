@@ -132,6 +132,7 @@ if HAS_DESKTOP_NOTIFY:
 		updated = set([])
 		deleted = set([])
 		updating = set([])
+		conflict = set([])
 
 		timer_id = "display"
 		timer_delay = DELAY
@@ -264,8 +265,13 @@ if HAS_DESKTOP_NOTIFY:
 			n = Notify.Notification.new(summary, text, ICON_ERR)
 			n.set_urgency(Notify.Urgency.CRITICAL)
 			n.add_action(self.ACT_DEFAULT, _("Open Conflicting file in filemanager"), self.cb_open_conflict, path_full)
+			n.connect("closed", self.cb_sync_conflict_closed),
+			self.conflict.add(n)
 
 			self.show(n)
+
+		def cb_sync_conflict_closed(self, notif):
+			self.conflict.remove(notif)
 
 		def cb_open_conflict(self, n, action, user_data):
 			if user_data and os.path.exists(user_data):
