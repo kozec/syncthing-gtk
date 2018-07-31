@@ -237,6 +237,10 @@ if HAS_DESKTOP_NOTIFY:
 				body = _("%(hostname)s: Deleted %(deleted)s files to reflect remote changes.")
 			elif len(self.deleted) > 0 and len(self.updated) > 0:
 				body = _("%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes.")
+			elif len(self.conflict) > 0:
+				# If we reached this point, there are only sync-conflicts updated
+				# we don't want to have another notification
+				return
 
 			body = body % {
 				'hostname' : self.app.get_local_name(),
