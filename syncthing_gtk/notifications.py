@@ -108,9 +108,6 @@ if HAS_DESKTOP_NOTIFY:
 			self.app.open_editor_device(self.id, self.label)
 
 		def cb_ignore(self, n, action, user_data):
-			# Ignore unknown device
-			# TODO: use better function
-			# Copied from app.py, warrants an actual function
 			def add_ignored(target, trash):
 				if "ignoredDevices" not in target:
 					target["ignoredDevices"] = []
@@ -160,9 +157,11 @@ if HAS_DESKTOP_NOTIFY:
 			self.app.open_editor_folder(self.id, self.label, user_data)
 
 		def cb_ignore(self, n, action, user_data):
-			# TODO: unimplemented
-			# I probably need help here!
-			pass
+			def add_ignored(target, trash):
+				if "ignoredFolders" not in target:
+					target["ignoredFolders"] = []
+				target["ignoredFolders"].append(self.id)
+			self.app.change_setting_async("ignoredFolders", add_ignored, restart=False)
 
 		def rejected(self, nid):
 			device = self.app.devices[nid].get_title()
@@ -270,8 +269,8 @@ if HAS_DESKTOP_NOTIFY:
 
 		def cb_open_conflict(self, n, action, user_data):
 			if user_data and os.path.exists(user_data):
-				# TODO: open filemanager here
-				pass
+				dirname = os.path.dirname(user_data)
+				self.app.cb_browse_folder({'path': dirname})
 
 	class NotificationsCls():
 		""" Watches for filesystem changes and reports them to daemon """
