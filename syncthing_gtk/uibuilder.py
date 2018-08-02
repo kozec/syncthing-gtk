@@ -15,7 +15,7 @@ Usage:
 from __future__ import unicode_literals
 from gi.repository import Gtk
 from xml.dom import minidom
-from tools import GETTEXT_DOMAIN, IS_WINDOWS
+from .tools import GETTEXT_DOMAIN, IS_WINDOWS
 from syncthing_gtk.tools import get_locale_dir
 from syncthing_gtk.tools import _ # gettext function
 import logging

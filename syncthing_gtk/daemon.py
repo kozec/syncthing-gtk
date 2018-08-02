@@ -1440,7 +1440,7 @@ class ConnectionRestarted(Exception):
 
 if __name__ == "__main__":
 	# Small thing for testing
-	from tools import init_logging, set_logging_level
+	from .tools import init_logging, set_logging_level
 	init_logging()
 	set_logging_level(True, True)
 	daemon = Daemon()
