@@ -6,6 +6,7 @@ Main application window
 """
 
 from __future__ import unicode_literals
+import itertools
 from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
 from syncthing_gtk.tools import _
 from syncthing_gtk.tools import (
@@ -1246,13 +1247,13 @@ class App(Gtk.Application, TimerManager):
 					if box in f["devices"]:
 						to_hilight.add(f)
 				to_hilight.add(box)
-		for box in [] + self.devices.values() + self.folders.values():
+		for box in itertools.chain(self.devices.values(), self.folders.values()):
 			box.set_hilight(box in to_hilight)
-	
+
 	def is_visible(self):
 		""" Returns True if main window is visible """
 		return self["window"].is_visible()
-	
+
 	def show(self):
 		"""
 		Shows main window or brings it to front, if is already visible.
