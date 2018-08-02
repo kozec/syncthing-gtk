@@ -74,7 +74,7 @@ class DeviceEditorDialog(EditorDialog):
 					self.set_value("deviceID", self.id)
 			else:
 				self.values = [ x for x in self.config["devices"] if x["deviceID"] == self.id ][0]
-		except KeyError, e:
+		except KeyError as e:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
 			log.exception(e)

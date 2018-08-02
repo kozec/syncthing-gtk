@@ -55,8 +55,8 @@ if IS_WINDOWS:
 	import wmi, _winreg
 
 """ Localization lambdas """
-_ = lambda(a): _uc(gettext.gettext(a))
-_uc = lambda(b): b if type(b) == unicode else b.decode("utf-8")
+_ = lambda a: _uc(gettext.gettext(a))
+_uc = lambda b: b if type(b) == unicode else b.decode("utf-8")
 
 def luhn_b32generate(s):
 	"""
@@ -91,7 +91,7 @@ def check_device_id(nid):
 			p = nid[i*14:((i+1)*14)-1]
 			try:
 				l = luhn_b32generate(p)
-			except Exception, e:
+			except Exception as e:
 				log.exception(e)
 				return False
 			g = "%s%s" % (p, l)
@@ -497,7 +497,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 			try:
 				file(desktopfile, "w").write((DESKTOP_FILE % (
 					program_name, executable, icon, description)).encode('utf-8'))
-			except Exception, e:
+			except Exception as e:
 				# IO errors or out of disk space... Not really
 				# expected, but may happen
 				log.warning("Failed to create autostart entry: %s", e)
@@ -506,7 +506,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 			try:
 				if os.path.exists(desktopfile):
 					os.unlink(desktopfile)
-			except Exception, e:
+			except Exception as e:
 				# IO or access error
 				log.warning("Failed to remove autostart entry: %s", e)
 				return False
@@ -534,7 +534,7 @@ def can_upgrade_binary(binary_path):
 				os.unlink(path)
 			# return Maybe
 			return True
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			return False
 	else:

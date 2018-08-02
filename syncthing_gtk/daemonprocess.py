@@ -84,7 +84,7 @@ class DaemonProcess(GObject.GObject):
 					self._proc = Popen([ "nice", "-n", "%s" % self.priority ], stdout=PIPE)
 				self._stdout = Gio.UnixInputStream.new(self._proc.stdout.fileno(), False)
 				self._check = GLib.timeout_add_seconds(1, self._cb_check_alive)
-		except Exception, e:
+		except Exception as e:
 			# Startup failed
 			self.emit("failed", e)
 			return
@@ -96,7 +96,7 @@ class DaemonProcess(GObject.GObject):
 		""" Handler for read_bytes_async """
 		try:
 			response = pipe.read_bytes_finish(results)
-		except Exception, e:
+		except Exception as e:
 			if not self._cancel.is_cancelled():
 				log.exception(e)
 				GLib.idle_add(pipe.read_bytes_async, 256, 1, None, self._cb_read)

@@ -366,7 +366,7 @@ class App(Gtk.Application, TimerManager):
 				self.daemon = Daemon(os.path.join(self.home_dir_override, "config.xml"))
 			else:
 				self.daemon = Daemon()
-		except InvalidConfigurationException, e:
+		except InvalidConfigurationException as e:
 			# Syncthing is not configured, most likely never launched.
 			# Run wizard.
 			if IS_XP:
@@ -377,7 +377,7 @@ class App(Gtk.Application, TimerManager):
 			self.hide()
 			self.show_wizard()
 			return False
-		except TLSErrorException, e:
+		except TLSErrorException as e:
 			# This is pretty-much fatal. Display error message and bail out.
 			self.cb_syncthing_con_error(self.daemon, Daemon.UNKNOWN, str(e), e)
 			return False
@@ -625,20 +625,20 @@ class App(Gtk.Application, TimerManager):
 		# Move old from way
 		try:
 			shutil.move(bin, old_bin)
-		except Exception, e:
+		except Exception as e:
 			log.warning("Failed to upgrade daemon binary: Failed to rename old binary")
 			log.warning(e)
 			return
 		# Place new
 		try:
 			shutil.move(new_bin, bin)
-		except Exception, e:
+		except Exception as e:
 			log.warning("Failed to upgrade daemon binary: Failed to rename new binary")
 			log.warning(e)
 			# Return old back to place
 			try:
 				shutil.move(old_bin, bin)
-			except Exception, e:
+			except Exception as e:
 				# This really shouldn't happen, in more than one sense
 				log.error("Failed to upgrade daemon binary: Failed to rename backup")
 				log.exception(e)
@@ -646,7 +646,7 @@ class App(Gtk.Application, TimerManager):
 		# Remove old
 		try:
 			os.unlink(old_bin)
-		except Exception, e:
+		except Exception as e:
 			# Not exactly fatal
 			log.warning("Failed to remove backup binary durring backup")
 			log.warning(e)

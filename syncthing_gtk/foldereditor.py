@@ -21,7 +21,7 @@ VALUES = [ "vlabel", "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
 	"vversionsPath", "vfsWatcherEnabled", "vcleanoutDays", "vcommand", "vorder",
 	"vminDiskFreePct"
 	]
-VERSIONING_TYPES = set(['simple', 'staggered', 'trashcan', 'external'])
+VERSIONING_TYPES = {'simple', 'staggered', 'trashcan', 'external'}
 
 class FolderEditorDialog(EditorDialog):
 	def __init__(self, app, is_new, id=None, path=None):
@@ -153,7 +153,7 @@ class FolderEditorDialog(EditorDialog):
 				}
 				self["vpath"].set_sensitive(False)
 				self["btBrowse"].set_sensitive(False)
-		except KeyError, e:
+		except KeyError as e:
 			# ID not found in configuration. This is practicaly impossible,
 			# so it's handled only by self-closing dialog.
 			log.exception(e)

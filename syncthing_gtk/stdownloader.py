@@ -23,7 +23,7 @@ class StDownloader(GObject.GObject):
 
 	"""
 	Downloads, extracts and saves syncthing daemon to given location.
-	
+
 	# Create instance
 	sd = StDownloader("/tmp/syncthing.x86", "linux-386")
 	# Connect to singals
@@ -32,10 +32,10 @@ class StDownloader(GObject.GObject):
 	...
 	# Determine version
 	sd.get_version()
-	
-	# (somewhere in 'version' signal callback) 
+
+	# (somewhere in 'version' signal callback)
 	sd.download()
-	
+
 	Signals:
 		version(version)
 			emitted after current syncthing version is determined.
@@ -54,7 +54,7 @@ class StDownloader(GObject.GObject):
 		error(exception, message):
 			Emited on error. Either exception or message can be None
 	"""
-	
+
 	__gsignals__ = {
 			b"version"				: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 			b"download-starting"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
@@ -64,10 +64,10 @@ class StDownloader(GObject.GObject):
 			b"extraction-finished"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 			b"error"				: (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
 		}
-	
+
 	def __init__(self, target, platform):
 		"""
-		Target		- ~/.local/bin/syncthing or similar target location 
+		Target		- ~/.local/bin/syncthing or similar target location
 					for daemon binary
 		Platform	- linux-386, windows-adm64 or other suffix used on
 					syncthing releases page.
@@ -75,7 +75,7 @@ class StDownloader(GObject.GObject):
 		GObject.GObject.__init__(self)
 		self.target = target
 		self.platform = platform
-		# Latest Syncthing version known to be compatibile with
+		# Latest Syncthing version known to be compatible with
 		# Syncthing-GTK. This is just hardcoded minimal version,
 		# actual value will be determined later
 		self.latest_compat = "v0.11.0"
@@ -83,7 +83,7 @@ class StDownloader(GObject.GObject):
 		self.version = None
 		self.dll_url = None
 		self.dll_size = None
-	
+
 	@staticmethod
 	def get_target_folder(*a):
 		"""
@@ -92,7 +92,7 @@ class StDownloader(GObject.GObject):
 		That's %APPDATA%/syncthing on Windows or one of ~/bin, ~/.bin
 		or ~/.local/bin, whatever already exists. If none of folders
 		are existing on Linux, ~/.local/bin will be created.
-		
+
 		Path will contain ~ on Linux and needs to be expanded.
 		"""
 		if IS_WINDOWS:
@@ -103,7 +103,7 @@ class StDownloader(GObject.GObject):
 			if os.path.exists(os.path.expanduser(p)):
 				return p
 		return "~/.local/bin"
-	
+
 	def get_version(self):
 		"""
 		Determines latest usable version and prepares stuff needed for
@@ -114,20 +114,20 @@ class StDownloader(GObject.GObject):
 		uri = StDownloader.ST_GTK_URL
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_compatibility, None)
-	
+
 	def get_target(self):
 		""" Returns download target """
 		return self.target
-	
+
 	def force_version(self, version):
 		self.latest_compat = version
 		self.forced = version
 		log.verbose("STDownloader: Forced Syncthing version: %s", self.latest_compat)
-		
+
 		uri = StDownloader.ST_URL
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_latest, None)
-	
+
 	def _cb_read_compatibility(self, f, result, buffer, *a):
 		# Extract compatibility info from version tags in response
 		from syncthing_gtk.app import INTERNAL_VERSION
@@ -147,7 +147,7 @@ class StDownloader(GObject.GObject):
 				if not sha in tags_by_commit:
 					tags_by_commit[sha] = []
 				tags_by_commit[sha].append(name)
-			
+
 			# Determine last Syncthing-GTK version that is not newer
 			# than INTERNAL_VERSION and last Syncthing release supported
 			# by it
@@ -160,27 +160,27 @@ class StDownloader(GObject.GObject):
 						if tag.startswith("Syncthing_"):
 							# ST-GTK version has ST version attached.
 							# Check if this is newer than last known
-							# compatibile version
+							# compatible version
 							st_ver = tag.split("_")[-1]
 							if compare_version(st_ver, self.latest_compat):
-								log.verbose("STDownloader: Got newer compatibile Syncthing version %s", st_ver)
+								log.verbose("STDownloader: Got newer compatible Syncthing version %s", st_ver)
 								self.latest_compat = st_ver
-			
-			log.verbose("STDownloader: Latest compatibile Syncthing version: %s", self.latest_compat)
-		
-		except Exception, e:
+
+			log.verbose("STDownloader: Latest compatible Syncthing version: %s", self.latest_compat)
+
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
-		
-		# After latest compatibile ST version is determined, determine
-		# latest actually existing version. This should be usualy same,
+
+		# After latest compatible ST version is determined, determine
+		# latest actually existing version. This should be usually same,
 		# but checking is better than downloading non-existant file.
 		uri = StDownloader.ST_URL
 		f = Gio.File.new_for_uri(uri)
 		f.load_contents_async(None, self._cb_read_latest, None)
-	
+
 	def _cb_read_latest(self, f, result, buffer, *a):
 		# Extract release version from response
 		from syncthing_gtk.app import MIN_ST_VERSION
@@ -188,7 +188,7 @@ class StDownloader(GObject.GObject):
 		try:
 			success, data, etag = f.load_contents_finish(result)
 			if not success: raise Exception("Gio download failed")
-			# Go over all available versions until compatibile one
+			# Go over all available versions until compatible one
 			# is found
 			data = json.loads(data)
 			for release in data:
@@ -196,8 +196,8 @@ class StDownloader(GObject.GObject):
 				if latest_ver is None:
 					latest_ver = version
 				if compare_version(self.latest_compat, version) and (self.forced or compare_version(version, MIN_ST_VERSION)):
-					# Compatibile
-					log.verbose("STDownloader: Found compatibile Syncthing version: %s", version)
+					# compatible
+					log.verbose("STDownloader: Found compatible Syncthing version: %s", version)
 					self.version = version
 					for asset in release["assets"]:
 						if self.platform in asset["name"]:
@@ -211,7 +211,7 @@ class StDownloader(GObject.GObject):
 			del f
 			if self.dll_url is None:
 				raise Exception("No release to download")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
@@ -222,43 +222,45 @@ class StDownloader(GObject.GObject):
 					latest_ver, self.version)
 		# Everything is done, emit version signal
 		self.emit("version", self.version)
-	
-	
+
+
 	def download(self):
 		try:
 			suffix = ".%s" % (".".join(self.dll_url.split(".")[-2:]),)
 			if suffix.endswith(".zip") :
-				suffix = ".zip"	
+				suffix = ".zip"
 			tmpfile = tempfile.NamedTemporaryFile(mode="wb",
 				prefix="syncthing-package.", suffix=suffix, delete=False)
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
-			self.emit("error", e, _("Failed to create temporaly file."))
+			self.emit("error", e, _("Failed to create temporary file."))
 			return
 		f = Gio.File.new_for_uri(self.dll_url)
 		f.read_async(GLib.PRIORITY_DEFAULT, None, self._cb_open_archive,
 				(tmpfile,))
 		self.emit("download-starting")
-	
-	
-	def _cb_open_archive(self, f, result, (tmpfile,)):
+
+
+	def _cb_open_archive(self, f, result, data):
+		(tmpfile,) = data
 		stream = None
 		try:
 			stream = f.read_finish(result)
 			del f
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
 		stream.read_bytes_async(CHUNK_SIZE, GLib.PRIORITY_DEFAULT, None,
 				self._cb_download, (tmpfile, 0))
-	
-	def _cb_download(self, stream, result, (tmpfile, downloaded)):
+
+	def _cb_download(self, stream, result, data):
+		(tmpfile, downloaded) = data
 		try:
 			# Get response from async call
 			response = stream.read_bytes_finish(result)
 			if response == None:
-				raise Exception("No data recieved")
+				raise Exception("No data received")
 			# 0b of data read indicates end of file
 			if response.get_size() > 0:
 				# Not EOF. Write buffer to disk and download some more
@@ -273,13 +275,13 @@ class StDownloader(GObject.GObject):
 				self.emit("download-finished")
 				stream.close(None)
 				tmpfile.close()
-				GLib.idle_add(self._open_achive, tmpfile.name)
-		except Exception, e:
+				GLib.idle_add(self._open_archive, tmpfile.name)
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e, _("Download failed."))
 			return
-	
-	def _open_achive(self, archive_name):
+
+	def _open_archive(self, archive_name):
 		try:
 			# Determine archive format
 			archive = None
@@ -311,13 +313,14 @@ class StDownloader(GObject.GObject):
 						output = file(self.target, "wb")
 						GLib.idle_add(self._extract, (archive, compressed, output, 0, tinfo.size))
 						return
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
-	
-	def _extract(self, (archive, compressed, output, extracted, ex_size)):
+
+	def _extract(self, data):
+		(archive, compressed, output, extracted, ex_size) = data
 		try:
 			buffer = compressed.read(CHUNK_SIZE)
 			read_size = len(buffer)
@@ -335,19 +338,19 @@ class StDownloader(GObject.GObject):
 				# Change file mode to 0755
 				if hasattr(os, "fchmod"):
 					# ... on Unix
-					os.fchmod(output.fileno(), 0755)
+					os.fchmod(output.fileno(), 0o755)
 				output.close()
 				archive.close()
 				compressed.close()
 				self.emit("extraction-progress", 1.0)
 				self.emit("extraction-finished")
-		except Exception, e:
+		except Exception as e:
 			log.exception(e)
 			self.emit("error", e,
 				_("Failed to determine latest Syncthing version."))
 			return
 		return False
-	
+
 	@staticmethod
 	def determine_platform():
 		"""
@@ -389,21 +392,21 @@ class ZipThatPretendsToBeTar(zipfile.ZipFile):
 	""" Because ZipFile and TarFile are _almost_ the same -_- """
 	def __init__(self, filename, mode):
 		zipfile.ZipFile.__init__(self, filename, mode)
-	
+
 	def getnames(self):
 		""" Return the members as a list of their names. """
 		return self.namelist()
-		
+
 	def getmember(self, name):
 		"""
 		Return a TarInfo object for member name. If name can not be
 		found in the archive, KeyError is raised
 		"""
 		return ZipThatPretendsToBeTar.ZipInfo(self, name)
-	
+
 	def extractfile(self, name):
 		return self.open(name, "r")
-	
+
 	class ZipInfo:
 		def __init__(self, zipfile, name):
 			info = zipfile.getinfo(name)
@@ -411,7 +414,7 @@ class ZipThatPretendsToBeTar(zipfile.ZipFile):
 				if not (x.startswith("_") or x.endswith("_")):
 					setattr(self, x, getattr(info, x))
 			self.size = self.file_size
-		
+
 		def isfile(self, *a):
 			# I don't exactly expect anything but files in ZIP...
 			return True

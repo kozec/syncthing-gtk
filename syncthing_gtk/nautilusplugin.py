@@ -39,7 +39,7 @@ class NautiluslikeExtension(GObject.GObject):
 		self.ready = False
 		try:
 			self.daemon = Daemon()
-		except Exception, e:
+		except Exception as e:
 			# Syncthing is not configured, most likely never launched.
 			log.error("%s", e)
 			log.error("Failed to read Syncthing configuration.")
