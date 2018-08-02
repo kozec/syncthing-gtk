@@ -9,6 +9,10 @@ Listens to syncing events on daemon and displays desktop notifications.
 from __future__ import unicode_literals
 from syncthing_gtk.tools import IS_WINDOWS
 DELAY = 5	# Display notification only after no file is downloaded for <DELAY> seconds
+ICON_DEF = "syncthing-gtk"
+ICON_ERR = "syncthing-gtk-error"
+
+SERVER_CAPS = []
 
 HAS_DESKTOP_NOTIFY = False
 Notifications = None
@@ -23,32 +27,274 @@ except ImportError:
 	pass
 
 if HAS_DESKTOP_NOTIFY:
-	from gi.repository import Gtk
 	from syncthing_gtk.timermanager import TimerManager
 	from syncthing_gtk.tools import _ # gettext function
 	import os, logging
 	log = logging.getLogger("Notifications")
-	
-	class NotificationsCls(TimerManager):
+
+	class STNotification():
+		""" Basic class to track a notification and update its text """
+		ACT_DEFAULT = "default"
+		ACT_IGNORE = "IGNORE"
+		ACT_ACCEPT = "ACCEPT"
+		app = None
+		n = None
+		id = None
+		label = None
+
+		def __init__(self, app, id, label=None):
+			self.app = app
+			self.id = id
+			self.set_label(label)
+
+		def set_label(self, label):
+			self.label = label
+
+		def clean(self):
+			pass
+
+		def close_notification(self):
+			try:
+				self.n.close_notification()
+			except Exception:
+				# If I can't close the notification, I don't care
+				pass
+
+		def cb_notification_closed(self, notif):
+			self.n = None
+			self.clean()
+
+		def supports(self, caps, supported=True, unsupported=False):
+			if caps in SERVER_CAPS:
+				return supported
+			else:
+				return unsupported
+
+		def addactions(self, n, actions=[], clear=True):
+			if not self.supports("actions"): return
+			if clear: n.clear_actions()
+			for act, label, cb, data in actions:
+				n.add_action(act, label, cb, data)
+
+		def show(self, n):
+			try:
+				n.show()
+			except Exception:
+				# Ignore all errors here, there is no way I can handle
+				# everything what can be broken with notifications...
+				pass
+
+		def push(self, summary, body=None, **kwargs):
+			icon = kwargs.get('icon', ICON_DEF)
+			urg = kwargs.get('urg')
+			actions = kwargs.get('actions', [])
+
+			if not self.n:
+				self.n = Notify.Notification.new(summary, body, icon)
+				self.n.connect("closed", self.cb_notification_closed),
+			else:
+				self.n.update(summary, body, icon)
+
+			if urg:
+				self.n.set_urgency(urg)
+
+			self.addactions(self.n, actions)
+			self.show(self.n)
+
+	class STNotificationDevice(STNotification):
+		"""Notification class to track a notification, which is related to a syncthing device"""
+
+		def cb_accept(self, n, action, user_data):
+			self.app.open_editor_device(self.id, self.label)
+
+		def cb_ignore(self, n, action, user_data):
+			def add_ignored(target, trash):
+				if "ignoredDevices" not in target:
+					target["ignoredDevices"] = []
+				target["ignoredDevices"].append(self.id)
+			self.app.change_setting_async("ignoredDevices", add_ignored, restart=False)
+
+		def rejected(self):
+			label_fb = self.label or self.id
+			actions = [
+				(self.ACT_DEFAULT, _('Accept device "%s"') % label_fb, self.cb_accept, None),
+				(self.ACT_ACCEPT,  _('Accept device "%s"') % label_fb, self.cb_accept, None),
+				(self.ACT_IGNORE,  _('Ignore device "%s"') % label_fb, self.cb_ignore, None),
+			]
+			summary = _("Unknown Device")
+			body = _('Device "%s" is trying to connect to syncthing daemon.' % self.label)
+			self.push(summary, body, actions=actions, urg=Notify.Urgency.CRITICAL)
+
+	class STNotificationFolder(STNotification, TimerManager):
+		"""Notification class to track a notification, which is related to a syncthing folder"""
+		syncing = False
+
+		updated = set([])
+		deleted = set([])
+		updating = set([])
+		conflict = set([])
+
+		timer_id = "display"
+		timer_delay = DELAY
+
+		def __init__(self, app, id, label=None):
+			TimerManager.__init__(self)
+			STNotification.__init__(self, app, id, label)
+
+		def set_label(self, label):
+			if label:
+				self.label = label
+			elif self.id in self.app.folders:
+				self.label = self.app.folders[self.id]["label"]
+
+		def clean(self):
+			self.syncing = False
+			self.cancel_timer(self.timer_id)
+			self.updated.clear()
+			self.deleted.clear()
+			self.updating.clear()
+
+		def cb_accept(self, n, action, user_data):
+			self.app.open_editor_folder(self.id, self.label, user_data)
+
+		def cb_ignore(self, n, action, user_data):
+			def add_ignored(target, trash):
+				if "ignoredFolders" not in target:
+					target["ignoredFolders"] = []
+				target["ignoredFolders"].append(self.id)
+			self.app.change_setting_async("ignoredFolders", add_ignored, restart=False)
+
+		def rejected(self, nid):
+			device = self.app.devices[nid].get_title()
+			label_fb = self.label or self.id
+			actions = [
+				(self.ACT_DEFAULT, _('Accept folder "%s"') % label_fb, self.cb_accept, nid),
+				(self.ACT_ACCEPT,  _('Accept folder "%s"') % label_fb, self.cb_accept, nid),
+				(self.ACT_IGNORE,  _('Ignore folder "%s"') % label_fb, self.cb_ignore, nid),
+			]
+
+			markup_dev = self.supports("body-markup",
+				"<b>%s</b>" % device,
+				device)
+			markup_fol = self.supports("body-markup",
+				"<b>%s</b>" % label_fb,
+				label_fb)
+
+			summary = _("Folder rejected")
+			body = _('Unexpected folder "%(folder)s" sent from device "%(device)s".') % {
+				'device' : markup_dev,
+				'folder' : markup_fol
+			}
+			self.push(summary, body, actions=actions, urg=Notify.Urgency.CRITICAL)
+
+		def add_path(self, path, itm_finished=True):
+			path_full = os.path.join(self.app.folders[self.id]["norm_path"], path)
+
+			if itm_finished:
+
+				if ".sync-conflict" in path and os.path.exists(path_full):
+					# Updated or new conflict
+					self.sync_conflict(path)
+
+				elif path in self.updating:
+					if os.path.exists(path_full):
+						self.updated.add(path)
+					else:
+						self.deleted.add(path)
+
+					self.updating.remove(path)
+
+					if not self.timer_active(self.timer_id):
+						self.timer(self.timer_id, self.timer_delay, self.display)
+			else:
+				self.updating.add(path)
+
+		def display(self, finished=False):
+			summary = ""
+			body = ""
+			filename = ""
+			if finished:
+				summary = _('Completed synchronisation in "%s"') % (self.label or self.id)
+			else:
+				summary = _('Updates in folder "%s"') % (self.label or self.id)
+
+			if len(self.updated) == 1 and len(self.deleted) == 0:
+				f_path = os.path.join(self.app.folders[self.id]["norm_path"], self.updated.pop())
+				filename = os.path.split(f_path)[-1]
+
+				self.supports("body-hyperlinks",
+					"<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename),
+					f_path)
+
+				body = _("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.")
+			elif len(self.updated) == 0 and len(self.deleted) == 1:
+				f_path = os.path.join(self.app.folders[self.id]["norm_path"], self.deleted.pop())
+				filename = os.path.split(f_path)[-1]
+				body = _("%(hostname)s: Deleted '%(filename)s' to reflect remote changes.")
+			elif len(self.deleted) == 0 and len(self.updated) > 0:
+				body = _("%(hostname)s: Downloaded %(updated)s files to reflect remote changes.")
+			elif len(self.updated) == 0 and len(self.deleted) > 0:
+				body = _("%(hostname)s: Deleted %(deleted)s files to reflect remote changes.")
+			elif len(self.deleted) > 0 and len(self.updated) > 0:
+				body = _("%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes.")
+			elif len(self.conflict) > 0:
+				# If we reached this point, there are only sync-conflicts updated
+				# we don't want to have another notification
+				return
+
+			body = body % {
+				'hostname' : self.app.get_local_name(),
+				'updated'  : len(self.updated),
+				'deleted'  : len(self.deleted),
+				'filename' : (filename),
+			}
+
+			self.push(summary, body)
+
+		def set_progress(self, progress):
+			if progress < 1.0:
+				self.syncing = True
+
+		def finished(self):
+			if len(self.deleted) + len(self.updating) + len(self.updated) > 0 \
+			   or self.syncing:
+				self.display(True)
+
+		def sync_conflict(self, path):
+			path_full = os.path.join(self.app.folders[self.id]["norm_path"], path)
+
+			summary = _('Conflicting file in "%s"') % (self.label or self.id)
+			text = _('Conflict in path "%s" detected.') % path_full
+
+			n = Notify.Notification.new(summary, text, ICON_ERR)
+			n.set_urgency(Notify.Urgency.CRITICAL)
+			n.add_action(self.ACT_DEFAULT, _("Open Conflicting file in filemanager"), self.cb_open_conflict, path_full)
+			n.connect("closed", self.cb_sync_conflict_closed),
+			self.conflict.add(n)
+
+			self.show(n)
+
+		def cb_sync_conflict_closed(self, notif):
+			self.conflict.remove(notif)
+
+		def cb_open_conflict(self, n, action, user_data):
+			if user_data and os.path.exists(user_data):
+				dirname = os.path.dirname(user_data)
+				self.app.cb_browse_folder({'path': dirname})
+
+	class NotificationsCls():
 		""" Watches for filesystem changes and reports them to daemon """
 		def __init__(self, app, daemon):
-			TimerManager.__init__(self)
 			Notify.init("Syncthing GTK")
+			# Cache the server capabilities, as get_server_caps() always queries DBus
+			global SERVER_CAPS
+			SERVER_CAPS = Notify.get_server_caps()
 			# Prepare stuff
 			self.app = app
 			self.daemon = daemon
-			self.updating = set([])		# Filenames
-			self.updated = set([])		# Filenames
-			self.deleted = set([])		# Filenames
-			self.syncing = set([])		# Folder id's
-			# Load icons
-			self.icon = None
-			self.error_icon = None
-			try:
-				self.icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk", 64, Gtk.IconLookupFlags.FORCE_SIZE)
-				self.error_icon = Gtk.IconTheme.get_default().load_icon("syncthing-gtk-error", 64, Gtk.IconLookupFlags.FORCE_SIZE)
-			except Exception, e:
-				log.error("Failed to load icon: %s", e)
+			self.notify_folders = {}
+			self.notify_devices = {}
+
 			# Make deep connection with daemon
 			self.signals = [
 				self.daemon.connect("connected", self.cb_syncthing_connected)
@@ -70,144 +316,73 @@ if HAS_DESKTOP_NOTIFY:
 				self.signals += [
 					self.daemon.connect('folder-sync-progress', self.cb_syncthing_folder_progress),
 					self.daemon.connect('folder-sync-finished', self.cb_syncthing_folder_finished)
-					]
+				]
 				log.verbose("Folder notifications enabled")
-		
-		def info(self, text, icon=None):
-			n = Notify.Notification.new(
-					_("Syncthing-GTK"),
-					text,
-					None
-				)
-			if icon is None:
-				icon = self.icon
-			if not icon is None:
-				n.set_icon_from_pixbuf(icon)
-			try:
-				if n.show ():
-					return n
-			except Exception:
-				# Ignore all errors here, there is no way I can handle
-				# everything what can be broken with notifications...
-				pass
-			del n
-			return None
-		
-		def error(self, text):
-			self.info(text, self.error_icon)
-		
+
+		def get_folder(self, folder_id, label=None):
+			if folder_id not in self.notify_folders:
+				self.notify_folders[folder_id] = STNotificationFolder(self.app, folder_id, label)
+			return self.notify_folders[folder_id]
+
+		def get_device(self, device_id, label=None):
+			if device_id not in self.notify_devices:
+				self.notify_devices[device_id] = STNotificationDevice(self.app, device_id, label)
+			return self.notify_devices[device_id]
+
+		def clear_notifications(self):
+			# Clear download list and close related notifications
+			for dct in [self.notify_devices, self.notify_folders]:
+				for obj in dct.values():
+					obj.close_notification()
+				dct = {}
+
 		def kill(self, *a):
 			""" Removes all event handlers and frees some stuff """
 			for s in self.signals:
 				self.daemon.handler_disconnect(s)
+			self.clear_notifications()
 			log.info("Notifications killed")
-		
+
 		def cb_syncthing_connected(self, *a):
-			# Clear download list
-			self.updating = set([])
-			self.updated = set([])
-			self.deleted = set([])
-			self.syncing = set([])
-		
+			self.clear_notifications()
+
 		def cb_syncthing_error(self, daemon, message):
-			if "Unexpected folder ID" in message:
-				# Handled by event, don't display twice
+			summary = _('An error occured in Syncthing!')
+			n = Notify.Notification.new(summary, None, ICON_ERR)
+			n.set_urgency(Notify.Urgency.CRITICAL)
+
+			try:
+				n.show()
+			except Exception:
+				pass
+
+		def cb_syncthing_folder_rejected(self, daemon, device_id, folder_id, label):
+			if device_id not in self.app.devices:
 				return
-			self.error(message)
-		
-		def cb_syncthing_folder_rejected(self, daemon, nid, rid, label):
-			if nid in self.app.devices:
-				device = self.app.devices[nid].get_title()
-				markup = _('Unexpected folder "%(folder)s" sent from device "%(device)s".') % {
-							'device' : "<b>%s</b>" % device,
-							'folder' : "<b>%s</b>" % (label or rid)
-				}
-				self.info(markup)
-		
+
+			n = self.get_folder(folder_id, label)
+			n.rejected(device_id)
+
 		def cb_syncthing_device_rejected(self, daemon, nid, name, address):
-			markup = _('Device "%s" is trying to connect to syncthing daemon.' % (name,))
-			self.info(markup)
-			
+			n = self.get_device(nid, name)
+			n.rejected()
+
 		def cb_syncthing_item_started(self, daemon, folder_id, path, time):
-			if folder_id in self.app.folders:
-				f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)
-				self.updating.add(f_path)
-		
+			n = self.get_folder(folder_id)
+			n.add_path(path, itm_finished=False)
+
 		def cb_syncthing_item_updated(self, daemon, folder_id, path, *a):
-			f_path = os.path.join(self.app.folders[folder_id]["norm_path"], path)
-			if ".sync-conflict" in path:
-				if os.path.exists(f_path):
-					# Updated or new conflict
-					dpath = f_path
-					if dpath.startswith(os.path.expanduser("~")):
-						dpath = "~" + dpath[len(os.path.expanduser("~")):]
-					markup = _('Conflicting file detected:\n%s' % (dpath,))
-					self.info(markup)
-					return
-			if f_path in self.updating:
-				# Check what kind of 'update' was done
-				if os.path.exists(f_path):
-					# Updated or new file
-					self.updated.add(f_path)
-				else:
-					# Deleted file
-					self.deleted.add(f_path)
-				self.updating.remove(f_path)
-				self.cancel_timer("display")
-				self.timer("display", DELAY, self.display)
-		
+			n = self.get_folder(folder_id)
+			n.add_path(path)
+
 		def cb_syncthing_folder_progress(self, daemon, folder_id, progress):
-			if progress < 1.0:
-				self.syncing.add(folder_id)
-		
+			n = self.get_folder(folder_id)
+			n.set_progress(progress)
+
 		def cb_syncthing_folder_finished(self, daemon, folder_id):
-			if folder_id in self.syncing:
-				self.syncing.remove(folder_id)
-				folder_label = self.app.folders[folder_id]["label"]
-				markup = _("Synchronization of folder '%s' is completed.") % (
-							(folder_label or folder_id),)
-				self.info(markup)
-		
-		def display(self):
-			if len(self.updated) == 1 and len(self.deleted) == 0:
-				# One updated file
-				f_path = list(self.updated)[0]
-				filename = os.path.split(f_path)[-1]
-				self.info(_("%(hostname)s: Downloaded '%(filename)s' to reflect remote changes.") % {
-						'hostname' : self.app.get_local_name(),
-						'filename' : "<a href='file://%s'>%s</a>" % (f_path.encode('unicode-escape'), filename)
-					})
-			elif len(self.updated) == 0 and len(self.deleted) == 1:
-				# One deleted file
-				f_path = list(self.deleted)[0]
-				filename = os.path.split(f_path)[-1]
-				self.info(_("%(hostname)s: Deleted '%(filename)s' to reflect remote changes.") % {
-						'hostname' : self.app.get_local_name(),
-						'filename' : filename
-					})
-			elif len(self.deleted) == 0 and len(self.updated) > 0:
-				# Multiple updated, nothing deleted
-				self.info(_("%(hostname)s: Downloaded %(updated)s files to reflect remote changes.") % {
-						'hostname' : self.app.get_local_name(),
-						'updated'  : len(self.updated)
-					})
-			elif len(self.updated) == 0 and len(self.deleted) > 0:
-				# Multiple deleted, no updated
-				self.info(_("%(hostname)s: Deleted %(deleted)s files to reflect remote changes.") % {
-						'hostname' : self.app.get_local_name(),
-						'deleted'  : len(self.deleted)
-					})
-			elif len(self.deleted) > 0 and len(self.updated) > 0:
-				 # Multiple deleted, multiple updated
-				self.info(
-					_("%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes.") % {
-						'hostname' : self.app.get_local_name(),
-						'updated'  : len(self.updated),
-						'deleted'  : len(self.deleted)
-					})
-			self.updated = set([])
-			self.deleted = set([])
-		
+			n = self.get_folder(folder_id)
+			n.finished()
+
 	# Notifications is set to class only if libnotify is available
 	Notifications = NotificationsCls
 
