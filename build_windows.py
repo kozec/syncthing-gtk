@@ -16,53 +16,56 @@ gnome_dll_path = "/Python27/Lib/site-packages/gnome"
 build_dir = "./build/exe.win32-2.7/"
 
 # List of dlls that cx_freeze can't detect automatically
-missing_dll = [	'libgtk-3-0.dll',
-				'libgdk-3-0.dll',
-				'libatk-1.0-0.dll',
-				'libcairo-gobject-2.dll',
-				'libgdk_pixbuf-2.0-0.dll',
-				#'libgirepository-1.0-1.dll',
-				#'libgmodule-2.0-0.dll',
-				#'libgladeui-2-6.dll',
-                                'libpango-1.0-0.dll',
-				'libpangocairo-1.0-0.dll',
-				'libpangoft2-1.0-0.dll',
-				'libpangowin32-1.0-0.dll',
-				'libffi-6.dll',
-				#'libgio-2.0-0.dll',
-				'libharfbuzz-gobject-0.dll',
-				'libharfbuzz-0.dll',
-				#'libpng16-16.dll',
-				#'libxmlxpat.dll',
-				#'libintl-8.dll',
-				'librsvg-2-2.dll',
-				#'libzzz.dll',
-				'libtiff-5.dll',
-				'libwebp-5.dll',
-				#'libfreetype-6.dll',
-				#'libwinpthread-1.dll',
-				'libepoxy-0.dll',
-				'libjasper-1.dll',
-				'libjpeg-8.dll',
-				
-				'gspawn-win32-helper.exe',
-				'gspawn-win32-helper-console.exe',
+missing_dll = [
+	'libgtk-3-0.dll',
+	'libgdk-3-0.dll',
+	'libatk-1.0-0.dll',
+	'libcairo-gobject-2.dll',
+	'libgdk_pixbuf-2.0-0.dll',
+	#'libgirepository-1.0-1.dll',
+	#'libgmodule-2.0-0.dll',
+	#'libgladeui-2-6.dll',
+	'libpango-1.0-0.dll',
+	'libpangocairo-1.0-0.dll',
+	'libpangoft2-1.0-0.dll',
+	'libpangowin32-1.0-0.dll',
+	'libffi-6.dll',
+	#'libgio-2.0-0.dll',
+	'libharfbuzz-gobject-0.dll',
+	'libharfbuzz-0.dll',
+	#'libpng16-16.dll',
+	#'libxmlxpat.dll',
+	#'libintl-8.dll',
+	'librsvg-2-2.dll',
+	#'libzzz.dll',
+	'libtiff-5.dll',
+	'libwebp-5.dll',
+	#'libfreetype-6.dll',
+	#'libwinpthread-1.dll',
+	'libepoxy-0.dll',
+	'libjasper-1.dll',
+	'libjpeg-8.dll',
+
+	'gspawn-win32-helper.exe',
+	'gspawn-win32-helper-console.exe',
 ]
 
 # List of dlls that are exported from wrong source (or broken for
 # somehow other reason
-wrong_sized_dll = [	'libcairo-gobject-2.dll',
-					'libpangocairo-1.0-0.dll',
-					'libfontconfig-1.dll',
-					'libglib-2.0-0.dll',
-					'libgobject-2.0-0.dll',
-					'libgthread-2.0-0.dll',
-
+wrong_sized_dll = [
+	'libcairo-gobject-2.dll',
+	'libpangocairo-1.0-0.dll',
+	'libfontconfig-1.dll',
+	'libglib-2.0-0.dll',
+	'libgobject-2.0-0.dll',
+	'libgthread-2.0-0.dll',
 ]
 
 # List of languages that are copied from GTK and included in installation
-enabled_gtk_locales = [ "sk", "cs", "pl", "de", "fr", "vi", "ru", "zh_CN", "lt",
-	"es", "hu", "nl", "it" ]
+enabled_gtk_locales = [
+	"sk", "cs", "pl", "de", "fr", "vi", "ru", "zh_CN", "lt",
+	"es", "hu", "nl", "it"
+]
 
 include_files = [ ]
 
@@ -117,8 +120,8 @@ Freezer._AddVersionResource = lambda self, exe : \
 		description = self.metadata.description,
 		company = self.metadata.author,
 		product = self.metadata.name,
-                copyright = exe.copyright,
-                trademarks = exe.trademarks
+		copyright = exe.copyright,
+		trademarks = exe.trademarks
 	))
 
 setup(
@@ -145,45 +148,46 @@ if 'build' in sys.argv:
 		)
 	# Copy some theme icons
 	sizes = ["16x16", "24x24", "32x32", "scalable"]
-	icons = {	"status"  : [
-					"image-missing",
-					"dialog-information",
-					"dialog-warning",
-					"dialog-error",
-					"checkbox-symbolic",
-					"checkbox-mixed-symbolic",
-					"checkbox-checked-symbolic",
-				],
-				"mimetypes" :	[ "text-html" ],
-				"emblems" :		[ "emblem-system-symbolic" ],
-				"apps" :		[ "utilities-terminal" ],
-				"categories" :	[ "preferences-system" ],
-				"places":		[ "user-home" ],
-				"actions" : [
-					"help-about",
-					"edit-delete",
-					"edit-undo",
-					"application-exit",
-					"system-shutdown",
-					"document-open",
-					"view-refresh",
-					"open-menu-symbolic",
-					"window-close-symbolic",
-					"window-maximize-symbolic",
-					"window-restore-symbolic",
-					"window-minimize-symbolic",
-					"list-add-symbolic",
-					"list-remove-symbolic",
-					"pan-up-symbolic",
-					"pan-start-symbolic",
-					"pan-end-symbolic",
-					"pan-down-symbolic",
-				],
-				"devices" : [
-					"drive-harddisk",
-					"computer",
-				],
-		}
+	icons = {
+		"status"  : [
+			"image-missing",
+			"dialog-information",
+			"dialog-warning",
+			"dialog-error",
+			"checkbox-symbolic",
+			"checkbox-mixed-symbolic",
+			"checkbox-checked-symbolic",
+		],
+		"mimetypes" :	[ "text-html" ],
+		"emblems" :		[ "emblem-system-symbolic" ],
+		"apps" :		[ "utilities-terminal" ],
+		"categories" :	[ "preferences-system" ],
+		"places":		[ "user-home" ],
+		"actions" : [
+			"help-about",
+			"edit-delete",
+			"edit-undo",
+			"application-exit",
+			"system-shutdown",
+			"document-open",
+			"view-refresh",
+			"open-menu-symbolic",
+			"window-close-symbolic",
+			"window-maximize-symbolic",
+			"window-restore-symbolic",
+			"window-minimize-symbolic",
+			"list-add-symbolic",
+			"list-remove-symbolic",
+			"pan-up-symbolic",
+			"pan-start-symbolic",
+			"pan-end-symbolic",
+			"pan-down-symbolic",
+		],
+		"devices" : [
+			"drive-harddisk",
+			"computer",
+		],
+	}
 	themes = ["Adwaita"]
 	target_path = os.path.join(build_dir, "share/icons/")
 	src_path = os.path.join(gnome_dll_path, "share/icons/")

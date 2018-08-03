@@ -27,7 +27,6 @@ class InfoBox(Gtk.Container):
 		# doubleclick, no arguments
 		b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
 	}
-	
 	### Initialization
 	def __init__(self, app, title, icon):
 		# Variables
@@ -164,7 +163,7 @@ class InfoBox(Gtk.Container):
 		# Add border size
 		min_width += self.border_width * 2	# Left + right border
 		nat_width += self.border_width * 2
-		min_height += self.border_width * 3	# Top + below header + bottom
+		min_height += self.border_width * 3	 # Top + below header + bottom
 		nat_height += self.border_width * 3
 		return(min_width, nat_width, min_height, nat_height)
  
@@ -205,8 +204,8 @@ class InfoBox(Gtk.Container):
  
 		WAT = Gdk.WindowAttributesType
 		mask = WAT.X | WAT.Y | WAT.VISUAL
- 
-		window = Gdk.Window(self.get_parent_window(), attr, mask);
+
+		window = Gdk.Window(self.get_parent_window(), attr, mask)
 		window.set_decorations(0)
 		self.set_window(window)
 		self.register_window(window)
@@ -223,18 +222,19 @@ class InfoBox(Gtk.Container):
 		cr.line_to(0, allocation.height)
 		cr.line_to(allocation.width, allocation.height)
 		cr.line_to(allocation.width, self.border_width / 2.0)
-		cr.set_line_width(self.border_width * 2) # Half of border is rendered outside of widget
+		cr.set_line_width(self.border_width * 2)  # Half of border is rendered outside of widget
 		cr.stroke()
 		
 		# Background
 		if not self.background is None:
 			# Use set background color
 			cr.set_source_rgba(*self.background)
-			cr.rectangle(self.border_width,
-					self.border_width,
-					allocation.width - (2 * self.border_width),
-					allocation.height - (2 * self.border_width)
-					)
+			cr.rectangle(
+				self.border_width,
+				self.border_width,
+				allocation.width - (2 * self.border_width),
+				allocation.height - (2 * self.border_width)
+			)
 			cr.fill()
 		
 		# Header
