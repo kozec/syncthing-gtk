@@ -2,7 +2,7 @@
 """
 Syncthing-GTK - 1st run wizard
 
-Basicaly runs syncthing daemon with -generate option and setups some
+Basically runs syncthing daemon with -generate option and setups some
 values afterwards.
 """
 
@@ -139,7 +139,7 @@ class FindDaemonDialog(EditorDialog):
 		pass
 	
 	#@Overrides
-	def on_save_reuqested(self):
+	def on_save_requested(self):
 		self.store_values(VALUES)
 		# Save data to configuration file
 		for k in self.values:

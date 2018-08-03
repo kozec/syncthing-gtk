@@ -2,7 +2,7 @@
 """
 Syncthing-GTK - InfoBox
 
-Colorfull, expandlable widget displaying folder/device data
+Colorful, expandable widget displaying folder/device data
 """
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
@@ -19,14 +19,14 @@ DARKEN_FACTOR		= 0.75	# 0.0 to 1.0
 svg_cache = {}
 
 class InfoBox(Gtk.Container):
-	""" Expandlable widget displaying folder/device data """
+	""" Expandable widget displaying folder/device data """
 	__gtype_name__ = "InfoBox"
 	__gsignals__ = {
-			# right-click(button, time)
-			b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
-			# doubleclick, no arguments
-			b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
-		}
+		# right-click(button, time)
+		b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
+		# doubleclick, no arguments
+		b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
+	}
 	
 	### Initialization
 	def __init__(self, app, title, icon):
@@ -139,19 +139,19 @@ class InfoBox(Gtk.Container):
 		return(Gtk.SizeRequestMode.CONSTANT_SIZE)
  
 	def do_get_preferred_height(self):
-		mw, nw, mh, nh = self.get_prefered_size()
+		mw, nw, mh, nh = self.get_preferred_size()
 		return(mh, nh)
  
 	def do_get_preferred_width(self):
-		mw, nw, mh, nh = self.get_prefered_size()
+		mw, nw, mh, nh = self.get_preferred_size()
 		return(mw, nw)
-	
-	def get_prefered_size(self):
+
+	def get_preferred_size(self):
 		""" Returns (min_width, nat_width, min_height, nat_height) """
 		min_width, nat_width = 0, 0
 		min_height, nat_height = 0, 0
-		# Use max of prefered widths from children;
-		# Use sum of predered height from children.
+		# Use max of preferred widths from children;
+		# Use sum of preferred height from children.
 		for c in self.children:
 			if not c is None:
 				if c != self.rev or self.rev.get_reveal_child() or self.rev.get_child_revealed():
@@ -178,15 +178,15 @@ class InfoBox(Gtk.Container):
 		if self.get_has_window():
 			if self.get_realized():
 				self.get_window().move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
-		
-		# Allocate childrens as VBox does, always use all available width
+
+		# Allocate children as VBox does, always use all available width
 		for c in self.children:
 			if not c is None:
 				if c.get_visible():
 					min_size, nat_size = c.get_preferred_size()
 					child_allocation.width = allocation.width - (self.border_width * 2)
 					child_allocation.height = min_size.height
-					# TODO: Handle child that has window (where whould i get it?)
+					# TODO: Handle child that has window (where would i get it?)
 					c.size_allocate(child_allocation)
 					child_allocation.y += child_allocation.height + self.border_width
 
@@ -292,7 +292,7 @@ class InfoBox(Gtk.Container):
 		if self.dark_color is None:
 			self.real_color = tuple([ min(1.0, x + HILIGHT_INTENSITY * math.sin(self.hilight_factor)) for x in self.color])
 		else:
-			# Darken colors when dark bacground is enabled
+			# Darken colors when dark background is enabled
 			self.real_color = tuple([ min(1.0, DARKEN_FACTOR * (x + HILIGHT_INTENSITY * math.sin(self.hilight_factor))) for x in self.color])
 		gdkcol = Gdk.RGBA(*self.real_color)
 		self.header.override_background_color(Gtk.StateType.NORMAL, gdkcol)
@@ -509,7 +509,7 @@ class InfoBox(Gtk.Container):
 				w.set_no_show_all(True)
 	
 	def clear_values(self):
-		""" Removes all lines from UI, efectively making all values hidden """
+		""" Removes all lines from UI, effectively making all values hidden """
 		for ch in [ ] + self.grid.get_children():
 			self.grid.remove(ch)
 		self.value_widgets = {}

@@ -21,9 +21,9 @@ class _Configuration(object):
 	Configuration object implementation.
 	Use like dict to save / access values
 	"""
-	
-	# Dict with keys that are reqiured in configuration file
-	# and default values for thoose keys.
+
+	# Dict with keys that are required in configuration file
+	# and default values for those keys.
 	# Format: key : (type, default)
 	REQUIRED_KEYS = {
 		"autostart_daemon"			: (int, 2),	# 0 - wait for daemon, 1 - autostart, 2 - ask
@@ -217,8 +217,8 @@ def migrate_fs_watch(stgtk_config, st_config):
 	to Syncthing configuration and posts it to daemon.
 	
 	Returns True if anything was changed.
-	
-	Called automaticaly if old fs watch setting is found in ST-GTK config.
+
+	Called automatically if old fs watch setting is found in ST-GTK config.
 	"""
 	# TODO: This can be removed later
 	if "use_inotify" not in stgtk_config:

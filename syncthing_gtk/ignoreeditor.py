@@ -74,7 +74,7 @@ class IgnoreEditor(object):
 	
 	def cb_data_failed(self, *a):
 		# This should be next to impossible, so simply closing dialog
-		# should be enought of "solution"
+		# should be enough of "solution"
 		log.error("Failed to load .stignore data: %s", a)
 		self.close()
 	

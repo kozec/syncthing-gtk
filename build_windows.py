@@ -1,7 +1,7 @@
 #!/c/Python27/python.exe
 """
 Do './build_windows.py build' to build exe, then call
-'makensis syncthing-gtk.nsis' to create instalation package.
+'makensis syncthing-gtk.nsis' to create installation package.
 """
 
 import os, site, sys, shutil, re
@@ -15,7 +15,7 @@ from setup import get_version as _get_version, find_mos
 gnome_dll_path = "/Python27/Lib/site-packages/gnome"
 build_dir = "./build/exe.win32-2.7/"
 
-# List of dlls that cx_freeze can't detect automaticaly
+# List of dlls that cx_freeze can't detect automatically
 missing_dll = [	'libgtk-3-0.dll',
 				'libgdk-3-0.dll',
 				'libatk-1.0-0.dll',

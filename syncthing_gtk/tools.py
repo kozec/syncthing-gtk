@@ -185,7 +185,7 @@ def parse_config_arguments(lst):
 
 def delta_to_string(d):
 	"""
-	Returns aproximate, human-readable and potentialy localized
+	Returns approximate, human-readable and potentially localized
 	string from specified timedelta object
 	"""
 	# Negative time, 'some time ago'
@@ -518,13 +518,13 @@ def can_upgrade_binary(binary_path):
 	"""
 	Returns True if binary seems to be writable and placed in writable
 	directory. Result may be wrong on Windows, but it's still more
-	accurate that os.access, that respondes with complete fabulation --
+	accurate that os.access, that responds with complete fabulation --
 	https://mail.python.org/pipermail/python-list/2011-May/604395.html
 	"""
 	if IS_WINDOWS:
 		# Try to open file in same directory. It's not good idea trying
 		# to open very same file as Windows throws IOError if file is
-		# already open somewhere else (i.e. it's binary that is runing)
+		# already open somewhere else (i.e. it's binary that is running)
 		try:
 			path = binary_path + ".new"
 			if os.path.exists(path):

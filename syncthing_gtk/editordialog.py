@@ -25,11 +25,11 @@ class EditorDialog(GObject.GObject):
 			Emitted after dialog loads and parses configuration data
 	"""
 	__gsignals__ = {
-			b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-			b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-		}
-	
-	# Should be overrided by subclass
+		b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+		b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+	}
+
+	# Should be overridden by subclass
 	MESSAGES = {}
 	SETTING_NEEDS_RESTART = []
 	RESTART_NEEDED_WIDGET = "lblRestartNeeded"
@@ -91,7 +91,7 @@ class EditorDialog(GObject.GObject):
 		return self.widget_to_id[w]
 	
 	def find_widget_by_id(self, id, parent=None):
-		""" Recursively searchs for widget with specified ID """
+		""" Recursively searches for widget with specified ID """
 		if parent == None:
 			if id in self: return self[id] # Do things fast if possible
 			parent = self["editor"]
@@ -152,7 +152,7 @@ class EditorDialog(GObject.GObject):
 	def get_value(self, key):
 		"""
 		Returns value from configuration.
-		Usualy returns self.values[key], but overriding methods can
+		Usually returns self.values[key], but overriding methods can
 		handle some special cases
 		"""
 		if key in self.values:
@@ -219,7 +219,7 @@ class EditorDialog(GObject.GObject):
 	
 	def on_data_loaded(self, config):
 		"""
-		Called from cb_data_loaded, should be overrided by subclass.
+		Called from cb_data_loaded, should be overridden by subclass.
 		Should return True to indicate that everything is OK, false on
 		error.
 		"""
@@ -246,7 +246,7 @@ class EditorDialog(GObject.GObject):
 		
 	def display_value(self, key, w):
 		"""
-		Sets value on UI element for single key. May be overriden
+		Sets value on UI element for single key. May be overridden
 		by subclass to handle special values.
 		"""
 		if isinstance(w, Gtk.SpinButton):
@@ -287,7 +287,7 @@ class EditorDialog(GObject.GObject):
 	def update_special_widgets(self, *a):
 		"""
 		Enables/disables special widgets. Does nothing by default, but
-		may be overrided by subclasses
+		may be overridden by subclasses
 		"""
 		if self.mode == "folder-edit":
 			self["vID"].set_sensitive(self.id is None)
@@ -353,12 +353,12 @@ class EditorDialog(GObject.GObject):
 				self.hide_error_message(x)
 	
 	def cb_btSave_clicked(self, *a):
-		""" Calls on_save_reuqested to do actual work """
-		self.on_save_reuqested()
-	
-	def on_save_reuqested(self, config):
+		""" Calls on_save_requested to do actual work """
+		self.on_save_requested()
+
+	def on_save_requested(self, config):
 		"""
-		Should be overrided by subclass.
+		Should be overridden by subclass.
 		Should return True to indicate that everything is OK, false on
 		error.
 		"""
@@ -449,7 +449,7 @@ class EditorDialog(GObject.GObject):
 	
 	def on_saved(self):
 		"""
-		Should be overrided by subclass.
+		Should be overridden by subclass.
 		Called after post_config saves configuration.
 		"""
 		raise RuntimeError("Override this!")
@@ -486,7 +486,7 @@ class EditorDialog(GObject.GObject):
 		self["editor"].set_sensitive(True)
 	
 	def call_after_loaded(self, callback, *data):
-		""" Calls callback when 'loaded' event is emited """
+		""" Calls callback when 'loaded' event is emitted """
 		self.connect("loaded",
 			# lambda below throws 'event_source' argument and
 			# calls callback with rest of arguments

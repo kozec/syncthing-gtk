@@ -35,19 +35,19 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	List of signals:
 		config-out-of-sync ()
-			Emited when daemon synchronization gets out of sync and
+			Emitted when daemon synchronization gets out of sync and
 			daemon needs to be restarted.
 		
 		config-saved ()
-			Emited when daemon saves configuration without need for
+			Emitted when daemon saves configuration without need for
 			restarting.
 		
 		connected ()
-			Emited when connection to daemon is initiated, before
+			Emitted when connection to daemon is initiated, before
 			configuration is loaded and parsed.
 		
 		disconnected (reason, message)
-			Emited after connection to daemon is lost. Connection can
+			Emitted after connection to daemon is lost. Connection can
 			be reinitiated by calling reconnect()
 				reason :	Daemon.SHUTDOWN if connection is closed
 							after calling shutdown()
@@ -57,12 +57,12 @@ class Daemon(GObject.GObject, TimerManager):
 				message:	generated error message
 		
 		config-loaded(config)
-			Emited while connection do daemon is being created, when
+			Emitted while connection do daemon is being created, when
 			configuration is loaded from daemon.
 				config:		decoded /rest/config YAML file
 		
 		connection-error (reason, message, exception)
-			Emited if connection to daemon fails.
+			Emitted if connection to daemon fails.
 				reason:		Daemon.REFUSED if connection is refused and
 							daemon probably offline. Connection will be
 							retried automaticaly.
@@ -73,24 +73,24 @@ class Daemon(GObject.GObject, TimerManager):
 				exception:	Exeception that caused problem or None
 		
 		my-id-changed (my_id, replaced)
-			Emited when ID is retrieved from device or when ID changes
+			Emitted when ID is retrieved from device or when ID changes
 			after client connects to another device
 				my_id:		ID of device that is instance connected to.
 		
 		error (message)
-			Emited every time when daemon generates error readable by
+			Emitted every time when daemon generates error readable by
 			WebUI (/rest/errors call)
 				message:	Error message sent by daemon
 		
 		folder-rejected(device_id, folder_id, label)
-			Emited when daemon detects unexpected folder from known
+			Emitted when daemon detects unexpected folder from known
 			device.
 				device_id:	id of device that send unexpected folder id
 				folder_id:	id of unexpected folder
 				label:		label of unexpected folder or None
 		
 		device-rejected(device_id, device_name, address)
-			Emited when daemon detects connection from unknown device
+			Emitted when daemon detects connection from unknown device
 				device_id:		device id
 				device_name:	device name
 				address:		address which connection come from
@@ -103,11 +103,11 @@ class Daemon(GObject.GObject, TimerManager):
 				data:	dict with rest of device data
 		
 		device-connected (id)
-			Emited when daemon connects to remote device
+			Emitted when daemon connects to remote device
 				id:			id of device
 		
 		device-disconnected (id)
-			Emited when daemon losts connection to remote device
+			Emitted when daemon loses connection to remote device
 				id:			id of device
 		
 		device-discovered (id, addresses)
@@ -116,7 +116,7 @@ class Daemon(GObject.GObject, TimerManager):
 				addresses:	list of device addresses
 		
 		device-data-changed (id, address, version, inbps, outbps, inbytes, outbytes)
-			Emited when device data changes
+			Emitted when device data changes
 				id:			id of device
 				address:	address of remote device
 				version:	daemon version of remote device
@@ -126,79 +126,79 @@ class Daemon(GObject.GObject, TimerManager):
 				outbytes:	total number of bytes uploaded
 		
 		last-seen-changed (id, last_seen)
-			Emited when daemon reported 'last seen' value for device changes
-			or when is this value recieved for first time
+			Emitted when daemon reported 'last seen' value for device changes
+			or when is this value received for first time
 				id:			id of device
 				last_seen:	datetime object or None, if device was never seen
 		
 		device-paused (id):
-			Emited when synchronization with device is paused
+			Emitted when synchronization with device is paused
 				id:		id of folder
 		
 		device-resumed (id):
-			Emited when synchronization with device is resumed
+			Emitted when synchronization with device is resumed
 				id:		id of folder
 		
 		device-sync-started (id, progress):
-			Emited after device synchronization is started
+			Emitted after device synchronization is started
 				id:			id of folder
 				progress:	synchronization progress (0.0 to 1.0)
 		
 		device-sync-progress (id, progress):
-			Emited repeatedly while device is being synchronized
+			Emitted repeatedly while device is being synchronized
 				id:			id of folder
 				progress:	synchronization progress (0.0 to 1.0)
 	
 		device-sync-finished (id):
-			Emited after device synchronization is finished
+			Emitted after device synchronization is finished
 				id:		id of folder
 		
 		folder-added (id, data)
-			Emited when new folder is loaded from configuration
+			Emitted when new folder is loaded from configuration
 				id:		id of loaded folder
 				data:	dict with rest of folder data
 		
 		folder-error (id, errors)
-			Emited when when a folder cannot be successfully synchronized
+			Emitted when when a folder cannot be successfully synchronized
 				id:		id of loaded folder
 				errors:	list with errors
 		
 		folder-data-changed (id, data):
-			Emited when change in folder data (/rest/model call)
-			is detected and sucesfully loaded.
+			Emitted when change in folder data (/rest/model call)
+			is detected and successfully loaded.
 				id:		id of folder
 				data:	dict with loaded data
 		
 		folder-data-failed (id):
-			Emited when daemon fails to load folder data (/rest/model call),
-			most likely beacause folder was just added and syncthing
+			Emitted when daemon fails to load folder data (/rest/model call),
+			most likely because folder was just added and syncthing
 			daemon needs to be restarted
 				id:		id of folder
 		
 		folder-scan-progress (id, progress):
-			Emited repeatedly while folder is being scanned
+			Emitted repeatedly while folder is being scanned
 				id:			id of folder
 				progress:	scan progress (0.0 to 1.0)
 		
 		folder-sync-progress (id, progress):
-			Emited repeatedly while folder is being synchronized
+			Emitted repeatedly while folder is being synchronized
 				id:			id of folder
 				progress:	synchronization progress (0.0 to 1.0)
 	
 		folder-sync-finished (id):
-			Emited after folder synchronization is finished
+			Emitted after folder synchronization is finished
 				id:		id of folder
 		
 		folder-scan-started (id):
-			Emited after folder scan is started
+			Emitted after folder scan is started
 				id:		id of folder
 		
 		folder-scan-finished (id):
-			Emited after folder scan is finished
+			Emitted after folder scan is finished
 				id:		id of folder
 		
 		folder-stopped (id, message):
-			Emited when folder enters 'stopped' state.
+			Emitted when folder enters 'stopped' state.
 			No 'folder-sync', 'folder-sync-progress' and 'folder-scan-started'
 			events are emitted after folder enters this state, until
 			reconnect() is called.
@@ -206,7 +206,7 @@ class Daemon(GObject.GObject, TimerManager):
 				message:	error message
 		
 		item-started (folder_id, filename, time):
-			Emited when synchronization of file starts
+			Emitted when synchronization of file starts
 				folder_id:	id of folder that contains file
 				filename:	synchronized file
 				time:		event timestamp
@@ -221,7 +221,7 @@ class Daemon(GObject.GObject, TimerManager):
 			Emited when daemon initialization is complete.
 		
 		system-data-updated (ram_ussage, cpu_ussage, d_failed, d_total)
-			Emited every time when system informations are recieved
+			Emitted every time when system information is received
 			from daemon.
 				ram_ussage:	memory ussage in bytes
 				cpu_ussage:	CPU ussage in percent (0.0 to 100.0)
@@ -311,7 +311,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self._last_seen = {}
 		# last_error_time is used to discard repeating errors
 		self._last_error_time = None # Time is taken for first event
-		# last_id is id of last event recieved from daemon
+		# last_id is id of last event received from daemon
 		self._last_id = 0
 		# Epoch is increased when reconnect() method is called; It is
 		# used to discard responses for old REST requests
@@ -558,7 +558,7 @@ class Daemon(GObject.GObject, TimerManager):
 		if "myID" not in data:
 			# Invalid response
 			r = RESTRequest(self, "system/status", self._syncthing_cb_system)
-			log.warning("Invalid response recieved for rest/system/status request")
+			log.warning("Invalid response received for rest/system/status request")
 			self.timer("system", self._refresh_interval * 5, r.start)
 			return
 		
@@ -659,7 +659,7 @@ class Daemon(GObject.GObject, TimerManager):
 	def _syncthing_cb_config(self, config):
 		"""
 		Called when configuration is loaded from syncthing daemon.
-		After configuraion is sucessfully parsed, app starts quering for events
+		After configuration is successfully parsed, app starts querying for events
 		"""
 		if not self._connected:
 			self._connected = True
@@ -679,7 +679,7 @@ class Daemon(GObject.GObject, TimerManager):
 		self.cancel_all()
 		if isinstance(exception, GLib.GError):
 			if exception.code in (0, 39, 34, 45):	# Connection Refused / Cannot connect to destination
-				# It usualy means that daemon is not yet fully started or not running at all.
+				# It usually means that daemon is not yet fully started or not running at all.
 				epoch = self._epoch
 				self.emit("connection-error", Daemon.REFUSED, exception.message, exception)
 				if epoch == self._epoch:
@@ -1017,7 +1017,7 @@ class Daemon(GObject.GObject, TimerManager):
 		pass
 	
 	def set_refresh_interval(self, i):
-		""" Sets interval used mainly by event quering timer """
+		""" Sets interval used mainly by event querying timer """
 		self._refresh_interval = i
 		log.verbose("Set refresh interval to %s", i)
 
@@ -1025,7 +1025,7 @@ class Daemon(GObject.GObject, TimerManager):
 class RESTRequest(Gio.SocketClient):
 	"""
 	REST over HTTP(s) request. Handles everything and calls callback with response
-	recieved. It is assumed that response will always be JSON-encoded and
+	received. It is assumed that response will always be JSON-encoded and
 	it is automatically decoded.
 	
 	If request fails and error_callback is not set, it is automatically repeated.
@@ -1115,7 +1115,7 @@ class RESTRequest(Gio.SocketClient):
 		try:
 			response = stream.read_bytes_finish(results)
 			if response == None:
-				raise Exception("No data recieved")
+				raise Exception("No data received")
 		except Exception as e:
 			self._connection.close(None)
 			self._error(e)
@@ -1125,7 +1125,7 @@ class RESTRequest(Gio.SocketClient):
 			self._connection.close(None)
 			log.verbose("Discarded old response for %s", self._command)
 			return
-		# Repeat read_bytes_async until entire response is readed in buffer
+		# Repeat read_bytes_async until entire response is read into buffer
 		self._buffer.append(response.get_data())
 		if response.get_size() > 0:
 			self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
@@ -1137,13 +1137,13 @@ class RESTRequest(Gio.SocketClient):
 			self._parse_csrf(response.split("\n"))
 			if self._parent._CSRFtoken == None:
 				# This is pretty fatal and likely to fail again,
-				# so request is not repeated automaticaly
+				# so request is not repeated automatically
 				if self._error_callback == None:
 					log.error("Request '%s' failed: Error: failed to get CSRF cookie from daemon", self._command)
 				else:
 					self._error(Exception("Failed to get CSRF cookie"))
 				return
-			# Repeat request with acqiured cookie
+			# Repeat request with acquired cookie
 			self.start()
 			return
 		# Split headers from response
@@ -1263,7 +1263,7 @@ class EventPollLoop(RESTRequest):
 	def _format_request(self):
 		"""
 		Event request is as special as it gets, with HTTP/1.1, connection held
-		and continous requesting more and more data.
+		and continuously requesting more and more data.
 		"""
 		if self._last_event_id < 0:
 			url = "/rest/events?limit=1"
@@ -1301,7 +1301,7 @@ class EventPollLoop(RESTRequest):
 		try:
 			response = stream.read_bytes_finish(results)
 			if response == None:
-				raise Exception("No data recieved")
+				raise Exception("No data received")
 		except Exception as e:
 			return self._error(e)
 		if self._epoch != self._parent._epoch:
@@ -1361,7 +1361,7 @@ class EventPollLoop(RESTRequest):
 		if self._chunk_size < 0:
 			try:
 				# Try to decode chunk. May raise exception if only very few bytes
-				# are readed so far
+				# have been read so far
 				size_str, rest = self._buffer.split(b"\r\n", 1)
 				self._chunk_size = int(size_str, 16)
 				self._buffer = rest
@@ -1388,9 +1388,9 @@ class EventPollLoop(RESTRequest):
 		
 		for event in events:
 			if self._last_event_id >= 0 and event["id"] != self._last_event_id + 1:
-				# Event IDs are not continous, something just went horribly wrong
+				# Event IDs are not continuous, something just went horribly wrong
 				# There is only one case when this is expected: When connection
-				# to daemon is lost and ST-GTK unknownly reconnects to
+				# to daemon is lost and ST-GTK unknowingly reconnects to
 				# different instance.
 				return self._parent._instance_replaced()
 			self._last_event_id = event["id"]

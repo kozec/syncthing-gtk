@@ -93,7 +93,7 @@ class NautiluslikeExtension(GObject.GObject):
 				self._invalidate(f)
 	
 	def _invalidate(self, path):
-		""" Forces Nautils to re-read emblems on specified file """
+		""" Forces Nautilus to re-read emblems on specified file """
 		if path in self.files:
 			file = self.files[path]
 			file.invalidate_extension_info()
@@ -148,10 +148,10 @@ class NautiluslikeExtension(GObject.GObject):
 	
 	def cb_device_disconnected(self, daemon, nid):
 		self.online_nids.remove(nid)
-		# Check for all online repos atached to this device
+		# Check for all online repos attached to this device
 		for rid in self.rid_to_dev:
 			if rid in self.onlide_rids:
-				# Check if repo is atached to any other, online device
+				# Check if repo is attached to any other, online device
 				if len([ x for x in self.rid_to_dev[rid] if x in self.online_nids ]) == 0:
 					# Nope
 					log.debug("Repo '%s' now offline", rid)
@@ -235,7 +235,7 @@ class NautiluslikeExtension(GObject.GObject):
 	### InfoProvider stuff
 	def update_file_info(self, file):
 		# TODO: This remembers every file user ever saw in Nautilus.
-		# There *has* to be memory effecient alternative...
+		# There *has* to be memory efficient alternative...
 		path = self._get_path(file)
 		pathonly, filename = os.path.split(path)
 		self.files[path] = file
@@ -253,7 +253,7 @@ class NautiluslikeExtension(GObject.GObject):
 			# Determine what emblem should be used
 			state = self.repos[path]
 			if state == STATE_IDLE:
-				# File manager probably shoudn't care about folder being scanned
+				# File manager probably shouldn't care about folder being scanned
 				file.add_emblem("syncthing")
 			elif state == STATE_STOPPED:
 				file.add_emblem("syncthing-error")
@@ -269,7 +269,7 @@ class NautiluslikeExtension(GObject.GObject):
 				# belongs to repo
 				pass
 			elif state in (STATE_IDLE, STATE_SYNCING):
-				# File manager probably shoudn't care about folder being scanned
+				# File manager probably shouldn't care about folder being scanned
 				file.add_emblem("syncthing")
 			else:
 				# Default (i-have-no-idea-what-happened) state

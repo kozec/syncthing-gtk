@@ -75,7 +75,7 @@ class DeviceEditorDialog(EditorDialog):
 			else:
 				self.values = [ x for x in self.config["devices"] if x["deviceID"] == self.id ][0]
 		except KeyError as e:
-			# ID not found in configuration. This is practicaly impossible,
+			# ID not found in configuration. This is practically impossible,
 			# so it's handled only by self-closing dialog.
 			log.exception(e)
 			self.close()
@@ -107,7 +107,7 @@ class DeviceEditorDialog(EditorDialog):
 		self["vdeviceID"].set_sensitive(self.is_new)
 	
 	#@Overrides
-	def on_save_reuqested(self):
+	def on_save_requested(self):
 		self.store_values(VALUES)
 		if self.is_new:
 			# Add new dict to configuration (edited dict is already there)

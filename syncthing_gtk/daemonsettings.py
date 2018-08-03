@@ -80,7 +80,7 @@ class DaemonSettingsDialog(EditorDialog):
 		self["lblvglobalAnnounceServers"].set_sensitive(self.get_value("globalAnnounceEnabled"))
 	
 	#@Overrides
-	def on_save_reuqested(self):
+	def on_save_requested(self):
 		self.store_values(VALUES)
 		# Post configuration back to daemon
 		self.post_config()

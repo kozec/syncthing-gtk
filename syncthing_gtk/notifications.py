@@ -206,7 +206,7 @@ if HAS_DESKTOP_NOTIFY:
 			body = ""
 			filename = ""
 			if finished:
-				summary = _('Completed synchronisation in "%s"') % (self.label or self.id)
+				summary = _('Completed synchronization in "%s"') % (self.label or self.id)
 			else:
 				summary = _('Updates in folder "%s"') % (self.label or self.id)
 
@@ -339,7 +339,7 @@ if HAS_DESKTOP_NOTIFY:
 			self.clear_notifications()
 
 		def cb_syncthing_error(self, daemon, message):
-			summary = _('An error occured in Syncthing!')
+			summary = _('An error occurred in Syncthing!')
 			n = Notify.Notification.new(summary, None, ICON_ERR)
 			n.set_urgency(Notify.Urgency.CRITICAL)
 
