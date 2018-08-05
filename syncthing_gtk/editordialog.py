@@ -252,7 +252,7 @@ class EditorDialog(GObject.GObject):
 		if isinstance(w, Gtk.SpinButton):
 			w.get_adjustment().set_value(ints(self.get_value(strip_v(key))))
 		elif isinstance(w, Gtk.Entry):
-			w.set_text(unicode(self.get_value(strip_v(key))))
+			w.set_text(str(self.get_value(strip_v(key))))
 		elif isinstance(w, Gtk.ComboBox):
 			val = self.get_value(strip_v(key))
 			m = w.get_model()
@@ -467,7 +467,7 @@ class EditorDialog(GObject.GObject):
 		
 		if hasattr(exception, "full_response"):
 			try:
-				fr = unicode(exception.full_response)[0:1024]
+				fr = str(exception.full_response)[0:1024]
 			except UnicodeError:
 				# ... localized error strings on windows are usually
 				# in anything but unicode :(
