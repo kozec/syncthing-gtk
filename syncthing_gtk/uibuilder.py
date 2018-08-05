@@ -37,8 +37,9 @@ class UIBuilder(Gtk.Builder):
 			# Gtk.Builder directly
 			Gtk.Builder.add_from_file(self, filename)
 		else:
-			self.add_from_string(file(filename, "r").read())
-	
+			with open(filename, "r") as f:
+				self.add_from_string(f.read())
+
 	def add_from_string(self, string):
 		""" Builds UI from string """
 		self.xml = minidom.parseString(string)

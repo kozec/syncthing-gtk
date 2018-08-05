@@ -331,7 +331,8 @@ class Daemon(GObject.GObject, TimerManager):
 			self._configxml = os.path.expanduser("~/snap/syncthing/common/syncthing/config.xml")
 		try:
 			log.debug("Reading syncthing config %s", self._configxml)
-			config = file(self._configxml, "r").read()
+			with open(self._configxml, "r") as f:
+				config = f.read()
 		except Exception as e:
 			raise InvalidConfigurationException("Failed to read daemon configuration: %s" % e)
 		try:
