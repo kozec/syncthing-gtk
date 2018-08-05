@@ -99,7 +99,7 @@ class Wizard(Gtk.Assistant):
 		return index
 	
 	def only_page(self, page):
-		for r in xrange(1, page):
+		for r in range(1, page):
 			self.remove_page(r)
 		while self.get_n_pages() > 3:
 			self.remove_page(self.get_n_pages() - 2)
