@@ -4,6 +4,7 @@ Do './build_windows.py build' to build exe, then call
 'makensis syncthing-gtk.nsis' to create instalation package.
 """
 
+from __future__ import print_function
 import os, site, sys, shutil, re
 from cx_Freeze import setup, Executable
 from cx_Freeze.freezer import Freezer, VersionInfo
@@ -137,11 +138,11 @@ setup(
 )
 
 if 'build' in sys.argv:
-	for l in wrong_sized_dll:
-		print "replacing", l
+	for lib in wrong_sized_dll:
+		print("Replacing {}".format(lib))
 		shutil.copy(
-			os.path.join(gnome_dll_path, l),
-			os.path.join(build_dir, l)
+			os.path.join(gnome_dll_path, lib),
+			os.path.join(build_dir, lib)
 		)
 	# Copy some theme icons
 	sizes = ["16x16", "24x24", "32x32", "scalable"]
@@ -195,25 +196,25 @@ if 'build' in sys.argv:
 					os.makedirs(os.path.join(target_path, theme, size, cat))
 				except Exception : pass
 				for icon in icons[cat]:
-					print "Copying icon %s/%s/%s/%s" % (theme, size, cat, icon)
+					print("Copying icon %s/%s/%s/%s" % (theme, size, cat, icon))
 					icon = "%s.%s" % (icon, extension)
 					src = os.path.join(src_path, theme, size, cat, icon)
 					dst = os.path.join(target_path, theme, size, cat, icon)
 					if os.path.exists(src):
 						shutil.copy(src, dst)
-		print "Copying theme index for", theme
+		print("Copying theme index for", theme)
 		shutil.copy(
 			os.path.join(src_path, theme, "index.theme"),
 			os.path.join(target_path, theme, "index.theme")
 		)
-	
-	print "Copying even more icons"
+
+	print("Copying even more icons")
 	shutil.copy(
 		os.path.join(build_dir, "icons/128x128/apps/syncthing-gtk.png"),
 		os.path.join(build_dir, "icons/syncthing-gtk.png")
 	)
-	
-	print "Copying glib schemas"
+
+	print("Copying glib schemas")
 	if not os.path.exists(os.path.join(build_dir, "/share/glib-2.0/schemas")):
 		target_path = os.path.join(build_dir, "share/glib-2.0/schemas")
 		src_path = os.path.join(gnome_dll_path, "share/glib-2.0/schemas")
@@ -223,9 +224,9 @@ if 'build' in sys.argv:
 			src = os.path.join(src_path, filename)
 			target = os.path.join(target_path, filename)
 			shutil.copy(src, target)
-	
-	
-	print "Fixing https://github.com/syncthing/syncthing-gtk/issues/313"
+
+
+	print("Fixing https://github.com/syncthing/syncthing-gtk/issues/313")
 	# Needs http://win-builds.org/1.5.0/packages/windows_32/FILENAME in in work directory
 	FILENAME = "glib-networking-2.36.2-1-i686-w64-mingw32.txz"
 	tmpdir = mkdtemp()
@@ -238,10 +239,10 @@ if 'build' in sys.argv:
 	archive.close()
 	os.chdir(cwd)
 	if tarxz.returncode != 0:
-		print >>sys.stderr, "Failed to unpack", FILENAME
+		print("Failed to unpack archive '{}'".format(FILENAME), file=sys.stderr)
 		sys.exit(1)
 	
-	print "Storing version"
+	print("Storing version")
 	with open(os.path.join(build_dir, "__version__"), "w") as f:
 		f.write(get_version())
 	with open(os.path.join(build_dir, "..", "version.nsh"), "w") as f:

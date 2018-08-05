@@ -5,7 +5,7 @@ Syncthing-GTK - App
 Main application window
 """
 
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 import itertools
 from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
 from syncthing_gtk.tools import _
@@ -199,16 +199,16 @@ class App(Gtk.Application, TimerManager):
 		else:
 			# Fallback for old GTK without option parsing
 			if "-h" in sys.argv or "--help" in sys.argv:
-				print "Usage:"
-				print "  %s [arguments]" % (sys.argv[0],)
-				print "Arguments:"
+				print("Usage:")
+				print("  %s [arguments]" % (sys.argv[0],))
+				print("Arguments:")
 				for o in self.arguments:
 					# Don't display hidden and unsupported parameters
 					if not o.long_name in ("force-update", "quit"):
-						print "  -%s, --%s %s" % (
+						print("  -%s, --%s %s" % (
 							chr(o.short_name),
 							o.long_name.ljust(10),
-							o.description)
+							o.description))
 				sys.exit(0)
 			def is_option(name):
 				# Emulating Gtk.Application.do_local_options
@@ -2087,9 +2087,9 @@ class App(Gtk.Application, TimerManager):
 	
 	
 	def cb_daemon_line_captured(self, daemon, line):
-		print line
-	
-	
+		print(line)
+
+
 	def cb_daemon_exit(self, proc, error_code):
 		if proc == self.process:
 			# Whatever happens, if daemon dies while it shouldn't,

@@ -8,7 +8,7 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 """
 
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
@@ -1117,7 +1117,7 @@ class RESTRequest(Gio.SocketClient):
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception as e:
-			print e
+			print(e)
 			self._connection.close(None)
 			self._error(e)
 			return
@@ -1353,7 +1353,7 @@ class EventPollLoop(RESTRequest):
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
 		except Exception as e:
-			print e
+			print(e)
 			self._connection.close(None)
 			return self.start()
 		self._connection.get_input_stream().read_bytes_async(10, 1, None, self._chunk)
