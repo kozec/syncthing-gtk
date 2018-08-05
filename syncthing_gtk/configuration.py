@@ -137,7 +137,7 @@ class _Configuration(object):
 					elif tp == tuple and type(self.values[key]) == list:
 						# Convert list to tuple
 						self.values[key] = tuple(self.values[key])
-					elif tp == bool and type(self.values[key]) in (int, long):
+					elif tp == bool and type(self.values[key]) == int:
 						# Convert bools
 						self.values[key] = bool(self.values[key])
 				except Exception as e:
