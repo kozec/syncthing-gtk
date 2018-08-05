@@ -197,7 +197,7 @@ def WinConfiguration():
 			elif tp in (list, tuple):
 				if not value is None:	# None is default value for window_position
 					_winreg.SetValueEx(r, "%s_size" % (name,), 0, _winreg.REG_DWORD, len(value))
-					for i in xrange(0, len(value)):
+					for i in range(0, len(value)):
 						self._store(r, "%s_%s" % (name, i), type(value[i]), value[i])
 			else:
 				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, serializer(value))
@@ -207,7 +207,7 @@ def WinConfiguration():
 			if tp in (list, tuple):
 				size, trash = _winreg.QueryValueEx(r, "%s_size" % (name,))
 				value = []
-				for i in xrange(0, size):
+				for i in range(0, size):
 					value.append(self._read(r, "%s_%s" % (name, i), None))
 				return value
 			else:
