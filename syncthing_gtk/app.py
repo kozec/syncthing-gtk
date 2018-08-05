@@ -759,11 +759,11 @@ class App(Gtk.Application, TimerManager):
 				ex = Gtk.Expander(label=_("More info"))
 				tbuf = Gtk.TextBuffer()
 				try:
-					tbuf.set_text(u'Server response:\n\'%s\'' % (exception.full_response,))
+					tbuf.set_text('Server response:\n\'%s\'' % (exception.full_response,))
 				except Exception:
 					# May happen when full_response can't be decoded
 					try:
-						tbuf.set_text(u'Server response:\n\'%s\'' % ((exception.full_response,),))
+						tbuf.set_text('Server response:\n\'%s\'' % ((exception.full_response,),))
 					except Exception:
 						# Shouldn't really happen
 						tbuf.set_text("<unparsable mess of data>")

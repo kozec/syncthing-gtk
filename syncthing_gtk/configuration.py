@@ -131,7 +131,7 @@ class _Configuration(object):
 			if key in self.values:
 				tp, trash = Configuration.REQUIRED_KEYS[key]
 				try:
-					if tp == datetime and type(self.values[key]) in (str, unicode):
+					if tp == datetime and type(self.values[key]) == str:
 						# Parse datetime
 						self.values[key] = dateutil.parser.parse(self.values[key])
 					elif tp == tuple and type(self.values[key]) == list:
@@ -154,7 +154,7 @@ class _Configuration(object):
 		if not key in self.values:
 			return False
 		# Handle special cases
-		if type(self.values[key]) in (str, unicode) and tp in (str, unicode):
+		if type(self.values[key]) == str and tp == str:
 			return True
 		if tp in (tuple,) and self.values[key] == None:
 			return True

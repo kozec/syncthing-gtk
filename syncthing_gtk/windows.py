@@ -25,7 +25,7 @@ def fix_localized_system_error_messages():
 	"""
 	
 	def handle_error(error):
-		return (u'?', error.end)
+		return ('?', error.end)
 	
 	codecs.register_error("strict", handle_error)
 
@@ -183,7 +183,7 @@ def WinConfiguration():
 		
 		def _store(self, r, name, tp, value):
 			""" Stores value in registry, handling special types """
-			if tp in (unicode, str):
+			if tp == str:
 				winreg.SetValueEx(r, name, 0, winreg.REG_SZ, str(value))
 			elif tp in (int, bool):
 				value = int(value)
