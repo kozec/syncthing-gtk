@@ -53,7 +53,7 @@ portable_mode_enabled = False
 
 if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
-	import wmi, _winreg
+	import wmi, winreg
 
 """ Localization lambdas """
 _ = lambda a: _uc(gettext.gettext(a))
@@ -400,10 +400,10 @@ if IS_WINDOWS:
 		if is_portable():
 			return os.environ["XDG_CONFIG_HOME"]
 		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			path, keytype = _winreg.QueryValueEx(key, "InstallPath")
+			key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			path, keytype = winreg.QueryValueEx(key, "InstallPath")
 			path = str(path)
-			_winreg.CloseKey(key)
+			winreg.CloseKey(key)
 			return path
 		except WindowsError:
 			# This is really shouldn't happen. Use executable path.
@@ -435,10 +435,10 @@ def is_ran_on_startup(program_name):
 	if IS_WINDOWS:
 		# Check if there is value for application in ...\Run
 		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
-			trash, keytype = _winreg.QueryValueEx(key, program_name)
-			_winreg.CloseKey(key)
-			return keytype in (_winreg.REG_SZ, _winreg.REG_EXPAND_SZ, _winreg.REG_MULTI_SZ)
+			key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+			trash, keytype = winreg.QueryValueEx(key, program_name)
+			winreg.CloseKey(key)
+			return keytype in (winreg.REG_SZ, winreg.REG_EXPAND_SZ, winreg.REG_MULTI_SZ)
 		except WindowsError:
 			# Key not found
 			return False
@@ -477,15 +477,15 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 		return
 	if IS_WINDOWS:
 		# Create/delete value for application in ...\Run
-		key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+		key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
 			"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-			0, _winreg.KEY_ALL_ACCESS)
+			0, winreg.KEY_ALL_ACCESS)
 		if enabled:
-			_winreg.SetValueEx(key, program_name, 0,
-				_winreg.REG_SZ, '"%s"' % (executable,))
+			winreg.SetValueEx(key, program_name, 0,
+				winreg.REG_SZ, '"%s"' % (executable,))
 		else:
-			_winreg.DeleteValue(key, program_name)
-		_winreg.CloseKey(key)
+			winreg.DeleteValue(key, program_name)
+		winreg.CloseKey(key)
 	else:
 		# Create/delete application.desktop with provided values,
 		# removing any hidding parameters

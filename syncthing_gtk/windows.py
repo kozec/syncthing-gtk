@@ -6,7 +6,7 @@ Syncthing-GTK - Windows related stuff.
 from __future__ import unicode_literals
 from syncthing_gtk.tools import get_config_dir
 from gi.repository import GLib, Gtk, Gdk
-import os, sys, logging, codecs, msvcrt, win32pipe, win32api, _winreg
+import os, sys, logging, codecs, msvcrt, win32pipe, win32api, winreg
 import win32process
 from win32com.shell import shell, shellcon
 log = logging.getLogger("windows.py")
@@ -162,7 +162,7 @@ def WinConfiguration():
 		#@ Overrides
 		def load(self):
 			self.values = {}
-			r = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			r = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
 			for key in _Configuration.REQUIRED_KEYS:
 				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				try:
@@ -170,21 +170,21 @@ def WinConfiguration():
 				except WindowsError:
 					# Not found
 					pass
-			_winreg.CloseKey(r)
+			winreg.CloseKey(r)
 		
 		#@ Overrides
 		def save(self):
-			r = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			r = winreg.CreateKey(winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
 			for key in _Configuration.REQUIRED_KEYS:
 				tp, trash = _Configuration.REQUIRED_KEYS[key]
 				value = self.values[key]
 				self._store(r, key, tp, value)
-			_winreg.CloseKey(r)
+			winreg.CloseKey(r)
 		
 		def _store(self, r, name, tp, value):
 			""" Stores value in registry, handling special types """
 			if tp in (unicode, str):
-				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, str(value))
+				winreg.SetValueEx(r, name, 0, winreg.REG_SZ, str(value))
 			elif tp in (int, bool):
 				value = int(value)
 				if value > 0xFFFF:
@@ -193,25 +193,25 @@ def WinConfiguration():
 					# This basicaly prevents storing anything >0xFFFF to registry.
 					# Luckily, that shouldn't be needed, largest thing stored as int is 20
 					value = 0xFFFF + (-value)
-				_winreg.SetValueEx(r, name, 0, _winreg.REG_DWORD, int(value))
+				winreg.SetValueEx(r, name, 0, winreg.REG_DWORD, int(value))
 			elif tp in (list, tuple):
 				if not value is None:	# None is default value for window_position
-					_winreg.SetValueEx(r, "%s_size" % (name,), 0, _winreg.REG_DWORD, len(value))
+					winreg.SetValueEx(r, "%s_size" % (name,), 0, winreg.REG_DWORD, len(value))
 					for i in range(0, len(value)):
 						self._store(r, "%s_%s" % (name, i), type(value[i]), value[i])
 			else:
-				_winreg.SetValueEx(r, name, 0, _winreg.REG_SZ, serializer(value))
+				winreg.SetValueEx(r, name, 0, winreg.REG_SZ, serializer(value))
 		
 		def _read(self, r, name, tp):
 			""" Reads value from registry, handling special types """
 			if tp in (list, tuple):
-				size, trash = _winreg.QueryValueEx(r, "%s_size" % (name,))
+				size, trash = winreg.QueryValueEx(r, "%s_size" % (name,))
 				value = []
 				for i in range(0, size):
 					value.append(self._read(r, "%s_%s" % (name, i), None))
 				return value
 			else:
-				value, keytype = _winreg.QueryValueEx(r, name)
+				value, keytype = winreg.QueryValueEx(r, name)
 				if type(value) == int and value > 0xFFFF:
 					value = - (value - 0xFFFF)
 				return value
