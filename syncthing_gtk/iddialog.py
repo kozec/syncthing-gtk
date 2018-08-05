@@ -7,7 +7,7 @@ Dialog with Device ID and generated QR code
 
 from __future__ import unicode_literals
 from gi.repository import Gio, GLib
-from tools import IS_WINDOWS
+from .tools import IS_WINDOWS
 from syncthing_gtk.uibuilder import UIBuilder
 import urllib2, httplib, ssl
 import os, tempfile, logging

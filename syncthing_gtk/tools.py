@@ -365,7 +365,7 @@ def get_config_dir():
 		return os.environ["XDG_CONFIG_HOME"]
 	if IS_WINDOWS and not IS_XP:
 		try:
-			import windows
+			from . import windows
 			return windows.get_unicode_home()
 		except Exception:
 			pass

@@ -6,6 +6,7 @@ Main application window
 """
 
 from __future__ import unicode_literals
+import itertools
 from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
 from syncthing_gtk.tools import _
 from syncthing_gtk.tools import (
@@ -719,7 +720,7 @@ class App(Gtk.Application, TimerManager):
 		elif reason == Daemon.OLD_VERSION and self.config["st_autoupdate"] and not self.process is None and not StDownloader is None:
 			# Daemon is too old, but autoupdater is enabled and I have control of deamon.
 			# Try to update.
-			from configuration import LONG_AGO
+			from .configuration import LONG_AGO
 			self.config["last_updatecheck"] = LONG_AGO
 			self.restart_after_update = True
 			self.close_connect_dialog()
@@ -1246,13 +1247,13 @@ class App(Gtk.Application, TimerManager):
 					if box in f["devices"]:
 						to_hilight.add(f)
 				to_hilight.add(box)
-		for box in [] + self.devices.values() + self.folders.values():
+		for box in itertools.chain(self.devices.values(), self.folders.values()):
 			box.set_hilight(box in to_hilight)
-	
+
 	def is_visible(self):
 		""" Returns True if main window is visible """
 		return self["window"].is_visible()
-	
+
 	def show(self):
 		"""
 		Shows main window or brings it to front, if is already visible.
