@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from gi.repository import Gio, GLib
 from .tools import IS_WINDOWS
 from syncthing_gtk.uibuilder import UIBuilder
-import urllib2, http.client, ssl
+import urllib, http.client, ssl
 import os, tempfile, logging
 log = logging.getLogger("IDDialog")
 
@@ -54,7 +54,7 @@ class IDDialog(object):
 		""" Loads QR code from Syncthing daemon """
 		uri = "%s/qr/?text=%s" % (self.app.daemon.get_webui_url(), self.device_id)
 		api_key = self.app.daemon.get_api_key()
-		opener = urllib2.build_opener(DummyHTTPSHandler(self.ssl_ctx))
+		opener = urllib.request.build_opener(DummyHTTPSHandler(self.ssl_ctx))
 		if not api_key is None:
 			opener.addheaders = [("X-API-Key", api_key)]
 		a = opener.open(uri)
@@ -103,13 +103,13 @@ def create_ssl_context():
 	else:
 		log.warning("SSL is not available, cannot verify server certificate.")
 
-class DummyHTTPSHandler(urllib2.HTTPSHandler):
+class DummyHTTPSHandler(urllib.request.HTTPSHandler):
 	"""
 	Dummy HTTPS handler that ignores certificate errors. This in unsafe,
 	but used ONLY for QR code images.
 	"""
 	def __init__(self, ctx):
-		urllib2.HTTPSHandler.__init__(self)
+		urllib.request.HTTPSHandler.__init__(self)
 		self.ctx = ctx
 	
 	def https_open(self, req):
