@@ -1,4 +1,4 @@
-#!/c/Python27/python.exe
+#! python3
 """
 Update Chocolatey package from GitHub releases information.
 
@@ -14,7 +14,7 @@ Requirements:
 from __future__ import unicode_literals, print_function
 
 import re, os, json
-from urllib import request # Py3
+from urllib import request
 
 
 print("Retrieving last version...")

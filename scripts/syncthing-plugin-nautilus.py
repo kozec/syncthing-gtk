@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#/usr/bin/env python3
 """
 Nautilus plugin for Syncthing-GTK
 See syncthing_gtk/nautilusplugin.py for more info
