@@ -5,7 +5,7 @@ Syncthing-GTK - FolderEditorDialog
 Universal dialog handler for all Syncthing settings and editing
 """
 
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 from gi.repository import Gtk
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.tools import generate_folder_id
@@ -192,7 +192,7 @@ class FolderEditorDialog(EditorDialog):
 	#@Overrides
 	def on_save_reuqested(self):
 		self.store_values(VALUES)
-		print self.values
+		print(self.values)
 		if self.is_new:
 			# Add new dict to configuration (edited dict is already there)
 			self.config["folders"].append(self.values)
@@ -269,9 +269,9 @@ class FolderEditorDialog(EditorDialog):
 			# fswatch disabled, return rescan interval back
 			if interval > 300:
 				vrescanIntervalS.set_value(interval / 60)
-				
-		# print self.get_value("vfsWatcherEnabled"),  cb.get_value()
-	
+
+		# print(self.get_value("vfsWatcherEnabled"),  cb.get_value())
+
 	def mark_device(self, nid):
 		""" Marks (checks) checkbox for specified device """
 		if "vdevices" in self:	# ... only if there are checkboxes here
