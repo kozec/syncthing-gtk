@@ -71,7 +71,7 @@ def luhn_b32generate(s):
 			raise ValueError("Digit %s is not valid" % (c,))
 		addend = factor * codepoint
 		factor = 1 if factor == 2 else 2
-		addend = (addend / n) + (addend % n)
+		addend = (addend // n) + (addend % n)
 		sum += addend
 	remainder = sum % n
 	checkcodepoint = (n - remainder) % n
