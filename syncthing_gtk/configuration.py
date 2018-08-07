@@ -85,8 +85,9 @@ class _Configuration(object):
 				log.exception(e)
 				sys.exit(1)
 		# Load json
-		self.values = json.loads(file(self.get_config_file(), "r").read())
-	
+		with open(self.get_config_file(), "r") as conf:
+			self.values = json.loads(conf.read())
+
 	def get_default_value(self, key):
 		if IS_WINDOWS:
 			return self.WINDOWS_OVERRIDE.get(key, self.REQUIRED_KEYS[key])[-1]
@@ -162,11 +163,17 @@ class _Configuration(object):
 	
 	def save(self):
 		""" Saves configuration file """
-		file(self.get_config_file(), "w").write(json.dumps(
-			self.values, sort_keys=True, indent=4,
-			separators=(',', ': '), default=serializer
-			))
-	
+		with open(self.get_config_file(), "w") as conf:
+			conf.write(
+				json.dumps(
+					self.values,
+					sort_keys=True,
+					indent=4,
+					separators=(',', ': '),
+					default=serializer
+				)
+			)
+
 	def __iter__(self):
 		for k in self.values:
 			yield k

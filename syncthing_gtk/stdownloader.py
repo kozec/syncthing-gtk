@@ -310,7 +310,7 @@ class StDownloader(GObject.GObject):
 						try:
 							os.makedirs(os.path.split(self.target)[0])
 						except Exception: pass
-						output = file(self.target, "wb")
+						output = open(self.target, "wb")
 						GLib.idle_add(self._extract, (archive, compressed, output, 0, tinfo.size))
 						return
 		except Exception as e:

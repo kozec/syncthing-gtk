@@ -42,8 +42,8 @@ class AboutDialog(object):
 			if IS_WINDOWS:
 				# pkg_resources will not work on cx_Frozen package
 				from syncthing_gtk.tools import get_install_path
-				vfile = file(os.path.join(get_install_path(), "__version__"), "r")
-				app_ver = vfile.read().strip(" \t\r\n")
+				with open(os.path.join(get_install_path(), "__version__"), "r") as vfile:
+					app_ver = vfile.read().strip(" \t\r\n")
 			else:
 				import pkg_resources, syncthing_gtk
 				if syncthing_gtk.__file__.startswith(pkg_resources.require("syncthing-gtk")[0].location):

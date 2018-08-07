@@ -242,5 +242,7 @@ if 'build' in sys.argv:
 		sys.exit(1)
 	
 	print "Storing version"
-	file(os.path.join(build_dir, "__version__"), "w").write(get_version())
-	file(os.path.join(build_dir, "..", "version.nsh"), "w").write('!define VERSION "%s"' % (get_version(),))
+	with open(os.path.join(build_dir, "__version__"), "w") as f:
+		f.write(get_version())
+	with open(os.path.join(build_dir, "..", "version.nsh"), "w") as f:
+		f.write('!define VERSION "{version}"'.format(version=get_version()))

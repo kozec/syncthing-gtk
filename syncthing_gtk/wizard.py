@@ -700,7 +700,8 @@ class SaveSettingsPage(Page):
 		xml = None
 		try:
 			# Load XML file
-			config = file(self.parent.st_configfile, "r").read()
+			with open(self.parent.st_configfile, "r") as conf_file:
+				config = conf_file.read()
 			xml = minidom.parseString(config)
 		except Exception as e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
@@ -741,7 +742,8 @@ class SaveSettingsPage(Page):
 			return False
 		try:
 			# Write XML back to file
-			file(self.parent.st_configfile, "w").write(xml.toxml().encode("utf-8"))
+			with open(self.parent.st_configfile, "w") as f:
+				f.write(xml.toxml().encode("utf-8"))
 		except Exception as e:
 			self.parent.output_line("syncthing-gtk: %s" % (traceback.format_exc(),))
 			self.parent.error(self,

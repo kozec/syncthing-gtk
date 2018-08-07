@@ -449,17 +449,18 @@ def is_ran_on_startup(program_name):
 		# Check if desktop file is not marked as hidden
 		# (stupid way, but should work)
 		is_entry = False
-		for line in file(desktopfile, "r").readlines():
-			line = line.strip(" \r\t\n").lower()
-			if line == "[desktop entry]":
-				is_entry = True
-				continue
-			if "=" in line:
-				key, value = line.split("=", 1)
-				if key.strip(" ") == "hidden":
-					if value.strip(" ") == "true":
-						# Desktop file is 'hidden', i.e. disabled
-						return False
+		with open(desktopfile, "r") as f:
+			for line in f.readlines():
+				line = line.strip(" \r\t\n").lower()
+				if line == "[desktop entry]":
+					is_entry = True
+					continue
+				if "=" in line:
+					key, value = line.split("=", 1)
+					if key.strip(" ") == "hidden":
+						if value.strip(" ") == "true":
+							# Desktop file is 'hidden', i.e. disabled
+							return False
 		# File is present and not hidden - autostart is enabled
 		return is_entry
 
@@ -495,8 +496,9 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 				# Already exists
 				pass
 			try:
-				file(desktopfile, "w").write((DESKTOP_FILE % (
-					program_name, executable, icon, description)).encode('utf-8'))
+				with open(desktopfile, "w") as f:
+					desktop_contents = DESKTOP_FILE % (program_name, executable, icon, description)
+					f.write(desktop_contents.encode('utf-8'))
 			except Exception as e:
 				# IO errors or out of disk space... Not really
 				# expected, but may happen
@@ -526,10 +528,10 @@ def can_upgrade_binary(binary_path):
 		try:
 			path = binary_path + ".new"
 			if os.path.exists(path):
-				f = file(path, "r+b")
+				f = open(path, "r+b")
 				f.close()
 			else:
-				f = file(path, "wb")
+				f = open(path, "wb")
 				f.close()
 				os.unlink(path)
 			# return Maybe
