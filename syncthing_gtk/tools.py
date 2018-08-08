@@ -6,6 +6,8 @@ Various stuff that I don't care to fit anywhere else.
 """
 
 from __future__ import unicode_literals
+
+from gettext import gettext as _
 from base64 import b32decode
 from datetime import tzinfo, timedelta
 from subprocess import Popen
@@ -53,10 +55,6 @@ portable_mode_enabled = False
 if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
 	import wmi, winreg
-
-""" Localization lambdas """
-_ = lambda a: _uc(gettext.gettext(a))
-_uc = lambda b: b if type(b) == str else b.decode("utf-8")
 
 def luhn_b32generate(s):
 	"""
@@ -232,11 +230,8 @@ def init_logging():
 	# Wrap Logger._log in something that can handle utf-8 exceptions
 	old_log = logging.Logger._log
 	def _log(self, level, msg, args, exc_info=None, extra=None):
-		args = tuple([
-			(c if type(c) is str else str(c).decode("utf-8"))
-			for c in args
-		])
-		msg = msg if type(msg) is str else str(msg).decode("utf-8")
+		args = tuple([str(c) for c in args])
+		msg = str(msg)
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
@@ -369,7 +364,7 @@ def get_config_dir():
 			return windows.get_unicode_home()
 		except Exception:
 			pass
-        from gi.repository import GLib
+	from gi.repository import GLib
 	confdir = GLib.get_user_config_dir()
 	if confdir is None or IS_XP:
 		if IS_WINDOWS:
