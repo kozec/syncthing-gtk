@@ -26,10 +26,10 @@ class RIBar(RevealerClass):
 			Emitted when an action widget (button) is clicked
 	"""
 	__gsignals__ = {
-		b"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
-		b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+		"response"	: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
+		"close"		: (GObject.SIGNAL_RUN_FIRST, None, ()),
 	}
-	
+
 	### Initialization
 	def __init__(self, label, message_type=Gtk.MessageType.INFO, *buttons):
 		"""

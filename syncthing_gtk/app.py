@@ -263,15 +263,15 @@ class App(Gtk.Application, TimerManager):
 			self.connect('handle-local-options', self.do_local_options)
 		else:
 			self.arguments = []
-		aso("window",	b"w", "Display window (don't start minimized)")
-		aso("minimized",b"m", "Hide window (start minimized)")
-		aso("header",	b"s", "Use classic window header")
-		aso("quit",		b"q", "Quit running instance (if any)")
-		aso("verbose",	b"v", "Be verbose")
-		aso("debug",	b"d", "Be more verbose (debug mode)")
-		aso("wizard",	b"1", "Run 'first start wizard' and exit")
-		aso("about",	b"a", "Display about dialog and exit")
-		aso("dump",		b"o", "Redirect captured daemon output to stdout")
+		aso("window",		"w", "Display window (don't start minimized)")
+		aso("minimized",	"m", "Hide window (start minimized)")
+		aso("header",		"s", "Use classic window header")
+		aso("quit",			"q", "Quit running instance (if any)")
+		aso("verbose",		"v", "Be verbose")
+		aso("debug",		"d", "Be more verbose (debug mode)")
+		aso("wizard",		"1", "Run 'first start wizard' and exit")
+		aso("about",		"a", "Display about dialog and exit")
+		aso("dump",			"o", "Redirect captured daemon output to stdout")
 		aso("home", 0, "Overrides default syncthing configuration directory",
 				GLib.OptionArg.STRING)
 		aso("add-repo", 0,    "Opens 'add repository' dialog with specified path prefilled",
