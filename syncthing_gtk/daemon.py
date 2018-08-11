@@ -690,7 +690,7 @@ class Daemon(GObject.GObject, TimerManager):
 			self.emit("connection-error", Daemon.NOT_AUTHORIZED, exception.message, exception)
 			return
 		elif isinstance(exception, HTTPCode):
-			# HTTP 404 may acually mean old daemon version
+			# HTTP 404 may actually mean old daemon version
 			version = get_header(exception.headers, "X-Syncthing-Version")
 			if version != None and not compare_version(version, MIN_VERSION):
 				self._epoch += 1
@@ -918,14 +918,14 @@ class Daemon(GObject.GObject, TimerManager):
 
 	def restart(self):
 		"""
-		Asks daemon to restart. If sucesfull, call will cause
+		Asks daemon to restart. If successful, call will cause
 		'disconnected' event with Daemon.RESTART reason to be fired
 		"""
 		RESTPOSTRequest(self, "system/restart",  {}, self._syncthing_cb_shutdown, None, Daemon.RESTART).start()
 
 	def shutdown(self):
 		"""
-		Asks daemon to shutdown. If sucesfull, call will cause
+		Asks daemon to shutdown. If successful, call will cause
 		'disconnected' event with Daemon.SHUTDOWN reason to be fired
 		"""
 		RESTPOSTRequest(self, "system/shutdown",  {}, self._syncthing_cb_shutdown, None, Daemon.SHUTDOWN).start()
@@ -971,7 +971,7 @@ class Daemon(GObject.GObject, TimerManager):
 		return "unknown"
 
 	def get_webui_url(self):
-		""" Returns webiu url in http(s)://127.0.0.1:8080 format """
+		""" Returns web ui url in http(s)://127.0.0.1:8080 format """
 		return "%s://%s" % (
 			"https" if self._tls else "http",
 			self._address
