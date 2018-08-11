@@ -190,7 +190,7 @@ class FolderEditorDialog(EditorDialog):
 				self["rvversioning"].set_reveal_child(True)
 	
 	#@Overrides
-	def on_save_reuqested(self):
+	def on_save_requested(self):
 		self.store_values(VALUES)
 		if self.is_new:
 			# Add new dict to configuration (edited dict is already there)

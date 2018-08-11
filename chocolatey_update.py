@@ -1,6 +1,6 @@
 #!/c/Python27/python.exe
 """
-Update Chocolatey package from GitHub releases informations.
+Update Chocolatey package from GitHub releases information.
 
 Requirements:
 - Being on Windows

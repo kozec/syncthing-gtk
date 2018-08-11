@@ -5,8 +5,8 @@ log = logging.getLogger("FakeRevealer")
 
 class FakeRevealer(Gtk.HBox):
 	"""
-	Gtk.Revealer compatibile widget that will not cause window border
-	disapearing bug on Windows.
+	Gtk.Revealer compatible widget that will not cause window border
+	disappearing bug on Windows.
 	"""
 	def __init__(self):
 		Gtk.HBox.__init__(self)

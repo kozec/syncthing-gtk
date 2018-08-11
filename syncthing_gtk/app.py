@@ -49,7 +49,7 @@ COLOR_DEVICE_CONNECTED	= "#2AAB61"					# Green
 COLOR_DEVICE_OFFLINE	= COLOR_DEVICE				# Dark-gray
 COLOR_DEVICE_ERROR		= "#87000B"					# Red
 COLOR_OWN_DEVICE		= "#C0C0C0"					# Light-gray
-COLOR_FOLDER			= "#9246B1"					# Dark-purbple
+COLOR_FOLDER			= "#9246B1"					# Dark-purple
 COLOR_FOLDER_SYNCING	= COLOR_DEVICE_SYNCING		# Blue
 COLOR_FOLDER_SCANNING	= COLOR_DEVICE_SYNCING		# Blue
 COLOR_FOLDER_IDLE		= COLOR_DEVICE_CONNECTED	# Green
@@ -115,21 +115,21 @@ class App(Gtk.Application, TimerManager):
 		self.use_headerbar = (
 			not IS_UNITY and (not self.config["use_old_header"] or IS_GNOME)
 			and (Gtk.get_major_version(), Gtk.get_minor_version()) >= (3, 10) )
-		
+
 		self.daemon = None	# Created by setup_connection method
 		# If enabled (by -o argument), daemon output is captured and printed
 		# to stdout
 		self.dump_daemon_output = None
 		self.notifications = None
-		# connect_dialog may be displayed durring initial communication
+		# connect_dialog may be displayed during initial communication
 		# or if daemon shuts down.
 		self.connect_dialog = None
-		# Used when upgrading from incompatibile version
+		# Used when upgrading from incompatible version
 		self.restart_after_update = None
 		self.dark_color = None			# RGBA. None by default, changes with dark themes
 		self.recv_limit = -1			# Used mainly to prevent menu handlers from recursing
 		self.send_limit = -1			# -//-
-		self.ur_question_shown = False	# Used to prevent showing 'Do you wan't usage reporting'
+		self.ur_question_shown = False	# Used to prevent showing 'Do you want usage reporting'
 										# question more than once until ST-GTK is restarted.
 		self.home_dir_override = None	# If set by '--home'
 		self.wizard = None
@@ -431,7 +431,7 @@ class App(Gtk.Application, TimerManager):
 	def start_daemon_ui(self):
 		"""
 		Does same thing as start_daemon.
-		Additionaly displays 'Starting Daemon' message and swaps
+		Additionally displays 'Starting Daemon' message and swaps
 		menu items in notification icon menu.
 		"""
 		# Swap menu items in notification menu
@@ -650,7 +650,7 @@ class App(Gtk.Application, TimerManager):
 			os.unlink(old_bin)
 		except Exception as e:
 			# Not exactly fatal
-			log.warning("Failed to remove backup binary durring backup")
+			log.warning("Failed to remove backup binary during backup")
 			log.warning(e)
 	
 	def cb_syncthing_connected(self, *a):
@@ -712,7 +712,7 @@ class App(Gtk.Application, TimerManager):
 						# ... unless he already decided once forever ...
 						self.display_connect_dialog(_("Waiting for Syncthing daemon at %s...") % (self.daemon.get_webui_url(),))
 					elif self.config["autostart_daemon"] == 1:
-						# ... or already gave persmission ...
+						# ... or already gave permission ...
 						self.display_connect_dialog(_("Starting Syncthing daemon"))
 						self.start_daemon()
 					else:
@@ -828,7 +828,7 @@ class App(Gtk.Application, TimerManager):
 		# Daemon argument is not used
 		RE_IP_PORT = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+):([0-9]+)")
 		if "remote device speaks an older version of the protocol" in message:
-			# This one needs special treatement because remote port changes
+			# This one needs special treatment because remote port changes
 			# every time when this is reported.
 			id = re.search("to ([-0-9A-Za-z]+)", message)
 			version = re.search("protocol \(([^\)]+)\)", message)
@@ -1210,7 +1210,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def get_folder_n_path(self, path):
 		"""
-		Returns tuple of ID of folder containign specified path and
+		Returns tuple of ID of folder containing specified path and
 		relative path in that folder, or (None, None) if specified path
 		doesn't belongs anywhere
 		"""
@@ -1237,7 +1237,7 @@ class App(Gtk.Application, TimerManager):
 		return self.builder.get_object(name) != None
 	
 	def hilight(self, boxes):
-		to_hilight = set([])
+		to_hilight = set()
 		for box in boxes:
 			if box["id"] in self.folders:
 				for d in box["devices"]:
@@ -1326,7 +1326,7 @@ class App(Gtk.Application, TimerManager):
 					c.set_markup(message)
 					return True
 			return False
-		log.verbose("Settinig connect_dialog label %s" % message[0:15])
+		log.verbose("Setting connect_dialog label %s" % message[0:15])
 		set_label(self.connect_dialog.get_content_area(), message)
 	
 	def display_run_daemon_dialog(self):
@@ -1530,11 +1530,11 @@ class App(Gtk.Application, TimerManager):
 	def change_setting_async(self, setting_name, value, retry_on_error=False, restart=True):
 		"""
 		Asynchronously changes one value in daemon configuration and
-		optionaly restarts daemon.
+		optionally restarts daemon.
 		
 		This will:
 		 - call daemon.read_config() to read configuration from daemon
-		 - change value in recieved YAML document
+		 - change value in received YAML document
 		 - call daemon.write_config() to post configuration back
 		 - call daemon.restart()
 		Everthing will be done asynchronously and will be repeated
@@ -1575,7 +1575,7 @@ class App(Gtk.Application, TimerManager):
 		def csnr_config_read(config, setting_name, value, retry_on_error):
 			"""
 			Handler for change_setting_async
-			Modifies recieved config and post it back.
+			Modifies received config and post it back.
 			"""
 			c, setting = config, setting_name
 			while "/" in setting:
@@ -1641,7 +1641,7 @@ class App(Gtk.Application, TimerManager):
 	def show_add_folder_dialog(self, path=None):
 		"""
 		Waits for daemon to connect and shows 'add folder' dialog,
-		optionaly with pre-filled path entry.
+		optionally with pre-filled path entry.
 		"""
 		handler_id = None
 		def have_config(*a):
@@ -1661,7 +1661,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def show_remove_folder_dialog(self, path):
 		"""
-		Waits for daemon to connect, then searchs for folder id assigned
+		Waits for daemon to connect, then searches for folder id assigned
 		with specified path and shows 'remove folder' dialog, it such
 		id is found.
 		If id is not found, does nothing.
@@ -2143,7 +2143,7 @@ class App(Gtk.Application, TimerManager):
 			d.load()
 			d.set_transient_for(self["window"] if self.connect_dialog is None
 					else self.connect_dialog)
-			# If binary exists, assume that something is completly wrong,
+			# If binary exists, assume that something is completely wrong,
 			# and change error message
 			if os.path.exists(self.config["syncthing_binary"]):
 				d.set_message("%s\n%s %s\n\n%s" % (

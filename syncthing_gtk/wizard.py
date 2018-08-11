@@ -200,6 +200,10 @@ class Page(Gtk.Grid):
 		""" Sets page as complete by default """
 		self.parent.set_page_complete(self, True)
 
+	def init_page(self):
+		""" Initialize the page """
+		raise NotImplementedError()
+
 class IntroPage(Page):
 	TYPE = Gtk.AssistantPageType.INTRO
 	TITLE = "Intro"

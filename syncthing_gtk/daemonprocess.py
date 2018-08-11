@@ -23,11 +23,11 @@ elif not HAS_SUBPROCESS:
 
 class DaemonProcess(GObject.GObject):
 	__gsignals__ = {
-		# line(text)	- emited when process outputs full line
+		# line(text)	- emitted when process outputs full line
 		b"line"			: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-		# exit(code)	- emited when process exits
+		# exit(code)	- emitted when process exits
 		b"exit"			: (GObject.SIGNAL_RUN_FIRST, None, (int,)),
-		# failed(exception) - emited if process fails to start
+		# failed(exception) - emitted if process fails to start
 		b"failed"		: (GObject.SIGNAL_RUN_FIRST, None, (object,)),
 	}
 	SCROLLBACK_SIZE = 500	# Maximum number of output lines stored in memory

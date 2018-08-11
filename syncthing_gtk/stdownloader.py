@@ -43,11 +43,11 @@ class StDownloader(GObject.GObject):
 		download-starting()
 			emitted when download of package is starting
 		download-progress(progress)
-			emitted durring download. Progress goes from 0.0 to 1.0
+			emitted during download. Progress goes from 0.0 to 1.0
 		download-finished()
 			emitted when download is finished
 		extraction-progress(progress)
-			emitted durring extraction. Progress goes from 0.0 to 1.0
+			emitted during extraction. Progress goes from 0.0 to 1.0
 		extraction-finished()
 			emitted when extraction is finished and daemon binary saved
 			(i.e. when all work is done)

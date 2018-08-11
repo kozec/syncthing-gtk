@@ -30,7 +30,7 @@ class IdentIcon(Gtk.DrawingArea):
 		self.queue_draw()
 
 	def do_get_preferred_width(self):
-		# Icon scales to whatever you give, but prefered
+		# Icon scales to whatever you give, but preferred
 		# size is always 22x22
 		return (22, 22)
 	
