@@ -470,11 +470,18 @@ class StatusIconAppIndicator(StatusIconDBus):
 		self._tray = appindicator.Indicator.new("syncthing-gtk", self._get_icon(), category)
 		self._tray.set_menu(self._get_popupmenu())
 		self._tray.set_title(self.TRAY_TITLE)
+		
+		self._tray.connect("connection-changed", self._on_connection_changed)
+		self._on_connection_changed()
 	
 	def _set_visible(self, active):
 		StatusIcon._set_visible(self, active)
 		
 		self._tray.set_status(self._status_active if active else self._status_passive)
+	
+	def _on_connection_changed(self, *args):
+		is_connected = self._tray.get_property("connected")
+		self.set_property("active", is_connected)
 	
 	def set(self, icon=None, text=None):
 		StatusIcon.set(self, icon, text)

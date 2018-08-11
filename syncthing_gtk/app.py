@@ -1718,8 +1718,11 @@ class App(Gtk.Application, TimerManager):
 		AboutDialog(self, self.gladepath, self.iconpath).show(self["window"])
 	
 	def cb_delete_event(self, *e):
-		# Hide main window
-		self.hide()
+		# Hide main window if the status icon is visible, otherwise quit
+		if self.statusicon.get_active():
+			self.hide()
+		else:
+			self.quit()
 		return True
 	
 	def cb_realized(self, widget, *a):
