@@ -1,4 +1,4 @@
-#! python3
+#!/c/Python27/python.exe
 """
 Do './build_windows.py build' to build exe, then call
 'makensis syncthing-gtk.nsis' to create installation package.
