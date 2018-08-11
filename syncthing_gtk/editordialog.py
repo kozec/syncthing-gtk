@@ -5,7 +5,7 @@ Syncthing-GTK - EditorDialog
 Base class and universal handler for all Syncthing settings and editing
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk, Gdk, GObject, GLib
 from syncthing_gtk.tools import ints
 from syncthing_gtk.tools import _ # gettext function

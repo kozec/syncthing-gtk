@@ -5,7 +5,7 @@ Syncthing-GTK - DaemonOutputDialog
 Displays output from daemon subprocess
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.uibuilder import UIBuilder
 import os
 

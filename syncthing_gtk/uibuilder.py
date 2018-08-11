@@ -12,7 +12,7 @@ Usage:
 	- Continue as usual
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 from xml.dom import minidom
 from .tools import GETTEXT_DOMAIN, IS_WINDOWS

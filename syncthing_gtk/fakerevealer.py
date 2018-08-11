@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 import logging
 log = logging.getLogger("FakeRevealer")

@@ -8,7 +8,7 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version

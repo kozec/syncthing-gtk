@@ -5,7 +5,7 @@ Syncthing-GTK - tools
 Various stuff that I don't care to fit anywhere else.
 """
 
-from __future__ import unicode_literals
+
 
 from gettext import gettext as _
 from base64 import b32decode
