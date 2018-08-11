@@ -1117,7 +1117,6 @@ class RESTRequest(Gio.SocketClient):
 			if response == None:
 				raise Exception("No data recieved")
 		except Exception as e:
-			print e
 			self._connection.close(None)
 			self._error(e)
 			return
@@ -1353,7 +1352,6 @@ class EventPollLoop(RESTRequest):
 		try:
 			self._connection.get_output_stream().write_all(get_str, None)
 		except Exception as e:
-			print e
 			self._connection.close(None)
 			return self.start()
 		self._connection.get_input_stream().read_bytes_async(10, 1, None, self._chunk)

@@ -192,7 +192,6 @@ class FolderEditorDialog(EditorDialog):
 	#@Overrides
 	def on_save_reuqested(self):
 		self.store_values(VALUES)
-		print self.values
 		if self.is_new:
 			# Add new dict to configuration (edited dict is already there)
 			self.config["folders"].append(self.values)
@@ -269,8 +268,6 @@ class FolderEditorDialog(EditorDialog):
 			# fswatch disabled, return rescan interval back
 			if interval > 300:
 				vrescanIntervalS.set_value(interval / 60)
-				
-		# print self.get_value("vfsWatcherEnabled"),  cb.get_value()
 	
 	def mark_device(self, nid):
 		""" Marks (checks) checkbox for specified device """

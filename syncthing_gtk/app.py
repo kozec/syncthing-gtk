@@ -199,16 +199,16 @@ class App(Gtk.Application, TimerManager):
 		else:
 			# Fallback for old GTK without option parsing
 			if "-h" in sys.argv or "--help" in sys.argv:
-				print "Usage:"
-				print "  %s [arguments]" % (sys.argv[0],)
-				print "Arguments:"
+				sys.stdout.write("Usage:\n")
+				sys.stdout.write("  %s [arguments]\n" % (sys.argv[0],))
+				sys.stdout.write("Arguments:\n")
 				for o in self.arguments:
 					# Don't display hidden and unsupported parameters
 					if not o.long_name in ("force-update", "quit"):
-						print "  -%s, --%s %s" % (
+						sys.stdout.write("  -%s, --%s %s\n" % (
 							chr(o.short_name),
 							o.long_name.ljust(10),
-							o.description)
+							o.description))
 				sys.exit(0)
 			def is_option(name):
 				# Emulating Gtk.Application.do_local_options
@@ -1249,11 +1249,11 @@ class App(Gtk.Application, TimerManager):
 				to_hilight.add(box)
 		for box in itertools.chain(self.devices.values(), self.folders.values()):
 			box.set_hilight(box in to_hilight)
-
+	
 	def is_visible(self):
 		""" Returns True if main window is visible """
 		return self["window"].is_visible()
-
+	
 	def show(self):
 		"""
 		Shows main window or brings it to front, if is already visible.
@@ -2087,7 +2087,9 @@ class App(Gtk.Application, TimerManager):
 	
 	
 	def cb_daemon_line_captured(self, daemon, line):
-		print line
+		sys.stdout.write(line)
+		sys.stdout.write("\n")
+		sys.stdout.flush()
 	
 	
 	def cb_daemon_exit(self, proc, error_code):
