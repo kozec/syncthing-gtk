@@ -108,11 +108,7 @@ if HAS_DESKTOP_NOTIFY:
 			self.app.open_editor_device(self.id, self.label)
 
 		def cb_ignore(self, n, action, user_data):
-			def add_ignored(target, trash):
-				if "ignoredDevices" not in target:
-					target["ignoredDevices"] = []
-				target["ignoredDevices"].append(self.id)
-			self.app.change_setting_async("ignoredDevices", add_ignored, restart=False)
+			self.app.add_ignored("ignoredDevices", self.id)
 
 		def rejected(self):
 			label_fb = self.label or self.id
@@ -158,11 +154,7 @@ if HAS_DESKTOP_NOTIFY:
 			self.app.open_editor_folder(self.id, self.label, user_data)
 
 		def cb_ignore(self, n, action, user_data):
-			def add_ignored(target, trash):
-				if "ignoredFolders" not in target:
-					target["ignoredFolders"] = []
-				target["ignoredFolders"].append(self.id)
-			self.app.change_setting_async("ignoredFolders", add_ignored, restart=False)
+			self.app.add_ignored("ignoredFolders", self.id)
 
 		def rejected(self, nid):
 			device = self.app.devices[nid].get_title()

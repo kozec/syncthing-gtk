@@ -1603,6 +1603,13 @@ class App(Gtk.Application, TimerManager):
 		# Call
 		self.daemon.read_config(csnr_config_read, csnr_error, setting_name, value, retry_on_error)
 	
+	def add_ignored(self, ignore_type, value):
+		def cb(target, trash):
+			if ignore_type not in target:
+				target[ignore_type] = []
+			target[ignore_type].append(value)
+		self.change_setting_async(ignore_type, cb, restart=False)
+	
 	def quit(self, *a):
 		if self.process != None:
 			if IS_WINDOWS:
@@ -2029,20 +2036,12 @@ class App(Gtk.Application, TimerManager):
 				self.open_editor_folder(additional_data['rid'], additional_data['label'], additional_data['nid'])
 		elif response_id == RESPONSE_FIX_IGNORE_FOLDER:
 			# Ignore unknown folder
-			def add_ignored(target, trash):
-				if "ignoredFolders" not in target:
-					target["ignoredFolders"] = []
-				target["ignoredFolders"].append(additional_data['nid'])
-			self.app.change_setting_async("ignoredFolders", add_ignored, restart=False)
+			self.add_ignored("ignoredFolders", additional_data['rid'])
 		elif response_id == RESPONSE_FIX_ADD_DEVICE:
 			self.open_editor_device(additional_data['nid'], additional_data['name'])
 		elif response_id == RESPONSE_FIX_IGNORE_DEV:
 			# Ignore unknown device
-			def add_ignored(target, trash):
-				if not "ignoredDevices" in target:
-					target["ignoredDevices"] = []
-				target["ignoredDevices"].append(additional_data["nid"])
-			self.change_setting_async("ignoredDevices", add_ignored, restart=False)
+			self.add_ignored("ignoredDevices", additional_data['nid'])
 		elif response_id == RESPONSE_UR_ALLOW:
 			# Allow Usage reporting
 			self.change_setting_async("options/urAccepted", 1)
