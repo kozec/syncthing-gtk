@@ -59,16 +59,17 @@ COLOR_NEW				= COLOR_OWN_DEVICE			# Light-gray
 SI_FRAMES				= 12 # Number of animation frames for status icon
 
 # Response IDs
-RESPONSE_RESTART		= 256
-RESPONSE_FIX_FOLDER_ID	= 257
-RESPONSE_FIX_NEW_DEVICE	= 258
-RESPONSE_FIX_IGNORE		= 259
-RESPONSE_QUIT			= 260
-RESPONSE_START_DAEMON	= 271
-RESPONSE_SLAIN_DAEMON	= 272
-RESPONSE_SPARE_DAEMON	= 273
-RESPONSE_UR_ALLOW		= 274
-RESPONSE_UR_FORBID		= 275
+RESPONSE_RESTART			= 256
+RESPONSE_FIX_ADD_FOLDER		= 257
+RESPONSE_FIX_IGNORE_FOLDER	= 258
+RESPONSE_FIX_ADD_DEVICE		= 259
+RESPONSE_FIX_IGNORE_DEV		= 260
+RESPONSE_QUIT				= 261
+RESPONSE_START_DAEMON		= 271
+RESPONSE_SLAIN_DAEMON		= 272
+RESPONSE_SPARE_DAEMON		= 273
+RESPONSE_UR_ALLOW			= 274
+RESPONSE_UR_FORBID			= 275
 
 # RI's
 REFRESH_INTERVAL_DEFAULT	= 1
@@ -889,7 +890,8 @@ class App(Gtk.Application, TimerManager):
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
 		if can_fix:
-			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_FOLDER_ID)
+			r.add_button(RIBar.build_button(_("_Ignore")), RESPONSE_FIX_IGNORE_FOLDER)
+			r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_ADD_FOLDER)
 		self.show_error_box(r, {"nid" : nid, "rid" : rid, "label" : label } )
 	
 	def cb_syncthing_device_rejected(self, daemon, nid, name, address):
@@ -911,8 +913,8 @@ class App(Gtk.Application, TimerManager):
 			}
 		r = RIBar("", Gtk.MessageType.WARNING,)
 		r.get_label().set_markup(markup)
-		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_NEW_DEVICE)
-		r.add_button(RIBar.build_button(_("_Ignore")), RESPONSE_FIX_IGNORE)
+		r.add_button(RIBar.build_button(_("_Add")), RESPONSE_FIX_ADD_DEVICE)
+		r.add_button(RIBar.build_button(_("_Ignore")), RESPONSE_FIX_IGNORE_DEV)
 		self.show_error_box(r, {"nid" : nid, "name" : name, "address" : address} )
 	
 	def cb_syncthing_my_id_changed(self, daemon, device_id):
@@ -2021,13 +2023,20 @@ class App(Gtk.Application, TimerManager):
 		if response_id == RESPONSE_RESTART:
 			# Restart
 			self.daemon.restart()
-		elif response_id == RESPONSE_FIX_FOLDER_ID:
+		elif response_id == RESPONSE_FIX_ADD_FOLDER:
 			# Give up if there is no device with matching ID
 			if additional_data["nid"] in self.devices:
 				self.open_editor_folder(additional_data['rid'], additional_data['label'], additional_data['nid'])
-		elif response_id == RESPONSE_FIX_NEW_DEVICE:
+		elif response_id == RESPONSE_FIX_IGNORE_FOLDER:
+			# Ignore unknown folder
+			def add_ignored(target, trash):
+				if "ignoredFolders" not in target:
+					target["ignoredFolders"] = []
+				target["ignoredFolders"].append(additional_data['nid'])
+			self.app.change_setting_async("ignoredFolders", add_ignored, restart=False)
+		elif response_id == RESPONSE_FIX_ADD_DEVICE:
 			self.open_editor_device(additional_data['nid'], additional_data['name'])
-		elif response_id == RESPONSE_FIX_IGNORE:
+		elif response_id == RESPONSE_FIX_IGNORE_DEV:
 			# Ignore unknown device
 			def add_ignored(target, trash):
 				if not "ignoredDevices" in target:
