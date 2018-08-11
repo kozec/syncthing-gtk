@@ -7,7 +7,7 @@ Config file is by default in ~/.config/syncthing-gtk/config.json
 or other ~/.config equivalent
 """
 
-from __future__ import unicode_literals
+
 from datetime import datetime
 from syncthing_gtk.tools import IS_WINDOWS, get_config_dir, is_portable
 import dateutil.parser

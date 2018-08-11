@@ -5,7 +5,7 @@ This program is part of Syncthing-GTK, but can be used independently
 with small modification
 """
 
-from __future__ import unicode_literals
+
 
 from gi.repository import GObject
 from syncthing_gtk.tools import init_logging, set_logging_level

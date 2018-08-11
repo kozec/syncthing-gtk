@@ -8,7 +8,7 @@ Draws Ident Icon on transparent background.
 Most of drawing code is ported from
 https://github.com/syncthing/syncthing/blob/master/gui/scripts/syncthing/core/directives/identiconDirective.js"""
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 from syncthing_gtk.infobox import InfoBox
 import re

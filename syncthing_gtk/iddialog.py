@@ -5,7 +5,7 @@ Syncthing-GTK - IDDialog
 Dialog with Device ID and generated QR code
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gio, GLib
 from .tools import IS_WINDOWS
 from syncthing_gtk.uibuilder import UIBuilder

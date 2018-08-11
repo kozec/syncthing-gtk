@@ -5,7 +5,7 @@ Syncthing-GTK - App
 Main application window
 """
 
-from __future__ import unicode_literals
+
 import itertools
 from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
 from syncthing_gtk.tools import _

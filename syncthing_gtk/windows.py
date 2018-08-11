@@ -3,7 +3,7 @@
 Syncthing-GTK - Windows related stuff.
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.tools import get_config_dir
 from gi.repository import GLib, Gtk, Gdk
 import os, sys, logging, codecs, msvcrt, win32pipe, win32api, winreg

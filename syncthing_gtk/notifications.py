@@ -6,7 +6,7 @@ Syncthing-GTK - Notifications
 Listens to syncing events on daemon and displays desktop notifications.
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.tools import IS_WINDOWS
 DELAY = 5	# Display notification only after no file is downloaded for <DELAY> seconds
 ICON_DEF = "syncthing-gtk"
