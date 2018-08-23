@@ -715,8 +715,7 @@ msgstr "Szükséges a kezdő beállítások létrehozása."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>%s</b> to create a Syncthing configuration file or "
-"<b>Quit</b> to exit"
+"Continue this wizard to create a Syncthing configuration file or abort it to exit."
 msgstr "Kattintson a <b>%s</b> gombra a Syncthing konfigurációs fájl létrehozásához, vagy a <b>Kilépés</b> gombra a megszakításhoz"
 
 #: syncthing_gtk/wizard.py:204

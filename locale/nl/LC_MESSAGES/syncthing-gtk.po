@@ -713,8 +713,7 @@ msgstr "Een initiële configuratie moet aangemaakt worden."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>%s</b> to create a Syncthing configuration file or "
-"<b>Quit</b> to exit"
+"Continue this wizard to create a Syncthing configuration file or abort it to exit."
 msgstr "Klik op <b>%</b> om een Syncthing-configuratiebestand aan te maken, of klik op <b>Afsluiten</b> om af te sluiten"
 
 #: syncthing_gtk/wizard.py:204

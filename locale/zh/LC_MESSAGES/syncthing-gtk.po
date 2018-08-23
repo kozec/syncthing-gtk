@@ -715,8 +715,7 @@ msgstr "应当创建初始配置。"
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>%s</b> to create a Syncthing configuration file or "
-"<b>Quit</b> to exit"
+"Continue this wizard to create a Syncthing configuration file or abort it to exit."
 msgstr "请点击 <b>%s</b> 以创建 Syncthing 配置文件或 <b>退出</b> 以退出"
 
 #: syncthing_gtk/wizard.py:204

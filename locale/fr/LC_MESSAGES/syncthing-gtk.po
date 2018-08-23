@@ -715,8 +715,7 @@ msgstr "Il s'agit de créer la configuration initiale."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Please click <b>%s</b> to create a Syncthing configuration file or "
-"<b>Quit</b> to exit"
+"Continue this wizard to create a Syncthing configuration file or abort it to exit."
 msgstr "Veuillez cliquez sur <b>%s</b> pour la création d'un fichier de configuration de Syncthing ou <b>Quitter</b> pour sortir."
 
 #: syncthing_gtk/wizard.py:204

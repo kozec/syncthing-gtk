@@ -220,15 +220,19 @@ class IntroPage(Page):
 			# order is 'apply, next, back, finish, cancel'
 			next_label = all_buttons[1].get_label().decode("utf-8").replace("_", "")
 		except: pass
+		# TODO: Temporal solution, remove later
+		changed_line = _("Continue this wizard to create a Syncthing configuration file or abort it to exit.")
+		if "%s" in changed_line:
+			changed_line = changed_line % (next_label,)
+		
 		self.attach(WrappedLabel(
 			"<b>" + _("Welcome to Syncthing-GTK first run wizard!") + "</b>" +
 			"\n\n" +
 			_("It looks like you never have used Syncthing.") + " " +
 			_("Initial configuration should be created.") +  " " +
-			(_("Please click <b>%s</b> to create a Syncthing configuration file or <b>Quit</b> to exit")
-				% (next_label,) ) + "\n\n" +
+			changed_line + "\n\n" +
 			(_("If you already had Syncthing daemon configured, please, "
-			  "exit this wizard and check your %s folder") % config_folder_link )
+			   "exit this wizard and check your %s folder") % config_folder_link )
 		), 0, 0, 1, 1)
 
 class FindDaemonPage(Page):
