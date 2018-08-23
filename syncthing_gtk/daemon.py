@@ -1283,7 +1283,8 @@ class EventPollLoop(RESTRequest):
 			]).encode("utf-8")
 	
 	def _error(self, exception):
-		self._connection.close(None)
+		if self._connection:
+			self._connection.close(None)
 		if self._epoch == self._parent._epoch:
 			if isinstance(exception, GLib.GError):
 				if exception.code in (0, 39, 34):	# Connection terminated unexpectedly, Connection Refused

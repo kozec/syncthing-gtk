@@ -74,7 +74,7 @@ class EditorDialog(GObject.GObject):
 		self.load_data()
 	
 	def __getitem__(self, name):
-		""" Convince method that allows widgets to be accessed via self["widget"] """
+		""" Convience method that allows widgets to be accessed via self["widget"] """
 		return self.builder.get_object(name)
 	
 	def __contains__(self, name):

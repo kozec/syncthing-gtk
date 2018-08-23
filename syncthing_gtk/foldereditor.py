@@ -170,7 +170,7 @@ class FolderEditorDialog(EditorDialog):
 				if device["id"] != self.app.daemon.get_my_id():
 					b = Gtk.CheckButton(device.get_title(), False)
 					b.set_tooltip_text(device["id"])
-					self["vdevices"].pack_end(b, False, False, 0)
+					self["vdevices"].pack_start(b, False, False, 0)
 					b.set_active(device["id"] in nids)
 			self["vdevices"].show_all()
 		else:
