@@ -714,8 +714,7 @@ msgstr "Je preto potrebné prejsť úvodnú konfiguráciu."
 
 #: syncthing_gtk/wizard.py:202
 msgid ""
-"Continue this wizard to create a Syncthing configuration file or abort it to"
-" exit."
+"Continue this wizard to create a Syncthing configuration file or abort it to exit."
 msgstr "Pokračovaním v sprievodcovi sa vytvorí nová konfigurácia pre Synthing."
 
 #: syncthing_gtk/wizard.py:204

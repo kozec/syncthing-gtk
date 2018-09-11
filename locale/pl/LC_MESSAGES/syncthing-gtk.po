@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the Syncthing-GTK package.
 # 
 # Translators:
-# Damian Cypcar, 2016-2017
-# Marcin Mikołajczak <m4sk1n@vivaldi.net>, 2016-2017
+# xearonet, 2016-2017
+# Marcin Mikołajczak <me@m4sk.in>, 2016-2017
+# xearonet, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-09-23 07:39+0000\n"
-"Last-Translator: Damian Cypcar\n"
+"PO-Revision-Date: 2018-08-29 07:20+0000\n"
+"Last-Translator: xearonet\n"
 "Language-Team: Polish (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -715,7 +716,7 @@ msgstr "Początkowa konfiguracja powinna zostać utworzona."
 #: syncthing_gtk/wizard.py:202
 msgid ""
 "Continue this wizard to create a Syncthing configuration file or abort it to exit."
-msgstr "Kliknij <b>%s</b> aby utworzyć konfigurację Syncthing lub <b>Quit</b> aby wyjść"
+msgstr "Kontynuuj z kreatorem, aby utworzyć plik konfiguracyjny Syncthing lub przerwij go, aby zakończyć."
 
 #: syncthing_gtk/wizard.py:204
 #, python-format

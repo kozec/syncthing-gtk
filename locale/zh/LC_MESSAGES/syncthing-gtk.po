@@ -3,15 +3,14 @@
 # This file is distributed under the same license as the Syncthing-GTK package.
 # 
 # Translators:
-# Dz Chen <wsxy162@gmail.com>, 2016
-# Dz Chen <wsxy162@gmail.com>, 2016-2017
+# Dz Chen <wsxy162@gmail.com>, 2016-2018
 # kozec <kozec2@kozec.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-09-22 22:29+0000\n"
+"PO-Revision-Date: 2018-08-24 17:12+0000\n"
 "Last-Translator: Dz Chen <wsxy162@gmail.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -716,7 +715,7 @@ msgstr "应当创建初始配置。"
 #: syncthing_gtk/wizard.py:202
 msgid ""
 "Continue this wizard to create a Syncthing configuration file or abort it to exit."
-msgstr "请点击 <b>%s</b> 以创建 Syncthing 配置文件或 <b>退出</b> 以退出"
+msgstr "继续此向导以创建 Syncthing 配置文件或者中止向导以退出。"
 
 #: syncthing_gtk/wizard.py:204
 #, python-format
