@@ -39,9 +39,9 @@ import os, webbrowser, sys, time, logging, shutil, re
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.9.4.1"
+INTERNAL_VERSION		= "v0.9.4.2"
 # Minimal Syncthing version supported by App
-MIN_ST_VERSION			= "0.14.48"
+MIN_ST_VERSION			= "0.14.50"
 
 COLOR_DEVICE			= "#707070"					# Dark-gray
 COLOR_DEVICE_SYNCING	= "#2A89C8"					# Blue
@@ -1375,7 +1375,7 @@ class App(Gtk.Application, TimerManager):
 					self["window"].move(x, y)
 				GLib.idle_add(move_back)
 	
-	def show_folder(self, id, label, path, is_master, ignore_perms, rescan_interval, fswatcher_enabled, shared):
+	def show_folder(self, id, label, path, folder_type, ignore_perms, rescan_interval, fswatcher_enabled, shared):
 		""" Shared is expected to be list """
 		display_path = path
 		if IS_WINDOWS:
@@ -1394,17 +1394,17 @@ class App(Gtk.Application, TimerManager):
 			# Create new box
 			box = InfoBox(self, title, Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.LARGE_TOOLBAR))
 			# Add visible lines
-			box.add_value("id",			"version.svg",	_("Folder ID"),			id)
-			box.add_value("path",		"folder.svg",	_("Path"))
-			box.add_value("global",		"global.svg",	_("Global State"),		"? items, ?B")
-			box.add_value("local",		"home.svg",		_("Local State"),		"? items, ?B")
-			box.add_value("oos",		"dl_rate.svg",	_("Out Of Sync"),		"? items, ?B")
-			box.add_value("master",		"lock.svg",		_("Folder Type"))
-			box.add_value("ignore",		"ignore.svg",	_("Ignore Permissions"))
-			box.add_value("rescan",		"rescan.svg",	_("Rescan Interval"))
-			box.add_value("shared",		"shared.svg",	_("Shared With"))
+			box.add_value("id",				"version.svg",	_("Folder ID"),			id)
+			box.add_value("path",			"folder.svg",	_("Path"))
+			box.add_value("global",			"global.svg",	_("Global State"),		"? items, ?B")
+			box.add_value("local",			"home.svg",		_("Local State"),		"? items, ?B")
+			box.add_value("oos",			"dl_rate.svg",	_("Out Of Sync"),		"? items, ?B")
+			box.add_value("folder_type",	"lock.svg",		_("Folder Type"))
+			box.add_value("ignore",			"ignore.svg",	_("Ignore Permissions"))
+			box.add_value("rescan",			"rescan.svg",	_("Rescan Interval"))
+			box.add_value("shared",			"shared.svg",	_("Shared With"))
 			# Add hidden stuff
-			box.add_hidden_value("b_master", is_master)
+			box.add_hidden_value("b_master", folder_type)
 			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
@@ -1427,15 +1427,20 @@ class App(Gtk.Application, TimerManager):
 		# Set values
 		box.set_value("id",		id)
 		box.set_value("path",	display_path)
-		box.set_value("master",	_("Send Only") if is_master else _("Send & Receive"))
+		box.add_hidden_value("b_master", False)
+		if folder_type == "receiveonly":
+			box.set_value("folder_type",	_("Receive Only"))
+		elif folder_type == "sendonly":
+			box.set_value("b_master", True)
+			box.set_value("folder_type",	_("Send Only"))
+		else:
+			box.set_value("folder_type",	_("Send & Receive"))
 		box.set_value("ignore",	_("Yes") if ignore_perms else _("No"))
 		box.set_value("rescan",	"%s s%s" % (
 			rescan_interval, " " + _("(watch)") if fswatcher_enabled else "" ))
 		box.set_value("shared",	", ".join([ n.get_title() for n in shared ]))
-		box.set_value("b_master", is_master)
 		box.set_value("can_override", False)
 		box.set_visible("id",		self.config["folder_as_path"] or label not in (None, ""))
-		box.set_visible("master",	is_master)
 		box.set_visible("ignore",	ignore_perms)
 		return box
 	

@@ -16,8 +16,8 @@ log = logging.getLogger("FolderEditor")
 COLOR_NEW				= "#A0A0A0"
 # Regexp to generate folder id from filename
 RE_GEN_ID = re.compile("([a-zA-Z0-9\-\._]{1,64}).*")
-VALUES = [ "vlabel", "vid", "vpath", "vreadOnly", "vignorePerms", "vdevices",
-	"vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
+VALUES = [ "vlabel", "vid", "vpath", "vreadOnly", "vreceiveOnly", "vignorePerms",
+	"vdevices", "vversioning", "vkeepVersions", "vrescanIntervalS", "vmaxAge",
 	"vversionsPath", "vfsWatcherEnabled", "vcleanoutDays", "vcommand", "vorder",
 	"vminDiskFreePct"
 	]
@@ -80,6 +80,8 @@ class FolderEditorDialog(EditorDialog):
 			return self.get_burried_value("versioning/params/versionsPath", self.values, "")
 		elif key == "readOnly":
 			return self.get_burried_value("type", self.values, "") in ("readonly", "sendonly")
+		elif key == "receiveOnly":
+			return self.get_burried_value("type", self.values, "") in ("receiveonly")
 		elif key == "versioning":
 			return self.get_burried_value("versioning/type", self.values, "")
 		else:
@@ -113,6 +115,8 @@ class FolderEditorDialog(EditorDialog):
 			self.values["versioning"]["params"]["versionsPath"] = value
 		elif key == "readOnly":
 			self.values["type"] = "sendonly" if value else "sendreceive"
+		elif key == "receiveOnly":
+			self.values["type"] = "receiveonly"
 		else:
 			EditorDialog.set_value(self, key, value)
 	
@@ -254,6 +258,13 @@ class FolderEditorDialog(EditorDialog):
 		self.id = rid
 		self.update_special_widgets()
 		self["vid"].set_sensitive(not readonly)
+	
+	def on_folder_type_toggled(self, cb, *a):
+		""" Ensures that only one folder type checkbox is checked """
+		if cb.get_active():
+			for x in ("vreadOnly", "vreceiveOnly"):
+				if self[x] != cb and self[x].get_active():
+					self[x].set_active(False)
 	
 	def on_vfsWatcherEnabled_toggled(self, cb, *a):
 		# Called when checkbox value changes to automatically change rescan interval
