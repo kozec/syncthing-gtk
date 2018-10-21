@@ -1046,7 +1046,7 @@ class App(Gtk.Application, TimerManager):
 	def cb_syncthing_folder_added(self, daemon, rid, r):
 		self.show_folder(
 			rid, r["label"], r["path"],
-			r["type"] in ["readonly", "sendonly"],
+			r["type"],
 			r["ignorePerms"], 
 			r["rescanIntervalS"],
 			r["fsWatcherEnabled"],
@@ -1065,7 +1065,7 @@ class App(Gtk.Application, TimerManager):
 			folder["global"] = "%s %s, %s" % (global_files, _("Files"), sizeof_fmt(data["globalBytes"]))
 			folder["local"]	 = "%s %s, %s" % (local_files, _("Files"), sizeof_fmt(data["localBytes"]))
 			folder["oos"]	 = "%s %s, %s" % (need_files, _("Files"), sizeof_fmt(data["needBytes"]))
-			if folder["b_master"]:
+			if folder["folder_type"] == "sendonly":
 				can_override = (need_files > 0)
 				if can_override != folder["can_override"]:
 					folder["can_override"] = can_override
@@ -1404,7 +1404,7 @@ class App(Gtk.Application, TimerManager):
 			box.add_value("rescan",			"rescan.svg",	_("Rescan Interval"))
 			box.add_value("shared",			"shared.svg",	_("Shared With"))
 			# Add hidden stuff
-			box.add_hidden_value("b_master", folder_type)
+			box.add_hidden_value("folder_type", folder_type)
 			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
@@ -1427,11 +1427,10 @@ class App(Gtk.Application, TimerManager):
 		# Set values
 		box.set_value("id",		id)
 		box.set_value("path",	display_path)
-		box.add_hidden_value("b_master", False)
+		assert type(folder_type) != bool
 		if folder_type == "receiveonly":
 			box.set_value("folder_type",	_("Receive Only"))
 		elif folder_type == "sendonly":
-			box.set_value("b_master", True)
 			box.set_value("folder_type",	_("Send Only"))
 		else:
 			box.set_value("folder_type",	_("Send & Receive"))
