@@ -619,7 +619,7 @@ class Daemon(GObject.GObject, TimerManager):
 	
 	def _syncthing_cb_version_known(self, version):
 		"""
-		Called when version is recieved from daemon, either by
+		Called when version is received from daemon, either by
 		calling /rest/version or from X-Syncthing-Version header.
 		"""
 		if not compare_version(version, MIN_VERSION):
