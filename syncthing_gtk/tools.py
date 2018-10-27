@@ -156,7 +156,7 @@ class Timezone(tzinfo):
 		return timedelta(0)
 
 def parsetime(m):
-	""" Parses time recieved from Syncthing daemon """
+	""" Parses time received from Syncthing daemon """
 	try:
 		return parser.parse(m)
 	except ValueError:
