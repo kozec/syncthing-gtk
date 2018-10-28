@@ -366,7 +366,7 @@ class EditorDialog(GObject.GObject):
 	
 	def store_values(self, values):
 		"""
-		'values' parameter should be same as display_values recieved.
+		'values' parameter should be same as display_values received.
 		Iterates over values configuration values and puts stuff from
 		UI back to self.values dict
 		Returns True.
