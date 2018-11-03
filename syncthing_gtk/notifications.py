@@ -7,12 +7,10 @@ Listens to syncing events on daemon and displays desktop notifications.
 """
 
 from __future__ import unicode_literals
-from syncthing_gtk.tools import IS_WINDOWS
+from syncthing_gtk.tools import IS_WINDOWS, IS_GNOME
 DELAY = 5	# Display notification only after no file is downloaded for <DELAY> seconds
 ICON_DEF = "syncthing-gtk"
 ICON_ERR = "syncthing-gtk-error"
-
-SERVER_CAPS = []
 
 HAS_DESKTOP_NOTIFY = False
 Notifications = None
@@ -65,10 +63,10 @@ if HAS_DESKTOP_NOTIFY:
 			self.clean()
 
 		def supports(self, caps, supported=True, unsupported=False):
-			if caps in SERVER_CAPS:
-				return supported
-			else:
+			if IS_GNOME:
 				return unsupported
+			else:
+				return supported
 
 		def addactions(self, n, actions=[], clear=True):
 			if not self.supports("actions"): return
@@ -278,9 +276,6 @@ if HAS_DESKTOP_NOTIFY:
 		""" Watches for filesystem changes and reports them to daemon """
 		def __init__(self, app, daemon):
 			Notify.init("Syncthing GTK")
-			# Cache the server capabilities, as get_server_caps() always queries DBus
-			global SERVER_CAPS
-			SERVER_CAPS = Notify.get_server_caps()
 			# Prepare stuff
 			self.app = app
 			self.daemon = daemon
