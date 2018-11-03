@@ -113,10 +113,13 @@ class FolderEditorDialog(EditorDialog):
 			# Create structure if needed
 			self.create_dicts(self.values, ("versioning", "params", "versionsPath"))
 			self.values["versioning"]["params"]["versionsPath"] = value
-		elif key == "readOnly":
-			self.values["type"] = "sendonly" if value else "sendreceive"
-		elif key == "receiveOnly":
-			self.values["type"] = "receiveonly"
+		elif key in ("readOnly", "receiveonly"):
+			if self["vreadOnly"].get_active():
+				self.values["type"] = "sendonly"
+			elif self["vreceiveOnly"].get_active():
+				self.values["type"] = "receiveonly"
+			else:
+				self.values["type"] = "sendreceive"
 		else:
 			EditorDialog.set_value(self, key, value)
 	
@@ -229,6 +232,8 @@ class FolderEditorDialog(EditorDialog):
 					key=lambda x : x.get_title().lower()
 				))
 			box.set_color_hex(COLOR_NEW)
+		else:
+			self.app.daemon.reload_config()
 	
 	#@Overrides
 	def ui_value_changed(self, w, *a):
