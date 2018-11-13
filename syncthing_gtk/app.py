@@ -39,7 +39,7 @@ import os, webbrowser, sys, time, logging, shutil, re
 log = logging.getLogger("App")
 
 # Internal version used by updater (if enabled)
-INTERNAL_VERSION		= "v0.9.4.2"
+INTERNAL_VERSION		= "v0.9.4.3"
 # Minimal Syncthing version supported by App
 MIN_ST_VERSION			= "0.14.50"
 
