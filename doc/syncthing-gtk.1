@@ -1,0 +1,27 @@
+.\" Manpage for syncthing-gtk
+
+.TH man 1 "23 Aug 2016" "1.0" "syncthing-gtk man page"
+.SH NAME
+Syncthing-GTK \- GUI for Syncthing
+.SH SYNOPSIS
+syncthing-gtk [OPTIONS...]
+.SH DESCRIPTION
+Syncthing-GTK is a GTK3 and Python based GUI and notification area icon for Syncthing.
+.SH OPTIONS
+ -h, --help        Shows help screen
+ -w, --window      Display window (don't start minimized)
+ -m, --minimized   Hide window (start minimized)
+ -s, --header      Use classic window header
+ -q, --quit        Quit running instance (if any)
+ -v, --verbose     Be verbose
+ -d, --debug       Be more verbose (debug mode)
+ -1, --wizard      Run 'first start wizard' and exit
+ -a, --about       Display about dialog and exit
+ 
+ --home            Overrides default syncthing configuration directory
+ --add-repo        Opens 'add repository' dialog with specified path prefilled
+ --remove-repo     If there is repository assigned with specified path, opens 'remove repository' dialog
+.SH SEE ALSO
+syncthing(1)
+.SH COPYRIGHT
+Code & UI (c) 2016 Kozec
