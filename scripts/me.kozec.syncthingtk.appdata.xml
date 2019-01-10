@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-  <id>syncthing-gtk.desktop</id>
+  <id>me.kozec.syncthingtk</id>
   <name>Syncthing GTK</name>
   <summary>GUI for Syncthing</summary>
   <developer_name>kozec</developer_name>
@@ -20,4 +20,5 @@
       <image width="987" height="483">http://i.imgur.com/RTRgRdC.png</image>
     </screenshot>
   </screenshots>
+  <launchable type="desktop-id">syncthing-gtk.desktop</launchable>
 </component>

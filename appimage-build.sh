@@ -1,5 +1,6 @@
 #!/bin/bash
 APP="syncthing-gtk"
+APPID="me.kozec.syncthingtk"
 EXEC="syncthing-gtk"
 [ x"$BUILD_APPDIR" == "x" ] && BUILD_APPDIR=$(pwd)/appimage
 
@@ -134,7 +135,7 @@ cp -H icons/${APP}.png ${BUILD_APPDIR}/${APP}.png
 
 # Copy appdata.xml
 mkdir -p ${BUILD_APPDIR}/usr/share/metainfo/
-cp scripts/${APP}.appdata.xml ${BUILD_APPDIR}/usr/share/metainfo/${APP}.appdata.xml
+cp scripts/${APPID}.appdata.xml ${BUILD_APPDIR}/usr/share/metainfo/${APPID}.appdata.xml
 
 # Copy AppRun script
 cp scripts/appimage-AppRun.sh ${BUILD_APPDIR}/AppRun
