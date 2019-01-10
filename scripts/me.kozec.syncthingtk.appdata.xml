@@ -1,24 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
+<!-- Copyright 2018-2019 kozec -->
+<component type="desktop-application">
   <id>me.kozec.syncthingtk</id>
+  <translation type="gettext">syncthing-gtk</translation>
   <name>Syncthing GTK</name>
-  <summary>GUI for Syncthing</summary>
+  <summary>GUI and notification area icon for Syncthing</summary>
   <developer_name>kozec</developer_name>
   <description>
-  <p>
-	  GTK3 &amp; Python based GUI and notification area icon for Syncthing
-  </p>
-</description>
-  <metadata_license>CC0-1.0</metadata_license>
+    <p>
+      Supported Syncthing features:
+    </p>
+    <ul>
+      <li>Everything what WebUI can display</li>
+      <li>Adding/editing/deleting nodes</li>
+      <li>Adding/editing/deleting repositories</li>
+      <li>Restart/shutdown server</li>
+      <li>Editing daemon settings</li>
+    </ul>
+    <p>
+      Additional features:
+    </p>
+    <ul>
+      <li>First run wizard for initial configuration</li>
+      <li>Running Syncthing daemon in background</li>
+      <li>Half-automatic setup for new nodes and repositories</li>
+      <li>Nautilus (a.k.a. Files), Nemo and Caja integration</li>
+      <li>Desktop notifications</li>
+    </ul>
+  </description>
+  <kudos>
+    <kudo>ModernToolkit</kudo>
+  </kudos>
   <project_license>GPL-2.0</project_license>
-  <url type="bugtracker">https://github.com/syncthing/syncthing-gtk/issues</url>
-  <url type="donation">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=77DQD3L9K8RPU&amp;lc=SK&amp;item_name=kozec&amp;item_number=scc&amp;currency_code=EUR&amp;bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted</url>
+  <metadata_license>CC0-1.0</metadata_license>
   <url type="homepage">https://github.com/syncthing/syncthing-gtk/</url>
+  <url type="bugtracker">https://github.com/syncthing/syncthing-gtk/issues</url>
+  <url type="donation">https://liberapay.com/kozec</url>
+  <url type="translate">https://www.transifex.com/syncthing-gtk/syncthing-gtk/</url>
   <screenshots>
     <screenshot type="default">
       <caption>Main Application Window</caption>
-      <image width="987" height="483">http://i.imgur.com/RTRgRdC.png</image>
+      <image height="483" width="987">http://i.imgur.com/RTRgRdC.png</image>
     </screenshot>
   </screenshots>
+    <content_rating type="oars-1.1">
+    <content_attribute id="social-info">moderate</content_attribute>
+  </content_rating>
+  <releases>
+    <release date="2018-11-13" version="v0.9.4.3">
+      <description>
+        <p>
+          Changes:
+        </p>
+        <ul>
+          <li>Fixed support for write-only folder :)</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2018-09-23" version="v0.9.4.2">
+      <description>
+        <p>
+          Changes:
+        </p>
+        <ul>
+          <li>Added support for write-only folder</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2018-09-11" version="v0.9.4.1">
+      <description>
+        <p>
+          Changes:
+        </p>
+        <ul>
+          <li>Improved desktop notifications and added buttons for quick responses (thanks @bebehei)</li>
+          <li>Improved display on small displays</li>
+        </ul>
+        <p>
+          Fixes:
+        </p>
+        <ul>
+          <li>Fixes for better compatibility with NixOS</li>
+          <li>Added missing dependencies to AppImage</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2018-06-05" version="v0.9.4">
+      <description>
+        <p>
+          Syncthing v0.14.47 and later supports filesystem monitoring by itself, so monitoring by Syncthing-GTK is no longer needed and got removed.
+        </p>
+        <p>
+          Your setting should be converted automatically when Syncthing-GTK starts up and you can configure monitoring done by Syncthing in same dialog as monitoring done by Syncthing-GTK before. In other words, it's a change you shouldn't notice.
+        </p>
+        <p>
+          Changes:
+        </p>
+        <ul>
+          <li>Warning message is displayed in terminal when status icon cannot be used</li>
+          <li>Added --nofinddaemon option to setup.py</li>
+          <li>Removed Autostart option on Gnome</li>
+        </ul>
+        <p>
+          Fixes:
+        </p>
+        <ul>
+          <li>Replaced deprecated configuration values (thanks @AudriusButkevicius)</li>
+          <li>Missing icons when starting from syncthing-gtk.py script.</li>
+          <li>AppImage now includes everything...</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
   <launchable type="desktop-id">syncthing-gtk.desktop</launchable>
 </component>
