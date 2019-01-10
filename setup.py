@@ -95,6 +95,7 @@ if __name__ == "__main__" :
 		('share/icons/hicolor/64x64/emblems', glob.glob("icons/emblem-*.png") ),
 		('share/pixmaps', ["icons/syncthing-gtk.png"]),
 		('share/applications', ['syncthing-gtk.desktop'] ),
+		('share/metainfo', ['me.kozec.syncthingtk.appdata.xml'] ),
 	] + [
 		(
 			'share/icons/hicolor/%sx%s/apps' % (size,size),
