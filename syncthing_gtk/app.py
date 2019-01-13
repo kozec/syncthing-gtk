@@ -170,7 +170,7 @@ class App(Gtk.Application, TimerManager):
 			self.show_wizard()
 		elif is_option("about"):
 			from syncthing_gtk.aboutdialog import AboutDialog
-			ad = AboutDialog(self, self.gladepath)
+			ad = AboutDialog(self, self.gladepath, self.iconpath)
 			ad.run([])
 			sys.exit(0)
 		
