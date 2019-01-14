@@ -1219,6 +1219,8 @@ class RESTRequest(Gio.SocketClient):
 		return self
 	
 	def start(self):
+		if self._parent._address.startswith("127.0.0.1"):
+			self.set_enable_proxy(False)
 		self._epoch = self._parent._epoch
 		self._buffer = []
 		self.connect_to_host_async(self._parent._address, 0, None, self._connected)
