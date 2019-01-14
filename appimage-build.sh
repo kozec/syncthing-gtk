@@ -132,10 +132,6 @@ sed -i "s/Icon=.*/Icon=${APP}/g" ${BUILD_APPDIR}/${APP}.desktop
 cp -H icons/${APP}.png ${BUILD_APPDIR}/${APP}.png
 [ -e "${BUILD_APPDIR}/usr/share/${APP}/icons/${APP}.png" ] || ln -s "../../../../${APP}.png" "${BUILD_APPDIR}/usr/share/${APP}/icons/${APP}.png"
 
-# Copy appdata.xml
-mkdir -p ${BUILD_APPDIR}/usr/share/metainfo/
-cp scripts/${APP}.appdata.xml ${BUILD_APPDIR}/usr/share/metainfo/${APP}.appdata.xml
-
 # Copy AppRun script
 cp scripts/appimage-AppRun.sh ${BUILD_APPDIR}/AppRun
 chmod +x ${BUILD_APPDIR}/AppRun
