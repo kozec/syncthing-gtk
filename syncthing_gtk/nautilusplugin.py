@@ -24,7 +24,6 @@ STATE_OFFLINE	= 3
 STATE_STOPPED	= 4
 
 
-
 class NautiluslikeExtension(GObject.GObject):
 	
 	_plugin_module = None
@@ -75,6 +74,7 @@ class NautiluslikeExtension(GObject.GObject):
 		
 		log.info("Initialized.")
 		# Let Daemon object connect to Syncthing
+		self.daemon.set_refresh_interval(20)
 		self.daemon.reconnect()
 	
 	### Internal stuff
