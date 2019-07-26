@@ -7,6 +7,7 @@ Main application window
 
 from __future__ import unicode_literals
 import itertools
+import signal
 from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
 from syncthing_gtk.tools import _
 from syncthing_gtk.tools import (
@@ -149,9 +150,23 @@ class App(Gtk.Application, TimerManager):
 	
 	def do_startup(self, *a):
 		Gtk.Application.do_startup(self, *a)
+		self.setup_signal_handlers()
 		self.setup_widgets()
 		self.setup_actions()
 		self.setup_statusicon()
+	
+	
+	def setup_signal_handlers(self):
+		def sigint(*a):
+			print("\n*break*")
+			sys.exit(0)
+		
+		def sigterm(*a):
+			log.error("SIGTERM recieved, exiting...")
+			self.quit()
+		
+		signal.signal(signal.SIGINT, sigint)
+		signal.signal(signal.SIGTERM, sigterm)
 	
 	def do_local_options(self, trash, lo):
 		self.parse_local_options(lo.contains)
@@ -2164,3 +2179,4 @@ class App(Gtk.Application, TimerManager):
 				self.cb_daemon_exit(self.process, -1)
 			else:
 				self.quit()
+

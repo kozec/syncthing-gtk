@@ -1,13 +1,7 @@
 #!/usr/bin/env python2
-import os, sys, signal, gi
-
-def sigint(*a):
-	print("\n*break*")
-	sys.exit(0)
+import os, sys, gi
 
 if __name__ == "__main__":
-	signal.signal(signal.SIGINT, sigint)
-	
 	gi.require_version('Gtk', '3.0')
 	gi.require_version('Rsvg', '2.0')
 	
