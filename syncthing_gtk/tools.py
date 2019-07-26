@@ -29,10 +29,11 @@ if "XDG_CURRENT_DESKTOP" in os.environ:
 	IS_XFCE = ("XFCE" in desktops)
 	IS_I3 = ("i3" in desktops)
 	IS_LXQT = ("LXQt" in desktops)
-if "DESKTOP_SESSION" in os.environ:
-	if os.environ["DESKTOP_SESSION"] == "gnome":
-		# Fedora...
-		IS_GNOME = True
+if os.environ.get("DESKTOP_SESSION") == "gnome":
+	# Fedora...
+	IS_GNOME = True
+if os.environ.get("DESKTOP_STARTUP_ID", "").startswith("i3/"):
+	IS_I3 = True
 
 LUHN_ALPHABET			= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567" # Characters valid in device id
 VERSION_NUMBER			= re.compile(r"^v?([0-9\.]*).*")
