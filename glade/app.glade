@@ -484,6 +484,18 @@
 		</object>
 	</child>
 	<child>
+		<object class="GtkImageMenuItem" id="menu-popup-revert">
+			<property name="visible">True</property>
+			<property name="can_focus">False</property>
+			<property name="label" translatable="yes">Override Local Changes</property>
+			<property name="use_underline">True</property>
+			<property name="use_stock">True</property>
+			<property name="always_show_image">True</property>
+			<property name="image">menu-popup-revert-image</property>
+			<signal name="activate" handler="cb_menu_popup_revert" swapped="no"/>
+		</object>
+	</child>
+	<child>
 		<object class="GtkSeparatorMenuItem" id="menu-separator-override">
 			<property name="visible">True</property>
 			<property name="can_focus">False</property>
@@ -1021,6 +1033,12 @@
 </object>
 
 <object class="GtkImage" id="menu-popup-override-image">
+	<property name="visible">True</property>
+	<property name="can_focus">False</property>
+	<property name="icon-name">edit-undo</property>
+</object>
+
+<object class="GtkImage" id="menu-popup-revert-image">
 	<property name="visible">True</property>
 	<property name="can_focus">False</property>
 	<property name="icon-name">edit-undo</property>

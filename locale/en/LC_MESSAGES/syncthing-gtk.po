@@ -285,6 +285,10 @@ msgstr ""
 msgid "Stopped"
 msgstr ""
 
+#: syncthing_gtk/app.py:1090
+msgid "Local changes"
+msgstr ""
+
 #: syncthing_gtk/app.py:998 syncthing_gtk/app.py:1005
 msgid "Error"
 msgstr ""
@@ -292,6 +296,10 @@ msgstr ""
 #: syncthing_gtk/app.py:1024
 #, python-format
 msgid "Synchronizing '%s'"
+msgstr ""
+
+#: glade/app.glade:490
+msgid "Override Local Changes"
 msgstr ""
 
 #: syncthing_gtk/app.py:1026

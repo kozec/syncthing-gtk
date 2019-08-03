@@ -1076,23 +1076,27 @@ class App(Gtk.Application, TimerManager):
 			folder = self.folders[rid]
 			global_files = data["globalFiles"] + data["globalSymlinks"]
 			local_files = data["localFiles"] + data["localSymlinks"]
-			need_files = data["needFiles"] + data["needSymlinks"]
+			need_files = data["needFiles"] + data["needSymlinks"] + data.get("receiveOnlyTotalItems", 0)
+			need_bytes = data["needBytes"] + data.get("receiveOnlyChangedBytes", 0)
 			folder["global"] = "%s %s, %s" % (global_files, _("Files"), sizeof_fmt(data["globalBytes"]))
 			folder["local"]	 = "%s %s, %s" % (local_files, _("Files"), sizeof_fmt(data["localBytes"]))
-			folder["oos"]	 = "%s %s, %s" % (need_files, _("Files"), sizeof_fmt(data["needBytes"]))
-			if folder["folder_type"] == "sendonly":
+			folder["oos"]	 = "%s %s, %s" % (need_files, _("Files"), sizeof_fmt(need_bytes))
+			if folder["folder_type_s"] in ("sendonly", "receiveonly"):
 				can_override = (need_files > 0)
 				if can_override != folder["can_override"]:
 					folder["can_override"] = can_override
+					folder["override_title"] = (_("Cluster out of sync")
+												if folder["folder_type_s"] == "sendonly"
+												else _("Local changes"))
 					self.cb_syncthing_folder_up_to_date(None, rid)
 	
 	def cb_syncthing_folder_up_to_date(self, daemon, rid):
 		if rid in self.folders:	# Should be always
 			folder = self.folders[rid]
-			self.cb_syncthing_folder_state_changed(daemon, rid, 1.0,
-				COLOR_FOLDER_IDLE,
-				_("Cluster out of sync") if folder["can_override"] else _("Up to Date")
-			)
+			title = _("Up to Date")
+			if folder["can_override"]:
+				title = folder["override_title"]
+			self.cb_syncthing_folder_state_changed(daemon, rid, 1.0, COLOR_FOLDER_IDLE, title)
 		
 	def cb_syncthing_folder_state_changed(self, daemon, rid, percentage, color, text):
 		if rid in self.folders:	# Should be always
@@ -1180,7 +1184,7 @@ class App(Gtk.Application, TimerManager):
 			if online and folder.compare_color_hex(COLOR_FOLDER_OFFLINE):
 				# Folder was marked as offline but is back online now
 				if folder["can_override"]:
-					folder.set_status(_("Cluster out of sync"))
+					folder.set_status(folder["override_title"])
 				else:
 					folder.set_status(_("Up to Date"))
 				folder.set_color_hex(COLOR_FOLDER_IDLE)
@@ -1420,7 +1424,8 @@ class App(Gtk.Application, TimerManager):
 			box.add_value("rescan",			"rescan.svg",	_("Rescan Interval"))
 			box.add_value("shared",			"shared.svg",	_("Shared With"))
 			# Add hidden stuff
-			box.add_hidden_value("folder_type", folder_type)
+			box.add_hidden_value("folder_type_s", folder_type)
+			box.add_hidden_value("override_title", "")
 			box.add_hidden_value("can_override", False)
 			box.add_hidden_value("devices", shared)
 			box.add_hidden_value("norm_path", os.path.abspath(os.path.expanduser(path)))
@@ -1826,8 +1831,14 @@ class App(Gtk.Application, TimerManager):
 	
 	def cb_popup_menu_folder(self, box, button, time):
 		self.rightclick_box = box
-		self["menu-popup-override"].set_visible(box["can_override"])
-		self["menu-separator-override"].set_visible(box["can_override"])
+		if box["can_override"]:
+			self["menu-popup-override"].set_visible(box["folder_type_s"] == "sendonly")
+			self["menu-popup-revert"].set_visible(box["folder_type_s"] == "receiveonly")
+			self["menu-separator-override"].set_visible(box["can_override"])
+		else:
+			self["menu-popup-override"].set_visible(False)
+			self["menu-popup-revert"].set_visible(False)
+			self["menu-separator-override"].set_visible(False)
 		self["popup-menu-folder"].popup(None, None, None, None, button, time)
 	
 	def cb_popup_menu_device(self, box, button, time):
@@ -1899,6 +1910,11 @@ class App(Gtk.Application, TimerManager):
 		""" Handler for 'override' context menu item """
 		log.info("Override folder %s", self.rightclick_box["id"])
 		self.daemon.override(self.rightclick_box["id"])
+	
+	def cb_menu_popup_revert(self, *a):
+		""" Handler for 'override local' context menu item """
+		log.info("Revert folder %s", self.rightclick_box["id"])
+		self.daemon.revert(self.rightclick_box["id"])
 	
 	def cb_menu_popup_delete_device(self, *a):
 		""" Handler for other 'edit' context menu item """
