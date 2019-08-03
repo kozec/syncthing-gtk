@@ -1392,6 +1392,7 @@ class App(Gtk.Application, TimerManager):
 	
 	def show_folder(self, id, label, path, folder_type, ignore_perms, rescan_interval, fswatcher_enabled, shared):
 		""" Shared is expected to be list """
+		assert type(folder_type) != bool
 		display_path = path
 		if IS_WINDOWS:
 			if display_path.lower().replace("\\", "/").startswith(os.path.expanduser("~").lower()):
@@ -1442,7 +1443,6 @@ class App(Gtk.Application, TimerManager):
 		# Set values
 		box.set_value("id",		id)
 		box.set_value("path",	display_path)
-		assert type(folder_type) != bool
 		if folder_type == "receiveonly":
 			box.set_value("folder_type",	_("Receive Only"))
 		elif folder_type == "sendonly":

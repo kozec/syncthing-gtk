@@ -223,14 +223,22 @@ class FolderEditorDialog(EditorDialog):
 		# If new folder/device was added, show dummy item UI, so user will
 		# see that something happen even before daemon gets restarted
 		if self.is_new:
+			folder_type = "sendreceive"
+			if self.get_value("readOnly"):
+				folder_type = "readonly"
+			elif self.get_value("receiveOnly"):
+				folder_type = "receiveonly"
 			box = self.app.show_folder(
 				self.get_value("id"), self.get_value("label"), self.get_value("path"),
-				self.get_value("readOnly"), self.get_value("ignorePerms"),
-				self.get_value("rescanIntervalS"), self.get_value("fsWatcherEnabled"),
+				folder_type,
+				self.get_value("ignorePerms"),
+				self.get_value("rescanIntervalS"),
+				self.get_value("fsWatcherEnabled"),
 				sorted(
 					[ self.app.devices[n["deviceID"]] for n in self.get_value("devices") ],
 					key=lambda x : x.get_title().lower()
-				))
+				)
+			)
 			box.set_color_hex(COLOR_NEW)
 		else:
 			self.app.daemon.reload_config()
