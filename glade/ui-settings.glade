@@ -89,7 +89,7 @@
         <col id="1">tiếng việt</col>
       </row>
       <row>
-        <col id="0">zh</col>
+        <col id="0">zh_CN</col>
         <col id="1">中文</col>
       </row>
     </data>
