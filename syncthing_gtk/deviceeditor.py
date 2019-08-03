@@ -90,7 +90,7 @@ class DeviceEditorDialog(EditorDialog):
 			# Get list of folders that share this device
 			for r in self.config["folders"]:
 				for n in r["devices"]:
-					if n["deviceID"] == self.id:
+					if n["deviceID"] == self.id and r["id"] not in rids:
 						rids.append(r["id"])
 			# Create CheckButtons
 			for folder in reversed(sorted(self.app.folders.values(), key=lambda x : x["id"])):
