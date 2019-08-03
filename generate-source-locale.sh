@@ -8,7 +8,7 @@ SRCLOCALE="en"
 
 # Generate messages.po
 [ -e ${MESSAGES_PO} ] && rm ${MESSAGES_PO}
-xgettext -e syncthing_gtk/*.py *.glade
+xgettext -e syncthing_gtk/*.py glade/*.glade
 
 filename=${LOCALEDIR}/${SRCLOCALE}/LC_MESSAGES/${GETTEXT_DOMAIN}.po
 mo=${LOCALEDIR}/${SRCLOCALE}/LC_MESSAGES/${GETTEXT_DOMAIN}.mo

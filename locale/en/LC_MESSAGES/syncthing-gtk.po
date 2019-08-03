@@ -64,6 +64,15 @@ msgstr ""
 msgid "The aggregated statistics are publicly available at"
 msgstr ""
 
+#: syncthing_gtk/app.py:552
+#, python-format
+msgid ""
+"Your Windows version doesn't supports cryptographic standards needed\n"
+"for Syncthing-GTK to check for Syncthing updates.\n"
+"Please, install <a href='%(url)s'>this Windows update</a> or disable update "
+"feature."
+msgstr ""
+
 #: syncthing_gtk/app.py:486
 msgid "Extracting update..."
 msgstr ""
@@ -152,6 +161,10 @@ msgstr ""
 msgid "Error message:"
 msgstr ""
 
+#: syncthing_gtk/app.py:763
+msgid "Possible cause: Is there another web server running on Syncthing port?"
+msgstr ""
+
 #: syncthing_gtk/app.py:689
 msgid "More info"
 msgstr ""
@@ -164,6 +177,17 @@ msgstr ""
 
 #: syncthing_gtk/app.py:717
 msgid "_Restart"
+msgstr ""
+
+#: syncthing_gtk/app.py:859
+msgid "Incompatible"
+msgstr ""
+
+#: syncthing_gtk/app.py:863
+#, python-format
+msgid ""
+"Connecting to <b>%s</b> failed; the remote device speaks an older version of "
+"the protocol (%s) not compatible with this version"
 msgstr ""
 
 #: syncthing_gtk/app.py:784
@@ -401,6 +425,10 @@ msgstr ""
 msgid "Send & Receive"
 msgstr ""
 
+#: syncthing_gtk/app.py:1447
+msgid "Receive Only"
+msgstr ""
+
 #: syncthing_gtk/app.py:1380 device-edit.glade:30
 msgid "Metadata Only"
 msgstr ""
@@ -561,6 +589,49 @@ msgstr ""
 msgid "Synchronization of folder '%s' is completed."
 msgstr ""
 
+#: syncthing_gtk/notifications.py:114 syncthing_gtk/notifications.py:115
+#, python-format
+msgid "Accept device \"%s\""
+msgstr ""
+
+#: syncthing_gtk/notifications.py:116
+#, python-format
+msgid "Ignore device \"%s\""
+msgstr ""
+
+#: syncthing_gtk/notifications.py:118
+msgid "Unknown Device"
+msgstr ""
+
+#: syncthing_gtk/notifications.py:161 syncthing_gtk/notifications.py:162
+#, python-format
+msgid "Accept folder \"%s\""
+msgstr ""
+
+#: syncthing_gtk/notifications.py:163
+#, python-format
+msgid "Ignore folder \"%s\""
+msgstr ""
+
+#: syncthing_gtk/notifications.py:173
+msgid "Folder rejected"
+msgstr ""
+
+#: syncthing_gtk/notifications.py:174
+#, python-format
+msgid "Unexpected folder \"%(folder)s\" sent from device \"%(device)s\"."
+msgstr ""
+
+#: syncthing_gtk/notifications.py:207
+#, python-format
+msgid "Completed synchronization in \"%s\""
+msgstr ""
+
+#: syncthing_gtk/notifications.py:209
+#, python-format
+msgid "Updates in folder \"%s\""
+msgstr ""
+
 #: syncthing_gtk/notifications.py:160
 #, python-format
 msgid "%(hostname)s: Downloaded '%(filename)s' to reflect remote changes."
@@ -583,7 +654,27 @@ msgstr ""
 
 #: syncthing_gtk/notifications.py:175
 #, python-format
-msgid "%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to reflect remote changes."
+msgid ""
+"%(hostname)s: downloaded %(updated)s files and deleted %(deleted)s files to "
+"reflect remote changes."
+msgstr ""
+
+#: syncthing_gtk/notifications.py:256
+#, python-format
+msgid "Conflicting file in \"%s\""
+msgstr ""
+
+#: syncthing_gtk/notifications.py:257
+#, python-format
+msgid "Conflict in path \"%s\" detected."
+msgstr ""
+
+#: syncthing_gtk/notifications.py:261
+msgid "Open Conflicting file in filemanager"
+msgstr ""
+
+#: syncthing_gtk/notifications.py:337
+msgid "An error occurred in Syncthing!"
 msgstr ""
 
 #: syncthing_gtk/statusicon.py:48
@@ -596,7 +687,7 @@ msgid "Failed to determine latest Syncthing version."
 msgstr ""
 
 #: syncthing_gtk/stdownloader.py:236
-msgid "Failed to create temporaly file."
+msgid "Failed to create temporary file."
 msgstr ""
 
 #: syncthing_gtk/stdownloader.py:294
@@ -681,6 +772,16 @@ msgstr ""
 msgid "Display error log"
 msgstr ""
 
+#: syncthing_gtk/wizard.py:215
+msgid "Next"
+msgstr ""
+
+#: syncthing_gtk/wizard.py:224
+msgid ""
+"Continue this wizard to create a Syncthing configuration file or abort it to "
+"exit."
+msgstr ""
+
 #: syncthing_gtk/wizard.py:198
 msgid "Welcome to Syncthing-GTK first run wizard!"
 msgstr ""
@@ -691,11 +792,6 @@ msgstr ""
 
 #: syncthing_gtk/wizard.py:201
 msgid "Initial configuration should be created."
-msgstr ""
-
-#: syncthing_gtk/wizard.py:202
-msgid ""
-"Continue this wizard to create a Syncthing configuration file or abort it to exit."
 msgstr ""
 
 #: syncthing_gtk/wizard.py:204
@@ -896,11 +992,7 @@ msgid "About Syncthing-GTK"
 msgstr ""
 
 #: about.glade:10
-msgid "GTK GUI and notification area icon for Syncthing"
-msgstr ""
-
-#: about.glade:12
-msgid "GitHub"
+msgid "GUI and notification area icon for Syncthing"
 msgstr ""
 
 #: app.glade:239 app.glade:420 app.glade:802
@@ -1145,6 +1237,10 @@ msgstr ""
 msgid "Folder _Label"
 msgstr ""
 
+#: folder-edit.glade:190
+msgid "Generate Random"
+msgstr ""
+
 #: folder-edit.glade:202
 msgid "Short identifier for the folder. Must be the same on all devices."
 msgstr ""
@@ -1188,6 +1284,16 @@ msgstr ""
 msgid ""
 "Files are protected from changes made on other devices, but changes made on "
 "this device will be sent to the rest of the cluster."
+msgstr ""
+
+#: folder-edit.glade:453
+msgid "_Receive Only Folder"
+msgstr ""
+
+#: folder-edit.glade:474
+msgid ""
+"Changes from other devices are applied to files on this device, but changes "
+"made on this device are not sent to the rest of the cluster.\n"
 msgstr ""
 
 #: folder-edit.glade:456
@@ -1336,6 +1442,19 @@ msgstr ""
 msgid "Syncthing-GTK Settings"
 msgstr ""
 
+#: ui-settings.glade:27
+msgid "Default"
+msgstr ""
+
+#: ui-settings.glade:35
+msgid "White"
+msgstr ""
+
+#: ui-settings.glade:31
+msgid "Black"
+msgstr ""
+
+
 #: ui-settings.glade:69
 msgid "Please, restart Syncthing-GTK to apply all changed settings"
 msgstr ""
@@ -1410,6 +1529,14 @@ msgstr ""
 
 #: ui-settings.glade:399
 msgid "Force _dark theme"
+msgstr ""
+
+#: ui-settings.glade:540
+msgid "Tray icon style"
+msgstr ""
+
+#: ui-settings.glade:553
+msgid "Language"
 msgstr ""
 
 #: ui-settings.glade:474
