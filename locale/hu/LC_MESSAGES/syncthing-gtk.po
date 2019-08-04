@@ -5,14 +5,15 @@
 # Translators:
 # Balázs Meskó <meskobalazs@gmail.com>, 2017
 # Falu <info@falu.me>, 2017
+# Gyuris Gellért <bubu@ujevangelizacio.hu>, 2018-2019
 # Gyuris Gellért <bubu@ujevangelizacio.hu>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2017-09-23 12:23+0000\n"
-"Last-Translator: Balázs Meskó <meskobalazs@gmail.com>\n"
+"PO-Revision-Date: 2019-08-03 12:15+0000\n"
+"Last-Translator: Gyuris Gellért <bubu@ujevangelizacio.hu>\n"
 "Language-Team: Hungarian (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -67,6 +68,14 @@ msgstr "Az elküldött adatcsomag változása esetén ismételt engedélyezési 
 #: syncthing_gtk/app.py:430
 msgid "The aggregated statistics are publicly available at"
 msgstr "A felhalmozott statisztika publikusan elérthető: "
+
+#: syncthing_gtk/app.py:552
+#, python-format
+msgid ""
+"Your Windows version doesn't supports cryptographic standards needed\n"
+"for Syncthing-GTK to check for Syncthing updates.\n"
+"Please, install <a href='%(url)s'>this Windows update</a> or disable update feature."
+msgstr "A Windows verziója nem támogatja a Syncthing-GTK által igényelt kriptográfiai szabványokat, melyek a Syncthing frissítéséhez szükségesek. Javasolt telepíteni <a href='%(url)s'>ezt a Windows firssítést</a> vagy kikapcsolni a frissítési funkciót."
 
 #: syncthing_gtk/app.py:486
 msgid "Extracting update..."
@@ -132,7 +141,7 @@ msgstr "Kísérlet a legfrissebb letöltésére, türelem…"
 msgid ""
 "Cannot authorize with daemon. Please, use WebUI to generate API key or "
 "disable password authentication."
-msgstr "Nem sikerült a hitelesítés a démonnal. A webes felületen lehet API kulcsot generálni vagy kikapcsolni a jelszavas védelmet."
+msgstr "Nem sikerült a hitelesítés a démonnal. A webes felületen lehet API kulcsot előállítani vagy kikapcsolni a jelszavas védelmet."
 
 #: syncthing_gtk/app.py:672
 #, python-format
@@ -156,6 +165,10 @@ msgstr "Nem sikerült a kapcsolódás a démonhoz. Javasolt ellenőrizni a konfi
 msgid "Error message:"
 msgstr "Hibaüzenet:"
 
+#: syncthing_gtk/app.py:763
+msgid "Possible cause: Is there another web server running on Syncthing port?"
+msgstr "Lehetséges, hogy egy másik webszerver fut a Syncthing portján?"
+
 #: syncthing_gtk/app.py:689
 msgid "More info"
 msgstr "További információ"
@@ -169,6 +182,17 @@ msgstr "A konfiguráció el lett mentve, de nem lett aktiválva.\nA Syncthinget 
 #: syncthing_gtk/app.py:717
 msgid "_Restart"
 msgstr "Új_raindítás"
+
+#: syncthing_gtk/app.py:859
+msgid "Incompatible"
+msgstr "Nem kompatibilis"
+
+#: syncthing_gtk/app.py:863
+#, python-format
+msgid ""
+"Connecting to <b>%s</b> failed; the remote device speaks an older version of"
+" the protocol (%s) not compatible with this version"
+msgstr "Nem sikerült a kapcsolódás: <b>%s</b>. A távoli eszköz a protokoll régi verzióját (%s) használja, mely nem kompatibilis ezzel a verzióval."
 
 #: syncthing_gtk/app.py:784
 #, python-format
@@ -407,6 +431,10 @@ msgstr "Csak küldés"
 msgid "Send & Receive"
 msgstr "Küldés és fogadás"
 
+#: syncthing_gtk/app.py:1447
+msgid "Receive Only"
+msgstr "Csak fogadás"
+
 #: syncthing_gtk/app.py:1380 device-edit.glade:30
 msgid "Metadata Only"
 msgstr "Csak metaadatok"
@@ -432,14 +460,6 @@ msgstr "Valóban véglegesen leállítandó e mappa szinkronizálása: %s?"
 #, python-format
 msgid "Do you really want remove device '%s' from Syncthing?"
 msgstr "Valóban eltávolítandó ezen távoli eszköz a Syncthingből: %s?"
-
-#: syncthing_gtk/app.py:1838
-msgid "Syncthing-Inotify Output"
-msgstr "Syncthing-Inotify kimenet"
-
-#: syncthing_gtk/app.py:1844
-msgid "Syncthing-Inotify is unavailable or failed to start"
-msgstr "A Syncthing-Inotify nincs jelen vagy nem sikerült elindítani"
 
 #: syncthing_gtk/app.py:1991
 msgid "Failed to start Syncthing daemon."
@@ -556,10 +576,6 @@ msgstr "A letöltés befejeződött."
 msgid "Select Folder for new Folder"
 msgstr "Mappa választása az új mappához."
 
-#: syncthing_gtk/foldereditor.py:166 syncthing_gtk/foldereditor.py:167
-msgid "Please, install pyinotify package to use this feature"
-msgstr "A pyinotify csomag telepítése szükséges ezen funkcióhoz."
-
 #: syncthing_gtk/ignoreeditor.py:44
 msgid "File location:"
 msgstr "Fájl helye:"
@@ -578,6 +594,49 @@ msgstr "Kapcsolódni próbál ez az eszköz a Syncthing démonhoz: „%s”."
 #, python-format
 msgid "Synchronization of folder '%s' is completed."
 msgstr "A mappa szinkronizálása befejeződött: „%s”."
+
+#: syncthing_gtk/notifications.py:114 syncthing_gtk/notifications.py:115
+#, python-format
+msgid "Accept device \"%s\""
+msgstr "Eszköz elfogadása: „%s”"
+
+#: syncthing_gtk/notifications.py:116
+#, python-format
+msgid "Ignore device \"%s\""
+msgstr "Eszköz figyelmen kívül hagyása: „%s”"
+
+#: syncthing_gtk/notifications.py:118
+msgid "Unknown Device"
+msgstr "Ismeretlen eszköz"
+
+#: syncthing_gtk/notifications.py:161 syncthing_gtk/notifications.py:162
+#, python-format
+msgid "Accept folder \"%s\""
+msgstr "Mappa elfogadása: „%s”"
+
+#: syncthing_gtk/notifications.py:163
+#, python-format
+msgid "Ignore folder \"%s\""
+msgstr "Mappa figyelmen kívül hagyása: „%s”"
+
+#: syncthing_gtk/notifications.py:173
+msgid "Folder rejected"
+msgstr "Visszautasított mappa"
+
+#: syncthing_gtk/notifications.py:174
+#, python-format
+msgid "Unexpected folder \"%(folder)s\" sent from device \"%(device)s\"."
+msgstr "Az eszköz („%(device)s”) váratlan mappát küldött: „%(folder)s”"
+
+#: syncthing_gtk/notifications.py:207
+#, python-format
+msgid "Completed synchronization in \"%s\""
+msgstr "Szinkronizálás befejeződött: „%s”"
+
+#: syncthing_gtk/notifications.py:209
+#, python-format
+msgid "Updates in folder \"%s\""
+msgstr "Frissítések a mappában: „%s”"
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
@@ -606,6 +665,24 @@ msgid ""
 "reflect remote changes."
 msgstr "%(hostname)s: %(updated)s fájl letöltve, és %(deleted)s fájl törölve, a távoli változásokat követve."
 
+#: syncthing_gtk/notifications.py:256
+#, python-format
+msgid "Conflicting file in \"%s\""
+msgstr "Konfliktusban álló fájl: „%s”"
+
+#: syncthing_gtk/notifications.py:257
+#, python-format
+msgid "Conflict in path \"%s\" detected."
+msgstr "Konfliktus található az útvonalon: „%s”."
+
+#: syncthing_gtk/notifications.py:261
+msgid "Open Conflicting file in filemanager"
+msgstr "Konfliktusban álló fájl megnyitása a fájlkezelőben"
+
+#: syncthing_gtk/notifications.py:337
+msgid "An error occurred in Syncthing!"
+msgstr "Hiba történt a Synchtingben!"
+
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
 msgstr "Syncthing"
@@ -616,7 +693,7 @@ msgid "Failed to determine latest Syncthing version."
 msgstr "Nem sikerült meghatározni a legfrissebb Syncthing verziót."
 
 #: syncthing_gtk/stdownloader.py:236
-msgid "Failed to create temporaly file."
+msgid "Failed to create temporary file."
 msgstr "Nem sikerült létrehozni az ideiglenes fájlt."
 
 #: syncthing_gtk/stdownloader.py:294
@@ -701,6 +778,16 @@ msgstr "A hibajegyzék tanulmányozása után érdemes bejelenteni a hibát: %s.
 msgid "Display error log"
 msgstr "Hibajegyzék megjelenítése"
 
+#: syncthing_gtk/wizard.py:215
+msgid "Next"
+msgstr "Következő"
+
+#: syncthing_gtk/wizard.py:224
+msgid ""
+"Continue this wizard to create a Syncthing configuration file or abort it to"
+" exit."
+msgstr "A varázsló folytatásával létre fog jönni a Syncthing konfigurációs fájl, vagy kilépéssel megszakad ez."
+
 #: syncthing_gtk/wizard.py:198
 msgid "Welcome to Syncthing-GTK first run wizard!"
 msgstr "Üdvözlet a Syncthing-GTK elsőindítás-varázslójában!"
@@ -712,11 +799,6 @@ msgstr "Úgy tűnik, hogy még soha nem lett lett elindítva a Syncthing."
 #: syncthing_gtk/wizard.py:201
 msgid "Initial configuration should be created."
 msgstr "Szükséges a kezdő beállítások létrehozása."
-
-#: syncthing_gtk/wizard.py:202
-msgid ""
-"Continue this wizard to create a Syncthing configuration file or abort it to exit."
-msgstr "Kattintson a <b>%s</b> gombra a Syncthing konfigurációs fájl létrehozásához, vagy a <b>Kilépés</b> gombra a megszakításhoz"
 
 #: syncthing_gtk/wizard.py:204
 #, python-format
@@ -815,11 +897,11 @@ msgstr "Ez eltarthat egy ideig…"
 
 #: syncthing_gtk/wizard.py:515
 msgid "Failed to generate keys"
-msgstr "Nem sikerült a kulcsok generálása"
+msgstr "Nem sikerült a kulcsok előállítása"
 
 #: syncthing_gtk/wizard.py:516
 msgid "Syncthing daemon failed to generate RSA key or certificate."
-msgstr "A Syncthing démonnak nem sikerült RSA kulcsot vagy tanúsítványt generálni."
+msgstr "A Syncthing démonnak nem sikerült RSA kulcsot vagy tanúsítványt előállítani."
 
 #: syncthing_gtk/wizard.py:526
 msgid "WebUI setup"
@@ -916,12 +998,8 @@ msgid "About Syncthing-GTK"
 msgstr "Syncthing-GTK névjegye"
 
 #: about.glade:10
-msgid "GTK GUI and notification area icon for Syncthing"
-msgstr "GTK grafikus felület és értesítési felület a Syncthinghez"
-
-#: about.glade:12
-msgid "GitHub"
-msgstr "GitHub"
+msgid "GUI and notification area icon for Syncthing"
+msgstr "A Syncthing grafikus felületének és értesítési területének ikonja"
 
 #: app.glade:239 app.glade:420 app.glade:802
 msgid "Open _Web Interface"
@@ -930,10 +1008,6 @@ msgstr "_Webfelület megnyitása"
 #: app.glade:251 app.glade:424 app.glade:814
 msgid "Display _Daemon Output"
 msgstr "_Démon kimenete"
-
-#: app.glade:263
-msgid "Display Syncthing-Inotify Output"
-msgstr "Syncthing-Inotify kimenete"
 
 #: app.glade:280 app.glade:430
 msgid "UI _Settings"
@@ -1169,6 +1243,10 @@ msgstr "Külső"
 msgid "Folder _Label"
 msgstr "Mappacímke"
 
+#: folder-edit.glade:190
+msgid "Generate Random"
+msgstr "Véletlenszerű előállítása"
+
 #: folder-edit.glade:202
 msgid "Short identifier for the folder. Must be the same on all devices."
 msgstr "A mappa rövid azonosítója. Minden eszközön azonosnak kell lennie."
@@ -1190,12 +1268,6 @@ msgstr "Átnézési _intervallum"
 #: folder-edit.glade:293
 msgid "Monitor filesystem for _changes"
 msgstr "Fájlrendszer megfigyelése a _változásokért"
-
-#: folder-edit.glade:314
-msgid ""
-"If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
-"Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
-msgstr "Bekapcsolva a módosult, létrehozott vagy törölt fájlok azonnal szinkronizálódnak ha a Syncthing-GTK fut.\nMegjegyzés: Rövid átnézési intervallum (<300s) érték mellett ez sok erőforrást felemészthet."
 
 #: folder-edit.glade:343
 msgid "Browse..."
@@ -1219,6 +1291,16 @@ msgid ""
 "Files are protected from changes made on other devices, but changes made on "
 "this device will be sent to the rest of the cluster."
 msgstr "A fájlok védve vannak a más eszközökön történt változásokkal szemben, de az ezen az eszközön történt változások érvényesek lesznek a többire."
+
+#: folder-edit.glade:453
+msgid "_Receive Only Folder"
+msgstr "Csak _fogadó mappa"
+
+#: folder-edit.glade:474
+msgid ""
+"Changes from other devices are applied to files on this device, but changes "
+"made on this device are not sent to the rest of the cluster.\n"
+msgstr "A többi eszköz módosításai alkalmazva lesznek ennek az eszköznek a fájljain, de az ezen az eszközön történt módosítások nem lesznek elküldve a fürt többi tagjának.\n"
 
 #: folder-edit.glade:456
 msgid "_Folder Settings"
@@ -1360,6 +1442,18 @@ msgstr "Normáltól magasabb"
 msgid "Syncthing-GTK Settings"
 msgstr "Syncthing-GTK beállítások"
 
+#: ui-settings.glade:27
+msgid "Default"
+msgstr "Alapértelmezett"
+
+#: ui-settings.glade:35
+msgid "White"
+msgstr "Fehér"
+
+#: ui-settings.glade:31
+msgid "Black"
+msgstr "Fekete"
+
 #: ui-settings.glade:69
 msgid "Please, restart Syncthing-GTK to apply all changed settings"
 msgstr "A Syncthing-GTK újraindítása után fognak érvényre lépni a megváltoztatott beállítások"
@@ -1435,6 +1529,14 @@ msgstr "Útvonalak megjelenítése a mappák panelen"
 #: ui-settings.glade:399
 msgid "Force _dark theme"
 msgstr "_Sötét téma kényszerítése"
+
+#: ui-settings.glade:540
+msgid "Tray icon style"
+msgstr "Tálcaikon stílusa"
+
+#: ui-settings.glade:553
+msgid "Language"
+msgstr "Nyelv"
 
 #: ui-settings.glade:474
 msgid "_Interface"

@@ -4,13 +4,13 @@
 # 
 # Translators:
 # Jose Riha <jose1711@gmail.com>, 2017
-# kozec <kozec2@kozec.com>, 2015-2018
+# kozec <kozec2@kozec.com>, 2015-2019
 msgid ""
 msgstr ""
 "Project-Id-Version: syncthing-gtk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 11:27+0200\n"
-"PO-Revision-Date: 2018-08-23 17:24+0000\n"
+"PO-Revision-Date: 2019-08-04 18:52+0000\n"
 "Last-Translator: kozec <kozec2@kozec.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/syncthing-gtk/syncthing-gtk/language/sk/)\n"
 "MIME-Version: 1.0\n"
@@ -66,6 +66,14 @@ msgstr "Ak sa rozsah zbieraných údajov v budúcnosti zmení, budete na zmenu u
 #: syncthing_gtk/app.py:430
 msgid "The aggregated statistics are publicly available at"
 msgstr "Súhrn získaných štatistík je verejne dostupný na"
+
+#: syncthing_gtk/app.py:552
+#, python-format
+msgid ""
+"Your Windows version doesn't supports cryptographic standards needed\n"
+"for Syncthing-GTK to check for Syncthing updates.\n"
+"Please, install <a href='%(url)s'>this Windows update</a> or disable update feature."
+msgstr "Vaša verzia Windows nepodporuje kryptografické funkcie, ktoré\nSyncthing-GTK potrebuje na kontrolu a aktualizovanie Syncthing.\nProsím, nainštalujte <a href='%(url)s'>túto aktualizáciu Windows</a> alebo vypnite aktualizácie Syncthing."
 
 #: syncthing_gtk/app.py:486
 msgid "Extracting update..."
@@ -155,6 +163,10 @@ msgstr "Pripojenie k démonovi sa nepodarilo. Skontrolujte konfiguráciu a skús
 msgid "Error message:"
 msgstr "Chybové hlásenie:"
 
+#: syncthing_gtk/app.py:763
+msgid "Possible cause: Is there another web server running on Syncthing port?"
+msgstr "Nebeží na porte Syncthing iný web server?"
+
 #: syncthing_gtk/app.py:689
 msgid "More info"
 msgstr "Ďalšie informácie"
@@ -168,6 +180,17 @@ msgstr "Konfigurácia bola uložená, ale nie je aktivovaná.\nPre aktivovanie k
 #: syncthing_gtk/app.py:717
 msgid "_Restart"
 msgstr "_Reštartovať"
+
+#: syncthing_gtk/app.py:859
+msgid "Incompatible"
+msgstr "Nekompatibilné"
+
+#: syncthing_gtk/app.py:863
+#, python-format
+msgid ""
+"Connecting to <b>%s</b> failed; the remote device speaks an older version of"
+" the protocol (%s) not compatible with this version"
+msgstr "Nepodarilo sa spojiť s <b>%s</b>; Zariadenie komunikuje starou verziou protokolu (%s)."
 
 #: syncthing_gtk/app.py:784
 #, python-format
@@ -406,6 +429,10 @@ msgstr "Len odosielanie"
 msgid "Send & Receive"
 msgstr "Odosielanie i príjem"
 
+#: syncthing_gtk/app.py:1447
+msgid "Receive Only"
+msgstr "Iba prijímanie"
+
 #: syncthing_gtk/app.py:1380 device-edit.glade:30
 msgid "Metadata Only"
 msgstr "Iba metadáta"
@@ -431,14 +458,6 @@ msgstr "Chcete naozaj ukončiť synchronizáciu adresára '%s'?"
 #, python-format
 msgid "Do you really want remove device '%s' from Syncthing?"
 msgstr "Chcete naozaj odstrániť '%s' zo zoznamu zariadení?"
-
-#: syncthing_gtk/app.py:1838
-msgid "Syncthing-Inotify Output"
-msgstr "Zobraziť Výstup Syncthing-Inotify"
-
-#: syncthing_gtk/app.py:1844
-msgid "Syncthing-Inotify is unavailable or failed to start"
-msgstr "Syncthing-Inotify sa nepodarilo spustiť alebo nie je k dispozícii"
 
 #: syncthing_gtk/app.py:1991
 msgid "Failed to start Syncthing daemon."
@@ -555,10 +574,6 @@ msgstr "Sťahovanie dokončené."
 msgid "Select Folder for new Folder"
 msgstr "Vyberte adresár pre nový adresár"
 
-#: syncthing_gtk/foldereditor.py:166 syncthing_gtk/foldereditor.py:167
-msgid "Please, install pyinotify package to use this feature"
-msgstr "Prosím, nainštalujte balíček 'pyinotify' pre použitie tejto funkcie"
-
 #: syncthing_gtk/ignoreeditor.py:44
 msgid "File location:"
 msgstr "Umiestnenie súboru:"
@@ -577,6 +592,49 @@ msgstr "K démonu sa pokúša pripojiť zariadenie \"%s\"."
 #, python-format
 msgid "Synchronization of folder '%s' is completed."
 msgstr "Synchronizácia adresára '%s' je dokončená."
+
+#: syncthing_gtk/notifications.py:114 syncthing_gtk/notifications.py:115
+#, python-format
+msgid "Accept device \"%s\""
+msgstr "Akceptovať zariadenie \"%s\""
+
+#: syncthing_gtk/notifications.py:116
+#, python-format
+msgid "Ignore device \"%s\""
+msgstr "Ignorovať zariadenie \"%s\""
+
+#: syncthing_gtk/notifications.py:118
+msgid "Unknown Device"
+msgstr "Neznáme zariadenie"
+
+#: syncthing_gtk/notifications.py:161 syncthing_gtk/notifications.py:162
+#, python-format
+msgid "Accept folder \"%s\""
+msgstr "Akceptovať adresár \"%s\""
+
+#: syncthing_gtk/notifications.py:163
+#, python-format
+msgid "Ignore folder \"%s\""
+msgstr "Ignorovať adresár \"%s\""
+
+#: syncthing_gtk/notifications.py:173
+msgid "Folder rejected"
+msgstr "Adresár odmietnutý."
+
+#: syncthing_gtk/notifications.py:174
+#, python-format
+msgid "Unexpected folder \"%(folder)s\" sent from device \"%(device)s\"."
+msgstr "Zariadenie \"%(device)s\" poslalo neočakávaný adresár \"%(folder)s\"."
+
+#: syncthing_gtk/notifications.py:207
+#, python-format
+msgid "Completed synchronization in \"%s\""
+msgstr "Synchronizácia v \"%s\" dokončená."
+
+#: syncthing_gtk/notifications.py:209
+#, python-format
+msgid "Updates in folder \"%s\""
+msgstr "Zmeny v adresáry \"%s\""
 
 #: syncthing_gtk/notifications.py:160
 #, python-format
@@ -605,6 +663,24 @@ msgid ""
 "reflect remote changes."
 msgstr "%(hostname)s: %(updated)s súborov bolo zmenených a %(deleted)s zmazaných na inom zariadení."
 
+#: syncthing_gtk/notifications.py:256
+#, python-format
+msgid "Conflicting file in \"%s\""
+msgstr "Konflikt v adresári \"%s\""
+
+#: syncthing_gtk/notifications.py:257
+#, python-format
+msgid "Conflict in path \"%s\" detected."
+msgstr "Detekovaný konflikt v ceste \"%s\""
+
+#: syncthing_gtk/notifications.py:261
+msgid "Open Conflicting file in filemanager"
+msgstr "Zobraziť konfliktný súbor v správcovy súborov"
+
+#: syncthing_gtk/notifications.py:337
+msgid "An error occurred in Syncthing!"
+msgstr "Chyba v Syncthing!"
+
 #: syncthing_gtk/statusicon.py:48
 msgid "Syncthing"
 msgstr "Syncthing"
@@ -615,7 +691,7 @@ msgid "Failed to determine latest Syncthing version."
 msgstr "Nepodarilo sa určiť aktuálnu verziu Syncthing."
 
 #: syncthing_gtk/stdownloader.py:236
-msgid "Failed to create temporaly file."
+msgid "Failed to create temporary file."
 msgstr "Nepodarilo sa vytvoriť dočasný súbor."
 
 #: syncthing_gtk/stdownloader.py:294
@@ -700,6 +776,16 @@ msgstr "Prosím, prezrite si chybový log a zvážte vytvorenie hlásenia o chyb
 msgid "Display error log"
 msgstr "Zobraziť chybový log"
 
+#: syncthing_gtk/wizard.py:215
+msgid "Next"
+msgstr "Ďalej"
+
+#: syncthing_gtk/wizard.py:224
+msgid ""
+"Continue this wizard to create a Syncthing configuration file or abort it to"
+" exit."
+msgstr "Pokračovaním v sprievodcovi sa vytvorí nová konfigurácia pre Synthing."
+
 #: syncthing_gtk/wizard.py:198
 msgid "Welcome to Syncthing-GTK first run wizard!"
 msgstr "Víta Vás sprievodca prvým spustením Syncthing-GTK."
@@ -711,11 +797,6 @@ msgstr "Vyzerá to tak, že ste Syncthing ešte nepouźívali."
 #: syncthing_gtk/wizard.py:201
 msgid "Initial configuration should be created."
 msgstr "Je preto potrebné prejsť úvodnú konfiguráciu."
-
-#: syncthing_gtk/wizard.py:202
-msgid ""
-"Continue this wizard to create a Syncthing configuration file or abort it to exit."
-msgstr "Pokračovaním v sprievodcovi sa vytvorí nová konfigurácia pre Synthing."
 
 #: syncthing_gtk/wizard.py:204
 #, python-format
@@ -915,12 +996,8 @@ msgid "About Syncthing-GTK"
 msgstr "O Syncthing-GTK"
 
 #: about.glade:10
-msgid "GTK GUI and notification area icon for Syncthing"
+msgid "GUI and notification area icon for Syncthing"
 msgstr "GUI a notifikačná ikona pre Syncthing"
-
-#: about.glade:12
-msgid "GitHub"
-msgstr "GitHub"
 
 #: app.glade:239 app.glade:420 app.glade:802
 msgid "Open _Web Interface"
@@ -929,10 +1006,6 @@ msgstr "Otvoriť _Webové Rozhranie"
 #: app.glade:251 app.glade:424 app.glade:814
 msgid "Display _Daemon Output"
 msgstr "Zobraziť Výstup _Démona"
-
-#: app.glade:263
-msgid "Display Syncthing-Inotify Output"
-msgstr "Zobraziť Výstup Syncthing-Inotify"
 
 #: app.glade:280 app.glade:430
 msgid "UI _Settings"
@@ -1168,6 +1241,10 @@ msgstr "Externý skript"
 msgid "Folder _Label"
 msgstr "Označenie _Adresára"
 
+#: folder-edit.glade:190
+msgid "Generate Random"
+msgstr "Generovať Náhodné"
+
 #: folder-edit.glade:202
 msgid "Short identifier for the folder. Must be the same on all devices."
 msgstr "Krátky identifikátor adresára. Musí byť rovnaký na všetkých zariadeniach."
@@ -1189,12 +1266,6 @@ msgstr "_Interval Skenovania"
 #: folder-edit.glade:293
 msgid "Monitor filesystem for _changes"
 msgstr "Monitorovať _zmeny súborového systému"
-
-#: folder-edit.glade:314
-msgid ""
-"If enabled, changed, created and delete files are synchronized immediately, as long as Syncthing-GTK is running.\n"
-"Note: Using this along with short Rescan Interval (<300s) may consume a lot of resources."
-msgstr "Ak je povolené, zmenené, vytvorené a mazané súbory sú synchronizované okamžite, pokiaľ neukončíte Syncthing-GTK.\nPoznámka: Povolenie tejto možnosti a ponechanie krátkeho Intervalu Skenovania (menej ako 300s) môže spotrebovať veľa zdrojov Vášho systému."
 
 #: folder-edit.glade:343
 msgid "Browse..."
@@ -1218,6 +1289,16 @@ msgid ""
 "Files are protected from changes made on other devices, but changes made on "
 "this device will be sent to the rest of the cluster."
 msgstr "Súbory v adresári len na odosielanie sú chránené proti prepísaniu zmenami na ostatných zariadeniach. Iba zmeny na tomto zariadení budú odosielané ostatným zariadeniam."
+
+#: folder-edit.glade:453
+msgid "_Receive Only Folder"
+msgstr "Do ad_resára iba prijímať"
+
+#: folder-edit.glade:474
+msgid ""
+"Changes from other devices are applied to files on this device, but changes "
+"made on this device are not sent to the rest of the cluster.\n"
+msgstr "Zmeny z ostatných zariadení budú aplikované lokálne, ale zmeny na tomto zariadení odosielané ostatným zariadeniam nebudú.\n"
 
 #: folder-edit.glade:456
 msgid "_Folder Settings"
@@ -1359,6 +1440,18 @@ msgstr "Vysoká"
 msgid "Syncthing-GTK Settings"
 msgstr "Nastavenia Syncthing-GTK"
 
+#: ui-settings.glade:27
+msgid "Default"
+msgstr "Pôvodný"
+
+#: ui-settings.glade:35
+msgid "White"
+msgstr "Biely"
+
+#: ui-settings.glade:31
+msgid "Black"
+msgstr "Čierny"
+
 #: ui-settings.glade:69
 msgid "Please, restart Syncthing-GTK to apply all changed settings"
 msgstr "Prosím, reštartujte Syncthing-GTK aby sa aplikovali všetky zmeny v nastaveniach"
@@ -1434,6 +1527,14 @@ msgstr "Zobraziť cesty v zozname adresárov"
 #: ui-settings.glade:399
 msgid "Force _dark theme"
 msgstr "Vynútiť t_mavú tému"
+
+#: ui-settings.glade:540
+msgid "Tray icon style"
+msgstr "Štýl notifikačnej ikony"
+
+#: ui-settings.glade:553
+msgid "Language"
+msgstr "Jazyk"
 
 #: ui-settings.glade:474
 msgid "_Interface"
