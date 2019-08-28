@@ -2,32 +2,32 @@
 import sys, os, gi
 
 if __name__ == "__main__":
-	systempath = "/usr/share/syncthing-gtk"
-	installpath =  os.path.join(os.path.dirname(os.path.realpath(__file__)),
-			'..', 'share', 'syncthing-gtk')
-	localpath = "/usr/local/share/syncthing-gtk"
-	paths = (systempath, localpath, installpath)
-	localedir = None	# let gettext to decide
-	for path in paths:
-		if os.path.exists(path):
-			localedir = os.path.join(path, '..', 'locale')
-			break
-	else:
-		raise IOError("Could not find files in %r", paths)
-	
-	gi.require_version('Gtk', '3.0')
-	gi.require_version('Rsvg', '2.0')
-	
-	from syncthing_gtk.tools import init_logging, init_locale
-	init_locale(localedir)
-	init_logging()
-	
-	if "APPDIR" in os.environ:
-		# Running as AppImage
-		from gi.repository import Gtk
-		Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"])
-		Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"] + "/usr/share/icons/hicolor/32x32/apps")
-		Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"] + "/usr/share/icons/hicolor/32x32/status")
-	
-	from syncthing_gtk.app import App
-	App(path, os.path.join(path, "icons")).run(sys.argv)
+    systempath = "/usr/share/syncthing-gtk"
+    installpath =  os.path.join(os.path.dirname(os.path.realpath(__file__)),
+            '..', 'share', 'syncthing-gtk')
+    localpath = "/usr/local/share/syncthing-gtk"
+    paths = (systempath, localpath, installpath)
+    localedir = None   # let gettext to decide
+    for path in paths:
+        if os.path.exists(path):
+            localedir = os.path.join(path, '..', 'locale')
+            break
+    else:
+        raise IOError("Could not find files in %r", paths)
+
+    gi.require_version('Gtk', '3.0')
+    gi.require_version('Rsvg', '2.0')
+
+    from syncthing_gtk.tools import init_logging, init_locale
+    init_locale(localedir)
+    init_logging()
+
+    if "APPDIR" in os.environ:
+        # Running as AppImage
+        from gi.repository import Gtk
+        Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"])
+        Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"] + "/usr/share/icons/hicolor/32x32/apps")
+        Gtk.IconTheme.get_default().prepend_search_path(os.environ["APPDIR"] + "/usr/share/icons/hicolor/32x32/status")
+
+    from syncthing_gtk.app import App
+    App(path, os.path.join(path, "icons")).run(sys.argv)

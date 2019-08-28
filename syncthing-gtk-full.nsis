@@ -22,64 +22,64 @@ Name "Syncthing-GTK"
 !insertmacro MUI_LANGUAGE "English"
 
 !macro ExitST-GTK
-	push $1
-	ReadRegStr $1 HKCU SOFTWARE\${APP_NAME} 'InstallPath'
-	DetailPrint "Asking Syncthing-GTK to quit..."
-	ExecWait "$1\syncthing-gtk.exe --quit"
-	FindProcDLL::WaitProcEnd "syncthing-gtk.exe" -1
-	pop $1
+  push $1
+  ReadRegStr $1 HKCU SOFTWARE\${APP_NAME} 'InstallPath'
+  DetailPrint "Asking Syncthing-GTK to quit..."
+  ExecWait "$1\syncthing-gtk.exe --quit"
+  FindProcDLL::WaitProcEnd "syncthing-gtk.exe" -1
+  pop $1
 !macroend
 
 # Install
 Section
-	# Check if app is already running
-	FindProcDLL::FindProc "syncthing-gtk.exe"
-	IntCmp $R0 1 0 NotRunning
-		!insertmacro ExitST-GTK
+  # Check if app is already running
+  FindProcDLL::FindProc "syncthing-gtk.exe"
+  IntCmp $R0 1 0 NotRunning
+    !insertmacro ExitST-GTK
 NotRunning:
-	# Set output path
-	SetOutPath $INSTDIR
-	# Install everything
-	File /r build\exe.win32-2.7\*
-	# Write out installation location
-	WriteRegStr HKCU SOFTWARE\${APP_NAME} 'InstallPath' '$INSTDIR'
-	# Create shortcut
-	SetShellVarContext all
-	CreateShortCut "$SMPROGRAMS\Syncthing GTK.lnk" "$INSTDIR\syncthing-gtk.exe" ""
-	# Create uninstaller
-	WriteUninstaller $INSTDIR\uninstaller.exe
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"DisplayName" "Syncthing GTK"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"UninstallString" "$INSTDIR\uninstaller.exe"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"DisplayIcon" "$INSTDIR\uninstaller.exe"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"Publisher" "Kozec"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"URLInfoAbout" "https://github.com/kozec/syncthing-gui/"
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"NoRepair" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"NoModify" 1
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
-		"DisplayIcon" "$INSTDIR\icons\st-logo-128.ico"
-		
+  # Set output path
+  SetOutPath $INSTDIR
+  # Install everything
+  File /r build\exe.win32-2.7\*
+  # Write out installation location
+  WriteRegStr HKCU SOFTWARE\${APP_NAME} 'InstallPath' '$INSTDIR'
+  # Create shortcut
+  SetShellVarContext all
+  CreateShortCut "$SMPROGRAMS\Syncthing GTK.lnk" "$INSTDIR\syncthing-gtk.exe" ""
+  # Create uninstaller
+  WriteUninstaller $INSTDIR\uninstaller.exe
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "DisplayName" "Syncthing GTK"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "UninstallString" "$INSTDIR\uninstaller.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "DisplayIcon" "$INSTDIR\uninstaller.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "Publisher" "Kozec"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "URLInfoAbout" "https://github.com/kozec/syncthing-gui/"
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "NoRepair" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "NoModify" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK" \
+    "DisplayIcon" "$INSTDIR\icons\st-logo-128.ico"
+
 SectionEnd
 
 # Uninstall
 Section "Uninstall"
-	FindProcDLL::FindProc "syncthing-gtk.exe"
-	IntCmp $R0 1 0 NotRunning
-		!insertmacro ExitST-GTK
+  FindProcDLL::FindProc "syncthing-gtk.exe"
+  IntCmp $R0 1 0 NotRunning
+    !insertmacro ExitST-GTK
 NotRunning:
-	# Remove files
-	Delete $INSTDIR\uninstaller.exe
-	Delete $INSTDIR\*
-	RMDir /r $INSTDIR
-	# Remove shortcut
-	SetShellVarContext all
-	Delete "$SMPROGRAMS\Syncthing GTK.lnk"
-	# Remove uninstall entry
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK"
+  # Remove files
+  Delete $INSTDIR\uninstaller.exe
+  Delete $INSTDIR\*
+  RMDir /r $INSTDIR
+  # Remove shortcut
+  SetShellVarContext all
+  Delete "$SMPROGRAMS\Syncthing GTK.lnk"
+  # Remove uninstall entry
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SyncthingGTK"
 SectionEnd

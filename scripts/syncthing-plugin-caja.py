@@ -17,4 +17,4 @@ from syncthing_gtk.nautilusplugin import NautiluslikeExtension
 
 NautiluslikeExtension.set_plugin_module(Caja)
 class CajaNautilus(NautiluslikeExtension, Caja.InfoProvider, Caja.MenuProvider):
-	pass
+    pass

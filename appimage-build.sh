@@ -4,65 +4,65 @@ EXEC="syncthing-gtk"
 [ x"$BUILD_APPDIR" == "x" ] && BUILD_APPDIR=$(pwd)/appimage
 
 function download_dep() {
-	NAME=$1
-	URL=$2
-	if [ -e ../../${NAME}.obstargz ] ; then
-		# Special case for OBS
-		cp ../../${NAME}.obstargz /tmp/${NAME}.tar.gz
-	elif [ -e ${NAME}.tar.gz ] ; then
-		cp ${NAME}.tar.gz /tmp/${NAME}.tar.gz
-	else
-		wget -c "${URL}" -O /tmp/${NAME}.tar.gz
-	fi
+  NAME=$1
+  URL=$2
+  if [ -e ../../${NAME}.obstargz ] ; then
+    # Special case for OBS
+    cp ../../${NAME}.obstargz /tmp/${NAME}.tar.gz
+  elif [ -e ${NAME}.tar.gz ] ; then
+    cp ${NAME}.tar.gz /tmp/${NAME}.tar.gz
+  else
+    wget -c "${URL}" -O /tmp/${NAME}.tar.gz
+  fi
 }
 
 function setup_dep() {
-	NAME="$1"
-	mkdir -p /tmp/${NAME}
-	pushd /tmp/${NAME}
-	tar --extract --strip-components=1 -f /tmp/${NAME}.tar.gz
-	python2 setup.py build
-	PYTHONPATH=${BUILD_APPDIR}/usr/lib/python2.7/site-packages python2 \
-		setup.py install --optimize=1 \
-		--prefix="/usr/" \
-		--root="${BUILD_APPDIR}"
-	popd
+  NAME="$1"
+  mkdir -p /tmp/${NAME}
+  pushd /tmp/${NAME}
+  tar --extract --strip-components=1 -f /tmp/${NAME}.tar.gz
+  python2 setup.py build
+  PYTHONPATH=${BUILD_APPDIR}/usr/lib/python2.7/site-packages python2 \
+    setup.py install --optimize=1 \
+    --prefix="/usr/" \
+    --root="${BUILD_APPDIR}"
+  popd
 }
 
 function build_dep() {
-	NAME="$1"
-	CONFIGURE="$2"
-	if [ -e ${NAME}.prebuilt.tar.gz ] ; then
-		cp ${NAME}.prebuilt.tar.gz /tmp/${NAME}.prebuilt.tar.gz
-		unpack_dep "$NAME.prebuilt"
-		return $?
-	fi
-	mkdir -p /tmp/${NAME}
-	pushd /tmp/${NAME}
-	tar --keep-newer-files --extract --strip-components=1 -f /tmp/${NAME}.tar.gz
-	[ $# -gt 2 ] && $3
-	./configure $(echo $CONFIGURE)
-	make
-	make DESTDIR="${BUILD_APPDIR}" install
-	popd
+  NAME="$1"
+  CONFIGURE="$2"
+  if [ -e ${NAME}.prebuilt.tar.gz ] ; then
+    cp ${NAME}.prebuilt.tar.gz /tmp/${NAME}.prebuilt.tar.gz
+    unpack_dep "$NAME.prebuilt"
+    return $?
+  fi
+  mkdir -p /tmp/${NAME}
+  pushd /tmp/${NAME}
+  tar --keep-newer-files --extract --strip-components=1 -f /tmp/${NAME}.tar.gz
+  [ $# -gt 2 ] && $3
+  ./configure $(echo $CONFIGURE)
+  make
+  make DESTDIR="${BUILD_APPDIR}" install
+  popd
 }
 
 function unpack_dep() {
-	NAME="$1"
-	pushd ${BUILD_APPDIR}
-	tar --extract --exclude="usr/include**" --exclude="usr/lib/pkgconfig**" \
-			--exclude="usr/lib/python3.6**" -f /tmp/${NAME}.tar.gz
-	popd
+  NAME="$1"
+  pushd ${BUILD_APPDIR}
+  tar --extract --exclude="usr/include**" --exclude="usr/lib/pkgconfig**" \
+      --exclude="usr/lib/python3.6**" -f /tmp/${NAME}.tar.gz
+  popd
 }
 
 function unpack_gi() {
-	NAME="$1"
-	pushd ${BUILD_APPDIR}
-	tar --extract --wildcards "usr/lib/girepository-1.0/*" -f /tmp/${NAME}.tar.gz
-	popd
+  NAME="$1"
+  pushd ${BUILD_APPDIR}
+  tar --extract --wildcards "usr/lib/girepository-1.0/*" -f /tmp/${NAME}.tar.gz
+  popd
 }
 
-set -exu		# display commands, no empty vars, terminate on 1st failure
+set -exu    # display commands, no empty vars, terminate on 1st failure
 
 # Download deps
 download_dep "python-dateutil-1.5" "http://labix.org/download/python-dateutil/python-dateutil-1.5.tar.gz"
@@ -116,7 +116,7 @@ unpack_dep "libxrandr-1.5.2"
 rm -R ${BUILD_APPDIR}/usr/bin
 rm -R ${BUILD_APPDIR}/usr/include || true
 for x in aclocal gtk-doc gdb gettext libalpm doc man vala locale bash-completion ; do
-	rm -R ${BUILD_APPDIR}/usr/share/$x || true
+  rm -R ${BUILD_APPDIR}/usr/share/$x || true
 done
 
 

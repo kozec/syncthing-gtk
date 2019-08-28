@@ -31,7 +31,7 @@
         <col id="1" translatable="yes">Black</col>
       </row>
       <row>
-        <col id="0">syncthing-white	</col>
+        <col id="0">syncthing-white</col>
         <col id="1" translatable="yes">White</col>
       </row>
     </data>
