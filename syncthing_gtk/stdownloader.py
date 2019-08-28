@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - StDownloader
 
@@ -6,7 +6,7 @@ Instance of this class can download, extract and save syncthing daemon
 to given location.
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import GLib, Gio, GObject
 from syncthing_gtk.tools import get_config_dir, compare_version
 from syncthing_gtk.tools import IS_WINDOWS, is_portable
@@ -56,13 +56,13 @@ class StDownloader(GObject.GObject):
     """
 
     __gsignals__ = {
-            b"version"              : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-            b"download-starting"    : (GObject.SIGNAL_RUN_FIRST, None, ()),
-            b"download-progress"    : (GObject.SIGNAL_RUN_FIRST, None, (float,)),
-            b"download-finished"    : (GObject.SIGNAL_RUN_FIRST, None, ()),
-            b"extraction-progress"  : (GObject.SIGNAL_RUN_FIRST, None, (float,)),
-            b"extraction-finished"  : (GObject.SIGNAL_RUN_FIRST, None, ()),
-            b"error"                : (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+            "version"              : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+            "download-starting"    : (GObject.SIGNAL_RUN_FIRST, None, ()),
+            "download-progress"    : (GObject.SIGNAL_RUN_FIRST, None, (float,)),
+            "download-finished"    : (GObject.SIGNAL_RUN_FIRST, None, ()),
+            "extraction-progress"  : (GObject.SIGNAL_RUN_FIRST, None, (float,)),
+            "extraction-finished"  : (GObject.SIGNAL_RUN_FIRST, None, ()),
+            "error"                : (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
         }
 
     def __init__(self, target, platform):

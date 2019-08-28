@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - DaemonSettingsDialog
 
 Universal dialog handler for all Syncthing settings and editing
 """
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 from syncthing_gtk.tools import (
     IS_UNITY, IS_GNOME, IS_WINDOWS,

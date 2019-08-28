@@ -1,4 +1,4 @@
-#!/c/Python27/python.exe
+#!/c/Python37/python.exe
 """
 Update Chocolatey package from GitHub releases information.
 

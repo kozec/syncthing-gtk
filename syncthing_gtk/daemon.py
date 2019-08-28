@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - Daemon
 
@@ -8,7 +8,7 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
@@ -16,7 +16,7 @@ from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, sys, time, logging, urllib
+import json, os, sys, time, logging, urllib.request, urllib.parse, urllib.error
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
@@ -232,42 +232,42 @@ class Daemon(GObject.GObject, TimerManager):
 
 
     __gsignals__ = {
-        b"config-out-of-sync"   : (GObject.SIGNAL_RUN_FIRST, None, ()),
-        b"config-saved"         : (GObject.SIGNAL_RUN_FIRST, None, ()),
-        b"connected"            : (GObject.SIGNAL_RUN_FIRST, None, ()),
-        b"disconnected"         : (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
-        b"config-loaded"        : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"connection-error"     : (GObject.SIGNAL_RUN_FIRST, None, (int, object, object)),
-        b"error"                : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-rejected"      : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
-        b"device-rejected"      : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
-        b"my-id-changed"        : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"device-added"         : (GObject.SIGNAL_RUN_FIRST, None, (object, object, bool, object)),
-        b"device-connected"     : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"device-disconnected"  : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"device-discovered"    : (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
-        b"device-data-changed"  : (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, object, object)),
-        b"last-seen-changed"    : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
-        b"device-paused"        : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"device-resumed"       : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"device-sync-started"  : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-        b"device-sync-progress" : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-        b"device-sync-finished" : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-added"         : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
-        b"folder-error"         : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
-        b"folder-data-changed"  : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
-        b"folder-data-failed"   : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-sync-finished" : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-sync-progress" : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-        b"folder-sync-started"  : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-scan-finished" : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-scan-started"  : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        b"folder-scan-progress" : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
-        b"folder-stopped"       : (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
-        b"item-started"         : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
-        b"item-updated"         : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
-        b"startup-complete"     : (GObject.SIGNAL_RUN_FIRST, None, ()),
-        b"system-data-updated"  : (GObject.SIGNAL_RUN_FIRST, None, (int, float, int, int)),
+        "config-out-of-sync"    : (GObject.SIGNAL_RUN_FIRST, None, ()),
+        "config-saved"          : (GObject.SIGNAL_RUN_FIRST, None, ()),
+        "connected"             : (GObject.SIGNAL_RUN_FIRST, None, ()),
+        "disconnected"          : (GObject.SIGNAL_RUN_FIRST, None, (int, object)),
+        "config-loaded"         : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "connection-error"      : (GObject.SIGNAL_RUN_FIRST, None, (int, object, object)),
+        "error"                 : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-rejected"       : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+        "device-rejected"       : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+        "my-id-changed"         : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "device-added"          : (GObject.SIGNAL_RUN_FIRST, None, (object, object, bool, object)),
+        "device-connected"      : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "device-disconnected"   : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "device-discovered"     : (GObject.SIGNAL_RUN_FIRST, None, (object,object,)),
+        "device-data-changed"   : (GObject.SIGNAL_RUN_FIRST, None, (object, object, object, float, float, object, object)),
+        "last-seen-changed"     : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+        "device-paused"         : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "device-resumed"        : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "device-sync-started"   : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+        "device-sync-progress"  : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+        "device-sync-finished"  : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-added"          : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+        "folder-error"          : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+        "folder-data-changed"   : (GObject.SIGNAL_RUN_FIRST, None, (object, object)),
+        "folder-data-failed"    : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-sync-finished"  : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-sync-progress"  : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+        "folder-sync-started"   : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-scan-finished"  : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-scan-started"   : (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        "folder-scan-progress"  : (GObject.SIGNAL_RUN_FIRST, None, (object, float)),
+        "folder-stopped"        : (GObject.SIGNAL_RUN_FIRST, None, (object,object)),
+        "item-started"          : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+        "item-updated"          : (GObject.SIGNAL_RUN_FIRST, None, (object,object,object)),
+        "startup-complete"      : (GObject.SIGNAL_RUN_FIRST, None, ()),
+        "system-data-updated"   : (GObject.SIGNAL_RUN_FIRST, None, (int, float, int, int)),
     }
 
     # Constants for 'reason' parameter of disconnected event
@@ -399,7 +399,7 @@ class Daemon(GObject.GObject, TimerManager):
         RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error).start()
 
     def _request_folder_data(self, folder_id):
-        id_enc = urllib.quote(folder_id.encode('utf-8'))
+        id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
         RESTRequest(self, "db/status?folder=%s" % (id_enc,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, folder_id).start()
 
     def _request_last_seen(self, *a):
@@ -904,7 +904,7 @@ class Daemon(GObject.GObject, TimerManager):
                 callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
             else:
                 callback("", *a)
-        id_enc = urllib.quote(folder_id.encode('utf-8'))
+        id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
         RESTRequest(self, "db/ignores?folder=%s" % (id_enc,), r_filter, error_callback, *calbackdata).start()
 
     def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
@@ -913,7 +913,7 @@ class Daemon(GObject.GObject, TimerManager):
         with on success, error_callback(exception) on failure.
         """
         data = { 'ignore': text.split("\n") }
-        id_enc = urllib.quote(folder_id.encode('utf-8'))
+        id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
         RESTPOSTRequest(self, "db/ignores?folder=%s" % (id_enc,), data, callback, error_callback, *calbackdata).start()
 
     def restart(self):
@@ -996,23 +996,23 @@ class Daemon(GObject.GObject, TimerManager):
     def rescan(self, folder_id, path=None):
         """ Asks daemon to rescan entire folder or specified path """
         if path is None:
-            id_enc = urllib.quote(folder_id.encode('utf-8'))
+            id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
             RESTPOSTRequest(self, "db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
         else:
             url = "db/scan?folder=%s&sub=%s" % (
-                urllib.quote(folder_id.encode('utf-8')),
-                urllib.quote(path.encode('utf-8'))
+                urllib.parse.quote(folder_id.encode('utf-8')),
+                urllib.parse.quote(path.encode('utf-8'))
             )
             RESTPOSTRequest(self, url, {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 
     def override(self, folder_id):
         """ Asks daemon to override remote changes made in specified folder """
-        id_enc = urllib.quote(folder_id.encode('utf-8'))
+        id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
         RESTPOSTRequest(self, "db/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 
     def revert(self, folder_id):
         """ Asks daemon to revert local changes made in specified folder """
-        id_enc = urllib.quote(folder_id.encode('utf-8'))
+        id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
         RESTPOSTRequest(self, "db/revert?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 
     def request_events(self):
@@ -1131,12 +1131,12 @@ class RESTRequest(Gio.SocketClient):
             log.verbose("Discarded old response for %s", self._command)
             return
         # Repeat read_bytes_async until entire response is read into buffer
-        self._buffer.append(response.get_data())
+        self._buffer.append(response.get_data().decode("utf-8"))
         if response.get_size() > 0:
             self._connection.get_input_stream().read_bytes_async(102400, 1, None, self._response)
             return
         self._connection.close(None)
-        response, self._buffer = (b"".join(self._buffer)).decode("utf-8"), []
+        response, self._buffer = ("".join(self._buffer)), []
         if self._parent._CSRFtoken is None and self._parent._api_key is None:
             # I wanna cookie!
             self._parse_csrf(response.split("\n"))
@@ -1167,9 +1167,9 @@ class RESTRequest(Gio.SocketClient):
 
     def _split_headers(self, buffer):
         try:
-            headers, response = buffer.split(b"\r\n\r\n", 1)
-            headers = headers.split(b"\r\n")
-            code = int(headers[0].split(b" ")[1])
+            headers, response = buffer.split("\r\n\r\n", 1)
+            headers = headers.split("\r\n")
+            code = int(headers[0].split(" ")[1])
             if code == 401:
                 self._error(HTTPAuthException(buffer))
                 return None, None
@@ -1301,7 +1301,7 @@ class EventPollLoop(RESTRequest):
 
     def start(self):
         RESTRequest.start(self)
-        self._buffer = b""
+        self._buffer = ""
 
     def _response(self, stream, results):
         if self._parent._CSRFtoken is None and self._parent._api_key is None:
@@ -1316,7 +1316,7 @@ class EventPollLoop(RESTRequest):
             self._connection.close(None)
             return
 
-        buffer = response.get_data()
+        buffer = response.get_data().decode('utf-8')
         assert type(buffer) == str
         headers, response = self._split_headers(buffer)
         if headers is None: return
@@ -1339,7 +1339,7 @@ class EventPollLoop(RESTRequest):
         if self._epoch != self._parent._epoch:
             self._connection.close(None)
             return
-        data = response.get_data()
+        data = response.get_data().decode('utf-8')
         if len(data) == 0:
             # Connection broken
             self._connection.close(None)
@@ -1370,7 +1370,7 @@ class EventPollLoop(RESTRequest):
             try:
                 # Try to decode chunk. May raise exception if only very few bytes
                 # have been read so far
-                size_str, rest = self._buffer.split(b"\r\n", 1)
+                size_str, rest = self._buffer.split("\r\n", 1)
                 self._chunk_size = int(size_str, 16)
                 self._buffer = rest
                 if self._chunk_size < 1:

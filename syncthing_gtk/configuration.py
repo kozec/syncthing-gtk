@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - Configuration
 
@@ -7,7 +7,7 @@ Config file is by default in ~/.config/syncthing-gtk/config.json
 or other ~/.config equivalent
 """
 
-from __future__ import unicode_literals
+
 from datetime import datetime
 from syncthing_gtk.tools import IS_WINDOWS, get_config_dir, is_portable
 import dateutil.parser
@@ -131,13 +131,13 @@ class _Configuration(object):
             if key in self.values:
                 tp, trash = Configuration.REQUIRED_KEYS[key]
                 try:
-                    if tp == datetime and type(self.values[key]) in (str, unicode):
+                    if tp == datetime and type(self.values[key]) in (str, str):
                         # Parse datetime
                         self.values[key] = dateutil.parser.parse(self.values[key])
                     elif tp == tuple and type(self.values[key]) == list:
                         # Convert list to tuple
                         self.values[key] = tuple(self.values[key])
-                    elif tp == bool and type(self.values[key]) in (int, long):
+                    elif tp == bool and type(self.values[key]) in (int, int):
                         # Convert bools
                         self.values[key] = bool(self.values[key])
                 except Exception as e:
@@ -154,7 +154,7 @@ class _Configuration(object):
         if not key in self.values:
             return False
         # Handle special cases
-        if type(self.values[key]) in (str, unicode) and tp in (str, unicode):
+        if type(self.values[key]) in (str, str) and tp in (str, str):
             return True
         if tp in (tuple,) and self.values[key] == None:
             return True

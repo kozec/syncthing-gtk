@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - 1st run wizard
 
@@ -6,7 +6,7 @@ Basically runs Syncthing daemon with -generate option and setups some
 values afterwards.
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk, GLib, GdkPixbuf
 from syncthing_gtk.daemonoutputdialog import DaemonOutputDialog
 from syncthing_gtk.daemonprocess import DaemonProcess
@@ -99,7 +99,7 @@ class Wizard(Gtk.Assistant):
         return index
 
     def only_page(self, page):
-        for r in xrange(1, page):
+        for r in range(1, page):
             self.remove_page(r)
         while self.get_n_pages() > 3:
             self.remove_page(self.get_n_pages() - 2)

@@ -1,9 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - Ignore Pattern Editor
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.uibuilder import UIBuilder
 import os, logging

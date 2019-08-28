@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - App
 
 Main application window
 """
 
-from __future__ import unicode_literals
+
 import itertools
 import signal
 from gi.repository import Gtk, Gio, Gdk, GLib, GdkPixbuf
@@ -279,15 +279,15 @@ class App(Gtk.Application, TimerManager):
             self.connect('handle-local-options', self.do_local_options)
         else:
             self.arguments = []
-        aso("window",   b"w", "Display window (don't start minimized)")
-        aso("minimized",b"m", "Hide window (start minimized)")
-        aso("header",   b"s", "Use classic window header")
-        aso("quit",     b"q", "Quit running instance (if any)")
-        aso("verbose",  b"v", "Be verbose")
-        aso("debug",    b"d", "Be more verbose (debug mode)")
-        aso("wizard",   b"1", "Run 'first start wizard' and exit")
-        aso("about",    b"a", "Display about dialog and exit")
-        aso("dump",     b"o", "Redirect captured daemon output to stdout")
+        aso("window",   ord("w"), "Display window (don't start minimized)")
+        aso("minimized",ord("m"), "Hide window (start minimized)")
+        aso("header",   ord("s"), "Use classic window header")
+        aso("quit",     ord("q"), "Quit running instance (if any)")
+        aso("verbose",  ord("v"), "Be verbose")
+        aso("debug",    ord("d"), "Be more verbose (debug mode)")
+        aso("wizard",   ord("1"), "Run 'first start wizard' and exit")
+        aso("about",    ord("a"), "Display about dialog and exit")
+        aso("dump",     ord("o"), "Redirect captured daemon output to stdout")
         aso("home", 0, "Overrides default syncthing configuration directory",
                 GLib.OptionArg.STRING)
         aso("add-repo", 0,    "Opens 'add repository' dialog with specified path prefilled",
@@ -775,11 +775,11 @@ class App(Gtk.Application, TimerManager):
                 ex = Gtk.Expander(label=_("More info"))
                 tbuf = Gtk.TextBuffer()
                 try:
-                    tbuf.set_text(u'Server response:\n\'%s\'' % (exception.full_response,))
+                    tbuf.set_text('Server response:\n\'%s\'' % (exception.full_response,))
                 except Exception:
                     # May happen when full_response can't be decoded
                     try:
-                        tbuf.set_text(u'Server response:\n\'%s\'' % ((exception.full_response,),))
+                        tbuf.set_text('Server response:\n\'%s\'' % ((exception.full_response,),))
                     except Exception:
                         # Shouldn't really happen
                         tbuf.set_text("<unparsable mess of data>")
@@ -1128,7 +1128,7 @@ class App(Gtk.Application, TimerManager):
         """
         Returns True if there is at least one device connected to daemon
         """
-        for box in self.devices.values():
+        for box in list(self.devices.values()):
             if box["online"] and box["id"] != self.daemon.get_my_id():
                 return True
         return False
@@ -1265,11 +1265,11 @@ class App(Gtk.Application, TimerManager):
                         to_hilight.add(d)
                 to_hilight.add(box)
             if box["id"] in self.devices and box["id"] != self.daemon.get_my_id():
-                for f in self.folders.values():
+                for f in list(self.folders.values()):
                     if box in f["devices"]:
                         to_hilight.add(f)
                 to_hilight.add(box)
-        for box in itertools.chain(self.devices.values(), self.folders.values()):
+        for box in itertools.chain(list(self.devices.values()), list(self.folders.values())):
             box.set_hilight(box in to_hilight)
 
     def is_visible(self):
@@ -1759,9 +1759,9 @@ class App(Gtk.Application, TimerManager):
             # Set dark color based on current window background
             self.dark_color = (color.red, color.green, color.blue, 1.0)
             # Recolor all boxes
-            for box in self.folders.values():
+            for box in list(self.folders.values()):
                 box.set_dark_color(*self.dark_color)
-            for box in self.devices.values():
+            for box in list(self.devices.values()):
                 box.set_dark_color(*self.dark_color)
 
     def cb_box_mouse_enter(self, box, *a):

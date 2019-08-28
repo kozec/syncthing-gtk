@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - DaemonOutputDialog
 
 Displays output from daemon subprocess
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.uibuilder import UIBuilder
 import os
 

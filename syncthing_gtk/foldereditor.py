@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Syncthing-GTK - FolderEditorDialog
 
 Universal dialog handler for all Syncthing settings and editing
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 from syncthing_gtk.tools import _ # gettext function
 from syncthing_gtk.tools import generate_folder_id
@@ -173,7 +173,7 @@ class FolderEditorDialog(EditorDialog):
         if key == "vdevices":
             # Very special case
             nids = [ n["deviceID"] for n in self.get_value("devices") ]
-            for device in self.app.devices.values():
+            for device in list(self.app.devices.values()):
                 if device["id"] != self.app.daemon.get_my_id():
                     b = Gtk.CheckButton(device.get_title(), False)
                     b.set_tooltip_text(device["id"])
