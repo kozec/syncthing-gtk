@@ -7,7 +7,7 @@ Colorful, expandable widget displaying folder/device data
 from __future__ import unicode_literals
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
 from syncthing_gtk.ribar import RevealerClass
-from syncthing_gtk.tools import _ # gettext function
+from syncthing_gtk.tools import _, escape_html_entities # _ is gettext function
 import os, logging, math
 log = logging.getLogger("InfoBox")
 
@@ -313,6 +313,7 @@ class InfoBox(Gtk.Container):
 	
 	### Methods
 	def set_title(self, t):
+		t = escape_html_entities(t)
 		self.str_title = t
 		inverted = self.header_inverted and self.dark_color is None
 		col = "black" if inverted else "white"

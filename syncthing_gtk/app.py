@@ -1406,7 +1406,6 @@ class App(Gtk.Application, TimerManager):
 			title = display_path
 		if label not in (None, ""):
 			title = label
-		title = title.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
 		if id in self.folders:
 			# Reuse existing box
 			box = self.folders[id]
