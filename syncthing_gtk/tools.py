@@ -558,3 +558,6 @@ def generate_folder_id():
 		("".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(5)))
 		for _ in range(2)
 	))
+
+def escape_html_entities(string):
+	return string.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
