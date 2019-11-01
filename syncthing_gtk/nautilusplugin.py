@@ -124,10 +124,11 @@ class NautiluslikeExtension(GObject.GObject):
 			return self.repos[repo]
 		return None
 
-	def _is_ignored_path(self, path):
-		log.info("Check for ignore path: " + path)
+	def _is_ignored_path(self, fullpath):
+		log.debug("Check for ignore path: " + fullpath)
 		# Get repo
-		repo = self._get_parent_repo_path(path)
+		repo = self._get_parent_repo_path(fullpath)
+		path = fullpath.replace(repo,"")
 		if repo == None:
 			return False
 		# Check if the path is known already
