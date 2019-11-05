@@ -137,10 +137,10 @@ class NautiluslikeExtension(GObject.GObject):
 			return self.ignore_paths[repo][path]
 		is_ignored = False
 		# Check existing paths first, if the current path is within a known ignored path
-		for ignorePath in self.ignore_paths[repo]:
-			if self.ignore_paths[repo][ignorePath] and path.startswith(ignorePath + os.path.sep):
-				log.debug("Found ignore-path " + ignorePath + " for " + path)
-				is_ignored = True
+		for ignorePath in sorted(self.ignore_paths[repo]):
+			if path.startswith(ignorePath + os.path.sep):
+				log.debug("Found %signore-path %s for %s" % (("un" if not self.ignore_paths[repo][ignorePath] else "", ignorePath, path)))
+				is_ignored = self.ignore_paths[repo][ignorePath]
 		# Check patterns for repo
 		for regex in self.ignore_patterns[repo]:
 			# Performance advantage to check exclude before match (for the case is_ignored == True)
