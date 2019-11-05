@@ -154,6 +154,24 @@ class NautiluslikeExtension(GObject.GObject):
 		log.debug("Path %s is %s ignored" % (path, "NOT" if not is_ignored else ""))
 		return is_ignored
 
+	def _mark_ignored_path(self, fullpath):
+		# Get repo path
+		repo = self._get_parent_repo_path(fullpath)
+		if repo == None:
+			return False
+		path = fullpath.replace(repo,"")
+		log.debug("Set ignore-path %s for repo %s" % (path, repo))
+		self.ignore_paths[repo][path] = True
+
+	def _mark_unignored_path(self, fullpath):
+		# Get repo path
+		repo = self._get_parent_repo_path(fullpath)
+		if repo == None:
+			return False
+		path = fullpath.replace(repo,"")
+		log.debug("Remove ignore-path %s for repo %s" % (path, repo))	
+		self.ignore_paths[repo][path] = False
+
 	def _get_path(self, file):
 		""" Returns path for provided FileInfo object """
 		if hasattr(file, "get_location"):
@@ -299,7 +317,8 @@ class NautiluslikeExtension(GObject.GObject):
 				return NautiluslikeExtension._plugin_module.OperationResult.COMPLETE
 		elif filename.startswith(".st"):
 			# Don't add emblem, its stored only locally e.g. .stignore .stversions .stfolder
-			pass
+			# Mark as ignored folder
+			self._mark_ignored_path(path)
 		elif path in self.repos:
 			# Determine what emblem should be used
 			state = self.repos[path]
