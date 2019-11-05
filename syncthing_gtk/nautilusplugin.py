@@ -70,6 +70,7 @@ class NautiluslikeExtension(GObject.GObject):
 		self.daemon.connect("device-connected", self.cb_device_connected)
 		self.daemon.connect("device-disconnected", self.cb_device_disconnected)
 		self.daemon.connect("folder-added", self.cb_syncthing_folder_added)
+		self.daemon.connect("folder-scan-started", self.cb_syncthing_folder_scan_started)
 		self.daemon.connect("folder-sync-started", self.cb_syncthing_folder_state_changed, STATE_SYNCING)
 		self.daemon.connect("folder-sync-finished", self.cb_syncthing_folder_state_changed, STATE_IDLE)
 		self.daemon.connect("folder-stopped", self.cb_syncthing_folder_stopped)
@@ -250,7 +251,6 @@ class NautiluslikeExtension(GObject.GObject):
 		# Read current patterns for repo and clear ignore path states
 		self.ignore_patterns[path] = load_repo_ignore_regex(path)
 		self.ignore_paths[path] = {}
-		# TODO On init: Add filewatcher for .stignore file in repo (if exist) - or check periodically instead of this reload above
 		# Store repo id in dict of associated devices
 		self.rid_to_dev[rid] = set()
 		for d in r['devices']:
@@ -272,6 +272,16 @@ class NautiluslikeExtension(GObject.GObject):
 			self._clear_emblems()
 		self.daemon.reconnect()
 	
+	def cb_syncthing_folder_scan_started(self, daemon, rid):
+		log.debug("Folder scan started for rid %s, reload stignore file", rid)
+		# Read current patterns for repo and clear ignore path states
+		# TODO could be improved by only clearing emblems and ignore_paths if patterns changed
+		path = self.rid_to_path[rid]
+		for existingIgnorePath in self.ignore_paths[path]:
+			self._invalidate(existingIgnorePath)
+		self.ignore_patterns[path] = load_repo_ignore_regex(path)
+		self.ignore_paths[path] = {}
+
 	def cb_syncthing_folder_state_changed(self, daemon, rid, state):
 		""" Called when folder synchronization starts or stops """
 		if rid in self.rid_to_path:
