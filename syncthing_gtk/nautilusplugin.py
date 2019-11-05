@@ -124,6 +124,18 @@ class NautiluslikeExtension(GObject.GObject):
 			return self.repos[repo]
 		return None
 
+	def _is_ignoredpartial_path(self, fullpath):
+		log.debug("Check for partial ignore path: " + fullpath)
+		# Get repo
+		repo = self._get_parent_repo_path(fullpath)
+		path = fullpath.replace(repo,"")
+		for regex in self.ignore_patterns[repo]:
+			if regex['exclude']:
+				for compiledParent in regex['excludeParents']:
+					if compiledParent.match(path):
+						log.debug("It's a partial ignore path: " + fullpath)
+						return True
+
 	def _is_ignored_path(self, fullpath):
 		log.debug("Check for ignore path: " + fullpath)
 		# Get repo
@@ -342,7 +354,8 @@ class NautiluslikeExtension(GObject.GObject):
 				# File manager probably shouldn't care about folder being scanned
 				if not self._is_ignored_path(path):
 					file.add_emblem("syncthing")
-				# TODO add special emblem for: ignored files, folder having non-ignored files
+				elif self._is_ignoredpartial_path(path):
+					file.add_emblem("syncthing-ignorepartial")
 			else:
 				# Default (i-have-no-idea-what-happened) state
 				file.add_emblem("syncthing-offline")
