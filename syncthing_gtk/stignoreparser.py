@@ -15,7 +15,9 @@ def convert_ignore_patterns_to_regex(patterns):
 	"""
 	regexes = []
 	for pattern in patterns:
-		regexes.append(parse_ignore_pattern(pattern))
+		parsed_pattern = parse_ignore_pattern(pattern)
+		if not parsed_pattern == None:
+			regexes.append(parsed_pattern)
 	return regexes
 
 def read_ignore_file(filepath):
@@ -39,7 +41,9 @@ def read_ignore_file(filepath):
 def parse_ignore_pattern(line):
 	"""
 	Reads pattern from .stignore file (reads also #include content)
-	"""		
+	"""
+	if line.startswith("//"):
+		return None
 	isExclude = False
 	isCaseInsensitive = False
 	isDeletable = False
