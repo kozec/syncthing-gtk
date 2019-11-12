@@ -156,13 +156,14 @@ class NautiluslikeExtension(GObject.GObject):
 				is_ignored = self.ignore_paths[repo][ignorePath]
 		# Check patterns for repo
 		for regex in self.ignore_patterns[repo]:
-			# Performance advantage to check exclude before match (for the case is_ignored == True)
 			if regex['exclude']:
-				if is_ignored and regex['compiled'].match(path):
+				if regex['compiled'].match(path):
 					is_ignored = False
+					break
 			else:
-				if not is_ignored and regex['compiled'].match(path):
+				if regex['compiled'].match(path):
 					is_ignored = True
+					break
 		self.ignore_paths[repo][path] = is_ignored
 		log.debug("Path %s is %s ignored" % (path, "NOT" if not is_ignored else ""))
 		return is_ignored
