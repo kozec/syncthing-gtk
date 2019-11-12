@@ -59,7 +59,7 @@ def parse_ignore_pattern(line):
 			line = line[4:]
 		else:
 			break
-	flags = 0
+	flags = re.UNICODE
 	if isCaseInsensitive:
 		line = line.lower()
 		flags = flags | re.IGNORECASE

@@ -157,11 +157,11 @@ class NautiluslikeExtension(GObject.GObject):
 		# Check patterns for repo
 		for regex in self.ignore_patterns[repo]:
 			if regex['exclude']:
-				if regex['compiled'].match(path):
+				if regex['compiled'].match(path.encode('utf-8')):
 					is_ignored = False
 					break
 			else:
-				if regex['compiled'].match(path):
+				if regex['compiled'].match(path.encode('utf-8')):
 					is_ignored = True
 					break
 		self.ignore_paths[repo][path] = is_ignored
