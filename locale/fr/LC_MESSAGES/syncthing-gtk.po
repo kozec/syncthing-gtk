@@ -1504,7 +1504,7 @@ msgstr "Priorité du processus démon"
 msgid ""
 "Priority will be used only if \"<i>start daemon in background</i>\" option "
 "is checked on \"<i>Interface</i>\" page."
-msgstr "Cette priorité sera utilisée si l'option \"<i>démarrrer en arrière-plan</i>\" a été choisie à la page \"Interface\"."
+msgstr "Cette priorité sera utilisée si l'option \"<i>démarrer en arrière-plan</i>\" a été choisie à la page \"Interface\"."
 
 #: ui-settings.glade:713
 msgid "Maximum number of CPU cores"
@@ -1515,7 +1515,7 @@ msgid ""
 "Sets the maximum number of CPU cores for daemon to use. This value will be "
 "used only if \"<i>start daemon in background</i>\" option is checked on "
 "\"<i>Interface</i>\" page."
-msgstr "Nombre max. de processeurs utilisés par le démon. Cette valeur sera utilisée si l'option \"<i>démarrrer en arrière-plan</i>\" a été choisie à la page \"Interface\"."
+msgstr "Nombre max. de processeurs utilisés par le démon. Cette valeur sera utilisée si l'option \"<i>démarrer en arrière-plan</i>\" a été choisie à la page \"Interface\"."
 
 #: ui-settings.glade:786
 msgid "Daemon"
@@ -1526,7 +1526,7 @@ msgid ""
 "This binary will be started when syncthing daemon is not running and "
 "\"<i>start daemon in background</i>\" option is checked on "
 "\"<i>Interface</i>\" page."
-msgstr "Cet exécutable sera démarré si le démon syncthing ne l'est pas déjà et si l'option \"<i>démarrrer en arrière-plan</i>\" a été choisie à la page \"Interface\"."
+msgstr "Cet exécutable sera démarré si le démon syncthing ne l'est pas déjà et si l'option \"<i>démarrer en arrière-plan</i>\" a été choisie à la page \"Interface\"."
 
 #: ui-settings.glade:838
 msgid "Syncthing binary location"
