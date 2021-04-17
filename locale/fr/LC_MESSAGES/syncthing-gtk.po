@@ -208,7 +208,7 @@ msgstr "Débit sortant"
 
 #: syncthing_gtk/app.py:836
 msgid "Announce Server"
-msgstr "Annoncer le serveur"
+msgstr "Serveur d'annonce"
 
 #: syncthing_gtk/app.py:837 syncthing_gtk/app.py:1356
 msgid "Version"
