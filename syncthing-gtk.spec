@@ -17,6 +17,9 @@ Source:         %{url}/archive/v%{version}/%{_name}-%{version}.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  pyproject-rpm-macros
+BuildRequires:  sed
+
+Requires:       gtk3
 
 %global _description %{expand:
 GTK3 & Python based GUI and notification area icon for Syncthing.

@@ -370,7 +370,7 @@ def get_config_dir():
 			return windows.get_unicode_home()
 		except Exception:
 			pass
-        from gi.repository import GLib
+	from gi.repository import GLib
 	confdir = GLib.get_user_config_dir()
 	if confdir is None or IS_XP:
 		if IS_WINDOWS:
