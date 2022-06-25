@@ -1167,9 +1167,9 @@ class RESTRequest(Gio.SocketClient):
 	
 	def _split_headers(self, buffer):
 		try:
-			headers, response = buffer.split(b"\r\n\r\n", 1)
-			headers = headers.split(b"\r\n")
-			code = int(headers[0].split(b" ")[1])
+			headers, response = buffer.split("\r\n\r\n", 1)
+			headers = headers.split("\r\n")
+			code = int(headers[0].split(" ")[1])
 			if code == 401:
 				self._error(HTTPAuthException(buffer))
 				return None, None

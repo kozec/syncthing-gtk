@@ -106,7 +106,7 @@ class UIBuilder(Gtk.Builder):
 		# Now this will convert parsed DOM tree back to XML and fed it
 		# to Gtk.Builder XML parser.
 		# God probably kills kitten every time when method is called...
-		Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8"))
+		Gtk.Builder.add_from_string(self, self.xml.toxml("utf-8").decode("utf-8"))
 	
 	def _find_translatables(self, node=None):
 		"""
