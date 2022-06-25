@@ -48,11 +48,11 @@ class StatusIcon(GObject.GObject):
 	TRAY_TITLE     = _("Syncthing")
 	
 	__gsignals__ = {
-		b"clicked": (GObject.SIGNAL_RUN_FIRST, None, ()),
+		"clicked": (GObject.SIGNAL_RUN_FIRST, None, ()),
 	}
 	
 	__gproperties__ = {
-		b"active": (
+		"active": (
 			GObject.TYPE_BOOLEAN,
 			"is the icon user-visible?",
 			"does the icon back-end think that anything is might be shown to the user?",
@@ -417,8 +417,8 @@ class StatusIconKDE4(StatusIconQt):
 		except ImportError:
 			raise NotImplementedError
 		
-		if b"GNOME_DESKTOP_SESSION_ID" in os.environ:
-			del os.environ[b"GNOME_DESKTOP_SESSION_ID"]
+		if "GNOME_DESKTOP_SESSION_ID" in os.environ:
+			del os.environ["GNOME_DESKTOP_SESSION_ID"]
 		# Create Qt GUI application (required by the KdeUI libraries)
 		# We force "--style=motif" here to prevent Qt to load platform theme
 		# integration libraries for "Gtk+" style that cause GTK 3 to abort like this:
@@ -499,8 +499,8 @@ class StatusIconProxy(StatusIcon):
 		try:
 			# Try loading GTK native status icon
 			self._status_gtk = StatusIconGTK3(*args, **kwargs)
-			self._status_gtk.connect(b"clicked",        self._on_click)
-			self._status_gtk.connect(b"notify::active", self._on_notify_active_gtk)
+			self._status_gtk.connect("clicked",        self._on_click)
+			self._status_gtk.connect("notify::active", self._on_notify_active_gtk)
 			self._on_notify_active_gtk()
 			
 			log.info("Using backend StatusIconGTK3 (primary)")
@@ -509,7 +509,7 @@ class StatusIconProxy(StatusIcon):
 			self._load_fallback()
 	
 	def _on_click(self, *args):
-		self.emit(b"clicked")
+		self.emit("clicked")
 	
 	def _on_notify_active_gtk(self, *args):
 		if self._status_fb:
@@ -540,8 +540,8 @@ class StatusIconProxy(StatusIcon):
 			for StatusIconBackend in status_icon_backends:
 				try:
 					self._status_fb = StatusIconBackend(*self._arguments[0], **self._arguments[1])
-					self._status_fb.connect(b"clicked",        self._on_click)
-					self._status_fb.connect(b"notify::active", self._on_notify_active_fb)
+					self._status_fb.connect("clicked",        self._on_click)
+					self._status_fb.connect("notify::active", self._on_notify_active_fb)
 					self._on_notify_active_fb()
 					
 					log.warning("StatusIcon: Using backend %s (fallback)" % StatusIconBackend.__name__)

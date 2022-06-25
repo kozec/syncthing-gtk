@@ -23,9 +23,9 @@ class InfoBox(Gtk.Container):
 	__gtype_name__ = "InfoBox"
 	__gsignals__ = {
 		# right-click(button, time)
-		b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
+		"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
 		# doubleclick, no arguments
-		b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
+		"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
 	}
 	### Initialization
 	def __init__(self, app, title, icon):
