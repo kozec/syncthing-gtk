@@ -8,7 +8,7 @@ Create instance, connect singal handlers and call daemon.reconnect()
 
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gio, GLib, GObject
 from syncthing_gtk.timermanager import TimerManager
 from syncthing_gtk.tools import parsetime, get_header, compare_version
@@ -16,7 +16,7 @@ from syncthing_gtk.tools import get_config_dir
 from dateutil import tz
 from xml.dom import minidom
 from datetime import datetime
-import json, os, sys, time, logging, urllib
+import json, os, sys, time, logging, urllib.request, urllib.parse, urllib.error
 log = logging.getLogger("Daemon")
 
 # Minimal version supported by Daemon class
@@ -399,7 +399,7 @@ class Daemon(GObject.GObject, TimerManager):
 		RESTRequest(self, "system/config", self._syncthing_cb_config, self._syncthing_cb_config_error).start()
 	
 	def _request_folder_data(self, folder_id):
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
 		RESTRequest(self, "db/status?folder=%s" % (id_enc,), self._syncthing_cb_folder_data, self._syncthing_cb_folder_data_failed, folder_id).start()
 	
 	def _request_last_seen(self, *a):
@@ -904,7 +904,7 @@ class Daemon(GObject.GObject, TimerManager):
 				callback("\n".join(data["ignore"]).strip(" \t\n"), *a)
 			else:
 				callback("", *a)
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
 		RESTRequest(self, "db/ignores?folder=%s" % (id_enc,), r_filter, error_callback, *calbackdata).start()
 	
 	def write_stignore(self, folder_id, text, callback, error_callback=None, *calbackdata):
@@ -913,7 +913,7 @@ class Daemon(GObject.GObject, TimerManager):
 		with on success, error_callback(exception) on failure.
 		"""
 		data = { 'ignore': text.split("\n") }
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
 		RESTPOSTRequest(self, "db/ignores?folder=%s" % (id_enc,), data, callback, error_callback, *calbackdata).start()
 	
 	def restart(self):
@@ -996,23 +996,23 @@ class Daemon(GObject.GObject, TimerManager):
 	def rescan(self, folder_id, path=None):
 		""" Asks daemon to rescan entire folder or specified path """
 		if path is None:
-			id_enc = urllib.quote(folder_id.encode('utf-8'))
+			id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
 			RESTPOSTRequest(self, "db/scan?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 		else:
 			url = "db/scan?folder=%s&sub=%s" % (
-				urllib.quote(folder_id.encode('utf-8')),
-				urllib.quote(path.encode('utf-8'))
+				urllib.parse.quote(folder_id.encode('utf-8')),
+				urllib.parse.quote(path.encode('utf-8'))
 			)
 			RESTPOSTRequest(self, url, {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 	
 	def override(self, folder_id):
 		""" Asks daemon to override remote changes made in specified folder """
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
 		RESTPOSTRequest(self, "db/override?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 	
 	def revert(self, folder_id):
 		""" Asks daemon to revert local changes made in specified folder """
-		id_enc = urllib.quote(folder_id.encode('utf-8'))
+		id_enc = urllib.parse.quote(folder_id.encode('utf-8'))
 		RESTPOSTRequest(self, "db/revert?folder=%s" % (id_enc,), {}, lambda *a: a, lambda *a: log.error(a), folder_id).start()
 	
 	def request_events(self):

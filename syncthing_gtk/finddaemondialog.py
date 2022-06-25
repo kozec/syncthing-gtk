@@ -6,7 +6,7 @@ Basically runs syncthing daemon with -generate option and setups some
 values afterwards.
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.editordialog import EditorDialog
 from syncthing_gtk.stdownloader import StDownloader
 from syncthing_gtk.tools import IS_WINDOWS, IS_XP

@@ -8,7 +8,7 @@ Draws Ident Icon on transparent background.
 Most of drawing code is ported from
 https://github.com/syncthing/syncthing/blob/master/gui/scripts/syncthing/core/directives/identiconDirective.js"""
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 from syncthing_gtk.infobox import InfoBox
 import re
@@ -69,8 +69,8 @@ class IdentIcon(Gtk.DrawingArea):
 		# Set color
 		cr.set_source_rgba(*self.color)
 		# Do drawing
-		for row in xrange(0, self.size):
-			for col in xrange(0, middle_col + 1):
+		for row in range(0, self.size):
+			for col in range(0, middle_col + 1):
 				if should_fill_rect_at(row, col):
 					fill_rect_at(row, col)
 					if should_mirror_rect_at(row, col):

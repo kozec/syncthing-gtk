@@ -5,7 +5,7 @@ Syncthing-GTK - DaemonSettingsDialog
 Universal dialog handler for all Syncthing settings and editing
 """
 
-from __future__ import unicode_literals
+
 from syncthing_gtk.editordialog import EditorDialog, strip_v
 from syncthing_gtk.tools import _ # gettext function
 
