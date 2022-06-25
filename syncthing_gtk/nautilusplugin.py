@@ -157,11 +157,11 @@ class NautiluslikeExtension(GObject.GObject):
 		# Check patterns for repo
 		for regex in self.ignore_patterns[repo]:
 			if regex['exclude']:
-				if regex['compiled'].match(path.encode('utf-8')):
+				if regex['compiled'].match(path):
 					is_ignored = False
 					break
 			else:
-				if regex['compiled'].match(path.encode('utf-8')):
+				if regex['compiled'].match(path):
 					is_ignored = True
 					break
 		self.ignore_paths[repo][path] = is_ignored
@@ -190,7 +190,7 @@ class NautiluslikeExtension(GObject.GObject):
 		""" Returns path for provided FileInfo object """
 		if hasattr(file, "get_location"):
 			if not file.get_location().get_path() is None:
-				return file.get_location().get_path().decode('utf-8')
+				return file.get_location().get_path()
 		return urllib.parse.unquote(file.get_uri().replace("file://", ""))
 	
 	### Daemon callbacks

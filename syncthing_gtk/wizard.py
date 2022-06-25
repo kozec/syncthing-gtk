@@ -218,7 +218,7 @@ class IntroPage(Page):
 			all_buttons = [ b for b in self.dialog.quit_button.get_parent().get_children()
 				if isinstance(b, Gtk.Button) and b is not self.dialog.quit_button ]
 			# order is 'apply, next, back, finish, cancel'
-			next_label = all_buttons[1].get_label().decode("utf-8").replace("_", "")
+			next_label = all_buttons[1].get_label().replace("_", "")
 		except: pass
 		# TODO: Temporal solution, remove later
 		changed_line = _("Continue this wizard to create a Syncthing configuration file or abort it to exit.")

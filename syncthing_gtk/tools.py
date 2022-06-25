@@ -234,10 +234,10 @@ def init_logging():
 	old_log = logging.Logger._log
 	def _log(self, level, msg, args, exc_info=None, extra=None):
 		args = tuple([
-			(c if type(c) is str else str(c).decode("utf-8"))
+			(c if type(c) is str else c.decode("utf-8"))
 			for c in args
 		])
-		msg = msg if type(msg) is str else str(msg).decode("utf-8")
+		msg = msg if type(msg) is str else msg.decode("utf-8")
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
@@ -418,12 +418,13 @@ def get_executable():
 	if IS_WINDOWS:
 		return os.path.join(get_install_path(), "syncthing-gtk.exe")
 	else:
-		executable = __main__.__file__.decode("utf-8")
+		executable = __main__.__file__
 		if not os.path.isabs(executable):
-			cwd = os.getcwd().decode("utf-8")
+			cwd = os.getcwd()
 			executable = os.path.normpath(os.path.join(cwd, executable))
 		if executable.endswith(".py"):
-			executable = "/usr/bin/env python2 %s" % (executable,)
+			import shlex
+			executable = "/usr/bin/env python2 %s" % (shlex.quote(executable),)
 		return executable
 
 def is_ran_on_startup(program_name):
@@ -499,7 +500,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 			try:
 				with open(desktopfile, "w") as f:
 					desktop_contents = DESKTOP_FILE % (program_name, executable, icon, description)
-					f.write(desktop_contents.encode('utf-8'))
+					f.write(desktop_contents)
 			except Exception as e:
 				# IO errors or out of disk space... Not really
 				# expected, but may happen
