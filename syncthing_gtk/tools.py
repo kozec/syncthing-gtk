@@ -492,7 +492,7 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 		desktopfile = os.path.join(get_config_dir(), "autostart", "%s.desktop" % (program_name,))
 		if enabled:
 			try:
-				os.makedirs(os.path.join(get_config_dir(), "autostart"), mode=0700)
+				os.makedirs(os.path.join(get_config_dir(), "autostart"), mode=0o700)
 			except Exception:
 				# Already exists
 				pass
