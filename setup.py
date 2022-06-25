@@ -30,6 +30,10 @@ def get_version():
 				version = "v%s" % (version,)
 			break
 		path = path[0:-1]
+	if version == 'unknown':
+		with open(os.path.join(os.path.dirname(__file__), "syncthing-gtk.spec"), "r") as f:
+			version = [x.split()[-1].strip() for x in f.readlines() if x.startswith("Version:")][0]
+			version = "v" + version
 	return version
 
 class BuildPyEx(build_py):

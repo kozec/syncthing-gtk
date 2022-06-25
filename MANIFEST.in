@@ -1,0 +1,4 @@
+include *.spec
+recursive-include icons *
+recursive-include doc *
+include README.md
