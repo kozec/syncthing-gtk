@@ -17,8 +17,10 @@ def get_version():
 		version = p.communicate()[0].strip("\n\r \t")
 		if p.returncode != 0:
 			raise Exception("git-describe failed")
+		if version.startswith("v"):
+			version = version[1:]
 		return version
-	except: pass
+	except Exception: pass
 	# Git-describe method failed, try to guess from working directory name
 	path = os.getcwd().split(os.path.sep)
 	version = 'unknown'
@@ -26,14 +28,13 @@ def get_version():
 		# Find path component that matches 'syncthing-gui-vX.Y.Z'
 		if path[-1].startswith("syncthing-gui-") or path[-1].startswith("syncthing-gtk-"):
 			version = path[-1].split("-")[-1]
-			if not version.startswith("v"):
-				version = "v%s" % (version,)
+			if version.startswith("v"):
+				version = version[1:]
 			break
 		path = path[0:-1]
 	if version == 'unknown':
 		with open(os.path.join(os.path.dirname(__file__), "syncthing-gtk.spec"), "r") as f:
 			version = [x.split()[-1].strip() for x in f.readlines() if x.startswith("Version:")][0]
-			version = "v" + version
 	return version
 
 class BuildPyEx(build_py):
