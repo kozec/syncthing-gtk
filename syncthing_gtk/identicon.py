@@ -42,11 +42,11 @@ class IdentIcon(Gtk.DrawingArea):
 		return Gtk.SizeRequestMode.CONSTANT_SIZE
 	
 	def do_draw(self, cr):
-		def fill_rect_at(row, col):
+		def fill_rect_at(row, col, ox, oy, rs):
 			cr.rectangle(
-					offset_x + (col * rect_size),
-					offset_y + (row * rect_size),
-					rect_size, rect_size
+					ox + (col * rs),
+					oy + (row * rs),
+					rs, rs
 			)
 			cr.fill()
 		
@@ -72,6 +72,6 @@ class IdentIcon(Gtk.DrawingArea):
 		for row in range(0, self.size):
 			for col in range(0, middle_col + 1):
 				if should_fill_rect_at(row, col):
-					fill_rect_at(row, col)
+					fill_rect_at(row, col, offset_x, offset_y, rect_size)
 					if should_mirror_rect_at(row, col):
-						fill_rect_at(row, mirror_col_for(col))
+						fill_rect_at(row, mirror_col_for(col), offset_x, offset_y, rect_size)
