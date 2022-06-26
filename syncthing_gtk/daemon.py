@@ -1242,7 +1242,14 @@ class RESTPOSTRequest(RESTRequest):
 		"""
 		Formats POST request before sending it to daemon
 		"""
-		json_str = json.dumps(self._data)
+		try:
+			data = dict(self._data)
+			if HTTP_HEADERS in data:
+			    del data[HTTP_HEADERS]
+			json_str = json.dumps(data)
+		except TypeError:
+		    import yaml ; print(yaml.dump(data))
+		    raise
 		return "\r\n".join([
 			"POST /rest/%s HTTP/1.0" % self._command,
 			"Host: %s" % self._parent._address,
