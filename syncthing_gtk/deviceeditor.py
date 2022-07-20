@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#/usr/bin/env python3
 """
 Syncthing-GTK - DeviceEditorDialog
 
 Universal dialog handler for all Syncthing settings and editing
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk
 from syncthing_gtk.tools import check_device_id
 from syncthing_gtk.tools import _ # gettext function

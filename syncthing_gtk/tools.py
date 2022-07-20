@@ -1,11 +1,13 @@
-#!/usr/bin/env python2
+#/usr/bin/env python3
 """
 Syncthing-GTK - tools
 
 Various stuff that I don't care to fit anywhere else.
 """
 
-from __future__ import unicode_literals
+
+
+from gettext import gettext as _
 from base64 import b32decode
 from datetime import tzinfo, timedelta
 from subprocess import Popen
@@ -53,11 +55,7 @@ portable_mode_enabled = False
 
 if IS_WINDOWS:
 	# On Windows, WMI and pywin32 libraries are reqired
-	import wmi, _winreg
-
-""" Localization lambdas """
-_ = lambda a: _uc(gettext.gettext(a))
-_uc = lambda b: b if type(b) == unicode else b.decode("utf-8")
+	import wmi, winreg
 
 def luhn_b32generate(s):
 	"""
@@ -88,7 +86,7 @@ def check_device_id(nid):
 		.replace("-", "") \
 		.replace(" ", "")
 	if len(nid) == 56:
-		for i in xrange(0, 4):
+		for i in range(0, 4):
 			p = nid[i*14:((i+1)*14)-1]
 			try:
 				l = luhn_b32generate(p)
@@ -233,11 +231,8 @@ def init_logging():
 	# Wrap Logger._log in something that can handle utf-8 exceptions
 	old_log = logging.Logger._log
 	def _log(self, level, msg, args, exc_info=None, extra=None):
-		args = tuple([
-			(c if type(c) is unicode else str(c).decode("utf-8"))
-			for c in args
-		])
-		msg = msg if type(msg) is unicode else str(msg).decode("utf-8")
+		args = tuple([str(c) for c in args])
+		msg = str(msg)
 		old_log(self, level, msg, args, exc_info, extra)
 	logging.Logger._log = _log
 
@@ -345,7 +340,7 @@ def parse_version(ver):
 	while len(comps) < 6:
 		comps.append("0")
 	res = 0
-	for i in xrange(0, 6):
+	for i in range(0, 6):
 		res += min(255, int(comps[i])) << ((5-i) * 8)
 	return res
 
@@ -370,7 +365,7 @@ def get_config_dir():
 			return windows.get_unicode_home()
 		except Exception:
 			pass
-        from gi.repository import GLib
+	from gi.repository import GLib
 	confdir = GLib.get_user_config_dir()
 	if confdir is None or IS_XP:
 		if IS_WINDOWS:
@@ -400,10 +395,10 @@ if IS_WINDOWS:
 		if is_portable():
 			return os.environ["XDG_CONFIG_HOME"]
 		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
-			path, keytype = _winreg.QueryValueEx(key, "InstallPath")
+			key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\SyncthingGTK")
+			path, keytype = winreg.QueryValueEx(key, "InstallPath")
 			path = str(path)
-			_winreg.CloseKey(key)
+			winreg.CloseKey(key)
 			return path
 		except WindowsError:
 			# This is really shouldn't happen. Use executable path.
@@ -435,10 +430,10 @@ def is_ran_on_startup(program_name):
 	if IS_WINDOWS:
 		# Check if there is value for application in ...\Run
 		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
-			trash, keytype = _winreg.QueryValueEx(key, program_name)
-			_winreg.CloseKey(key)
-			return keytype in (_winreg.REG_SZ, _winreg.REG_EXPAND_SZ, _winreg.REG_MULTI_SZ)
+			key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+			trash, keytype = winreg.QueryValueEx(key, program_name)
+			winreg.CloseKey(key)
+			return keytype in (winreg.REG_SZ, winreg.REG_EXPAND_SZ, winreg.REG_MULTI_SZ)
 		except WindowsError:
 			# Key not found
 			return False
@@ -477,15 +472,15 @@ def set_run_on_startup(enabled, program_name, executable, icon="", description="
 		return
 	if IS_WINDOWS:
 		# Create/delete value for application in ...\Run
-		key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+		key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
 			"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-			0, _winreg.KEY_ALL_ACCESS)
+			0, winreg.KEY_ALL_ACCESS)
 		if enabled:
-			_winreg.SetValueEx(key, program_name, 0,
-				_winreg.REG_SZ, '"%s"' % (executable,))
+			winreg.SetValueEx(key, program_name, 0,
+				winreg.REG_SZ, '"%s"' % (executable,))
 		else:
-			_winreg.DeleteValue(key, program_name)
-		_winreg.CloseKey(key)
+			winreg.DeleteValue(key, program_name)
+		winreg.CloseKey(key)
 	else:
 		# Create/delete application.desktop with provided values,
 		# removing any hidding parameters

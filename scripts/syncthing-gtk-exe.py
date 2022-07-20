@@ -1,6 +1,6 @@
 #!/c/Python27/python.exe
 # Note: this one is used by Windows
-import sys, os, _winreg
+import sys, os, winreg
 
 if __name__ == "__main__":
 	portable = False

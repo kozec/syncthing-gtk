@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#/usr/bin/env python3
 """
 Syncthing-GTK - EditorDialog
 
 Base class and universal handler for all Syncthing settings and editing
 """
 
-from __future__ import unicode_literals
+
 from gi.repository import Gtk, Gdk, GObject, GLib
 from syncthing_gtk.tools import ints
 from syncthing_gtk.tools import _ # gettext function
@@ -25,8 +25,8 @@ class EditorDialog(GObject.GObject):
 			Emitted after dialog loads and parses configuration data
 	"""
 	__gsignals__ = {
-		b"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
-		b"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+		"close"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
+		"loaded"	: (GObject.SIGNAL_RUN_FIRST, None, ()),
 	}
 
 	# Should be overridden by subclass
@@ -252,11 +252,11 @@ class EditorDialog(GObject.GObject):
 		if isinstance(w, Gtk.SpinButton):
 			w.get_adjustment().set_value(ints(self.get_value(strip_v(key))))
 		elif isinstance(w, Gtk.Entry):
-			w.set_text(unicode(self.get_value(strip_v(key))))
+			w.set_text(str(self.get_value(strip_v(key))))
 		elif isinstance(w, Gtk.ComboBox):
 			val = self.get_value(strip_v(key))
 			m = w.get_model()
-			for i in xrange(0, len(m)):
+			for i in range(0, len(m)):
 				if str(val) == str(m[i][0]).strip():
 					w.set_active(i)
 					break
@@ -467,7 +467,7 @@ class EditorDialog(GObject.GObject):
 		
 		if hasattr(exception, "full_response"):
 			try:
-				fr = unicode(exception.full_response)[0:1024]
+				fr = str(exception.full_response)[0:1024]
 			except UnicodeError:
 				# ... localized error strings on windows are usually
 				# in anything but unicode :(

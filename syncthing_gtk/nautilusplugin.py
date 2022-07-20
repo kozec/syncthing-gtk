@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#/usr/bin/env python3
 """
 Nautilus plugin for Syncthing.
 This program is part of Syncthing-GTK, but can be used independently
 with small modification
 """
 
-from __future__ import unicode_literals
+
 
 from gi.repository import GObject
 from syncthing_gtk.tools import init_logging, set_logging_level
@@ -191,8 +191,8 @@ class NautiluslikeExtension(GObject.GObject):
 		if hasattr(file, "get_location"):
 			if not file.get_location().get_path() is None:
 				return file.get_location().get_path().decode('utf-8')
-		return urllib.unquote(file.get_uri().replace("file://", ""))
-	
+		return urllib.parse.unquote(file.get_uri().replace("file://", ""))
+
 	### Daemon callbacks
 	def cb_connected(self, *a):
 		"""

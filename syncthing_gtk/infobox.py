@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#/usr/bin/env python3
 """
 Syncthing-GTK - InfoBox
 
 Colorful, expandable widget displaying folder/device data
 """
-from __future__ import unicode_literals
+
 from gi.repository import Gtk, Gdk, GLib, GObject, Pango, Rsvg
 from syncthing_gtk.ribar import RevealerClass
 from syncthing_gtk.tools import _, escape_html_entities # _ is gettext function
@@ -23,10 +23,11 @@ class InfoBox(Gtk.Container):
 	__gtype_name__ = "InfoBox"
 	__gsignals__ = {
 		# right-click(button, time)
-		b"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
+		"right-click"	: (GObject.SIGNAL_RUN_FIRST, None, (int, int)),
 		# doubleclick, no arguments
-		b"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
+		"doubleclick"	: (GObject.SIGNAL_RUN_FIRST, None, () )
 	}
+	
 	### Initialization
 	def __init__(self, app, title, icon):
 		# Variables
