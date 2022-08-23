@@ -7,7 +7,7 @@
 %define mybuildnumber %{?build_number}%{?!build_number:1}
 
 Name:           %{_name}
-Version:        0.9.4.4.1
+Version:        0.9.4.4.2
 Release:        %{mybuildnumber}%{?dist}
 Summary:        GTK3 & python based GUI for Syncthing
 
