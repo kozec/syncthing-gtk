@@ -402,6 +402,10 @@ msgstr "Alle Daten"
 msgid "Off"
 msgstr "Aus"
 
+#: syncthing_gtk/app.py:1452
+msgid "Receive Only"
+msgstr "Nur Empfangen"
+
 #: syncthing_gtk/app.py:1375
 msgid "Send Only"
 msgstr "Nur senden"

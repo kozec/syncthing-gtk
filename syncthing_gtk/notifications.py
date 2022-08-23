@@ -18,7 +18,7 @@ Notifications = None
 try:
 	if not IS_WINDOWS:
 		import gi
-		gi.require_version('Notify', '0.7')
+		gi.require_version('Notify', '0.8')
 		from gi.repository import Notify
 		HAS_DESKTOP_NOTIFY = True
 except ImportError:
