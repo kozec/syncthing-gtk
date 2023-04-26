@@ -14,9 +14,10 @@ def get_version():
 	"""
 	try:
 		p = Popen(['git', 'describe', '--tags', '--match', 'v*'], stdout=PIPE)
-		version = p.communicate()[0].strip("\n\r \t")
+		version = p.communicate()[0].decode("ascii").strip("\n\r \t")
 		if p.returncode != 0:
 			raise Exception("git-describe failed")
+		version = version.split("-")[0].lstrip("v")  # Comply with PEP-440
 		return version
 	except: pass
 	# Git-describe method failed, try to guess from working directory name
@@ -30,6 +31,7 @@ def get_version():
 				version = "v%s" % (version,)
 			break
 		path = path[0:-1]
+	version = version.split("+")[0].lstrip("v")  # Comply with PEP-440
 	return version
 
 class BuildPyEx(build_py):
